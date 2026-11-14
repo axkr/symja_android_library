@@ -36,6 +36,13 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
   private IExpr unfillableNamedSlot = F.NIL;
 
+  /**
+   * Every <code>Slot(n)</code> and <code>SlotSequence(n)</code> with an integer <code>n</code> which
+   * could not be filled, in the order of the body and with repeats, or <code>null</code> while
+   * there is none.
+   */
+  private java.util.List<IAST> unfillableSlots = null;
+
   public VisitorReplaceSlots(IAST ast) {
     super();
     this.astSlots = ast;
@@ -51,6 +58,21 @@ public class VisitorReplaceSlots extends VisitorExpr {
     return unfillableSlot;
   }
 
+  /**
+   * Every integer <code>Slot(n)</code> and <code>SlotSequence(n)</code> which could not be filled
+   * from the arguments, in the order they occur in the body, repeats included.
+   */
+  public java.util.List<IAST> getUnfillableSlots() {
+    return unfillableSlots == null ? java.util.Collections.emptyList() : unfillableSlots;
+  }
+
+  private void addUnfillable(IAST slot) {
+    if (unfillableSlots == null) {
+      unfillableSlots = new java.util.ArrayList<IAST>();
+    }
+    unfillableSlots.add(slot);
+  }
+
   private IExpr getSlot(IInteger ii) {
     int i = ii.toIntDefault();
     if (i >= 0 && i < astSlots.size()) {
@@ -59,6 +81,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
     if (unfillableSlot.isNIL()) {
       unfillableSlot = ii;
     }
+    addUnfillable(F.Slot(ii));
     return F.NIL;
   }
 
@@ -110,6 +133,9 @@ public class VisitorReplaceSlots extends VisitorExpr {
     int i = ii.toIntDefault();
     if (isFillableSlotSequence(i)) {
       return F.mapRange(S.Sequence, i, astSlots.size(), j -> astSlots.get(j));
+    }
+    if (i > 0) {
+      addUnfillable(F.SlotSequence(i));
     }
     return F.NIL;
   }
@@ -169,6 +195,9 @@ public class VisitorReplaceSlots extends VisitorExpr {
         int sequ = ((IAST) arg).arg1().toIntDefault();
         if (!isFillableSlotSequence(sequ)) {
           // leave an unfillable ##n in place, as the standalone form does
+          if (sequ > 0) {
+            addUnfillable((IAST) arg);
+          }
           destination++;
           continue;
         }

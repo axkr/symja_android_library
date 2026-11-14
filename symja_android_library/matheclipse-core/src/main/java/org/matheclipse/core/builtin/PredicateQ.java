@@ -1538,6 +1538,24 @@ public class PredicateQ {
       return evalArg1Boole(arg1, engine);
     }
 
+    /**
+     * The evaluated predicate <code>PossibleZeroQ(expr)</code> has the second opinion of
+     * {@link CompareUtil#isZeroAsWritten}. {@link #evalArg1Boole(IExpr, EvalEngine)}, which the
+     * tests inside of other functions call through <code>ofQ</code>, does without it: Simplify
+     * asks for every product it visits.
+     */
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      final IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr result = evaluatePredicate(ast, arg1, engine);
+      if (result.isFalse() && arg1.isAST() && !arg1.isList() && !arg1.isAssociation()
+          && CompareUtil.isZeroAsWritten((IAST) arg1, Config.SPECIAL_FUNCTIONS_TOLERANCE,
+              engine)) {
+        return S.True;
+      }
+      return result;
+    }
+
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
       IExpr expr = arg1;

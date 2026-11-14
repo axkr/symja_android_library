@@ -275,6 +275,10 @@ public class SparseArrayFunctions {
           // The dimensions cannot be determined from the position `1`.
           return Errors.printMessage(ast.topHead(), "exdims", F.list(arg1), engine);
         }
+        if (SparseArrayExpr.reportMisplacedRule((IAST) arg1, dimension, defaultDimension,
+            engine)) {
+          return F.NIL;
+        }
         result =
             SparseArrayExpr.newArrayRules((IAST) arg1, dimension, defaultDimension, defaultValue);
       } else if (arg1.isList()) {
@@ -287,6 +291,10 @@ public class SparseArrayFunctions {
         SparseArrayExpr sparseArray = (SparseArrayExpr) arg1;
         result = sparseArray.resize(dimension, defaultValue);
       } else if (arg1.isRule()) {
+        if (SparseArrayExpr.reportMisplacedRule(F.list(arg1), dimension, defaultDimension,
+            engine)) {
+          return F.NIL;
+        }
         result =
             SparseArrayExpr.newArrayRules(F.list(arg1), dimension, defaultDimension, defaultValue);
       }

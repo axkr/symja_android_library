@@ -221,6 +221,30 @@ public class RootSum extends AbstractFunctionEvaluator {
     return summed;
   }
 
+  /**
+   * The roots of the polynomial <code>px</code> in <code>r</code> at the precision of the engine,
+   * as the numerical values of <code>Root(f, i)</code>: the roots of
+   * {@link RootsFunctions#complexRoots} have the digits of a machine number, and a sum of
+   * <code>PolyGamma</code> over them had 16 correct digits of 40.
+   *
+   * @return <code>null</code> if a root has no numerical value
+   */
+  private static IAST arbitraryPrecisionRoots(IExpr f, IExpr px, ISymbol r, EvalEngine engine) {
+    int degree = engine.evaluate(F.Exponent(px, r)).toIntDefault();
+    if (degree <= 0 || degree == Integer.MIN_VALUE) {
+      return null;
+    }
+    IASTAppendable roots = F.ListAlloc(degree);
+    for (int i = 1; i <= degree; i++) {
+      IExpr root = engine.evalN(F.Root(f, F.ZZ(i)), engine.getNumericPrecision());
+      if (!root.isNumber()) {
+        return null;
+      }
+      roots.append(root);
+    }
+    return roots;
+  }
+
   @Override
   public IExpr numericEval(final IAST ast, EvalEngine engine) {
     // Ensure the expected number of arguments are present.
@@ -245,7 +269,8 @@ public class RootSum extends AbstractFunctionEvaluator {
     // RootsFunctions.complexRoots expects an IAST of variables (size 2, representing List[r])[cite:
     // 3].
     IAST variables = F.List(r);
-    IAST rootsList = RootsFunctions.complexRoots(px, variables, engine);
+    IAST rootsList = engine.isArbitraryMode() ? arbitraryPrecisionRoots(f, px, r, engine)
+        : RootsFunctions.complexRoots(px, variables, engine);
 
     // 4. Verify that the root finding was successful and returned a list[cite: 3].
     if (rootsList == null || !rootsList.isList()) {

@@ -94,8 +94,9 @@ public class ArchiveFunctions {
           // like a text file, without the line end the command finished with
           return F.stringx(output.replaceAll("[\\r\\n]+$", ""));
         }
-        return engine.evaluate(F.binaryAST2(S.ImportString, F.stringx(output),
-            F.stringx(formatName(format, fileName))));
+        IExpr formatOfOutput = F.stringx(formatName(format, fileName));
+        return engine.evaluate(F.binaryAST2(S.ImportString,
+            org.matheclipse.core.reflection.system.ImportString.argument(output, formatOfOutput), formatOfOutput));
       }
 
       Path file = FileSandbox.resolveReadPath(S.Import, fileName, engine);
@@ -121,8 +122,9 @@ public class ArchiveFunctions {
           // read as text rather than not at all.
           return F.stringx(content);
         }
-        return engine.evaluate(F.binaryAST2(S.ImportString, F.stringx(content),
-            F.stringx(formatName(format, fileName))));
+        IExpr formatOfContent = F.stringx(formatName(format, fileName));
+        return engine.evaluate(F.binaryAST2(S.ImportString,
+            org.matheclipse.core.reflection.system.ImportString.argument(content, formatOfContent), formatOfContent));
       } catch (IOException | RuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         Errors.printMessage(S.Import, ex, engine);
@@ -191,7 +193,8 @@ public class ArchiveFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr format = ast.size() > 2 ? ast.arg2() : F.stringx("ExpressionJSON");
-      IExpr text = engine.evaluate(F.binaryAST2(S.ExportString, ast.arg1(), format));
+      IExpr text = org.matheclipse.core.reflection.system.ExportString
+          .exportText(F.binaryAST2(S.ExportString, ast.arg1(), format), engine);
       if (!text.isString()) {
         return F.NIL;
       }
@@ -220,7 +223,7 @@ public class ArchiveFunctions {
       }
       IExpr format = ast.size() > 2 ? ast.arg2() : F.stringx("Text");
       return engine.evaluate(F.binaryAST2(S.ImportString,
-          F.stringx(new String(bytes, StandardCharsets.UTF_8)), format));
+          org.matheclipse.core.reflection.system.ImportString.argument(new String(bytes, StandardCharsets.UTF_8), format), format));
     }
 
     @Override

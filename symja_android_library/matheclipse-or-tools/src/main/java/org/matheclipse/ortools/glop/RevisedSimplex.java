@@ -66,9 +66,13 @@ import org.matheclipse.ortools.util.TimeLimit;
  * <code>harris_tolerance_ratio * primal_feasibility_tolerance</code>, FREE statuses of columns
  * with a starting value are kept on warm start). The dual phase I always minimizes the sum of the
  * dual infeasibilities with the dual simplex; the variant on an auxiliary problem with changed
- * bounds is gone, as in 10.0. One 10.0 change is deliberately not ported: the Farkas dual ray
- * check that turns PRIMAL_INFEASIBLE into IMPRECISE (upstream commit 2aacd0818a), which would make
- * infeasible answers with residuals between 1e-8 and 1e-6 ABNORMAL.
+ * bounds is gone, as in 10.0. When it ends DUAL_INFEASIBLE it leaves a primal ray, and the primal
+ * ray of a PRIMAL_UNBOUNDED or DUAL_INFEASIBLE answer is checked: without a significant
+ * contribution to the objective the status becomes IMPRECISE. Unlike in 10.0 the contribution is
+ * measured relative to the size of its terms when these are below one, so that an unbounded
+ * program with small costs keeps its status. One 10.0 change is deliberately not ported: the
+ * Farkas dual ray check that turns PRIMAL_INFEASIBLE into IMPRECISE (upstream commit 2aacd0818a),
+ * which would make infeasible answers with residuals between 1e-8 and 1e-6 ABNORMAL.
  */
 public final class RevisedSimplex {
 
@@ -145,6 +149,12 @@ public final class RevisedSimplex {
   private boolean solutionStateHasBeenSetExternally;
   private double[] variableStartingValues = new double[0];
   private boolean transposeWasChanged = false;
+
+  /** See {@link #setOldRowIndicesForNextSolve(int[])}. This is cleared after each solve. */
+  private int[] oldRowOfNewRow = new int[0];
+
+  /** True if the last initialization took the dual edge norms over from the previous solve. */
+  private boolean dualEdgeNormsWereTransferred;
 
   private final ScatteredVector direction = new ScatteredVector();
   private double directionInfinityNorm;
@@ -255,6 +265,69 @@ public final class RevisedSimplex {
   }
 
   /**
+   * Advanced usage. This can be called before a solve when the structural columns of the problem
+   * are unchanged, but some rows were added, removed or reordered since the last solve. For each
+   * row of the new problem, <code>oldRowOfNewRow[row]</code> must be the index of the same row in
+   * the previous problem, or {@link LpTypes#INVALID_ROW} if the row is new.
+   *
+   * <p>
+   * When the given state (see {@link #loadStateForNextSolve(BasisState)}) is used as the starting
+   * basis, this allows to transfer the dual steepest edge norms of the previous solve to the new
+   * problem instead of recomputing all of them from scratch. Only the norms of the new basic
+   * variables are computed exactly. The transferred norms are exact if the new basis only differs
+   * from the old one by extra basic slack variables of the new rows, and are otherwise just
+   * approximations, which is fine for the dual steepest edge pricing.
+   */
+  public void setOldRowIndicesForNextSolve(int[] oldRowOfNewRow) {
+    this.oldRowOfNewRow = oldRowOfNewRow.clone();
+  }
+
+  /**
+   * Computes the dual edge squared norms of the new basis from the ones of the previous basis, see
+   * {@link #setOldRowIndicesForNextSolve(int[])}. This must be called before the basis of the new
+   * problem is initialized. The returned array is indexed by the new column indices, and a value
+   * of zero means unknown. It is empty if the transfer is not possible.
+   */
+  private double[] computeOldDualEdgeSquaredNormsByCol() {
+    final double[] empty = new double[0];
+    if (oldRowOfNewRow.length == 0 || oldRowOfNewRow.length != numRows) {
+      return empty;
+    }
+    if (!dualEdgeNorms.areValid()) {
+      return empty;
+    }
+
+    // The basis is still the basis of the previous problem here, and because the structural
+    // columns are unchanged, the previous slack columns start at firstSlackCol too.
+    final int[] b = basis.get();
+    final int oldNumRows = b.length;
+    final double[] oldNorms = dualEdgeNorms.edgeSquaredNorms();
+    if (oldNorms.length != oldNumRows) {
+      return empty;
+    }
+    final int oldNumCols = firstSlackCol + oldNumRows;
+    final double[] oldNormByCol = new double[oldNumCols];
+    for (int row = 0; row < oldNumRows; ++row) {
+      final int col = b[row];
+      if (col < 0 || col >= oldNumCols) {
+        return empty;
+      }
+      oldNormByCol[col] = oldNorms[row];
+    }
+
+    final double[] result = new double[numCols];
+    System.arraycopy(oldNormByCol, 0, result, 0, firstSlackCol);
+    for (int row = 0; row < numRows; ++row) {
+      final int oldRow = oldRowOfNewRow[row];
+      if (oldRow < 0 || oldRow >= oldNumRows) {
+        continue;
+      }
+      result[firstSlackCol + row] = oldNormByCol[firstSlackCol + oldRow];
+    }
+    return result;
+  }
+
+  /**
    * Solves the linear program. It may be given in equation form (with slack columns, see
    * {@link LinearProgram#addSlackVariablesWhereNecessary(boolean)}) or not; in the latter case the
    * slacks are added internally. The result is available through the getters.
@@ -284,6 +357,8 @@ public final class RevisedSimplex {
   private Status solveInternalImpl(double startTime, boolean isMaximizationProblem,
       double[] objectiveCoefficients, TimeLimit timeLimit) {
     final GlopParameters params = parameters.get();
+    // This is only meaningful for the initialization of this solve.
+    oldRowOfNewRow = new int[0];
     logger.log("");
     primalEdgeNorms.setTimeLimit(timeLimit);
     dualEdgeNorms.setTimeLimit(timeLimit);
@@ -506,6 +581,55 @@ public final class RevisedSimplex {
       }
     }
 
+    if (problemStatus == ProblemStatus.PRIMAL_UNBOUNDED
+        || problemStatus == ProblemStatus.DUAL_INFEASIBLE) {
+      // Validate the primal ray r that proves dual infeasibility. With the problem written as
+      // min c.x, A.x = 0, l <= x <= u, a primal ray satisfies
+      //
+      // A.r = 0, c.r < 0, r_j >= 0 where l_j is finite, r_j <= 0 where u_j is finite.
+      //
+      // The quality of the ray is the value c.r and the maximum deviation to 0 of the entries with
+      // an incorrect sign. The objective is negated when solving a maximization problem, so the
+      // same sign is checked there as well. The ray is not normalized, so c.r is compared with
+      // the sum of its absolute terms as long as this sum is below one: a ray along columns with
+      // small costs is still a proof, a ray whose terms cancel is not.
+      final double[] lowerBounds = variablesInfo.getVariableLowerBounds();
+      final double[] upperBounds = variablesInfo.getVariableUpperBounds();
+      final double[] obj = objective.get();
+      double objectiveContribution = 0.0;
+      double contributionMagnitude = 0.0;
+      double maxError = 0.0;
+      for (int col = 0; col < numCols; ++col) {
+        final double coeff = solutionPrimalRay[col];
+        if (coeff > 0.0) {
+          if (upperBounds[col] == LpTypes.INFINITY) {
+            objectiveContribution += coeff * obj[col];
+            contributionMagnitude += Math.abs(coeff * obj[col]);
+          } else {
+            maxError = Math.max(maxError, coeff);
+          }
+        } else if (coeff < 0.0) {
+          if (lowerBounds[col] == -LpTypes.INFINITY) {
+            objectiveContribution += coeff * obj[col];
+            contributionMagnitude += Math.abs(coeff * obj[col]);
+          } else {
+            maxError = Math.max(maxError, -coeff);
+          }
+        }
+      }
+      logger.log("Primal ray max error=", maxError, " objective contribution=",
+          objectiveContribution);
+      final double tolerance = params.getSolutionFeasibilityTolerance();
+      if (objectiveContribution >= -tolerance * Math.min(1.0, contributionMagnitude)
+          || maxError > tolerance) {
+        logger.log(problemStatus, " was reported, but the primal ray does not have a "
+            + "significant contribution to the objective");
+        if (params.getChangeStatusToImprecise()) {
+          problemStatus = ProblemStatus.IMPRECISE;
+        }
+      }
+    }
+
     if (params.getChangeStatusToImprecise() && problemStatus != ProblemStatus.DUAL_INFEASIBLE) {
       final double tolerance = params.getSolutionFeasibilityTolerance();
       if (variableValues.computeMaximumPrimalResidual() > tolerance
@@ -631,7 +755,15 @@ public final class RevisedSimplex {
     return LpTypes.variableToConstraintStatus(s);
   }
 
-  /** The primal ray of a PRIMAL_UNBOUNDED problem. */
+  /**
+   * True if the initialization of the last solve reused the dual edge norms of the solve before,
+   * see {@link #setOldRowIndicesForNextSolve(int[])}.
+   */
+  boolean dualEdgeNormsWereTransferred() {
+    return dualEdgeNormsWereTransferred;
+  }
+
+  /** The primal ray of a PRIMAL_UNBOUNDED or DUAL_INFEASIBLE problem. */
   public double[] getPrimalRay() {
     return solutionPrimalRay;
   }
@@ -1123,6 +1255,15 @@ public final class RevisedSimplex {
   }
 
   private Status finishInitialization(boolean solveFromScratch) {
+    // If requested, try to transfer the dual edge norms of the previous solve. This must be
+    // computed before anything is cleared below.
+    double[] oldDualNormByCol = new double[0];
+    if (solveFromScratch && !solutionState.isEmpty() && oldRowOfNewRow.length != 0) {
+      oldDualNormByCol = computeOldDualEdgeSquaredNormsByCol();
+    }
+    oldRowOfNewRow = new int[0];
+    dualEdgeNormsWereTransferred = false;
+
     if (solveFromScratch && !solutionState.isEmpty()) {
       basisFactorization.clear();
       reducedCosts.clearAndRemoveCostShifts();
@@ -1164,6 +1305,20 @@ public final class RevisedSimplex {
           logger.log("RevisedSimplex is not using the warm start "
               + "basis because it is not factorizable.");
         }
+      }
+
+      // Transfer the old dual edge norms to the new basis. The basis was permuted by
+      // initializeFirstBasis(), so the final basis is used here. The norms of the new basic
+      // variables (zero entries) are computed exactly.
+      if (!solveFromScratch && oldDualNormByCol.length != 0
+          && parameters.get().getUseDualSimplex()) {
+        final int[] b = basis.get();
+        final double[] norms = new double[numRows];
+        for (int row = 0; row < numRows; ++row) {
+          norms[row] = oldDualNormByCol[b[row]];
+        }
+        dualEdgeNorms.setEdgeSquaredNorms(norms);
+        dualEdgeNormsWereTransferred = dualEdgeNorms.areValid();
       }
     }
     if (solveFromScratch) {
@@ -1632,8 +1787,11 @@ public final class RevisedSimplex {
   private double[] dualPhaseIChooseLeavingVariableRow() {
     final double[] lowerBounds = variablesInfo.getVariableLowerBounds();
     final double[] upperBounds = variablesInfo.getVariableUpperBounds();
+    // The improvement direction is dropped at the start of each solve, while the pricing vector
+    // may survive an incremental one; both are rebuilt together.
     if (reducedCosts.areReducedCostsRecomputed() || dualEdgeNorms.needsBasisRefactorization()
-        || dualPricingVector.length == 0) {
+        || dualPricingVector.length == 0
+        || dualInfeasibilityImprovementDirection.length != numCols) {
       numDualInfeasiblePositions = 0;
       dualPricingVector = new double[numRows];
       dualPrices.clearAndResize(numRows);
@@ -2035,6 +2193,19 @@ public final class RevisedSimplex {
             problemStatus = ProblemStatus.DUAL_FEASIBLE;
           } else {
             problemStatus = ProblemStatus.DUAL_INFEASIBLE;
+
+            // The phase I maximizes Z0 = sum_{j in M} d_j - sum_{j in P} d_j over the dual
+            // infeasible non-basic columns (Koberstein's thesis, section 4.2.2), with u = +1 on M
+            // (d_j < 0), -1 on P (d_j > 0), 0 elsewhere, and f = B^-1.N.u. Without a leaving row,
+            // f_k > 0 implies l_k = -inf and f_k < 0 implies u_k = +inf, so r with r_N = u and
+            // r_B = -f is a primal ray: A.r = -B.f + N.u = 0 and c.r = d_N.u < 0. Here u is
+            // dualInfeasibilityImprovementDirection and f is dualPricingVector. The objective is
+            // the opposite for a maximization, so the signs are correct there too.
+            solutionPrimalRay = dualInfeasibilityImprovementDirection.clone();
+            final int[] b = basis.get();
+            for (int row = 0; row < numRows; ++row) {
+              solutionPrimalRay[b[row]] = -dualPricingVector[row];
+            }
           }
         } else {
           problemStatus = ProblemStatus.OPTIMAL;

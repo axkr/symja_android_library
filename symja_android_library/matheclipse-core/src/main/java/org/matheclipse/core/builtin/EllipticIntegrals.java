@@ -679,7 +679,7 @@ public class EllipticIntegrals {
                 Errors.rethrowsInterruptException(ex);
               }
             }
-            return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
+            return machineValue(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -890,7 +890,7 @@ public class EllipticIntegrals {
             }
             return F.complexNum(ellipticF);
           } else {
-            return F.complexNum(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
+            return machineValue(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -1133,6 +1133,27 @@ public class EllipticIntegrals {
    * <code>(I*a)^2</code> leaves <code>-a^2-0.0*I</code>, and that zero must not choose a side of a
    * branch cut where a real argument gets the principal value.
    */
+  /**
+   * The machine number for the value of a function which is real at real arguments, computed in
+   * complex numbers: its imaginary part of rounding noise is dropped. A larger imaginary part
+   * shows a failure of the routine, and the complex value is kept so that it stays visible.
+   */
+  private static IExpr realMachineValue(Complex value) {
+    double re = value.getReal();
+    if (Math.abs(value.getImaginary()) <= 1.0e-10 * Math.max(Math.abs(re), 1.0)) {
+      return F.num(re);
+    }
+    return F.complexNum(value);
+  }
+
+  /** A machine number, real if the imaginary part is <code>0</code>. */
+  private static IExpr machineNumber(Apcomplex w) {
+    if (w.imag().signum() == 0) {
+      return F.num(w.real().doubleValue());
+    }
+    return F.complexNum(w.real().doubleValue(), w.imag().doubleValue());
+  }
+
   private static IExpr realIfZeroImaginary(IExpr x) {
     if (x instanceof ComplexNum) {
       if (((ComplexNum) x).getImaginaryPart() == 0.0) {
@@ -1526,7 +1547,7 @@ public class EllipticIntegrals {
             if (ellipticPi.isInfinite()) {
               return F.CComplexInfinity;
             }
-            return ellipticPiPrincipalValue(F.complexNum(ellipticPi), n, z, m, engine);
+            return ellipticPiPrincipalValue(machineValue(ellipticPi), n, z, m, engine);
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -2184,7 +2205,9 @@ public class EllipticIntegrals {
       if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           if (z.isReal() && m.isReal()) {
-            return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfNaN(), m.evalfNaN()));
+            // real for a real argument and parameter
+            return realMachineValue(
+                EllipticFunctionsJS.jacobiAmplitude(z.evalfNaN(), m.evalfNaN()));
           }
           return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfc(), m.evalfc()));
         } catch (RuntimeException rex) {
@@ -2306,6 +2329,14 @@ public class EllipticIntegrals {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+  }
+
+  /**
+   * The machine number of an integral of real machine numbers: real if the imaginary part is
+   * zero, so that <code>EllipticF(0.33, 0.2)</code> has no <code>0.0*I</code>.
+   */
+  private static IExpr machineValue(Complex value) {
+    return value.getImaginary() == 0.0 ? F.num(value.getReal()) : F.complexNum(value);
   }
 
   /** Whether two numbers are evaluated numerically: one is inexact or the engine is numeric. */
@@ -3189,17 +3220,27 @@ public class EllipticIntegrals {
     private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3, EvalEngine engine) {
       if (numericPair(g2, g3, engine)) {
         try {
-          if (isArbitrary(g2, g3, engine)) {
-            final int digits = (int) engine.getNumericPrecision();
+          final boolean arbitrary = isArbitrary(g2, g3, engine);
+          if (arbitrary
+              || (realIfZeroImaginary(g2).isReal() && realIfZeroImaginary(g3).isReal())) {
+            // real invariants give a real and a purely imaginary half period, or a conjugate
+            // pair; the double routine leaves parts of rounding noise there
+            final int digits =
+                arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION;
             Apcomplex[] e = weierstrassRoots(g2, g3, digits);
-            if (e == null) {
+            if (e != null) {
+              // the pair of the lattice whose quotient is in the fundamental domain
+              Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
+              w = ApcomplexWeierstrassMath.normalizedHalfPeriods(w[0], w[1]);
+              if (!arbitrary) {
+                return F.list(machineNumber(w[0]), machineNumber(w[1]));
+              }
+              return F.list(WorkingPrecision.round(w[0], digits),
+                  WorkingPrecision.round(w[1], digits));
+            }
+            if (arbitrary) {
               return F.NIL;
             }
-            // the pair of the lattice which Mathematica chooses: the quotient in the fundamental domain
-            Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
-            w = ApcomplexWeierstrassMath.normalizedHalfPeriods(w[0], w[1]);
-            return F.list(WorkingPrecision.round(w[0], digits),
-                WorkingPrecision.round(w[1], digits));
           }
           org.hipparchus.complex.Complex[] w =
               EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
@@ -3450,6 +3491,13 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
+        if (engine.isArbitraryMode() && u.isNumericFunction(true) && g2.isNumericFunction(true)
+            && g3.isNumericFunction(true)) {
+          // a constant such as Pi among the arguments of N(..., digits)
+          u = u.isNumber() ? u : engine.evalN(u);
+          g2 = g2.isNumber() ? g2 : engine.evalN(g2);
+          g3 = g3.isNumber() ? g3 : engine.evalN(g3);
+        }
         if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
             || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
           return weierstrassArbitrary(u, g2, g3, derivative, engine);
@@ -3468,10 +3516,10 @@ public class EllipticIntegrals {
         return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
       }
       // numeric mode isn't set here
-      if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
+      if (isMachineInput(u, g2, g3)) {
         try {
-          return machineValue(
-              EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()), u, g2, g3);
+          return machineValue(EllipticFunctionsJS.weierstrassP(reducedArgument(u, g2, g3),
+              g2.evalfc(), g3.evalfc()), u, g2, g3);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassP, rex);
@@ -3486,10 +3534,91 @@ public class EllipticIntegrals {
      * numbers and leaves an imaginary part of rounding noise there.
      */
     private static IExpr machineValue(Complex value, IExpr u, IExpr g2, IExpr g3) {
-      if (u.isReal() && g2.isReal() && g3.isReal()) {
-        return F.num(value.getReal());
+      if (isRealValue(u) && isRealValue(g2) && isRealValue(g3)) {
+        return realMachineValue(value);
       }
       return F.complexNum(value);
+    }
+
+    /** A real number, or a complex number whose imaginary part is <code>0</code>. */
+    private static boolean isRealValue(IExpr x) {
+      return x.isReal() || realIfZeroImaginary(x).isReal()
+          || (!x.isNumber() && x.isRealResult());
+    }
+
+    /**
+     * Whether the machine precision routine applies: numeric arguments of which at least one is a
+     * machine number, e.g. <code>WeierstrassP(1/2, {2.0, 3})</code> or
+     * <code>WeierstrassP(0.5, {2, Pi})</code>.
+     */
+    /** The number of periods from which an argument is reduced with more precise periods. */
+    private static final int REDUCTION_MULTIPLES = 4;
+
+    private static boolean isMachineInput(IExpr u, IExpr g2, IExpr g3) {
+      if (isArbitrary(u) || isArbitrary(g2) || isArbitrary(g3)
+          || EvalEngine.get().isArbitraryMode()) {
+        // N(..., digits) numericizes a constant such as Pi first, then the arbitrary route applies
+        return false;
+      }
+      return (u.isInexactNumber() || g2.isInexactNumber() || g3.isInexactNumber())
+          && u.isNumericFunction(true) && g2.isNumericFunction(true)
+          && g3.isNumericFunction(true);
+    }
+
+    /**
+     * The argument of the machine precision routine: <code>u</code> reduced by the periods of the
+     * lattice to a point next to the origin, when it is several periods away. The periods are
+     * calculated with the digits which the multiples of them need; the routine would lose them by
+     * reducing with its double periods.
+     */
+    private static Complex reducedArgument(IExpr u, IExpr g2, IExpr g3) {
+      Complex uc = u.evalfc();
+      Complex[] w = EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
+      long[] n = latticeMultiples(uc, w[0], w[1]);
+      if (n == null || Math.abs(n[0]) + Math.abs(n[1]) < REDUCTION_MULTIPLES) {
+        // the routine keeps its accuracy for an argument within a few periods
+        return uc;
+      }
+      int digits = (int) ParserConfig.MACHINE_PRECISION + 4
+          + (int) Math.ceil(Math.log10(Math.abs(n[0]) + Math.abs(n[1]) + 1.0));
+      try {
+        Apcomplex[] e = weierstrassRoots(g2, g3, digits);
+        if (e == null) {
+          return uc;
+        }
+        Apcomplex[] wa = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
+        n = latticeMultiples(uc, CMath.toComplex(wa[0]), CMath.toComplex(wa[1]));
+        if (n == null) {
+          return uc;
+        }
+        long precision = digits + WorkingPrecision.GUARD_DIGITS;
+        Apcomplex z = WorkingPrecision.apcomplex(u, (int) precision);
+        Apfloat two = new Apfloat(2, precision);
+        z = z.subtract(wa[0].multiply(two.multiply(new Apfloat(n[0], precision))))
+            .subtract(wa[1].multiply(two.multiply(new Apfloat(n[1], precision))));
+        return CMath.toComplex(z);
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return uc;
+      }
+    }
+
+    /**
+     * The integers <code>n1, n2</code> next to the real <code>a, b</code> of
+     * <code>u == 2*a*w1+2*b*w3</code>; <code>null</code> if the half periods are parallel.
+     */
+    private static long[] latticeMultiples(Complex u, Complex w1, Complex w3) {
+      double det = w1.getReal() * w3.getImaginary() - w3.getReal() * w1.getImaginary();
+      if (!(Math.abs(det) > 0.0) || !Double.isFinite(det)) {
+        return null;
+      }
+      double a = (u.getReal() * w3.getImaginary() - w3.getReal() * u.getImaginary()) / (2.0 * det);
+      double b = (w1.getReal() * u.getImaginary() - u.getReal() * w1.getImaginary()) / (2.0 * det);
+      if (!Double.isFinite(a) || !Double.isFinite(b) || Math.abs(a) > 1.0e12
+          || Math.abs(b) > 1.0e12) {
+        return null;
+      }
+      return new long[] {Math.round(a), Math.round(b)};
     }
 
     private static IExpr weierstrassPPrime(IExpr u, IExpr g2, IExpr g3) {
@@ -3502,11 +3631,10 @@ public class EllipticIntegrals {
             F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
       }
       // numeric mode isn't set here
-      if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
+      if (isMachineInput(u, g2, g3)) {
         try {
-          return machineValue(
-              EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()), u, g2,
-              g3);
+          return machineValue(EllipticFunctionsJS.weierstrassPPrime(reducedArgument(u, g2, g3),
+              g2.evalfc(), g3.evalfc()), u, g2, g3);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.WeierstrassPPrime, rex);

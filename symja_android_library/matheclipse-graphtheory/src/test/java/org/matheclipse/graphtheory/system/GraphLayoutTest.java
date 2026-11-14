@@ -258,4 +258,87 @@ public class GraphLayoutTest extends AbstractTestCase {
         + order, //
         "{1,3,2,4}");
   }
+
+  @Test
+  public void testLayerSizeFunction() {
+    // the ring of depth k lies f(k) beyond the ring before it; the edges have a root mean square
+    // length of 1: the edges 2, 4 and 8 times Sqrt(3/84) long
+    check("Round(GraphEmbedding(Graph({a -> b, b -> c, c -> d}, GraphLayout -> "
+        + "{\"RadialEmbedding\", \"RootVertex\" -> a, \"LayerSizeFunction\" -> (2^# &)})), 0.001)", //
+        "{{0.0,2.646},{0.0,2.268},{0.0,1.512},{0.0,0.0}}");
+    // a value which is no number leaves the layer one unit deep
+    check("Round(GraphEmbedding(Graph({a -> b, b -> c}, GraphLayout -> "
+        + "{\"RadialEmbedding\", \"RootVertex\" -> a, \"LayerSizeFunction\" -> (w &)})), 0.001)", //
+        "{{0.0,2.0},{0.0,1.0},{0.0,0.0}}");
+    // the layered drawing of a digraph takes no layer sizes
+    check("GraphEmbedding(Graph({a -> b, b -> c}, GraphLayout -> "
+        + "{\"LayeredDigraphEmbedding\", \"LayerSizeFunction\" -> (3/# &)}))", //
+        "GraphEmbedding(Graph({a,b,c},{a->b,b->c}))");
+    check("Check(GraphEmbedding(Graph({a -> b}, GraphLayout -> "
+        + "{\"LayeredDigraphEmbedding\", \"Spacing\" -> 2})), failed, Graph::moptx)", //
+        "failed");
+    check("GraphEmbedding(Graph({a -> b, b -> c}, GraphLayout -> "
+        + "{\"LayeredDigraphEmbedding\", \"RootVertex\" -> a, \"Orientation\" -> Left}))", //
+        "{{0.0,0.0},{1.0,0.0},{2.0,0.0}}");
+  }
+
+  @Test
+  public void testLayeredGraphPlotEdgeLabeling() {
+    // the labels of a labelled edge list are drawn, unless EdgeLabeling -> False
+    check("Count(LayeredGraphPlot({{k -> m, \"rs\"}, m -> n}), \"rs\", Infinity)", //
+        "1");
+    check("Count(LayeredGraphPlot({{k -> m, \"rs\"}, m -> n}, EdgeLabeling -> False), " //
+        + "\"rs\", Infinity)", //
+        "0");
+  }
+
+  @Test
+  public void testLayeredGraphPlotSourcesAboveSink() {
+    // the vertices no edge points to on the top layer, their common target one layer below
+    // under the right one of their two middle ones
+    check("Cases(LayeredGraphPlot({a -> z, b -> z, c -> z, d -> z, e -> z, f -> z}), " //
+        + "Disk(p_, ___) :> p, Infinity)", //
+        "{{0.0,1.0},{3.0,0.0},{1.0,1.0},{2.0,1.0},{3.0,1.0},{4.0,1.0},{5.0,1.0}}");
+    check("Cases(LayeredGraphPlot({u -> w, v -> w, x -> w, y -> w, t -> w}), " //
+        + "Disk(p_, ___) :> p, Infinity)", //
+        "{{0.0,1.0},{2.0,0.0},{1.0,1.0},{2.0,1.0},{3.0,1.0},{4.0,1.0}}");
+    // a tree hanging from one vertex is drawn tidily from it
+    check("Cases(LayeredGraphPlot({r -> s, r -> t}), Disk(p_, ___) :> p, Infinity)", //
+        "{{0.5,1.0},{0.0,0.0},{1.0,0.0}}");
+    check("{Head(LayeredGraphPlot({1 -> 2})), "
+        + "Length(Cases(LayeredGraphPlot({1 -> 2, 2 -> 3, 1 -> 3}), _Disk, Infinity))}", //
+        "{Graphics,3}");
+    // explicit coordinates take the place of the layers
+    check("Cases(LayeredGraphPlot({1 -> 2}, VertexCoordinates -> {{0, 0}, {3, 1}}), " //
+        + "Disk(p_, ___) :> p, Infinity)", //
+        "{{0.0,0.0},{3.0,1.0}}");
+    check("LayeredGraphPlot(17)", //
+        "LayeredGraphPlot(17)");
+  }
+
+  @Test
+  public void testLayeredGraphPlotPieces() {
+    // twenty sources pointing at five targets, five pieces of four sources each
+    check("pts = Cases(LayeredGraphPlot(Table(k -> t(Mod(k, 5)), {k, 0, 19})), " //
+        + "Disk(p_, ___) :> p, Infinity); " //
+        + "vs = DeleteDuplicates(Flatten(Table({k, t(Mod(k, 5))}, {k, 0, 19}))); " //
+        + "pos = AssociationThread(vs, pts);", //
+        "");
+    // every target one layer below each of its sources
+    check("Union(Table(pos(k)[[2]] - pos(t(Mod(k, 5)))[[2]], {k, 0, 19}))", //
+        "{1.0}");
+    // the pieces don't overlap, and they make a block about as high as it is wide
+    check("boxes = Table(CoordinateBounds(pos /@ Append(Select(Range(0, 19), " //
+        + "Mod(#, 5) == j &), t(j))), {j, 0, 4}); " //
+        + "overlap({{a1_, a2_}, {b1_, b2_}}, {{c1_, c2_}, {d1_, d2_}}) := " //
+        + "a1 <= c2 && c1 <= a2 && b1 <= d2 && d1 <= b2; " //
+        + "Or @@ Flatten(Table(overlap(boxes[[i]], boxes[[j]]), {i, 5}, {j, i + 1, 5}))", //
+        "False");
+    check("w = Max(pts[[All, 1]]) - Min(pts[[All, 1]]); " //
+        + "h = Max(pts[[All, 2]]) - Min(pts[[All, 2]]); 1/2 < w/h < 2", //
+        "True");
+    // two separate edges side by side
+    check("Cases(LayeredGraphPlot({p -> q, r -> s}), Disk(p_, ___) :> p, Infinity)", //
+        "{{0.0,1.0},{0.0,0.0},{1.0,1.0},{1.0,0.0}}");
+  }
 }

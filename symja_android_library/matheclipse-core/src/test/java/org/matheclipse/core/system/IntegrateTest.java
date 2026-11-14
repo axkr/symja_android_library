@@ -181,13 +181,13 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegrateRationalizeSurdDenominator() {
     check("Integrate(x^2/(x^2+Sqrt(1-x^2)), x)", //
         "x+ArcSin(x)-1/5*Sqrt(5*(2+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))-1/5*Sqrt(\n"
-            + "5*(2+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))-1/5*Sqrt(-10+5*Sqrt(\n"
-            + "5))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))+1/5*Sqrt(-10+5*Sqrt(5))*ArcTanh((Sqrt(\n"
+            + "5*(2+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))-1/5*Sqrt(5*(-2+Sqrt(\n"
+            + "5)))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))+1/5*Sqrt(5*(-2+Sqrt(5)))*ArcTanh((Sqrt(\n"
             + "1/2*(-1+Sqrt(5)))*x)/Sqrt(1-x^2))");
     check("Integrate(x^2/(1-x^2+x^2*Sqrt(1-x^2)), x)", //
         "ArcSin(x)-Sqrt(1/10*(1+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))-1/10*Sqrt(\n"
             + "10*(1+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))+Sqrt(1/10*(-1+Sqrt(\n"
-            + "5)))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))-1/10*Sqrt(-10+10*Sqrt(5))*ArcTanh((Sqrt(\n"
+            + "5)))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))-1/10*Sqrt(10*(-1+Sqrt(5)))*ArcTanh((Sqrt(\n"
             + "1/2*(-1+Sqrt(5)))*x)/Sqrt(1-x^2))");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check("Integrate(Log(x^2+Sqrt(1-x^2)), x)", //

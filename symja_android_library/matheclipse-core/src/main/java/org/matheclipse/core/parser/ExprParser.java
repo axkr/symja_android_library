@@ -114,21 +114,18 @@ public class ExprParser extends Scanner {
   private boolean fDeterminePrecision;
 
   /**
-   * The precedence of <code>?</code>, {@link S#PatternTest}.
+   * The bracket depth at which the pattern of a <code>name:pattern</code> is being read, or -1.
    *
    * <p>
    * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
    * where the operator's own precedence would not reach - <code>x*y:z</code> is
-   * <code>x (y:z)</code>. A bare <code>_Symbol?test:default</code> is read that way too, as
-   * <code>PatternTest[_Symbol, Pattern[test, default]]</code>, and <code>a::b:c</code> as
-   * <code>MessageName[a, Pattern[b, c]]</code>. Only inside the pattern of a named
-   * argument <code>name:_Symbol?test:default</code> does it not reach into the test: there the
-   * second <code>:</code> gives the named argument its default (see {@link #fPatternNameLevel}).
-   */
-  private static final int PATTERN_TEST_PRECEDENCE = 680;
-
-  /**
-   * The bracket depth at which the pattern of a <code>name:pattern</code> is being read, or -1.
+   * <code>x (y:z)</code>, <code>a|b:v</code> is <code>a|(b:v)</code>, a bare
+   * <code>_Symbol?test:default</code> is <code>PatternTest[_Symbol, Pattern[test, default]]</code>
+   * and <code>a::b:c</code> is <code>MessageName[a, Pattern[b, c]]</code>. Only inside the pattern
+   * of a named argument, at the bracket depth of its name, does a <code>:</code> neither name the
+   * symbol nor give the blank before it a default: there it ends the pattern and gives the named
+   * argument its default - <code>x:a|b:v</code> is <code>Optional[Pattern[x, a|b], v]</code> and
+   * <code>x:a+_:c</code> is <code>Optional[Pattern[x, a+_], c]</code>.
    */
   private int fPatternNameLevel = -1;
 
@@ -255,9 +252,10 @@ public class ExprParser extends Scanner {
         case ID.Pattern:
           // Pattern[#, _] in the body of a function becomes a pattern only when the slot has been
           // filled in, see AST2Expr
-          if (ast.isAST2() && ast.arg1().isSymbol()
-              && !(ast.arg2().isAST() && ast.arg2().isFreeOfPatterns())) {
-            // x:(Alternatives @@ heads) is computed when evaluated, see AST2Expr
+          if (ast.isAST2() && ast.arg1().isSymbol() && !ast.arg2().isAST()) {
+            // x:p with a compound p stays the expression Pattern[x, p] as it is written, which
+            // Hold shows unchanged - p:_+1 is Pattern[p, Plus[Blank[], 1]]. It becomes a pattern
+            // object when it is evaluated, which also computes x:(Alternatives @@ heads)
             expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
           }
           break;
@@ -865,6 +863,11 @@ public class ExprParser extends Scanner {
         break;
       case TT_BLANK_COLON:
         // read '_:'
+        if (fPatternNameLevel == fRecursionDepth) {
+          rescanBlankColon();
+          temp = F.$b();
+          break;
+        }
         getNextToken();
         IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
         temp = F.Optional(F.$b(), defaultValue);
@@ -873,12 +876,23 @@ public class ExprParser extends Scanner {
         break;
     }
 
-    if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+    if (fToken == TT_OPERATOR && fOperatorString.equals(":")
+        && fPatternNameLevel != fRecursionDepth) {
       getNextToken();
       IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = F.Optional(temp, defaultValue);
     }
     return parseArguments(temp);
+  }
+
+  /**
+   * Give the <code>:</code> of a <code>_:</code> token back to the scanner and read it again as an
+   * operator of its own. Inside the pattern of <code>name:pattern</code> that <code>:</code> does
+   * not give the blank a default: it ends the pattern and gives the named argument its default.
+   */
+  private void rescanBlankColon() {
+    fCurrentPosition--;
+    getNextToken();
   }
 
   /**
@@ -953,6 +967,11 @@ public class ExprParser extends Scanner {
         break;
       case TT_BLANK_COLON:
         // read '_:'
+        if (fPatternNameLevel == fRecursionDepth) {
+          rescanBlankColon();
+          temp = F.$p(symbol);
+          break;
+        }
         getNextToken();
         IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
         temp = F.Optional(F.$p(symbol), defaultValue);
@@ -960,7 +979,8 @@ public class ExprParser extends Scanner {
       default:
         break;
     }
-    if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
+    if (fToken == TT_OPERATOR && fOperatorString.equals(":")
+        && fPatternNameLevel != fRecursionDepth) {
       getNextToken();
       IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = F.Optional(temp, defaultValue);
@@ -2056,6 +2076,11 @@ public class ExprParser extends Scanner {
         break;
       }
       if (fToken == TT_DERIVATIVE) {
+        if (Precedence.DERIVATIVE < min_precedence) {
+          // an operand of a tighter operator ends before the ': ++f', g@f' and g/@f' are the
+          // derivatives of ++f, g@f and g/@f
+          break;
+        }
         lhs = parseDerivative(lhs);
         // f'[x] may be followed by a juxtaposed factor (f'[x] g[x]), another operator or a span,
         // so the climb starts over; falling through to the operator test made f'[x] g[x] a syntax
@@ -2084,8 +2109,7 @@ public class ExprParser extends Scanner {
             ? precedence >= min_precedence
             : precedence > min_precedence //
                 || (fOperatorString.equals(":") && lhs.isSymbol()
-                    && (min_precedence < PATTERN_TEST_PRECEDENCE
-                        || fPatternNameLevel != fRecursionDepth)
+                    && fPatternNameLevel != fRecursionDepth
                     // in a:b:c the second : gives a:b a default and doesn't name b
                     && min_precedence != PATTERN_PRECEDENCE)
                 || (precedence == min_precedence
@@ -2430,7 +2454,7 @@ public class ExprParser extends Scanner {
     if (prefixOperator.getFunctionName().equals("PreMinus")) {
       // special cases for negative numbers
       if (temp.isNumber()) {
-        return temp.negate();
+        return ExprParserFactory.SubtractExprOperator.negateNumber(temp);
       }
     }
     return prefixOperator.createFunction(fFactory, temp);

@@ -1740,7 +1740,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
             + "3},{Prism,5},{Prism,6},{Prism,7},{Prism,8},{Prism,9},{Prism,10},{Pyramid,4},{Pyramid,\n"
             + "5},RhombicDodecahedron,RhombicTriacontahedron,Tetrahedron,TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
-        "{Circumradius,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Name,StandardName,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetFaces,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
@@ -1841,6 +1841,64 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPolyhedronDataDual() {
+    // the dual is drawn: the polar reciprocal in the sphere through the edge midpoints, here the
+    // cube with the edge 1/Sqrt(2) around the octahedron with the edge 1
+    check("PolyhedronData(\"Octahedron\", \"Dual\") // InputForm", //
+        "Graphics3D(GraphicsComplex({{1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(2))},"
+            + "{1/(2*Sqrt(2)),1/(2*Sqrt(2)),-1/(2*Sqrt(2))},{1/(2*Sqrt(2)),-1/(2*Sqrt(2)),1/(2*Sqrt(2))},"
+            + "{1/(2*Sqrt(2)),-1/(2*Sqrt(2)),-1/(2*Sqrt(2))},{-1/(2*Sqrt(2)),1/(2*Sqrt(2)),1/(2*Sqrt(2))},"
+            + "{-1/(2*Sqrt(2)),1/(2*Sqrt(2)),-1/(2*Sqrt(2))},{-1/(2*Sqrt(2)),-1/(2*Sqrt(2)),1/(2*Sqrt(2))},"
+            + "{-1/(2*Sqrt(2)),-1/(2*Sqrt(2)),-1/(2*Sqrt(2))}},"
+            + "Polygon({{2,1,3,4},{7,5,6,8},{5,1,2,6},{4,3,7,8},{3,1,5,7},{6,2,4,8}})))");
+    // a vertex of the dual for every face, a face of the dual for every vertex
+    check("d = PolyhedronData(\"Icosidodecahedron\", \"Dual\"); "
+        + "{Length(d[[1, 1]]), Length(d[[1, 2, 1]]), Union(Length /@ d[[1, 2, 1]])}", //
+        "{32,30,{4}}");
+    // the dual of a square pyramid is again a square pyramid, that of a prism a dipyramid
+    check("Map(Length, PolyhedronData(#, \"Dual\")[[1, 2, 1]] & /@ {\"SquarePyramid\", "
+        + "{\"Prism\", 7}, {\"Antiprism\", 4}}, {2})", //
+        "{{4,3,3,3,3},{3,3,3,3,3,3,3,3,3,3,3,3,3,3},{4,4,4,4,4,4,4,4}}");
+    // the name of the dual
+    check("PolyhedronData(#, \"Dual\", \"Name\") & /@ {\"Icosahedron\", \"Icosidodecahedron\", "
+        + "\"RhombicDodecahedron\", \"TruncatedIcosahedron\"}", //
+        "{Dodecahedron,RhombicTriacontahedron,Cuboctahedron,PentakisDodecahedron}");
+    // prisms and dipyramids are dual to each other, a pyramid to itself; the antiprism duals have
+    // no name here
+    check("PolyhedronData(#, \"Dual\", \"Name\") & /@ {{\"Prism\", 7}, {\"Dipyramid\", 5}, "
+        + "{\"Pyramid\", 5}, {\"Antiprism\", 8}, {\"Dipyramid\", 4}}", //
+        "{{Dipyramid,7},{Prism,5},{Pyramid,5},Missing(NotAvailable),Cube}");
+  }
+
+  @Test
+  public void testPolyhedronDataPictures() {
+    // "Image" is the picture of PolyhedronData(name)
+    check("{PolyhedronData(\"Icosidodecahedron\", \"Image\") === PolyhedronData(\"Icosidodecahedron\"), "
+        + "PolyhedronData({\"Antiprism\", 5}, \"Image\") === PolyhedronData({\"Antiprism\", 5})}", //
+        "{True,True}");
+    // the skeleton: flat points, every edge once, every vertex once
+    check("g = PolyhedronData(\"Icosahedron\", \"SkeletonImage\"); "
+        + "{Head(g), Dimensions(g[[1, 1]]), Length(Cases(g, Line(e_) :> e, Infinity)[[1]]), "
+        + "Length(Cases(g, Point(p_) :> p, Infinity)[[1]])}", //
+        "{Graphics,{12,2},30,12}");
+    // a net keeps the side count of every face and the unit edges
+    check("net = PolyhedronData({\"Prism\", 6}, \"NetFaces\"); "
+        + "{Head(net), Length /@ net[[2, 1]], Union(Round(Flatten(Map(Norm(net[[1, #[[1]]]] - net[[1, #[[2]]]]) &, "
+        + "Partition(#, 2, 1, 1) & /@ net[[2, 1]], {2})), 10^-9))}", //
+        "{GraphicsComplex,{6,6,4,4,4,4,4,4},{1}}");
+    // the faces of the unfolding of the cube share their corners: 14 points, not 24
+    check("Dimensions(PolyhedronData(\"Cube\", \"NetFaces\")[[1]])", //
+        "{14,2}");
+    // the unfolded faces have the area of the surface
+    check("net = PolyhedronData(\"Dodecahedron\", \"NetFaces\"); "
+        + "Chop(Total(Area(Polygon(net[[1, #]])) & /@ net[[2, 1]]) - 3*Sqrt(25 + 10*Sqrt(5)))", //
+        "0");
+    check("Head /@ {PolyhedronData(\"Tetrahedron\", \"NetImage\"), "
+        + "PolyhedronData(\"RhombicTriacontahedron\", \"NetFaces\")}", //
+        "{Graphics,Missing}");
+  }
+
+  @Test
   public void testPolyhedronDataClassProperty() {
     // a property of a class maps over its members, in the order of PolyhedronData(class)
     check("PolyhedronData(\"Prism\", \"EdgeCount\")", //
@@ -1861,7 +1919,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
         "{12,30}");
     check("EntityValue(\"Polyhedron\", \"Properties\")", //
-        "{Circumradius,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Name,StandardName,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetFaces,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
@@ -2046,6 +2104,115 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "RegionUnion(Disk({0,0}),Ball())");
     check("RegionDimension(RegionUnion(Disk(), Line({{0,0},{1,1}})))", //
         "2");
+  }
+
+  @Test
+  public void testRegionNearestInfiniteFlats() {
+    // a line through two points and a line through a point in a direction
+    check("RegionNearest(InfiniteLine({{1,1},{4,5}}), {2,7})", //
+        "{106/25,133/25}");
+    check("RegionNearest(InfiniteLine({2,0,1},{1,2,2}), {0,3,0})", //
+        "{20/9,4/9,13/9}");
+    // a plane through three points and a plane through a point spanned by two directions
+    check("RegionNearest(InfinitePlane({{2,0,0},{0,4,0},{0,0,4}}), {0,0,0})", //
+        "{4/3,2/3,2/3}");
+    check("RegionNearest(InfinitePlane({0,0,0,1},{{1,0,0,0},{0,1,1,0}}), {3,1,5,2})", //
+        "{3,3,3,1}");
+    // a machine number gives a machine result
+    check("RegionNearest(InfiniteLine({{0,0},{2,1}}), {1.5,0})", //
+        "{1.2,0.6}");
+    // coincident points, a zero direction and parallel directions span no line or plane
+    check("RegionNearest(InfiniteLine({{1,1},{1,1}}), {2,3})", //
+        "RegionNearest(InfiniteLine({{1,1},{1,1}}),{2,3})");
+    check("RegionNearest(InfiniteLine({1,1},{0,0}), {2,3})", //
+        "RegionNearest(InfiniteLine({1,1},{0,0}),{2,3})");
+    check("RegionNearest(InfinitePlane({{0,0,0},{1,2,0},{2,4,0}}), {1,1,1})", //
+        "RegionNearest(InfinitePlane({{0,0,0},{1,2,0},{2,4,0}}),{1,1,1})");
+    check("RegionNearest(InfinitePlane({0,0,0},{{1,1,0},{-2,-2,0}}), {1,1,1})", //
+        "RegionNearest(InfinitePlane({0,0,0},{{1,1,0},{-2,-2,0}}),{1,1,1})");
+    // a list of points gives the list of nearest points
+    check("RegionNearest(InfiniteLine({{0,0},{2,1}}), {{5,0},{0,5}})", //
+        "{{4,2},{2,1}}");
+    // symbolic coordinates
+    check("RegionNearest(InfiniteLine({0,c},{0,1}), {u,v})", //
+        "{0,v}");
+    // a plane of the plane is all of it
+    check("RegionNearest(InfinitePlane({{1,1},{2,1},{1,3}}), {4,-7})", //
+        "{4,-7}");
+  }
+
+  @Test
+  public void testRegionDistanceInfiniteFlats() {
+    check("RegionDistance(InfiniteLine({{1,1},{4,5}}), {2,7})", //
+        "14/5");
+    check("RegionDistance(InfinitePlane({{2,0,0},{0,4,0},{0,0,4}}), {0,0,0})", //
+        "2*Sqrt(2/3)");
+    check("RegionDistance(InfinitePlane({0,0,0,1},{{1,0,0,0},{0,1,1,0}}), {3,1,5,2})", //
+        "3");
+    check("RegionDistance(InfiniteLine({0,0,0},{0,0,1.0}), {3,4,1})", //
+        "5.0");
+    check("RegionDistance(InfiniteLine({{0,0},{2,1}}), {{5,0},{0,5}})", //
+        "{Sqrt(5),2*Sqrt(5)}");
+    // the distance to a plane spanned by parallel directions is the distance to their line
+    check("RegionDistance(InfinitePlane({0,0,0},{{0,1,1},{0,3,3}}), {2,1,0})", //
+        "3/Sqrt(2)");
+    // a line in the zero direction has no distance to measure
+    check("RegionDistance(InfiniteLine({1,4},{0,0}), {3,3})", //
+        "Indeterminate");
+    check("RegionDistance(InfinitePlane({{1,1,1},{1,1,1},{1,1,1}}), {0,2,0})", //
+        "Indeterminate");
+  }
+
+  @Test
+  public void testRegionIntersectionInfiniteFlats() {
+    // a segment through a plane, and one which stops short of it
+    check("RegionIntersection(InfinitePlane({0,0,0},{{1,0,0},{0,1,0}}), Line({{1,2,-1},{3,4,3}}))", //
+        "Point({{3/2,5/2,0}})");
+    check("RegionIntersection(InfinitePlane({0,0,0},{{1,0,0},{0,1,0}}), Line({{0,0,1},{1,1,2}}))", //
+        "EmptyRegion(3)");
+    check("RegionIntersection(InfiniteLine({1,0},{0,1}), Line({{0,0},{3,3}}))", //
+        "Point({{1,1}})");
+    // a polyline crossing the line at one of its corners meets it there once
+    check("RegionIntersection(InfiniteLine({{0,2},{1,2}}), Line({{0,0},{1,2},{2,4}}))", //
+        "Point({{1,2}})");
+    // a machine polyline with a corner on the line meets it there once
+    check("RegionIntersection(InfiniteLine({0.1,0.2},{0.3,0.7}), Line({{-1.4,2.5},{0.271,0.599},{4.4,-1.1}}))", //
+        "Point({{0.271,0.599}})");
+    // a polyline which crosses the line twice at one point, in segments which aren't adjacent
+    check("RegionIntersection(InfiniteLine({{0,0},{1,0}}), Line({{0,-1},{0,1},{1,1},{-1,-1}}))", //
+        "Point({{0,0},{0,0}})");
+    // a machine number only spreads into the coordinates it enters
+    check("RegionIntersection(Line({{0.,0},{4,2}}), InfiniteLine({{0,1},{1,1}}))", //
+        "Point({{2.0,1}})");
+    check("RegionIntersection(Line({{0.,0},{4,2.}}), InfiniteLine({{0,1},{1,1}}))", //
+        "Point({{2.0,1.0}})");
+    // a segment or a line lying in the other region is itself the intersection
+    check("RegionIntersection(InfiniteLine({{0,0},{1,1}}), Line({{2,2},{5,5}}))", //
+        "Line({{2,2},{5,5}})");
+    // the segments of a polyline lying on the line, if its other crossings lie on them
+    check("RegionIntersection(InfiniteLine({{0,1},{1,1}}), Line({{0,0},{1,1},{4,1},{5,3},{6,1},{7,1}}))", //
+        "Line({{{1,1},{4,1}},{{6,1},{7,1}}})");
+    check("RegionIntersection(InfiniteLine({{0,1},{1,1}}), Line({{1,1},{4,1},{5,3},{2,-1}}))", //
+        "Line({{{1,1},{4,1}}})");
+    check("RegionIntersection(InfinitePlane({0,0,2},{{1,0,0},{0,1,0}}), InfiniteLine({0,0,2},{3,4,0}))", //
+        "InfiniteLine({0,0,2},{3,4,0})");
+    // two lines, or a line and a plane, cross in a single point
+    check("RegionIntersection(InfiniteLine({{0,0},{1,2}}), InfiniteLine({{3,0},{3,1}}))", //
+        "Point({3,6})");
+    check("RegionIntersection(InfinitePlane({0,0,0},{{1,0,0},{0,1,0}}), InfiniteLine({1,1,1},{1,0,-1}))", //
+        "Point({2,1,0})");
+    // two planes of space meet in a line through its point nearest to the origin
+    check("RegionIntersection(InfinitePlane({0,0,3},{{1,0,0},{0,1,0}}), InfinitePlane({2,0,0},{{0,1,0},{0,0,1}}))", //
+        "InfiniteLine({2,0,3},{0,1,0})");
+    check("RegionIntersection(InfinitePlane({0,0,3},{{1,0,0},{0,1,0}}), InfinitePlane({0,0,1},{{1,1,0},{0,1,0}}))", //
+        "EmptyRegion(3)");
+    // parallel lines, skew lines and a line parallel to a plane don't meet
+    check("RegionIntersection(InfiniteLine({{0,0},{1,2}}), InfiniteLine({{1,0},{2,2}}))", //
+        "EmptyRegion(2)");
+    check("RegionIntersection(InfiniteLine({{0,0,0},{1,0,0}}), InfiniteLine({{0,1,1},{0,2,1}}))", //
+        "EmptyRegion(3)");
+    check("RegionIntersection(InfinitePlane({0,0,1},{{1,0,0},{0,1,0}}), InfiniteLine({0,0,0},{1,1,0}))", //
+        "EmptyRegion(3)");
   }
 
   @Test

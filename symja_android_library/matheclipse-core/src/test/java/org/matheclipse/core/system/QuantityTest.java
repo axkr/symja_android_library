@@ -1490,4 +1490,68 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("UnitConvert(Quantity(2, \"km\"), \"Meters\")", //
         "Quantity(2000,\"Meters\")");
   }
+
+  @Test
+  public void testQuantityArrayStructuredData() {
+    // the structured data form of a single unit array is the array of its values and the unit
+    check("q = QuantityArray(StructuredArray`StructuredData({4}, {{2, 1/3, 7, 0.25}, \"Grams\", {{1}}})); "
+        + "{Head(q), Length(q), Dimensions(q)}", //
+        "{QuantityArray,4,{4}}");
+    check("Normal(QuantityArray(StructuredArray`StructuredData({4}, {{2, 1/3, 7, 0.25}, \"Grams\", {{1}}})))", //
+        "{Quantity(2,\"Grams\"),Quantity(1/3,\"Grams\"),Quantity(7,\"Grams\"),Quantity(0.25,\"Grams\")}");
+    check("Normal(QuantityArray(StructuredArray`StructuredData({3, 2}, {{{5, 6}, {7, 8}, {9, 10}}, \"Liters\", {{1, 2}}})))", //
+        "{{Quantity(5,\"Liters\"),Quantity(6,\"Liters\")},{Quantity(7,\"Liters\"),Quantity(8,\"Liters\")},"
+            + "{Quantity(9,\"Liters\"),Quantity(10,\"Liters\")}}");
+    check("Dimensions(QuantityArray(StructuredArray`StructuredData({3, 2}, {{{5, 6}, {7, 8}, {9, 10}}, \"Liters\", {{1, 2}}})))", //
+        "{3,2}");
+    // dimensions which do not fit the values leave the expression alone
+    check("Length(QuantityArray(StructuredArray`StructuredData({5}, {{2, 1/3, 7, 0.25}, \"Grams\", {{1}}})))", //
+        "1");
+  }
+
+  @Test
+  public void testQuantityArrayArithmetic() {
+    // parts and totals are those of the array of quantities
+    check("QuantityArray({5, 8, 2, 9}, \"Liters\")[[3]]", //
+        "Quantity(2,\"Liters\")");
+    check("Total(QuantityArray({5, 8, 2, 9}, \"Liters\"))", //
+        "Quantity(24,\"Liters\")");
+    check("QuantityArray({5, 8, 2, 9}, \"Liters\")[[0]]", //
+        "QuantityArray");
+    // arithmetic is element-wise and gives an array of quantities again
+    check("3*QuantityArray({{5, 8}, {2, 9}}, \"Liters\")", //
+        "QuantityArray({{15,24},{6,27}},\"Liters\")");
+    check("QuantityArray({5, 8, 2}, \"Liters\") + QuantityArray({1, 1, 3}, \"Liters\")", //
+        "QuantityArray({6,9,5},\"Liters\")");
+    check("QuantityArray({{5, 8}, {2, 9}}, {\"Liters\", \"Hours\"}) + QuantityArray({{5, 8}, {2, 9}}, {\"Liters\", \"Hours\"})", //
+        "QuantityArray({{10,16},{4,18}},{\"Liters\",\"Hours\"})");
+    // quantities with a unit per position at the deepest level
+    check("QuantityArray({{Quantity(5, \"Liters\"), Quantity(8, \"Hours\")}, {Quantity(2, \"Liters\"), Quantity(9, \"Hours\")}})", //
+        "QuantityArray({{5,8},{2,9}},{\"Liters\",\"Hours\"})");
+  }
+
+  @Test
+  public void testQuantityArrayParts() {
+    // a sub-array is an array of quantities again, an element a quantity
+    check("QuantityArray({4, 6, 1, 3}, \"Grams\")[[2 ;; 3]]", //
+        "QuantityArray({6,1},\"Grams\")");
+    check("QuantityArray({{4, 6}, {1, 3}}, \"Grams\")[[All, 2]]", //
+        "QuantityArray({6,3},\"Grams\")");
+    check("QuantityArray({{4, 6}, {1, 3}}, \"Grams\")[[2, 1]]", //
+        "Quantity(1,\"Grams\")");
+    check("QuantityArray({{4, 6}, {1, 3}}, {\"Grams\", \"Hours\"})[[2]]", //
+        "QuantityArray({1,3},{\"Grams\",\"Hours\"})");
+    // a part which does not exist
+    check("QuantityArray({4, 6}, \"Grams\")[[5]]", //
+        "QuantityArray({4,6},\"Grams\")[[5]]");
+  }
+
+  @Test
+  public void testQuantityArrayWithoutQuantityResult() {
+    // a sum which is no array of quantities leaves the array as it is
+    check("Head(QuantityArray({4, 6}, \"Grams\") + 7)", //
+        "Plus");
+    check("Head(QuantityArray({4, 6}, \"Grams\") + z)", //
+        "Plus");
+  }
 }

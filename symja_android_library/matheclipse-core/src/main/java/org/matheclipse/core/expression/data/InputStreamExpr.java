@@ -98,10 +98,94 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
       if (dataIn != null) {
         dataIn = null;
       }
-      reader = new StringReader(str);
+      reader = new PositionReader(new StringReader(str));
     }
     return reader;
   }
+
+  /**
+   * A reader which counts the characters read from it.
+   */
+  private static final class PositionReader extends Reader {
+    private final Reader in;
+
+    private long position;
+
+    private long markedPosition;
+
+    PositionReader(Reader in) {
+      this.in = in;
+    }
+
+    @Override
+    public int read() throws IOException {
+      int c = in.read();
+      if (c >= 0) {
+        position++;
+      }
+      return c;
+    }
+
+    @Override
+    public int read(char[] cbuf, int off, int len) throws IOException {
+      int n = in.read(cbuf, off, len);
+      if (n > 0) {
+        position += n;
+      }
+      return n;
+    }
+
+    @Override
+    public long skip(long n) throws IOException {
+      long skipped = in.skip(n);
+      position += skipped;
+      return skipped;
+    }
+
+    @Override
+    public boolean ready() throws IOException {
+      return in.ready();
+    }
+
+    @Override
+    public boolean markSupported() {
+      return in.markSupported();
+    }
+
+    @Override
+    public void mark(int readAheadLimit) throws IOException {
+      in.mark(readAheadLimit);
+      markedPosition = position;
+    }
+
+    @Override
+    public void reset() throws IOException {
+      in.reset();
+      position = markedPosition;
+    }
+
+    @Override
+    public void close() throws IOException {
+      in.close();
+    }
+  }
+
+  /**
+   * The number of characters read from the start of this stream by the text reads.
+   *
+   * @return <code>-1</code> if the stream is not read as text
+   */
+  public long getStreamPosition() throws IOException {
+    if (reader == null) {
+      // nothing was read yet, unless the stream is read as bytes
+      return dataIn == null ? startPosition : -1;
+    }
+    return reader instanceof PositionReader ? startPosition + ((PositionReader) reader).position
+        : -1;
+  }
+
+  /** The position of the first character of {@link #reader} in the stream. */
+  private long startPosition;
 
   /**
    * Put text back in front of this stream, so that the next read sees it first.
@@ -111,7 +195,10 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
    * find it, and what it looked at but did not take belongs to the next read.
    */
   public void pushBack(String rest) {
-    reader = new StringReader(rest);
+    if (reader instanceof PositionReader) {
+      startPosition += ((PositionReader) reader).position - rest.length();
+    }
+    reader = new PositionReader(new StringReader(rest));
     dataIn = null;
   }
 
@@ -220,7 +307,20 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
         new InputStreamExpr(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)),
             "String", new StringReader(text));
     stream.inMemory = true;
+    stream.sourceText = text;
     return stream;
+  }
+
+  /** The string a stream over a string reads, <code>null</code> for any other stream. */
+  private String sourceText;
+
+  /**
+   * The string this stream reads, see {@link #ofString(String)}.
+   *
+   * @return <code>null</code> if the stream does not read a string
+   */
+  public String getSourceText() {
+    return sourceText;
   }
 
   /** <code>true</code> for a stream over a string, see {@link #ofString(String)}. */
@@ -252,7 +352,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     super(S.InputStream, value);
     this.uniqueID = STREAM_COUNTER.getAndIncrement();
     this.streamName = streamName;
-    this.reader = reader;
+    this.reader = reader == null ? null : new PositionReader(reader);
   }
 
   /**

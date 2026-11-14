@@ -175,7 +175,7 @@ public class StructureFunctions {
    * </pre>
    *
    * <p>
-   * Level specification x + y is not of the form n, {n}, or {m, n}.
+   * Level specification x + y is not of the form n, {n} or {m, n}.
    *
    * <pre>
    * &gt;&gt; Apply(f, {a, b, c}, x+y)
@@ -1206,7 +1206,7 @@ public class StructureFunctions {
    * </pre>
    *
    * <p>
-   * Level specification a + b is not of the form n, {n}, or {m, n}.
+   * Level specification a + b is not of the form n, {n} or {m, n}.
    *
    * <pre>
    * &gt;&gt; Map(f, expr, a+b, Heads-&gt;True)

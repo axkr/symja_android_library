@@ -1002,12 +1002,152 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isGreaterEqual(IExpr expr, IExpr number) {
-    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.rOpen(n, F.CInfinity));
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.rOpen(n, F.CInfinity))
+        || (number.isZero() && monomialSign(expr) > 0);
   }
 
   @Override
   public boolean isGreaterThan(IExpr expr, IExpr number) {
-    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(n, F.CInfinity));
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(n, F.CInfinity))
+        || (number.isZero() && monomialSign(expr) > 0);
+  }
+
+  /** A monomial key of {@link #realRelationsMap}: the key, its exponents and its sign. */
+  private static final class MonomialKey {
+    final IExpr key;
+    final java.util.Map<IExpr, Integer> exponents;
+    final int sign;
+
+    MonomialKey(IExpr key, java.util.Map<IExpr, Integer> exponents, int sign) {
+      this.key = key;
+      this.exponents = exponents;
+      this.sign = sign;
+    }
+  }
+
+  /** The monomial keys of {@link #realRelationsMap}, built for {@link #monomialKeysSize} keys. */
+  private transient java.util.List<MonomialKey> monomialKeys = null;
+
+  private transient int monomialKeysSize = -1;
+
+  /**
+   * The monomial keys of the relations, decomposed once: keys are only added, so the number of
+   * keys tells whether the list is current.
+   */
+  private java.util.List<MonomialKey> monomialKeys() {
+    if (monomialKeys == null || monomialKeysSize != realRelationsMap.size()) {
+      java.util.List<MonomialKey> keys = new ArrayList<MonomialKey>();
+      for (IExpr key : realRelationsMap.keySet()) {
+        if (key.isAtom()) {
+          continue;
+        }
+        java.util.Map<IExpr, Integer> keyExponents = new HashMap<IExpr, Integer>();
+        int[] keySign = {1};
+        if (monomial(key, 1, keyExponents, keySign) && !keyExponents.isEmpty()) {
+          keys.add(new MonomialKey(key, keyExponents, keySign[0]));
+        }
+      }
+      monomialKeys = keys;
+      monomialKeysSize = realRelationsMap.size();
+    }
+    return monomialKeys;
+  }
+
+  /**
+   * The sign of the monomial <code>expr</code> from the assumed sign of a monomial in the same
+   * symbols whose exponents differ by even numbers: <code>b/a == a*b/a^2</code> is positive with
+   * <code>a*b &gt; 0</code> and a real <code>a</code>. The symbols have to be the same, so that no
+   * factor of <code>expr</code> can be 0. The ones whose square is a factor of the quotient have to
+   * be real: the symbols of an inequality are, unless they are assumed complex, where
+   * <code>a == I, b == -I</code> has <code>a*b == 1</code> and <code>b/a == -1</code>.
+   *
+   * @return <code>1</code>, <code>-1</code> or <code>0</code> if the sign isn't decided this way
+   */
+  private int monomialSign(IExpr expr) {
+    if (expr.isAtom() || realRelationsMap.isEmpty()) {
+      return 0;
+    }
+    java.util.Map<IExpr, Integer> exponents = new HashMap<IExpr, Integer>();
+    int[] sign = {1};
+    if (!monomial(expr, 1, exponents, sign)) {
+      return 0;
+    }
+    for (MonomialKey monomialKey : monomialKeys()) {
+      final IExpr key = monomialKey.key;
+      final java.util.Map<IExpr, Integer> keyExponents = monomialKey.exponents;
+      final int[] keySign = {monomialKey.sign};
+      if (!keyExponents.keySet().equals(exponents.keySet())) {
+        continue;
+      }
+      boolean evenDifferences = true;
+      for (Map.Entry<IExpr, Integer> e : exponents.entrySet()) {
+        int difference = e.getValue() - keyExponents.get(e.getKey());
+        if (difference % 2 != 0 || (difference != 0 && isComplexSymbol(e.getKey()))) {
+          evenDifferences = false;
+          break;
+        }
+      }
+      if (!evenDifferences) {
+        continue;
+      }
+      if (checkDomainProperty(key, F.C0, (i, n) -> IntervalDataSym.open(n, F.CInfinity))) {
+        return sign[0] * keySign[0];
+      }
+      if (checkDomainProperty(key, F.C0, (i, n) -> IntervalDataSym.open(F.CNInfinity, n))) {
+        return -sign[0] * keySign[0];
+      }
+    }
+    return 0;
+  }
+
+  /** Whether the symbol is assumed complex and not known to be real. */
+  private boolean isComplexSymbol(IExpr symbol) {
+    return isDomain(symbol, S.Complexes) && !isReal(symbol);
+  }
+
+  /**
+   * Collect the integer exponents of the symbols of the product <code>x^power</code> and the sign
+   * of its number factor.
+   *
+   * @return <code>false</code> if <code>x</code> isn't a product of powers of symbols and a
+   *         nonzero rational number
+   */
+  private static boolean monomial(IExpr x, int power, java.util.Map<IExpr, Integer> exponents,
+      int[] sign) {
+    if (x.isRational()) {
+      if (x.isZero()) {
+        return false;
+      }
+      if (x.isNegative() && power % 2 != 0) {
+        sign[0] = -sign[0];
+      }
+      return true;
+    }
+    if (x.isSymbol() && x.isVariable()) {
+      int sum = exponents.getOrDefault(x, 0) + power;
+      if (sum == 0) {
+        exponents.remove(x);
+      } else {
+        exponents.put(x, sum);
+      }
+      return true;
+    }
+    if (x.isPower() && x.exponent().isInteger()) {
+      int n = x.exponent().toIntDefault();
+      if (n == Integer.MIN_VALUE || Math.abs(n) > 64) {
+        return false;
+      }
+      return monomial(x.base(), power * n, exponents, sign);
+    }
+    if (x.isTimes()) {
+      for (IExpr factor : (IAST) x) {
+        if (!monomial(factor, power, exponents, sign)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -1017,12 +1157,14 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isLessEqual(IExpr expr, IExpr number) {
-    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.lOpen(F.CNInfinity, n));
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.lOpen(F.CNInfinity, n))
+        || (number.isZero() && monomialSign(expr) < 0);
   }
 
   @Override
   public boolean isLessThan(IExpr expr, IExpr number) {
-    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(F.CNInfinity, n));
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(F.CNInfinity, n))
+        || (number.isZero() && monomialSign(expr) < 0);
   }
 
   @Override

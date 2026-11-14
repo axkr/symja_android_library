@@ -59,6 +59,8 @@
 	"Integrate::Method": "Integrate by `3` - `2` becomes `1`.",
 	"Integrate::Linearity": "The integral of a sum is the sum of the integrals - `2` becomes `1`.",
 	"Integrate::ConstantFactor": "Move the constant factor `3` out of the integral.",
+	"Integrate::SharedContent": "Divide the numerator and the denominator by their common factor - `2` becomes `3`.",
+	"Integrate::LinearDenominator": "The integral of $\\frac{c}{a x+b}$ is $\\frac{c}{a}\\log(a x+b)$, with the linear denominator `3`.",
 	"Integrate::PowerRule": "Apply the power rule $\\int x^n\\,dx = \\frac{x^{n+1}}{n+1}$ for $n \\neq -1$, with n = `4`.",
 	"Integrate::ReciprocalRule": "The integral of $\\frac{1}{x}$ is $\\log(x)$.",
 	"Integrate::ExponentialRule": "The integral of $a^x$ is $\\frac{a^x}{\\log(a)}$, with a = `3`.",

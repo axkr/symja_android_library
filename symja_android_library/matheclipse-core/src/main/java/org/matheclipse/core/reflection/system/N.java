@@ -300,6 +300,24 @@ public final class N extends AbstractCoreFunctionEvaluator {
         // Requested precision `1` is smaller than `2`.
         return Errors.printMessage(S.N, "precsm", F.list(arg2, F.C1), engine);
       }
+      if (!Double.isNaN(requestedPrecision)) {
+        // the requested precision within $MinPrecision and $MaxPrecision
+        final double bounded = engine.boundedPrecision(requestedPrecision);
+        if (bounded != requestedPrecision) {
+          final IExpr requestedExpr = engine.evaluate(ast.arg2());
+          if (bounded < requestedPrecision) {
+            // Requested precision `1` is larger than $MaxPrecision. Using current $MaxPrecision of
+            // `2` instead. ...
+            Errors.printMessage(S.N, "preclg",
+                F.list(requestedExpr, engine.precisionBoundValue(false)), engine);
+          } else {
+            // Requested precision `1` is smaller than `2`.
+            Errors.printMessage(S.N, "precsm", F.list(requestedExpr, S.$MinPrecision), engine);
+          }
+          requestedPrecision = bounded;
+          nDigitPrecision = (long) Math.ceil(bounded);
+        }
+      }
       if (nDigitPrecision > Config.MAX_PRECISION_APFLOAT) {
         if (!Config.TRUNCATE_PRECISION_IN_N) {
           // Requested precision `1` is greater than `2`.

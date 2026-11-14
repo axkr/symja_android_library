@@ -51,6 +51,58 @@ public final class DualEdgeNorms {
     }
   }
 
+  /**
+   * Returns true iff the norms are currently valid, that is the next call to
+   * {@link #getEdgeSquaredNorms()} will not trigger a full recomputation.
+   */
+  public boolean areValid() {
+    return !needsBasisRefactorization();
+  }
+
+  /**
+   * The current norms without triggering any recomputation. They are only meaningful if
+   * {@link #areValid()} is true. This is the internal array, it must not be modified.
+   */
+  double[] edgeSquaredNorms() {
+    return edgeSquaredNorms;
+  }
+
+  /**
+   * Advanced usage. Replaces the current norms by the given ones, which must have one entry per row
+   * of the (refactorized) basis. Any entry that is not strictly positive is recomputed exactly.
+   * This is used to transfer the norms of a previous solve when the basis didn't change much,
+   * instead of paying for a full recomputation.
+   */
+  public void setEdgeSquaredNorms(double[] norms) {
+    edgeSquaredNorms = norms;
+    final int numRows = edgeSquaredNorms.length;
+
+    // Safety net: the precision of a few of the given norms is checked, and if one of them is too
+    // far off, everything is recomputed from scratch on the next getEdgeSquaredNorms().
+    final int stride = Math.max(1, numRows / 10);
+    for (int row = 0; row < numRows; row += stride) {
+      final double givenNorm = edgeSquaredNorms[row];
+      if (givenNorm <= 0.0) {
+        continue;
+      }
+      final double exactNorm = basisFactorization.dualEdgeSquaredNorm(row);
+      if (givenNorm < 0.25 * exactNorm || givenNorm > 4.0 * exactNorm) {
+        recomputeEdgeSquaredNorms = true;
+        return;
+      }
+      edgeSquaredNorms[row] = exactNorm;
+    }
+
+    // Compute exactly the unknown norms.
+    for (int row = 0; row < numRows; ++row) {
+      if (edgeSquaredNorms[row] > 0.0) {
+        continue;
+      }
+      edgeSquaredNorms[row] = basisFactorization.dualEdgeSquaredNorm(row);
+    }
+    recomputeEdgeSquaredNorms = false;
+  }
+
   /** Returns true if the norms must be recomputed on a refactorized basis. */
   public boolean needsBasisRefactorization() {
     return recomputeEdgeSquaredNorms;

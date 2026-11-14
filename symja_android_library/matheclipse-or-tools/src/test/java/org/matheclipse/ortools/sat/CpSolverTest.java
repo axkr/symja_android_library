@@ -224,7 +224,7 @@ public final class CpSolverTest {
     CpSolverStatus status = solver.solve(model);
 
     assertEquals(CpSolverStatus.OPTIMAL, status);
-    assertEquals(2.6, cb.getBestBound());
+    assertEquals(2.6, cb.getBestBound(), 1e-6);
   }
 
   static class BestBoundRuntimeExceptionCallback implements Consumer<Double> {

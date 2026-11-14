@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.series.dp.complex.DirectComplex;
@@ -19,6 +20,7 @@ import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex.Se
 import org.matheclipse.core.numerics.utils.Sequences;
 import org.matheclipse.core.numerics.series.PrecisionSum;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.eval.TimeLimits;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.numerics.series.IntegerSeriesSum;
@@ -100,6 +102,12 @@ public class NSum extends Sum {
       }
     }
     if (iterators > 1) {
+      IExpr lastIterator = engine.evaluate(ast.get(iterators + 1));
+      if (lastIterator.isList1()) {
+        // a count is an iterator of Sum, not of a numerical sum
+        // Raw object `1` cannot be used as an iterator.
+        return Errors.printMessage(S.NSum, "itraw", F.List(lastIterator.first()));
+      }
       // the sum over the first iterator of the sums over the others
       IASTAppendable inner = F.ast(S.NSum);
       inner.append(ast.arg1());
@@ -129,6 +137,14 @@ public class NSum extends Sum {
     }
 
     IExpr limitList = engine.evaluate(ast.arg2());
+    if (limitList.isList1()) {
+      // a count is an iterator of Sum, not of a numerical sum
+      // Raw object `1` cannot be used as an iterator.
+      return Errors.printMessage(S.NSum, "itraw", F.List(limitList.first()));
+    }
+    if (limitList.isList4()) {
+      return steppedSum(ast, (IAST) limitList, engine);
+    }
     if (limitList.isList3()) {
       IAST limits = (IAST) limitList;
       IExpr variable = limits.arg1();
@@ -206,12 +222,27 @@ public class NSum extends Sum {
         // index, like BesselJZero(0, k), aren't probed between the integers
         return integerSeriesSum(arg1, variable, lowerLimit, digits, engine);
       }
+      if (variable.isSymbol() && upperLimit.isInfinity()) {
+        IExpr closed = exponentialClosedForm(arg1, (ISymbol) variable, lowerLimit, digits, engine);
+        if (closed.isPresent()) {
+          return closed;
+        }
+        if (F.isPresent(start) && termsDontVanish(arg1, (ISymbol) variable, engine)) {
+          // an extrapolation of the partial sums would give a finite number
+          return F.CComplexInfinity;
+        }
+      }
       if (variable.isSymbol()) {
         IExpr precise = precisionSum(arg1, (ISymbol) variable, lowerLimit, upperLimit, digits,
             engine);
         if (precise.isPresent()) {
           return precise;
         }
+      }
+      if (F.isPresent(start) && F.isPresent(end)
+          && (digits > ParserConfig.MACHINE_PRECISION || !arg1.isFree(S.NSum, true))) {
+        // more digits than a machine number has, or inner numerical sums: term by term
+        return finiteSumOfTerms(arg1, variable, start, end, digits, engine);
       }
       if (digits > ParserConfig.MACHINE_PRECISION || !arg1.isFree(S.NSum, true)) {
         // an extrapolation of the partial sums of inner numerical sums isn't reliable
@@ -233,6 +264,151 @@ public class NSum extends Sum {
       }
     }
     return F.NIL;
+  }
+
+  /** The time budget of {@link #exponentialClosedForm}. */
+  private static final long CLOSED_FORM_MILLIS = 3000L;
+
+  /**
+   * The value of an infinite sum whose summand has a power with the index in its exponent,
+   * <code>E^(-k/10^5)</code> or <code>k*0.999^k</code>, from the closed form of the exact sum. Such a
+   * series converges like a geometric one with a ratio next to 1: its partial sums go on growing
+   * far beyond the terms which an extrapolation looks at.
+   *
+   * @return <code>ComplexInfinity</code> if the exact sum is infinite, {@link F#NIL} if the
+   *         summand has no such power or the sum no closed form in time
+   */
+  private static IExpr exponentialClosedForm(IExpr summand, ISymbol k, IExpr lowerLimit,
+      long digits, EvalEngine engine) {
+    if (!lowerLimit.isInteger() || summand.isFree(x -> x.isPower() && !x.exponent().isFree(k)
+        && x.base().isFree(k), true)) {
+      return F.NIL;
+    }
+    final IExpr exact =
+        org.matheclipse.core.expression.AbstractFractionSym.rationalize(summand, false)
+            .orElse(summand);
+    IExpr closed = TimeLimits.evaluateOrNil(F.Sum(exact, F.List(k, lowerLimit, F.CInfinity)),
+        org.matheclipse.core.basic.MachineProfile.millis(CLOSED_FORM_MILLIS));
+    if (closed.isNIL() || !closed.isFreeAST(S.Sum)) {
+      return F.NIL;
+    }
+    if (closed.isDirectedInfinity()) {
+      // the exact sum diverges
+      return F.CComplexInfinity;
+    }
+    if (!closed.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    // a closed form like 1/(E^(1/10^5)-1) cancels digits: evaluated with more of them
+    final long working = Math.max(digits, ParserConfig.MACHINE_PRECISION) + 20;
+    IExpr value = engine.evalN(closed, working);
+    if (!value.isNumber()) {
+      return F.NIL;
+    }
+    if (digits > ParserConfig.MACHINE_PRECISION) {
+      return engine.evalN(value, digits);
+    }
+    // the machine number of the value with more digits
+    return value.isReal() ? F.num(value.evalf()) : F.complexNum(value.evalfc());
+  }
+
+  /** The time budget of {@link #termsDontVanish}. */
+  private static final long TERM_LIMIT_MILLIS = 2000L;
+
+  /**
+   * Whether the terms of the series don't tend to 0: the limit of the summand at infinity is a
+   * number other than 0 or an infinity. A limit which doesn't exist comes back as
+   * <code>Indeterminate</code> also for terms which tend to 0, like <code>(-1)^k/k</code>, and
+   * decides nothing.
+   */
+  private static boolean termsDontVanish(IExpr summand, ISymbol k, EvalEngine engine) {
+    if (!summand.isFree(S.NSum, true)) {
+      return false;
+    }
+    IExpr limit = TimeLimits.evaluateOrNil(F.Limit(summand, F.Rule(k, F.CInfinity)),
+        org.matheclipse.core.basic.MachineProfile.millis(TERM_LIMIT_MILLIS));
+    if (limit.isNIL()) {
+      return false;
+    }
+    if (limit.isDirectedInfinity()) {
+      return !limit.isIndeterminate();
+    }
+    if (!limit.isNumericFunction(true)) {
+      return false;
+    }
+    IExpr value = engine.evalN(limit);
+    return value.isNumber() && !value.isZero();
+  }
+
+  /** The most terms which {@link #finiteSumOfTerms} adds one by one. */
+  private static final long MAX_PRECISE_TERMS = 1000000L;
+
+  /**
+   * The terms from <code>start</code> to <code>end</code> added one by one: with
+   * <code>digits</code> digits and ten guard digits, or as machine numbers.
+   *
+   * @return {@link F#NIL} if there are too many terms or a term has no numeric value
+   */
+  private static IExpr finiteSumOfTerms(IExpr function, IExpr variable, long start, long end,
+      long digits, EvalEngine engine) {
+    final boolean machine = digits <= ParserConfig.MACHINE_PRECISION;
+    if (end < start) {
+      return machine ? F.CD0 : F.C0;
+    }
+    if (end - start >= MAX_PRECISE_TERMS) {
+      return F.NIL;
+    }
+    final long working = digits + 10;
+    Apcomplex sum = Apcomplex.ZERO;
+    IExpr machineSum = F.CD0;
+    for (long k = start; k <= end; k++) {
+      final IExpr index = F.ZZ(k);
+      IExpr term = F.subst(function, x -> x.equals(variable) ? index : F.NIL);
+      term = machine ? engine.evalN(term) : engine.evalN(term, working);
+      if (!(term instanceof INumber)) {
+        return F.NIL;
+      }
+      if (machine) {
+        machineSum = machineSum.plus(term);
+      } else {
+        sum = sum.add(((INumber) term).apcomplexValue());
+      }
+      engine.checkTimeLimit();
+    }
+    return machine ? machineSum : toNumber(sum, digits);
+  }
+
+  /**
+   * <code>NSum(f, {k, a, b, d})</code> as the sum over <code>j = 0, 1, ...</code> of
+   * <code>f</code> at <code>k = a + d*j</code>, up to <code>Floor((b - a)/d)</code>.
+   *
+   * @return {@link F#NIL} if the step is no positive real number
+   */
+  private static IExpr steppedSum(IAST ast, IAST limits, EvalEngine engine) {
+    IExpr variable = limits.arg1();
+    IExpr step = limits.arg4();
+    if (!variable.isVariable()) {
+      // Raw object `1` cannot be used as an iterator.
+      return Errors.printMessage(S.NSum, "itraw", F.List(variable));
+    }
+    if (!step.isRealResult() || !step.isPositiveResult()) {
+      // a numerical sum runs upwards: no step of 0 or downwards
+      return F.NIL;
+    }
+    IExpr last = engine.evaluate(F.Floor(F.Divide(F.Subtract(limits.arg3(), limits.arg2()), step)));
+    if (last.isNegativeResult() || last.isNegativeInfinity()) {
+      // no term
+      return F.CD0;
+    }
+    if (!last.isInteger() && !last.isInfinity()) {
+      return F.NIL;
+    }
+    ISymbol j = F.Dummy("j");
+    IExpr term = F.subst(ast.arg1(), variable, F.Plus(limits.arg2(), F.Times(step, j)));
+    IASTMutable unstepped = ast.setAtCopy(1, term);
+    unstepped.set(2, F.List(j, F.C0, last));
+    IExpr result = engine.evaluate(unstepped);
+    return result.isFree(j) ? result : F.NIL;
   }
 
   /**

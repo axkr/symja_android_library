@@ -65,7 +65,7 @@ Convert all operations to lists:
 {a,{b,{c,e},{g}}}
 ```
 
-Level specification x + y is not of the form n, {n}, or {m, n}.
+Level specification x + y is not of the form n, {n} or {m, n}.
 
 ```
 >> Apply(f, {a, b, c}, x+y) 

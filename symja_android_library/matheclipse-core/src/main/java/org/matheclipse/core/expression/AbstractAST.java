@@ -2028,18 +2028,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         size() > 1) {
 
       switch (lhsOrdinal) {
-        case ID.Not:
-          if (size() == 2) {
-            IExpr arg1 = arg1();
-            if ((rhsExpr.isSymbol() && arg1.isSymbol())) {
-              int ct = arg1.compareTo(rhsExpr);
-              if (ct != 0) {
-                return ct;
-              }
-              return 1;
-            }
-          }
-          break;
         case ID.Plus:
           // Plus O-10
           return compareToASTDecreasingArg1(this, rhsExpr, F.C1);

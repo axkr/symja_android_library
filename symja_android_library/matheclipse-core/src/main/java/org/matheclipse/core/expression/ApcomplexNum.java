@@ -205,6 +205,31 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   /** Test if <code>operand</code> has an error of its own. */
+  /**
+   * The result <code>value</code> of an operation on numbers without a tracked precision, with no
+   * more digits than its arbitrary precision operands have: the engine computes with the largest
+   * precision of its input, which a number of more digits elsewhere in the input can have raised,
+   * and those extra digits of the result would be noise.
+   *
+   * @param operand the other operand or <code>null</code>
+   */
+  private static Apcomplex operandDigits(final Apcomplex value, final ApcomplexNum self,
+      final Object operand) {
+    long digits = self.fSignificance == UNTRACKED ? self.fApcomplex.precision() : Apcomplex.INFINITE;
+    if (operand instanceof ApcomplexNum && ((ApcomplexNum) operand).fSignificance == UNTRACKED) {
+      digits = Math.min(digits, ((ApcomplexNum) operand).fApcomplex.precision());
+    } else if (operand instanceof ApfloatNum && !((ApfloatNum) operand).isSignificanceTracked()) {
+      final long precision = ((ApfloatNum) operand).apfloatValue().precision();
+      if (precision > 0) {
+        digits = Math.min(digits, precision);
+      }
+    }
+    if (digits <= 0 || digits == Apcomplex.INFINITE || value.precision() <= digits) {
+      return value;
+    }
+    return value.precision(digits);
+  }
+
   private static boolean isTracked(final Object operand) {
     if (operand instanceof ApcomplexNum) {
       return ((ApcomplexNum) operand).isSignificanceTracked();
@@ -257,7 +282,7 @@ public class ApcomplexNum implements IComplexNum {
    */
   private ApcomplexNum sumResult(final Apcomplex value, final Object operand) {
     if (!isTracked(this) && !isTracked(operand)) {
-      return new ApcomplexNum(value);
+      return new ApcomplexNum(operandDigits(value, this, operand));
     }
     final double a1 = errorAccuracy(this);
     final double a2 = errorAccuracy(operand);
@@ -283,7 +308,7 @@ public class ApcomplexNum implements IComplexNum {
    */
   private ApcomplexNum productResult(final Apcomplex value, final Object operand) {
     if (!isTracked(this) && !isTracked(operand)) {
-      return new ApcomplexNum(value);
+      return new ApcomplexNum(operandDigits(value, this, operand));
     }
     if (isZeroValue(value)) {
       // a zero factor: its absolute error times the other factor
@@ -316,7 +341,7 @@ public class ApcomplexNum implements IComplexNum {
    */
   private ApcomplexNum scaledRelativeError(final Apcomplex value, final double factor) {
     if (fSignificance != TRACKED) {
-      return new ApcomplexNum(value);
+      return new ApcomplexNum(operandDigits(value, this, null));
     }
     if (isZeroValue(value) || isZeroValue(fApcomplex)) {
       return new ApcomplexNum(value);
@@ -2128,7 +2153,7 @@ public class ApcomplexNum implements IComplexNum {
    */
   private IExpr powerResult(final Apcomplex value, final IExpr exponent) {
     if (fSignificance != TRACKED || isTracked(exponent)) {
-      return valueOf(value);
+      return valueOf(operandDigits(value, this, exponent));
     }
     final Apcomplex e = ((INumber) exponent).apcomplexValue();
     return isZeroValue(e) ? valueOf(value) : scaledRelativeError(value, ApcomplexMath.abs(e).doubleValue());

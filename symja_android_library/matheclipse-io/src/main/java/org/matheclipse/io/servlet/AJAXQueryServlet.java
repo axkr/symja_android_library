@@ -191,7 +191,8 @@ public class AJAXQueryServlet extends HttpServlet {
     }
     if (bytes == null) {
       // everything else goes out the way ExportString would render it
-      IExpr exported = S.ExportString.of(engine, expr, F.$str(formatArg.toString()));
+      IExpr exported = org.matheclipse.core.reflection.system.ExportString.exportText(
+          F.binaryAST2(S.ExportString, expr, F.$str(formatArg.toString())), engine);
       if (!exported.isString()) {
         return null;
       }

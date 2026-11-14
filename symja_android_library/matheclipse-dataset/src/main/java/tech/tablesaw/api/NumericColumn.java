@@ -31,6 +31,7 @@ import org.hipparchus.stat.correlation.KendallsCorrelation;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
 import org.hipparchus.stat.correlation.SpearmansCorrelation;
 import it.unimi.dsi.fastutil.doubles.DoubleComparator;
+import it.unimi.dsi.fastutil.doubles.DoubleOpenHashSet;
 import tech.tablesaw.aggregate.AggregateFunctions;
 import tech.tablesaw.aggregate.NumericAggregateFunction;
 import tech.tablesaw.columns.Column;
@@ -97,9 +98,11 @@ public interface NumericColumn<T extends Number>
   /** {@inheritDoc} */
   @Override
   default Selection isIn(Collection<Number> numbers) {
+    DoubleOpenHashSet doubleNumbers =
+        new DoubleOpenHashSet(numbers.stream().mapToDouble(Number::doubleValue).toArray());
     final Selection results = new BitmapBackedSelection();
     for (int i = 0; i < size(); i++) {
-      if (numbers.contains(getDouble(i))) {
+      if (doubleNumbers.contains(getDouble(i))) {
         results.add(i);
       }
     }

@@ -110,6 +110,115 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReadLineSkipsEmptyLines() {
+    // the line break which ends a line stays in the stream, and empty lines are passed over
+    check("st = StringToStream(\"pq\\n\\n\\nrs\\ntu\"); {ReadLine(st), StreamPosition(st), ReadLine(st), StreamPosition(st), ReadString(st)} // InputForm", //
+        "{\"pq\",2,\"rs\",7,\"\\ntu\"}");
+    check("st = StringToStream(\"\\r\\nuv\\r\\n\\r\\nwx\\r\\n\"); Table(ReadLine(st), 4) // InputForm", //
+        "{\"uv\",\"wx\",EndOfFile,EndOfFile}");
+    check("ReadLine(StringToStream(\"\"))", //
+        "EndOfFile");
+  }
+
+  @Test
+  public void testReadStringType() {
+    // a line read as String takes its line break with it, and empty lines are passed over
+    check("st = StringToStream(\"pq\\n\\n\\nrs\\r\\ntu\"); {Read(st, String), StreamPosition(st), Read(st, String), StreamPosition(st), Read(st, String), Read(st, String)} // InputForm", //
+        "{\"pq\",3,\"rs\",9,\"tu\",EndOfFile}");
+    check("st = StringToStream(\"pq\\n\\nrs\"); {Read(st, String), ReadString(st)} // InputForm", //
+        "{\"pq\",\"\\nrs\"}");
+    // a line of blanks is a line
+    check("ReadList(StringToStream(\"k\\n  \\n\\nm\"), String) // InputForm", //
+        "{\"k\",\"  \",\"m\"}");
+  }
+
+  @Test
+  public void testReadRecordAndWord() {
+    // a record leaves its separator in the stream
+    check("st = StringToStream(\"u;v\\nw \\r\\n\\nx\\n\\n\"); {Table(Read(st, Record), 4), StreamPosition(st)} // InputForm", //
+        "{{\"u;v\",\"w \",\"x\",EndOfFile},12}");
+    check("st = StringToStream(\"u;v;;w\"); Table(Read(st, Record), 2) // InputForm", //
+        "{\"u;v;;w\",EndOfFile}");
+    check("st = StringToStream(\"u;v;;w\"); Table(Read(st, Record, RecordSeparators -> {\";\"}), 4) // InputForm", //
+        "{\"u\",\"v\",\"w\",EndOfFile}");
+    check("st = StringToStream(\"u;v;;w\"); Table(Read(st, Record, RecordSeparators -> \";\"), 4) // InputForm", //
+        "{\"u\",\"v\",\"w\",EndOfFile}");
+    check("st = StringToStream(\"u--v----w\"); Table(Read(st, Word, WordSeparators -> {\"--\"}), 4) // InputForm", //
+        "{\"u\",\"v\",\"w\",EndOfFile}");
+    // a word ends at the end of its line too
+    check("st = StringToStream(\"one two\\tthree\\nfour\"); ReadList(st, Word) // InputForm", //
+        "{\"one\",\"two\",\"three\",\"four\"}");
+    // an option which is none of the text reads
+    check("Head(Read(StringToStream(\"u v\"), Word, Bogus -> 1))", //
+        "Read");
+  }
+
+  @Test
+  public void testReadNullRecordsAndWords() {
+    check("st = StringToStream(\"u\\n\\n\\nv\\nw\"); Table(Read(st, Record, NullRecords -> True), 6) // InputForm", //
+        "{\"u\",\"\",\"\",\"v\",\"w\",EndOfFile}");
+    check("st = StringToStream(\"p,,q,r\"); Table(Read(st, Word, WordSeparators -> {\",\"}, NullWords -> True), 5) // InputForm", //
+        "{\"p\",\"\",\"q\",\"r\",EndOfFile}");
+    check("st = StringToStream(\"p,,q,r\"); Table(Read(st, Word, WordSeparators -> {\",\"}, NullWords -> False), 4) // InputForm", //
+        "{\"p\",\"q\",\"r\",EndOfFile}");
+    check("ReadList(StringToStream(\"p,,q\"), Word, WordSeparators -> {\",\"}, NullWords -> True) // InputForm", //
+        "{\"p\",\"\",\"q\"}");
+    // a word separator at the end has an empty word after it; a record separator at the end does
+    // not have an empty record after it
+    check("st = StringToStream(\"p;;q;\"); Table(Read(st, Word, WordSeparators -> {\";\"}, NullWords -> True), 5) // InputForm", //
+        "{\"p\",\"\",\"q\",\"\",EndOfFile}");
+    check("st = StringToStream(\"u\\n\\nv\\n\"); Table(Read(st, Record, NullRecords -> True), 4) // InputForm", //
+        "{\"u\",\"\",\"v\",EndOfFile}");
+  }
+
+  @Test
+  public void testReadByteAndCharacter() {
+    check("st = StringToStream(\"k 7\"); {Read(st, Byte), Read(st, Character), Read(st, Byte), Read(st, Byte), Read(st, Character)} // InputForm", //
+        "{107,\" \",55,EndOfFile,EndOfFile}");
+    check("st = StringToStream(\"4.25\\nxy z\"); {ReadList(st, Character, 2), StreamPosition(st), ReadList(st, Character, 4), ReadList(st, Word), ReadList(st, Word), StreamPosition(st)} // InputForm", //
+        "{{\"4\",\".\"},2,{\"2\",\"5\",\"\\n\",\"x\"},{\"y\",\"z\"},{},9}");
+  }
+
+  @Test
+  public void testReadListOfTypes() {
+    // a list of types is EndOfFile if its first object finds the end
+    check("st = StringToStream(\"p q\\rr\\n\"); Table(Read(st, {Word, Word}), 3) // InputForm", //
+        "{{\"p\",\"q\"},{\"r\",EndOfFile},EndOfFile}");
+    check("st = StringToStream(\"5 p 6\"); Table(Read(st, {Number, Word}), 3) // InputForm", //
+        "{{5,\"p\"},{6,EndOfFile},EndOfFile}");
+  }
+
+  @Test
+  public void testReadFailure() {
+    // Read: Invalid real number found when reading from StringToStream(x9).
+    check("st = StringToStream(\"x9\"); {Check(Read(st, Number), \"msg\"), Quiet(Read(st, Number)), Read(st, Character)}", //
+        "{msg,$Failed,x}");
+    // the list ends with the object which cannot be read
+    check("st = StringToStream(\"3;4q;5\"); {Quiet(ReadList(st, Number)), StreamPosition(st)}", //
+        "{{3,$Failed},1}");
+    check("Quiet({ReadList(StringToStream(\"pq 7 r s\"), {Word, Number}), ReadList(StringToStream(\"pq 7 rs\"), {Word, Number})}) // InputForm", //
+        "{{{\"pq\",7},$Failed},{{\"pq\",7},{\"rs\",EndOfFile}}}");
+    check("Quiet(ReadList(StringToStream(\"7\\n)\\n8\")))", //
+        "{7,$Failed}");
+    check("st = StringToStream(\"12 0.5\"); {Read(st, Real), Read(st, Real), Read(st, Real)}", //
+        "{12.0,0.5,EndOfFile}");
+  }
+
+  @Test
+  public void testReadExpressionLines() {
+    // a carriage return ends an expression too
+    check("st = StringToStream(\"p1\\rq2\\r\\nr3\"); Table(Read(st), 4)", //
+        "{p1,q2,r3,EndOfFile}");
+    // a line of white space is Null, an empty line is passed over
+    check("st = StringToStream(\"5\\n\\t\\n\\n6\"); Table(Read(st), 4)", //
+        "{5,Null,6,EndOfFile}");
+    check("st = StringToStream(\"  \\n\"); Table(Read(st), 2)", //
+        "{Null,EndOfFile}");
+    check("st = StringToStream(\"\\n\\n\\n\"); Table(Read(st), 2)", //
+        "{EndOfFile,EndOfFile}");
+  }
+
+  @Test
   public void testStringStreamTypes() {
     // a stream over a string needs no file system access
     check("st = StringToStream(\"41 -2.5 word1 word2\\nlast\"); {Read(st, Number), Read(st, Number), Read(st, Word), ReadList(st, Word)}", //
@@ -345,5 +454,13 @@ public class StreamTest extends ExprEvaluatorTestCase {
   public void setUp() {
     super.setUp();
     Config.FILESYSTEM_ENABLED = true;
+  }
+
+  @Test
+  public void testEmptySeparatorIsIgnored() {
+    // an empty separator separates nothing
+    check("s = StringToStream(\"u:v\"); {Read(s, Word, WordSeparators -> {\"\", \":\"}), "
+        + "Read(s, Word, WordSeparators -> {\"\", \":\"})}", //
+        "{u,v}");
   }
 }

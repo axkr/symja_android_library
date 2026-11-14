@@ -1,7 +1,9 @@
 package org.matheclipse.core.graphics;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -22,6 +24,8 @@ public class GraphicsComplexBuilder {
   private final IASTAppendable polygonIndices;
   private final IASTAppendable otherPrimitives;
   private final Map<String, Integer> vertexMap;
+  /** The coordinates of the vertices in the order they were added. */
+  private final List<double[]> coordinates;
 
   private int vertexCounter;
   private final boolean useNormals;
@@ -85,6 +89,7 @@ public class GraphicsComplexBuilder {
     this.polygonIndices = F.ListAlloc();
     this.otherPrimitives = F.ListAlloc();
     this.vertexMap = new HashMap<>();
+    this.coordinates = new ArrayList<>();
     this.vertexCounter = 1;
     this.useNormals = useNormals;
     this.useColors = useColors;
@@ -105,6 +110,7 @@ public class GraphicsComplexBuilder {
     if (!vertexMap.containsKey(key)) {
       vertexMap.put(key, vertexCounter++);
       vertices.append(F.List(F.num(x), F.num(y), F.num(z)));
+      coordinates.add(new double[] {x, y, z});
 
       // the normal and colour lists are indexed by vertex number, so a vertex without one still
       // has to contribute an entry or everything after it refers to the wrong point
@@ -161,6 +167,91 @@ public class GraphicsComplexBuilder {
    */
   public void addPrimitive(IExpr primitive) {
     otherPrimitives.append(primitive);
+  }
+
+  /**
+   * The curves in which the plane {@code coordinate[axis] == value} cuts the polygons added so far,
+   * each as a list of coordinate triples.
+   *
+   * <p>
+   * A polygon edge whose ends lie on different sides of the plane is cut at the point found by
+   * linear interpolation; an edge is identified by its two vertex numbers, so the polygons on
+   * either side of it share the cut point and the pieces join into curves.
+   *
+   * @param axis {@code 0}, {@code 1} or {@code 2} for the x, y or z coordinate
+   * @return the curves, each with at least two points
+   */
+  public List<List<double[]>> planeSections(int axis, double value) {
+    // the cut points by edge, and for every cut point the (at most two) cut points it is joined to
+    Map<Long, double[]> points = new HashMap<>();
+    Map<Long, List<Long>> neighbours = new LinkedHashMap<>();
+    long[] cut = new long[2];
+    for (int p = 1; p <= polygonIndices.argSize(); p++) {
+      IAST polygon = (IAST) polygonIndices.get(p);
+      int corners = polygon.argSize();
+      int cuts = 0;
+      for (int k = 1; k <= corners && cuts <= 2; k++) {
+        int a = polygon.get(k).toIntDefault();
+        int b = polygon.get(k % corners + 1).toIntDefault();
+        double[] pa = coordinates.get(a - 1);
+        double[] pb = coordinates.get(b - 1);
+        double da = pa[axis] - value;
+        double db = pb[axis] - value;
+        if ((da < 0.0) == (db < 0.0)) {
+          continue;
+        }
+        long key = ((long) Math.min(a, b) << 32) | Math.max(a, b);
+        if (!points.containsKey(key)) {
+          double t = da / (da - db);
+          points.put(key, new double[] {pa[0] + t * (pb[0] - pa[0]), pa[1] + t * (pb[1] - pa[1]),
+              pa[2] + t * (pb[2] - pa[2])});
+        }
+        if (cuts < 2) {
+          cut[cuts] = key;
+        }
+        cuts++;
+      }
+      if (cuts == 2) {
+        neighbours.computeIfAbsent(cut[0], k -> new ArrayList<>(2)).add(cut[1]);
+        neighbours.computeIfAbsent(cut[1], k -> new ArrayList<>(2)).add(cut[0]);
+      }
+    }
+    // join the segments into curves, starting from the open ends so that a curve that is not
+    // closed is traced from one end to the other
+    List<List<double[]>> curves = new ArrayList<>();
+    java.util.Set<Long> visited = new java.util.HashSet<>();
+    for (int pass = 0; pass < 2; pass++) {
+      for (Map.Entry<Long, List<Long>> entry : neighbours.entrySet()) {
+        Long start = entry.getKey();
+        if (visited.contains(start) || (pass == 0 && entry.getValue().size() != 1)) {
+          continue;
+        }
+        List<double[]> curve = new ArrayList<>();
+        Long current = start;
+        Long previous = null;
+        while (current != null && visited.add(current)) {
+          curve.add(points.get(current));
+          Long next = null;
+          for (Long candidate : neighbours.get(current)) {
+            if (!candidate.equals(previous) && !visited.contains(candidate)) {
+              next = candidate;
+              break;
+            }
+          }
+          if (next == null && pass == 1 && curve.size() > 2
+              && neighbours.get(current).contains(start)) {
+            // a closed curve returns to its first point
+            curve.add(points.get(start));
+          }
+          previous = current;
+          current = next;
+        }
+        if (curve.size() >= 2) {
+          curves.add(curve);
+        }
+      }
+    }
+    return curves;
   }
 
   /**

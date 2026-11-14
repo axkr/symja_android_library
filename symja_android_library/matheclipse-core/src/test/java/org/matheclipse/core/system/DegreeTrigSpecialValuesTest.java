@@ -187,4 +187,18 @@ public class DegreeTrigSpecialValuesTest extends ExprEvaluatorTestCase {
     check("Sum(c, {k, -1, n})", //
         "2*c+c*n");
   }
+
+  @Test
+  public void testSecCscAtTwelfthsAndEighthsOfPi() {
+    // twelfths: Sqrt(2) times a sum
+    check("{Sec(Pi/12), Sec(5*Pi/12), Sec(11*Pi/12), Sec(19*Pi/12)}", //
+        "{Sqrt(2)*(-1+Sqrt(3)),Sqrt(2)*(1+Sqrt(3)),Sqrt(2)*(1-Sqrt(3)),Sqrt(2)*(1+Sqrt(3))}");
+    check("{Csc(Pi/12), Csc(5*Pi/12), Csc(17*Pi/12)}", //
+        "{Sqrt(2)*(1+Sqrt(3)),Sqrt(2)*(-1+Sqrt(3)),Sqrt(2)*(1-Sqrt(3))}");
+    // eighths stay, reduced to Pi/8
+    check("{Sec(Pi/8), Csc(Pi/8), Sec(-Pi/8), Sec(3*Pi/8), Csc(3*Pi/8), Sec(7*Pi/8), Csc(-3*Pi/8)}", //
+        "{Sec(Pi/8),Csc(Pi/8),Sec(Pi/8),Csc(Pi/8),Sec(Pi/8),-Sec(Pi/8),-Sec(Pi/8)}");
+    check("N(Sec(3*Pi/8) - 1/Cos(3*Pi/8))", //
+        "0.0");
+  }
 }

@@ -109,6 +109,8 @@ public class ConstantDefinitions {
       S.$UserName.setEvaluator(new $UserName());
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$MaxExtraPrecision.setEvaluator(new $MaxExtraPrecision());
+      S.$MinPrecision.setEvaluator(new PrecisionBound(F.C0));
+      S.$MaxPrecision.setEvaluator(new PrecisionBound(F.CInfinity));
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
       S.$ScriptInputString.setEvaluator(new $ScriptInputString());
@@ -128,8 +130,6 @@ public class ConstantDefinitions {
       S.$SystemID.setEvaluator(new $SystemID());
       S.$UserDocumentsDirectory.setEvaluator(new $UserDocumentsDirectory());
 
-      S.RecordSeparators.setEvaluator(new RecordSeparators());
-      S.WordSeparators.setEvaluator(new WordSeparators());
 
       S.Catalan.setEvaluator(new Catalan());
       S.ComplexInfinity.setEvaluator(new ComplexInfinity());
@@ -843,6 +843,25 @@ public class ConstantDefinitions {
     }
   }
 
+  /**
+   * <code>$MinPrecision</code> and <code>$MaxPrecision</code>: the bounds of the precision of
+   * arbitrary-precision arithmetic results, read by {@link EvalEngine#boundedPrecision(double)}. A
+   * <code>Block</code> sets them for one evaluation.
+   */
+  private static class PrecisionBound extends AbstractSymbolEvaluator {
+    private final IExpr defaultValue;
+
+    PrecisionBound(IExpr defaultValue) {
+      this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      final IExpr value = symbol.assignedValue();
+      return value != null && value.isPresent() ? value : defaultValue;
+    }
+  }
+
   private static class $RecursionLimit extends AbstractSymbolEvaluator
       implements ISetValueEvaluator {
 
@@ -1259,59 +1278,6 @@ public class ConstantDefinitions {
           ? "(64-bit)"
           : "(32-bit)";
       return "Symja " + version + " for " + $SystemID.systemID() + " " + bits;
-    }
-  }
-
-  private static class RecordSeparators extends AbstractSymbolEvaluator
-      implements ISetValueEvaluator {
-
-    @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
-      if (value != null) {
-        return value;
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
-      S.RecordSeparators.assignValue(rightHandSide, setDelayed);
-      return rightHandSide;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      super.setUp(newSymbol);
-      S.RecordSeparators.assignValue(F.list(F.stringx("\n"), F.stringx("\r\n"), F.stringx("\r")),
-          false);
-    }
-  }
-
-  private static class WordSeparators extends AbstractSymbolEvaluator
-      implements ISetValueEvaluator {
-
-    @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      IExpr value = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
-      if (value != null) {
-        return value;
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
-      S.WordSeparators.assignValue(rightHandSide, setDelayed);
-      return rightHandSide;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      super.setUp(newSymbol);
-      S.WordSeparators.assignValue(F.list(F.stringx(" "), F.stringx("\t")), false);
     }
   }
 

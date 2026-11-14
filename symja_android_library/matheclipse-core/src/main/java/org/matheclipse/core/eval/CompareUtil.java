@@ -1,7 +1,9 @@
 package org.matheclipse.core.eval;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apfloat.Apfloat;
@@ -524,6 +526,11 @@ public class CompareUtil {
     IASTAppendable listOfRules = F.mapList(variables, t -> F.Rule(t, number));
     IExpr temp = function.replaceAll(listOfRules);
     IExpr.COMPARE_TERNARY exact = isPossibleZeroExact(temp, engine);
+    if (exact == IExpr.COMPARE_TERNARY.FALSE && engine.evalQuiet(temp).isDirectedInfinity()) {
+      // Every variable has the same value here, which is a pole of a term 1/(a-b): the function
+      // has no value at this point, and one which is 0 everywhere else is no exception.
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
     if (exact != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
       return exact;
     }
@@ -533,6 +540,28 @@ public class CompareUtil {
 
   public static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
     return isPossibleZeroApproximate(temp, engine, null);
+  }
+
+  /**
+   * Whether the machine value <code>residual</code> of <code>sample</code>, which is small next
+   * to its largest term <code>scale</code>, is what rounding leaves of a zero: with 30 digits at
+   * the same point it is eight orders smaller. A term <code>(A-B)*c</code> with large
+   * <code>A</code> and <code>B</code> loses digits which the size of the term doesn't show.
+   */
+  private static boolean isRoundingNoise(IExpr sample, double residual, double scale,
+      EvalEngine engine) {
+    if (!(residual <= 1.0e-3 * scale)
+        || sample.leafCount() > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
+      return false;
+    }
+    IExpr exact = org.matheclipse.core.expression.AbstractFractionSym.rationalize(sample, false)
+        .orElse(sample);
+    IExpr precise = evalPrecise(exact, 30, engine);
+    if (!precise.isNumber()) {
+      return false;
+    }
+    double magnitude = engine.evalQuiet(F.N(F.Abs(precise))).evalfNaN();
+    return magnitude <= residual * 1.0e-8 || magnitude <= 1.0e-25 * scale;
   }
 
   private static void setTooLarge(boolean[] tooLarge) {
@@ -598,6 +627,7 @@ public class CompareUtil {
               setTooLarge(tooLarge);
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }
+            double termScale = 1.0;
             if (temp.isPlus()) {
               // the value of a sum is measured against its terms: at a sample point where
               // E^(I*x) is 10^40 a residual of 10^25 is rounding noise
@@ -619,6 +649,10 @@ public class CompareUtil {
                 setTooLarge(tooLarge);
                 return IExpr.COMPARE_TERNARY.UNDECIDABLE;
               }
+              termScale = Math.max(1.0, scale);
+            }
+            if (isRoundingNoise(temp, Math.hypot(realPart, imaginaryPart), termScale, engine)) {
+              return IExpr.COMPARE_TERNARY.TRUE;
             }
             return IExpr.COMPARE_TERNARY.FALSE;
           }
@@ -751,6 +785,229 @@ public class CompareUtil {
    *        {@link F#isZero(double, double)} check
    * @param engine
    */
+  /**
+   * Whether <code>function</code> is zero when each call without a numeric value, like
+   * <code>f(x)</code>, <code>C(1)</code> or <code>Derivative(2)[f][x+y]</code>, is a variable of
+   * its own, and equal calls are one variable. This proves a zero which doesn't depend on what
+   * the calls stand for, as <code>Sec(f(x))^2 - Tan(f(x))^2 - 1</code>, and refutes none: calls
+   * written differently may be equal.
+   *
+   * @return <code>false</code> also if there is no such call
+   */
+  public static boolean isZeroOverInertCalls(IAST function, double tolerance, EvalEngine engine) {
+    if (function.leafCount() > MAX_PRECISE_SAMPLE_LEAFCOUNT) {
+      return false;
+    }
+    Map<IExpr, ISymbol> variables = new HashMap<IExpr, ISymbol>();
+    IExpr abstracted = inertCallsAsVariables(function, variables);
+    if (variables.isEmpty()) {
+      return false;
+    }
+    abstracted = engine.evaluate(abstracted);
+    if (abstracted.isNumber()) {
+      return abstracted.isZero();
+    }
+    if (!abstracted.isAST()) {
+      return false;
+    }
+    if (isPossibleZeroQ((IAST) abstracted, false, tolerance, engine)
+        || isZeroTogether(abstracted, engine)) {
+      return true;
+    }
+    IExpr expanded = F.evalExpandAll(abstracted);
+    return expanded.isZero()
+        || (!expanded.equals(abstracted) && isZeroTogether(expanded, engine))
+        || isZeroAtPreciseSamples((IAST) abstracted, engine);
+  }
+
+  /**
+   * The points at which a function of one variable with the derivative 0 is evaluated: real ones
+   * of both signs from 1/97 to 1009, some on the imaginary axis, and one in each quadrant. A jump
+   * beyond them isn't seen.
+   */
+  private static final INumber[] PIECEWISE_CONSTANT_POINTS =
+      {F.C0, F.C1, F.CN1, F.C2, F.CN2, F.C5, F.CN5, F.QQ(1, 3), F.QQ(-1, 3), F.CI, F.CNI,
+          F.CC(2, 3), F.CC(-3, 2), F.CC(-2, -3), F.CC(3, -2), F.ZZ(17), F.ZZ(-17), F.ZZ(131),
+          F.ZZ(-131), F.ZZ(1009), F.ZZ(-1009), F.QQ(1, 97), F.QQ(-1, 97), F.CC(0, 29),
+          F.CC(0, -29)};
+
+  /** The number of points at which {@link #isZeroAtPreciseSamples} needs a zero. */
+  private static final int PRECISE_SAMPLES = 16;
+
+  /** The largest expression which {@link #isZeroAtPreciseSamples} evaluates. */
+  private static final int MAX_PRECISE_SAMPLE_LEAFCOUNT = 4 * Config.MAX_POSSIBLE_ZERO_LEAFCOUNT;
+
+  /**
+   * Whether <code>function</code> is zero to 25 digits, measured against its terms, at sixteen
+   * points with complex rational values of its variables, evaluated with 40 digits. The first
+   * four points lie next to the negative real axis, above it, below it and on both sides: there
+   * an equation which only holds on a part of the plane fails, as
+   * <code>Sqrt(x*y) == Sqrt(x)*Sqrt(y)</code>. The others are random in every quadrant. The first
+   * point where the function isn't zero ends the test, so it costs an expression which isn't
+   * zero one evaluation. Functions which the machine samples leave out - <code>Erf</code>,
+   * <code>Gamma</code>, roots of variables - and exponentials which overflow have their values
+   * here.
+   */
+  private static boolean isZeroAtPreciseSamples(IAST function, EvalEngine engine) {
+    if (function.leafCount() > MAX_PRECISE_SAMPLE_LEAFCOUNT) {
+      return false;
+    }
+    VariablesSet varSet = new VariablesSet(function);
+    if (varSet.isEmpty() || !function.isNumericFunction(varSet)) {
+      return false;
+    }
+    final IAST variables = varSet.getVarList();
+    final IAST terms = function.isPlus() ? function : F.List(function);
+    final ThreadLocalRandom random = ThreadLocalRandom.current();
+    int zeros = 0;
+    int undecided = 0;
+    for (int trial = 0; trial < PRECISE_SAMPLES + 6 && zeros < PRECISE_SAMPLES; trial++) {
+      IASTAppendable rules = F.ListAlloc(variables.argSize());
+      for (int i = 1; i <= variables.argSize(); i++) {
+        int re = random.nextInt(1, 30);
+        int im = random.nextInt(1, 30);
+        if (trial < 4) {
+          // next to the negative real axis: above, below, and alternately
+          boolean above = trial == 0 || (trial >= 2 && (i + trial) % 2 == 0);
+          rules.append(F.Rule(variables.get(i),
+              F.CC(F.QQ(-(5 + re), 13), F.QQ(above ? 1 : -1, 60 + im))));
+        } else {
+          rules.append(F.Rule(variables.get(i), F.CC(F.QQ(random.nextBoolean() ? re : -re, 13),
+              F.QQ(random.nextBoolean() ? im : -im, 17))));
+        }
+      }
+      COMPARE_TERNARY zero = isZeroAtPrecisePoint(terms, rules, engine);
+      if (zero == IExpr.COMPARE_TERNARY.FALSE) {
+        return false;
+      }
+      if (zero == IExpr.COMPARE_TERNARY.TRUE) {
+        zeros++;
+      } else if (++undecided > MAX_UNDECIDED_PRECISE_POINTS) {
+        // the values with 40 digits are not to be had, like AppellF1 far outside of the unit
+        // circle: no more time is spent on a second opinion
+        return false;
+      }
+    }
+    if (zeros < PRECISE_SAMPLES) {
+      return false;
+    }
+    // Real points of both signs and of small and large size, as in isZeroAtEverySample: an
+    // equation may fail on the branch cut of a root only, t < -2 for
+    // Sqrt((2-t)/(2+t))*(2+t) == Sqrt(4-t^2), which no complex point hits. The machine value
+    // screens the points, and one which isn't 0 is looked at with 40 digits.
+    final int realSamples = realSampleCount(variables.argSize());
+    int ladders = 0;
+    for (int i = 0; i < realSamples; i++) {
+      engine.checkTimeLimit();
+      IASTAppendable machineRules = F.ListAlloc(variables.argSize());
+      IAST rules = realSamplePoint(variables, i, realSamples, random, machineRules);
+      if (isPossibleZeroApproximate(function.replaceAll(machineRules),
+          engine) != IExpr.COMPARE_TERNARY.TRUE) {
+        // not 0 as a machine number, or no machine number: 40 digits say what it is
+        if (++ladders > MAX_PRECISE_REAL_POINTS) {
+          // too many points which the machine numbers leave open to call the function zero
+          return false;
+        }
+        if (isZeroAtPrecisePoint(terms, rules, engine) == IExpr.COMPARE_TERNARY.FALSE) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** The points without a value in time after which {@link #isZeroAtPreciseSamples} gives up. */
+  private static final int MAX_UNDECIDED_PRECISE_POINTS = 3;
+
+  /** The time the value of one term with 40 digits at one point may take. */
+  private static final long PRECISE_POINT_MILLIS = 2_000L;
+
+  /** The real points which {@link #isZeroAtPreciseSamples} evaluates with 40 digits at most. */
+  private static final int MAX_PRECISE_REAL_POINTS = 24;
+
+  /**
+   * Whether the sum of <code>terms</code> at the exact point <code>rules</code> is zero to 25
+   * digits, measured against its largest term, with 40 digits.
+   *
+   * @return <code>UNDECIDABLE</code> if a term has no finite value there
+   */
+  private static COMPARE_TERNARY isZeroAtPrecisePoint(IAST terms, IAST rules, EvalEngine engine) {
+    double scale = 0.0;
+    IASTAppendable values = F.PlusAlloc(terms.argSize());
+    for (int i = 1; i <= terms.argSize(); i++) {
+      final IExpr term = F.subst(terms.get(i), rules);
+      // a value which takes long is no value here: 40 digits of AppellF1 at u^2 == 5 run for
+      // minutes
+      IExpr value = TimeLimits.callOrNil(engine, () -> evalPrecise(term, 40, engine),
+          org.matheclipse.core.basic.MachineProfile.millis(PRECISE_POINT_MILLIS));
+      double magnitude =
+          value.isNumber() ? engine.evalQuiet(F.N(F.Abs(value))).evalfNaN() : Double.NaN;
+      if (Double.isNaN(magnitude) || Double.isInfinite(magnitude)) {
+        // a pole or no value at this point
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
+      values.append(value);
+      scale = Math.max(scale, magnitude);
+    }
+    double residual = engine.evalQuiet(F.N(F.Abs(values))).evalfNaN();
+    if (Double.isNaN(residual)) {
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    return residual > 1.0e-25 * Math.max(scale, 1.0e-300) ? IExpr.COMPARE_TERNARY.FALSE
+        : IExpr.COMPARE_TERNARY.TRUE;
+  }
+
+  /**
+   * A second opinion for an expression which {@link #isPossibleZeroQ} took for not zero, for the
+   * predicate itself and not for the many tests inside of other functions: the expression as it
+   * is written over one denominator - multiplied out, the powers <code>E^(2*a*x)</code> and
+   * <code>E^(4*a*x)</code> of its denominators don't combine any more - and with its calls
+   * without a numeric value as variables, see {@link #isZeroOverInertCalls}.
+   */
+  public static boolean isZeroAsWritten(IAST function, double tolerance, EvalEngine engine) {
+    if (isZeroTogether(function, engine)) {
+      return true;
+    }
+    if (function.leafCount() <= Config.MAX_POSSIBLE_ZERO_LEAFCOUNT) {
+      // an expression which the test took as too large to multiply out, with a function like Log
+      // which it doesn't sample
+      IExpr expanded = F.evalExpandAll(function);
+      if (expanded.isZero()
+          || (!expanded.equals(function) && isZeroTogether(expanded, engine))) {
+        return true;
+      }
+    }
+    return isZeroAtPreciseSamples(function, engine)
+        || isZeroOverInertCalls(function, tolerance, engine);
+  }
+
+  private static IExpr inertCallsAsVariables(IExpr expr, Map<IExpr, ISymbol> variables) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    IExpr head = ast.head();
+    if (head.isBuiltInSymbol() && ((ISymbol) head).isNumericFunctionAttribute()) {
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = inertCallsAsVariables(ast.get(i), variables);
+        if (arg != ast.get(i)) {
+          if (result.isNIL()) {
+            result = ast.copy();
+          }
+          result.set(i, arg);
+        }
+      }
+      return result.orElse(ast);
+    }
+    ISymbol variable = variables.get(ast);
+    if (variable == null) {
+      variable = F.Dummy("pzq" + variables.size());
+      variables.put(ast, variable);
+    }
+    return variable;
+  }
+
   public static boolean isPossibleZeroQ(IAST function, boolean fastTest, double tolerance,
       EvalEngine engine) {
     if (function.isConditionalExpression()) {
@@ -846,13 +1103,22 @@ public class CompareUtil {
             }
             if (zeroDerivative != null) {
               if (zeroDerivative) {
-                COMPARE_TERNARY possibeZero =
-                    isPossibeZeroFixedValues(F.C0, function, variables, engine);
-                if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-                  return true;
+                // A function with the derivative 0 is constant between its jumps, and 0 only if
+                // it is 0 on each side of them: ArcCot(x)+ArcTan(x)-Pi/2 is 0 at x == 0 and for
+                // x > 0, and -Pi for x < 0; ArcTan(Tan(x))-x is 0 up to Pi/2 only.
+                int zeros = 0;
+                for (INumber point : PIECEWISE_CONSTANT_POINTS) {
+                  COMPARE_TERNARY possibeZero =
+                      isPossibeZeroFixedValues(point, function, variables, engine);
+                  if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                    return false;
+                  }
+                  if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                    zeros++;
+                  }
                 }
-                if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-                  return false;
+                if (zeros > 0) {
+                  return true;
                 }
               } else {
                 return false;
@@ -911,7 +1177,16 @@ public class CompareUtil {
 
           // None of the fixed values refuted the zero. One where the function is undefined decides
           // nothing: (x^2-1)/(x-1) - (x+1) is 0/0 at x == 1.
-          if (trueCounter >= 3) {
+          boolean sampleAtRandom = trueCounter >= 3;
+          if (!sampleAtRandom) {
+            // the fixed values may all be poles: one random point says whether there are values
+            possibeZero = isPossibeZero(function, variables, engine);
+            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+              return false;
+            }
+            sampleAtRandom = possibeZero == IExpr.COMPARE_TERNARY.TRUE;
+          }
+          if (sampleAtRandom) {
             // 2. step test some random complex numeric values
             for (int i = 0; i < 36; i++) {
               possibeZero = isPossibeZero(function, variables, engine);
@@ -1175,10 +1450,7 @@ public class CompareUtil {
     // real points of both signs and of small and large size: an identity may fail on the branch
     // cut of a root only, which the complex points never hit. A point where the function has no
     // value says nothing here.
-    final int n = variables.argSize();
-    final int signBits = Math.min(n, MAX_SIGN_BITS);
-    final int realSamples = Math.min(REAL_SAMPLES << signBits, MAX_REAL_SAMPLES);
-    final int sizes = Math.max(realSamples >> signBits, 1);
+    final int realSamples = realSampleCount(variables.argSize());
     int ladders = 0;
     // The machine value of a sample is taken from machine numbers if a power has variables in its
     // base and its exponent: the exact value, which N computes first, has powers like
@@ -1190,21 +1462,8 @@ public class CompareUtil {
             && !x.base().isNumericFunction(true), true);
     for (int i = 0; i < realSamples; i++) {
       engine.checkTimeLimit();
-      final int visit = i >> signBits;
-      IASTAppendable rules = F.ListAlloc(n);
-      IASTAppendable machineRules = F.ListAlloc(n);
-      for (int j = 0; j < n; j++) {
-        // a variable of its own value and sign: a cut may lie in one sign combination only, Sqrt(x/a)
-        // sees none of them while x and a are equal. Each sign combination runs through the sizes
-        // in [1/8, 64], so that no part is left out, in another order for each variable: x small
-        // and a large is a part as well.
-        final int size = (visit * (2 * j + 1) + j) % sizes;
-        final double magnitude = 0.125 * Math.pow(512.0, (size + tlr.nextDouble()) / sizes);
-        final boolean negative = j < signBits ? (i >> j & 1) != 0 : tlr.nextBoolean();
-        IRational value = exactNumber(negative ? -magnitude : magnitude);
-        rules.append(F.Rule(variables.get(j + 1), value));
-        machineRules.append(F.Rule(variables.get(j + 1), F.num(value.doubleValue())));
-      }
+      IASTAppendable machineRules = F.ListAlloc(variables.argSize());
+      IAST rules = realSamplePoint(variables, i, realSamples, tlr, machineRules);
       // only a machine value which isn't 0 asks for more digits, and a few of them have the answer
       if (isPossibleZeroApproximate(
           function.replaceAll(machineScreen ? machineRules : rules),
@@ -1214,6 +1473,39 @@ public class CompareUtil {
       }
     }
     return zeros >= samples - 3;
+  }
+
+  /** The number of real sample points for <code>n</code> variables. */
+  private static int realSampleCount(int n) {
+    return Math.min(REAL_SAMPLES << Math.min(n, MAX_SIGN_BITS), MAX_REAL_SAMPLES);
+  }
+
+  /**
+   * The real sample point <code>i</code> of <code>realSamples</code>, each variable with a value
+   * and a sign of its own: a cut may lie in one sign combination only, Sqrt(x/a) sees none of
+   * them while x and a are equal. Each sign combination runs through the sizes in [1/8, 64], so
+   * that no part is left out, in another order for each variable: x small and a large is a part
+   * as well.
+   *
+   * @param machineRules the same point as machine numbers is appended
+   * @return the rules of the exact point
+   */
+  private static IAST realSamplePoint(IAST variables, int i, int realSamples,
+      ThreadLocalRandom random, IASTAppendable machineRules) {
+    final int n = variables.argSize();
+    final int signBits = Math.min(n, MAX_SIGN_BITS);
+    final int sizes = Math.max(realSamples >> signBits, 1);
+    final int visit = i >> signBits;
+    IASTAppendable rules = F.ListAlloc(n);
+    for (int j = 0; j < n; j++) {
+      final int size = (visit * (2 * j + 1) + j) % sizes;
+      final double magnitude = 0.125 * Math.pow(512.0, (size + random.nextDouble()) / sizes);
+      final boolean negative = j < signBits ? (i >> j & 1) != 0 : random.nextBoolean();
+      IRational value = exactNumber(negative ? -magnitude : magnitude);
+      rules.append(F.Rule(variables.get(j + 1), value));
+      machineRules.append(F.Rule(variables.get(j + 1), F.num(value.doubleValue())));
+    }
+    return rules;
   }
 
   /**

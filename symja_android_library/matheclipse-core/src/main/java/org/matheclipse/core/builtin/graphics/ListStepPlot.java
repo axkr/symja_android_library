@@ -114,8 +114,8 @@ public class ListStepPlot extends ListPlot {
         if (subData.isList()) {
           IAST defaultStyle = graphicsOptions.nextCurveStyle();
           IExpr style = defaultStyle;
-          IExpr userStyle =
-              GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], i - 1);
+          IExpr userStyle = GraphicsOptions.curvePlotStyle(options[GraphicsOptions.X_PLOTSTYLE],
+              i - 1, dataList.argSize());
           if (userStyle.isPresent())
             style = GraphicsOptions.withUserStyle(defaultStyle, userStyle);
 
@@ -133,7 +133,8 @@ public class ListStepPlot extends ListPlot {
     } else {
       IAST defaultStyle = graphicsOptions.nextCurveStyle();
       IExpr style = defaultStyle;
-      IExpr userStyle = GraphicsOptions.getPlotStyle(options[GraphicsOptions.X_PLOTSTYLE], 0);
+      IExpr userStyle =
+          GraphicsOptions.curvePlotStyle(options[GraphicsOptions.X_PLOTSTYLE], 0, 1);
       if (userStyle.isPresent())
         style = GraphicsOptions.withUserStyle(defaultStyle, userStyle);
 

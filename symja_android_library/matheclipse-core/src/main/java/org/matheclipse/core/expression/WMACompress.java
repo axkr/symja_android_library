@@ -22,6 +22,8 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Characters;
+import org.matheclipse.parser.client.Scanner;
 
 /**
  * The script's wire format for <code>Compress</code> and <code>Uncompress</code>.
@@ -74,7 +76,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </table>
  *
  * <p>
- * Anything outside ASCII is written <code>\:XXXX</code> inside a string or a symbol name.
+ * The text of a string or a symbol name is written in printable ASCII: a backslash doubled, control
+ * and Latin-1 characters as octal <code>\ooo</code>, anything else as <code>\:XXXX</code> or
+ * <code>\|XXXXXX</code>. A reader decodes every escape of a string literal, once, so it also takes
+ * <code>\"</code>, <code>\n</code> or <code>\[Name]</code> from other writers.
  *
  * <p>
  * This is what a notebook front end reads: the WLJS Notebook keeps compressed strings in its cells
@@ -262,21 +267,65 @@ public class WMACompress {
     out.write(bytes, 0, bytes.length);
   }
 
-  /** Everything outside ASCII is written <code>\:XXXX</code>. */
+  /**
+   * The text of a token in printable ASCII, every other character escaped, see
+   * {@link #appendEscape(StringBuilder, int)}. {@link Reader#unescape(String)} reads it back.
+   */
   private static String escape(String text) {
     StringBuilder buf = null;
-    for (int i = 0; i < text.length(); i++) {
-      char c = text.charAt(i);
-      if (c > 127) {
-        if (buf == null) {
-          buf = new StringBuilder(text.length() + 8).append(text, 0, i);
-        }
-        buf.append(String.format("\\:%04X", (int) c));
-      } else if (buf != null) {
-        buf.append(c);
+    for (int i = 0; i < text.length();) {
+      int codePoint = text.codePointAt(i);
+      boolean escaped = isEscaped(codePoint);
+      if (escaped && buf == null) {
+        buf = new StringBuilder(text.length() + 16).append(text, 0, i);
       }
+      if (buf != null) {
+        if (escaped) {
+          appendEscape(buf, codePoint);
+        } else {
+          buf.append((char) codePoint);
+        }
+      }
+      i += Character.charCount(codePoint);
     }
     return buf == null ? text : buf.toString();
+  }
+
+  /** Every character but printable ASCII and the backslash stands as is. */
+  private static boolean isEscaped(int codePoint) {
+    return codePoint == '\\' || codePoint < 0x20 || codePoint >= 0x7F;
+  }
+
+  private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+
+  /**
+   * Append the escape sequence of a code point: a backslash doubled, a control character and a
+   * character of Latin-1 beyond ASCII as three octal digits <code>\ooo</code> (a newline is
+   * <code>\012</code>, <code>é</code> is <code>\351</code>), any other character as
+   * <code>\:XXXX</code> or <code>\|XXXXXX</code> in upper case hex digits. A quote stands as is,
+   * and a named character is written by its code, not its name.
+   */
+  private static void appendEscape(StringBuilder buf, int codePoint) {
+    buf.append('\\');
+    if (codePoint == '\\') {
+      buf.append('\\');
+    } else if (codePoint <= 0xFF) {
+      buf.append((char) ('0' + (codePoint >> 6))) //
+          .append((char) ('0' + ((codePoint >> 3) & 7))) //
+          .append((char) ('0' + (codePoint & 7)));
+    } else {
+      int digits;
+      if (codePoint <= 0xFFFF) {
+        buf.append(':');
+        digits = 4;
+      } else {
+        buf.append('|');
+        digits = 6;
+      }
+      for (int shift = 4 * (digits - 1); shift >= 0; shift -= 4) {
+        buf.append(HEX_DIGITS[(codePoint >> shift) & 0xF]);
+      }
+    }
   }
 
   private static void writeInt(int value, ByteArrayOutputStream out) {
@@ -607,27 +656,124 @@ public class WMACompress {
       return text;
     }
 
-    /** Put back the characters written as <code>\:XXXX</code>. */
+    /**
+     * The characters of a token, which is written as the inside of a string literal: every escape
+     * sequence of a string literal stands for its character - <code>\\</code>, <code>\"</code>,
+     * <code>\n</code>, <code>\t</code>, <code>\r</code>, <code>\b</code>, <code>\f</code>, the
+     * codes <code>\:XXXX</code>, <code>\|XXXXXX</code>, <code>\.XX</code> and <code>\ooo</code>,
+     * the named characters <code>\[Name]</code> and the box escapes. The text is read once, from
+     * left to right, so the character an escape stands for is never taken as the start of another
+     * one. A backslash which starts no escape stays as it is.
+     */
     private static String unescape(String text) {
-      int start = text.indexOf("\\:");
-      if (start < 0) {
+      int i = text.indexOf('\\');
+      if (i < 0) {
         return text;
       }
-      StringBuilder buf = new StringBuilder(text.length());
-      int i = 0;
-      while (i < text.length()) {
-        if (i + 5 < text.length() && text.charAt(i) == '\\' && text.charAt(i + 1) == ':') {
-          try {
-            buf.append((char) Integer.parseInt(text.substring(i + 2, i + 6), 16));
-            i += 6;
-            continue;
-          } catch (NumberFormatException nfe) {
-            // not an escape after all, take the backslash as it stands
-          }
+      final int length = text.length();
+      StringBuilder buf = new StringBuilder(length).append(text, 0, i);
+      while (i < length) {
+        char c = text.charAt(i);
+        if (c != '\\' || i + 1 >= length) {
+          buf.append(c);
+          i++;
+          continue;
         }
-        buf.append(text.charAt(i++));
+        char next = text.charAt(i + 1);
+        int end = i + 2;
+        String replacement = null;
+        switch (next) {
+          case '\\':
+          case '"':
+            replacement = String.valueOf(next);
+            break;
+          case 'n':
+            replacement = "\n";
+            break;
+          case 't':
+            replacement = "\t";
+            break;
+          case 'r':
+            replacement = "\r";
+            break;
+          case 'b':
+            replacement = "\b";
+            break;
+          case 'f':
+            replacement = "\f";
+            break;
+          case '!':
+            replacement = String.valueOf(Scanner.BOX_BANG);
+            break;
+          case '(':
+            replacement = String.valueOf(Scanner.BOX_OPEN);
+            break;
+          case ')':
+            replacement = String.valueOf(Scanner.BOX_CLOSE);
+            break;
+          case '*':
+            replacement = String.valueOf(Scanner.BOX_SEPARATOR);
+            break;
+          case '`':
+            replacement = String.valueOf(Scanner.BOX_FORM);
+            break;
+          case ':':
+            end = i + 6;
+            replacement = codePoint(text, i + 2, end, 16);
+            break;
+          case '|':
+            end = i + 8;
+            replacement = codePoint(text, i + 2, end, 16);
+            break;
+          case '.':
+            end = i + 4;
+            replacement = codePoint(text, i + 2, end, 16);
+            break;
+          case '[': {
+            int close = text.indexOf(']', i + 2);
+            if (close > i + 2) {
+              replacement = Characters.NamedCharactersMap.get(text.substring(i + 2, close));
+              end = close + 1;
+            }
+            break;
+          }
+          default:
+            if (next >= '0' && next <= '7') {
+              end = i + 4;
+              replacement = codePoint(text, i + 1, end, 8);
+            }
+            break;
+        }
+        if (replacement == null) {
+          // a backslash which starts no escape is a character of its own
+          buf.append(c);
+          i++;
+        } else {
+          buf.append(replacement);
+          i = end;
+        }
       }
       return buf.toString();
+    }
+
+    /**
+     * The character whose code is written in <code>text[start, end)</code> in the given radix, or
+     * <code>null</code> if that is no code.
+     */
+    private static String codePoint(String text, int start, int end, int radix) {
+      if (end > text.length()) {
+        return null;
+      }
+      int codePoint = 0;
+      for (int i = start; i < end; i++) {
+        int digit = Character.digit(text.charAt(i), radix);
+        if (digit < 0) {
+          return null;
+        }
+        codePoint = codePoint * radix + digit;
+      }
+      return Character.isValidCodePoint(codePoint) ? new String(Character.toChars(codePoint))
+          : null;
     }
   }
 

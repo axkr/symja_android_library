@@ -714,6 +714,9 @@ public class GraphFunctions {
         IAST graphLayout = gex.options().getRule(S.GraphLayout);
         embedding = graphLayout.isPresent() ? graphLayout.second() : S.Automatic;
       }
+      if (!GraphLayouts.validSuboptions(embedding, engine)) {
+        return F.NIL;
+      }
       Graph<IExpr, ?> g = gex.toData();
       IAST layout = GraphLayouts.coordinates(g, embedding);
       if (layout.isNIL()) {
@@ -786,14 +789,21 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() > 1) {
+        // a plot of a list of rules draws its edges as undirected ones
+        final boolean ruleList = ast.arg1().isList();
+        GraphExpr<?> graph;
         IAST labelled = labelledEdges(ast.arg1());
         if (labelled.isPresent()) {
           // {{edge1, label1}, ...}: the edges, with their labels drawn on them
           IExpr labelledGraph = engine.evaluate(F.binaryAST2(S.Graph, labelled.first(),
               F.Rule(S.EdgeLabels, labelled.second())));
-          return labelledGraph.head() == S.Graph ? ast.setAtCopy(1, labelledGraph) : F.NIL;
+          if (labelledGraph.head() != S.Graph) {
+            return F.NIL;
+          }
+          graph = GraphExpr.newInstance(labelledGraph);
+        } else {
+          graph = GraphExpr.newInstance(ast.arg1());
         }
-        GraphExpr<?> graph = GraphExpr.newInstance(ast.arg1());
         if (graph == null) {
           return F.NIL;
         }
@@ -805,6 +815,8 @@ public class GraphFunctions {
           // VertexLabels, GraphLayout, ... given to GraphPlot describe the graph it draws
           graph = GraphGraphics.withPlotOptions(graph, ast, 2);
           GraphGraphics gg = new GraphGraphics(graph);
+          gg.setPlotOptions(ast, 2);
+          gg.setUndirectedRenderedEdges(ruleList);
           IExpr gExpr = gg.toGraphics();
 
           if (gExpr.isAST(S.Graphics)) {
@@ -818,7 +830,8 @@ public class GraphFunctions {
             for (int i = 2; i < ast.size(); i++) {
               IExpr option = ast.get(i);
               if (option.isRuleAST() && option.first() != S.ImageSize
-                  && !GraphGraphics.isPlotGraphOption(option)) {
+                  && !GraphGraphics.isPlotGraphOption(option)
+                  && !GraphGraphics.isPlotDrawingOption(option)) {
                 gApp.append(option);
               }
             }
@@ -836,17 +849,50 @@ public class GraphFunctions {
     }
   }
 
-  /**
-   * The edges and the rules <code>edge -> label</code> of a list <code>{{edge1, label1}, ...}</code>
-   * of labelled edges.
-   *
-   * @return <code>F.NIL</code> if <code>list</code> is not such a list
-   */
   private static boolean isEdge(IExpr edge) {
     return edge.isRuleAST() || edge.isAST(S.DirectedEdge, 3) || edge.isAST(S.UndirectedEdge, 3)
         || edge.isAST(S.TwoWayRule, 3);
   }
 
+  /**
+   * The graph of a list <code>{{edge1, label1}, edge2, ...}</code> of edges given as first
+   * argument of a plot call: its edges, with their labels unless the call has the option
+   * <code>EdgeLabeling -&gt; False</code>.
+   *
+   * @return <code>arg</code> itself if it is no such list
+   */
+  public static IExpr labelledEdgesGraph(IExpr arg, IAST call, EvalEngine engine) {
+    IAST labelled = labelledEdges(arg);
+    if (labelled.isNIL()) {
+      return arg;
+    }
+    return engine.evaluate(edgeLabeling(call)
+        ? F.binaryAST2(S.Graph, labelled.first(), F.Rule(S.EdgeLabels, labelled.second()))
+        : F.unaryAST1(S.Graph, labelled.first()));
+  }
+
+  /** Whether a plot call draws edge labels: not with the option <code>EdgeLabeling -&gt; False</code>. */
+  private static boolean edgeLabeling(IAST call) {
+    for (int i = 2; i < call.size(); i++) {
+      if (isEdgeLabelingOption(call.get(i))) {
+        return !call.get(i).second().isFalse();
+      }
+    }
+    return true;
+  }
+
+  /** Whether <code>option</code> is a rule for the legacy option <code>EdgeLabeling</code>. */
+  public static boolean isEdgeLabelingOption(IExpr option) {
+    return option.isRuleAST() && option.first().isSymbol()
+        && ((ISymbol) option.first()).getSymbolName().equalsIgnoreCase("EdgeLabeling");
+  }
+
+  /**
+   * The edges and the rules <code>edge -> label</code> of a list
+   * <code>{{edge1, label1}, edge2, ...}</code> of edges, at least one of them with a label.
+   *
+   * @return <code>F.NIL</code> if <code>list</code> is not such a list
+   */
   public static IAST labelledEdges(IExpr list) {
     if (!list.isList() || list.argSize() == 0) {
       return F.NIL;
@@ -854,6 +900,11 @@ public class GraphFunctions {
     IASTAppendable edges = F.ListAlloc(list.argSize());
     IASTAppendable labels = F.ListAlloc(list.argSize());
     for (IExpr item : (IAST) list) {
+      if (isEdge(item)) {
+        // an edge without a label
+        edges.append(item);
+        continue;
+      }
       if (!item.isList2()) {
         return F.NIL;
       }
@@ -865,7 +916,7 @@ public class GraphFunctions {
       edges.append(edge);
       labels.append(F.Rule(edge, item.second()));
     }
-    return F.list(edges, labels);
+    return labels.isEmpty() ? F.NIL : F.list(edges, labels);
   }
 
   /**

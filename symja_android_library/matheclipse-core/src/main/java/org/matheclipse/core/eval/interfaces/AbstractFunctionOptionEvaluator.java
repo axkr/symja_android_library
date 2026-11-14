@@ -123,7 +123,9 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       IExpr arg = held.get(i);
       if (arg.isList() && arg.argSize() >= 2 && arg.argSize() <= 4) {
         IExpr variable = arg.first();
+        // {opt1 -> value1, opt2 -> value2} is a list of options, not an iterator
         if (variable.isAST() && !variable.isList() && !variable.isAST(S.Evaluate)
+            && !variable.isRuleAST()
             && variable.head().isSymbol() && !variable.isNumericFunction(true)
             && !renamed.exists(rule -> rule.first().equals(variable))) {
           ISymbol dummy = F.Dummy();

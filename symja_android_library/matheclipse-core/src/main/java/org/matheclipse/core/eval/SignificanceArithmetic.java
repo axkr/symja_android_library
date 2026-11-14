@@ -159,7 +159,8 @@ public final class SignificanceArithmetic {
       }
       return ApfloatNum.zero(accuracy);
     }
-    final long digits = Math.round(precision);
+    final double bounded = EvalEngine.get().boundedPrecision(precision);
+    final long digits = Math.round(Math.min(precision, bounded));
     if (apfloat.precision() < digits || extended) {
       // more digits than the arguments have, like the square root, or the digits of arguments
       // which are stored beyond their precision: calculated with enough of them
@@ -171,7 +172,7 @@ public final class SignificanceArithmetic {
         return result;
       }
     }
-    return ApfloatNum.valueOf(apfloat, precision);
+    return ApfloatNum.valueOf(apfloat, bounded);
   }
 
   /**
@@ -435,7 +436,7 @@ public final class SignificanceArithmetic {
       }
       return ApfloatNum.zero(accuracy);
     }
-    return ApfloatNum.valueOf(value, precision);
+    return ApfloatNum.valueOf(value, EvalEngine.get().boundedPrecision(precision));
   }
 
   /**

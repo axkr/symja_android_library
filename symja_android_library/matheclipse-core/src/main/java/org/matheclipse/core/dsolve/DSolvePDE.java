@@ -30,6 +30,12 @@ final class DSolvePDE {
   private static final long FAMILIES_MILLIS = 20000;
 
   /**
+   * The time budget of the characteristics in three variables: every order of the variables is an
+   * attempt with ordinary differential equations of its own.
+   */
+  private static final long THREE_VARIABLES_MILLIS = 20000;
+
+  /**
    * Solves a partial differential equation in two independent variables.
    *
    * <p>
@@ -45,6 +51,11 @@ final class DSolvePDE {
    */
   static IExpr solvePDE(IExpr equation, IExpr uFunc, IAST xVars, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
+    if (xVars.argSize() == 3 && ctx.conditions.argSize() == 0) {
+      return TimeLimits.call(engine,
+          () -> DSolvePDEThreeVariables.solve(equation, uFunc, xVars, ctx),
+          MachineProfile.millis(THREE_VARIABLES_MILLIS), () -> F.NIL);
+    }
     if (xVars.argSize() != 2) {
       return F.NIL;
     }
@@ -122,13 +133,20 @@ final class DSolvePDE {
       return F.NIL;
     }
     if (ctx.conditions.argSize() > 0 && !conditionsUsed) {
-      if (body.isList()) {
+      // each branch of the general solution is fitted on its own, and one which then misses the
+      // condition is no solution: -Sqrt(...) of u^2 == ... for the value u(x, 0) == 1
+      IAST general = body.makeList();
+      IASTAppendable fitted = F.ListAlloc(general.argSize());
+      for (int i = 1; i <= general.argSize(); i++) {
+        IExpr branch = applyPDEConditions(general.get(i), uApplied, x, y, ctx);
+        if (branch.isPresent()) {
+          fitted.append(branch);
+        }
+      }
+      if (fitted.argSize() == 0) {
         return F.NIL;
       }
-      body = applyPDEConditions(body, uApplied, x, y, ctx);
-      if (body.isNIL()) {
-        return F.NIL;
-      }
+      body = fitted.argSize() == 1 ? fitted.arg1() : fitted;
     }
     // A complete integral may come in several branches, one per root of the equation for the
     // second derivative, and each of them is a solution in its own right.
@@ -264,6 +282,14 @@ final class DSolvePDE {
     }
     IExpr determined = engine.evaluate(
         F.subst(body, constant, F.Function(F.List(s), values.arg1())));
+    // Solve answers formally: the value which a squared equation gives the arbitrary function may
+    // belong to the other branch of the root
+    IExpr missed = F.Subtract(F.subst(determined, fixedVariable, fixedValue),
+        F.subst(value, fixedVariable, fixedValue));
+    if (DSolveVerify.refutesCondition(
+        DSolveVerify.pinUnknownFunctions(engine.evaluate(missed), F.CEmptyList, engine), engine)) {
+      return F.NIL;
+    }
     return engine.evaluate(F.Simplify(determined));
   }
 
@@ -732,6 +758,15 @@ final class DSolvePDE {
    */
   private static IExpr pdeCharacteristics(IExpr lhs, IExpr uApplied, IExpr x, IExpr y,
       DSolveContext ctx) {
+    return pdeCharacteristics(lhs, uApplied, x, y, ctx, false);
+  }
+
+  /**
+   * @param exchanged the characteristic is asked for as a function of the other variable, and is
+   *        only of use with a single branch
+   */
+  private static IExpr pdeCharacteristics(IExpr lhs, IExpr uApplied, IExpr x, IExpr y,
+      DSolveContext ctx, boolean exchanged) {
     EvalEngine engine = ctx.engine;
     IExpr ux = engine.evaluate(F.D(uApplied, x));
     IExpr uy = engine.evaluate(F.D(uApplied, y));
@@ -765,16 +800,32 @@ final class DSolvePDE {
     IExpr charEq = F.Equal(F.Subtract(yPrimeX, ratio_sub), F.C0);
     IExpr C_1 = F.C(engine.incConstantCounter());
 
+    // set if the characteristic is the first of several branches: the answer written with it is
+    // then checked at values of every sign
+    boolean firstOfSeveralBranches = false;
     IExpr charSolList = DSolveODE.solveSingleODE(charEq, x, F.List(yFuncX), C_1, ctx);
     if (charSolList.isNIL()) {
       charSolList = DSolveODE.odeSolve(engine, charEq, x, yFuncX, C_1);
     }
 
     if (charSolList.isPresent()) {
-      IExpr yxExpr = charSolList.isList() ? ((IAST) charSolList).arg1() : charSolList;
-      if (yxExpr.isRule()) {
-        yxExpr = ((IAST) yxExpr).second();
+      if (charSolList.isList() && charSolList.argSize() > 1) {
+        // The characteristic y(x) has several branches, as -Sqrt(2*x/3+C) and its negative for
+        // y' == 1/(3*y), and what is written with one of them holds on a part of the plane only:
+        // E^(-Sqrt(y^2)) is E^y for y < 0. The characteristic x(y) may have a single branch.
+        if (exchanged) {
+          return F.NIL;
+        }
+        final int counter = engine.getConstantCounter();
+        engine.setConstantCounter(counter - 1);
+        IExpr single = pdeCharacteristics(lhs, uApplied, y, x, ctx, true);
+        if (single.isPresent()) {
+          return single;
+        }
+        engine.setConstantCounter(counter);
+        firstOfSeveralBranches = true;
       }
+      IExpr yxExpr = branchValue(charSolList.isList() ? ((IAST) charSolList).arg1() : charSolList);
 
       // Solve for the characteristic constant: C_1 = g(x,y)
       IExpr eqForC1 = F.Equal(y, yxExpr);
@@ -808,18 +859,29 @@ final class DSolvePDE {
           }
 
           if (uSolList.isPresent()) {
-            IExpr u_sol_x = uSolList.isList() ? ((IAST) uSolList).arg1() : uSolList;
-            if (u_sol_x.isRule()) {
-              u_sol_x = ((IAST) u_sol_x).second();
+            // every branch of the solution along the characteristic is a solution: both roots of
+            // u^2 == ...
+            IAST uBranches = uSolList.isList() ? (IAST) uSolList : F.List(uSolList);
+            IASTAppendable solutions = F.ListAlloc(uBranches.argSize());
+            for (int i = 1; i <= uBranches.argSize(); i++) {
+              IExpr u_sol_x = branchValue(uBranches.get(i));
+
+              // Substitute the curve definitions back to form the generalized arbitrary function
+              IExpr final_u = engine.evaluate(F.subst(u_sol_x, C_1, g_xy));
+
+              IExpr arbFunc = F.unaryAST1(C_1, g_xy);
+              final_u = engine.evaluate(F.subst(final_u, C_2, arbFunc));
+              if (firstOfSeveralBranches
+                  && !holdsForEverySign(lhs, uApplied, x, y, final_u, engine)) {
+                continue;
+              }
+              if (!solutions.contains(final_u)) {
+                solutions.append(final_u);
+              }
             }
-
-            // Substitute the curve definitions back to form the generalized arbitrary function
-            IExpr final_u = engine.evaluate(F.subst(u_sol_x, C_1, g_xy));
-
-            IExpr arbFunc = F.unaryAST1(C_1, g_xy);
-            final_u = engine.evaluate(F.subst(final_u, C_2, arbFunc));
-
-            return final_u;
+            if (solutions.argSize() > 0) {
+              return solutions.argSize() == 1 ? solutions.arg1() : solutions;
+            }
           }
         } finally {
           engine.decConstantCounter();
@@ -828,6 +890,27 @@ final class DSolvePDE {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * Whether <code>body</code> solves the equation for values of the variables of every sign: the
+   * zero test of the residual, which samples real points of each sign combination and complex
+   * ones. The check of an answer at positive points accepts one which holds on a half plane.
+   */
+  private static boolean holdsForEverySign(IExpr lhs, IExpr uApplied, IExpr x, IExpr y,
+      IExpr body, EvalEngine engine) {
+    IExpr residual = engine.evaluate(
+        F.ReplaceAll(lhs, F.Rule(uApplied.head(), F.Function(F.List(x, y), body))));
+    return residual.isZero() || (residual.isFree(uApplied.head(), true)
+        && engine.evalQuiet(F.PossibleZeroQ(residual)).isTrue());
+  }
+
+  /** The value of one branch of a solution: of a rule, of a list with one rule, or the branch. */
+  private static IExpr branchValue(IExpr branch) {
+    if (branch.isList1() && branch.first().isRule()) {
+      return branch.first().second();
+    }
+    return branch.isRule() ? branch.second() : branch;
   }
 
   /**

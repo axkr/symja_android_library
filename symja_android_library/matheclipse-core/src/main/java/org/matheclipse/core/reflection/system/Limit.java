@@ -462,6 +462,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       features = LimitFeatures.refresh(features, evaledExpr, symbol);
     }
 
+    // Log, Arg, a fractional power or ArcTan(u, v) whose argument approaches the negative real
+    // axis from one side has the value on that side of the branch cut, not the principal value
+    // which substitution returns: Log(-3+I*y) for y -> 0 from below is Log(3)-I*Pi.
+    if (data.direction() != Direction.TWO_SIDED && !limitValue.isDirectedInfinity()) {
+      IExpr cutRewritten = cutSideNextTo(evaledExpr, symbol, limitValue, data.direction(), engine);
+      if (cutRewritten.isPresent()) {
+        evaledExpr = engine.evalQuiet(cutRewritten);
+        features = LimitFeatures.refresh(features, evaledExpr, symbol);
+      }
+    }
+
     if (features.stepFunction) {
       IExpr stepRewritten = hit(Strategy.STEP_FUNCTION, stepFunctionRewrite(evaledExpr, data, engine));
       if (stepRewritten.isPresent()) {
@@ -2062,12 +2073,6 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         IExpr oneRadicand = oppositeRadicands(function, symbol, limit, direction, engine);
         if (oneRadicand.isPresent()) {
           function = engine.evaluate(oneRadicand);
-        }
-        // Log(-1+I*x) at x -> 0 from below tends to -I*Pi, the value on the other side of the cut
-        // than Log(-1) == I*Pi
-        IExpr sideOfCut = cutSideNextTo(function, symbol, limit, direction, engine);
-        if (sideOfCut.isPresent()) {
-          function = engine.evaluate(sideOfCut);
         }
       }
 
@@ -4332,9 +4337,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * <code>function</code> with the powers <code>(-p)^(k/2)</code> of a radicand whose negative
-   * <code>p</code> is a radicand too, and which is positive next to <code>x0</code> on the side of
-   * the approach, written as <code>I^k*p^(k/2)</code>.
+   * <code>function</code> with the powers <code>n^(k/2)</code> of a radicand <code>n == -s*p</code>,
+   * where <code>p</code> is a radicand too and <code>p</code> and the rational <code>s</code> are
+   * positive next to <code>x0</code> on the side of the approach, written as
+   * <code>I^k*s^(k/2)*p^(k/2)</code>: <code>Sqrt(9-x^2)/Sqrt(x^3-9*x)</code> is
+   * <code>I/Sqrt(x)</code> for <code>x &gt; 3</code>.
    *
    * @return {@link F#NIL} if there are no such radicands
    */
@@ -4353,19 +4360,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     if (radicands.size() < 2) {
       return F.NIL;
     }
-    java.util.Map<IExpr, IExpr> negativeToPositive = new java.util.HashMap<IExpr, IExpr>();
+    // the negative radicand n -> {p, s} with n == -s*p
+    java.util.Map<IExpr, IExpr[]> negativeToPositive = new java.util.HashMap<IExpr, IExpr[]>();
     for (int i = 0; i < radicands.size(); i++) {
       for (int j = i + 1; j < radicands.size(); j++) {
         IExpr p = radicands.get(i);
         IExpr q = radicands.get(j);
-        if (!engine.evalQuiet(F.Expand(F.Plus(p, q))).isZero()) {
+        boolean opposite = engine.evalQuiet(F.Expand(F.Plus(p, q))).isZero();
+        if (!opposite && (!engine.evalQuiet(F.subst(p, x, x0)).isZero()
+            || !engine.evalQuiet(F.subst(q, x, x0)).isZero())) {
+          // only two radicands which vanish together make a 0/0 of their roots
+          continue;
+        }
+        IExpr ratio = opposite ? F.CN1 : engine.evalQuiet(F.Together(F.Divide(p, q)));
+        if (!ratio.isMinusOne() && (!isRationalIn(ratio, x, engine)
+            || signNextTo(ratio, x, x0, direction, engine) >= 0)) {
           continue;
         }
         int sign = signNextTo(p, x, x0, direction, engine);
         if (sign > 0) {
-          negativeToPositive.put(q, p);
+          // q == -(1/(-ratio))*p
+          negativeToPositive.put(q,
+              new IExpr[] {p, engine.evalQuiet(F.Divide(F.CN1, ratio))});
         } else if (sign < 0) {
-          negativeToPositive.put(p, q);
+          negativeToPositive.put(p, new IExpr[] {q, engine.evalQuiet(F.Negate(ratio))});
         }
       }
     }
@@ -4375,10 +4393,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return function.replaceAll(e -> {
       if (e.isPower() && e.exponent().isFraction()
           && ((IFraction) e.exponent()).denominator().equals(F.C2)) {
-        IExpr positive = negativeToPositive.get(e.base());
+        IExpr[] positive = negativeToPositive.get(e.base());
         if (positive != null) {
           IExpr k = ((IFraction) e.exponent()).numerator();
-          return F.Times(F.Power(F.CI, k), F.Power(positive, e.exponent()));
+          return F.Times(F.Power(F.CI, k), F.Power(positive[1], e.exponent()),
+              F.Power(positive[0], e.exponent()));
         }
       }
       return F.NIL;
@@ -4397,18 +4416,41 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr cutSideNextTo(IExpr function, ISymbol x, IExpr x0, Direction direction,
       EvalEngine engine) {
-    if (!function.has(y -> (y.isLog() || y.isAST(S.ExpIntegralEi, 2) || y.isAST(S.CosIntegral, 2))
-        && !y.first().isFree(x) && !y.first().isFree(z -> z.isComplex() || z == S.I, true), true)) {
+    if (!function.has(y -> isCutCall(y, x), true)) {
       return F.NIL;
     }
     IExpr result = function.replaceAll(e -> {
-      if (!(e.isLog() || e.isAST(S.ExpIntegralEi, 2) || e.isAST(S.CosIntegral, 2))
-          || e.first().isFree(x) || e.first().isFree(z -> z.isComplex() || z == S.I, true)) {
+      if (!isCutCall(e, x)) {
         return F.NIL;
       }
-      IExpr u = e.first();
+      if (e.isAST(S.ArcTan, 3)) {
+        // ArcTan(u, v) == ArcTan(v/u) + Sign(v)*Pi for u < 0
+        IExpr u0 = engine.evalQuiet(F.subst(e.first(), x, x0));
+        IExpr v0 = engine.evalQuiet(F.subst(e.second(), x, x0));
+        if (!v0.isZero()) {
+          return F.NIL;
+        }
+        int s = signNextTo(e.second(), x, x0, direction, engine);
+        if (u0.isZero()) {
+          // both tend to 0: the direction of (u, v), ArcTan(v/u) for u > 0
+          int su = signNextTo(e.first(), x, x0, direction, engine);
+          if (su > 0) {
+            return F.ArcTan(F.Divide(e.second(), e.first()));
+          }
+          if (su == 0 || s == 0) {
+            return F.NIL;
+          }
+          return F.Plus(F.ArcTan(F.Divide(e.second(), e.first())), F.Times(F.ZZ(s), S.Pi));
+        }
+        if (!isNegativeConstant(u0)) {
+          return F.NIL;
+        }
+        return s == 0 ? F.NIL
+            : F.Plus(F.ArcTan(F.Divide(e.second(), e.first())), F.Times(F.ZZ(s), S.Pi));
+      }
+      IExpr u = e.isPower() ? e.base() : e.first();
       IExpr c = engine.evalQuiet(F.subst(u, x, x0));
-      if (!c.isReal() || !c.isNegative()) {
+      if (!isNegativeConstant(c)) {
         // off the cut, or the branch point
         return F.NIL;
       }
@@ -4421,12 +4463,77 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr minusU = F.Negate(u);
+      IExpr turn = F.Times(F.ZZ(s), S.Pi);
+      if (e.isPower()) {
+        // u^p == (-u)^p*E^(I*p*Sign(Im(u))*Pi)
+        return F.Times(F.Power(minusU, e.exponent()), F.Exp(F.Times(F.CI, e.exponent(), turn)));
+      }
+      if (e.isAST(S.Arg, 2)) {
+        return F.Plus(F.Arg(minusU), turn);
+      }
       IExpr reflected = e.isLog() ? F.Log(minusU)
           : e.isAST(S.CosIntegral, 2) ? F.CosIntegral(minusU)
               : F.Negate(F.ExpIntegralE(F.C1, minusU));
-      return F.Plus(reflected, F.Times(F.ZZ(s), F.CI, S.Pi));
+      return F.Plus(reflected, F.Times(F.CI, turn));
     });
     return result.isPresent() && !result.equals(function) ? result : F.NIL;
+  }
+
+  /**
+   * A call with a branch cut along the negative real axis whose argument depends on <code>x</code>
+   * and isn't real: <code>Log</code>, <code>Arg</code>, <code>ExpIntegralEi</code>,
+   * <code>CosIntegral</code>, a power with a non-integer real exponent, or
+   * <code>ArcTan(u, v)</code>.
+   */
+  private static boolean isCutCall(IExpr e, ISymbol x) {
+    if (e.isAST(S.ArcTan, 3)) {
+      return !e.second().isFree(x);
+    }
+    IExpr u;
+    if (e.isLog() || e.isAST(S.Arg, 2) || e.isAST(S.ExpIntegralEi, 2)
+        || e.isAST(S.CosIntegral, 2)) {
+      u = e.first();
+    } else if (e.isPower() && e.exponent().isReal() && !e.exponent().isInteger()) {
+      u = e.base();
+    } else {
+      return false;
+    }
+    return !u.isFree(x) && !u.isFree(z -> z.isComplex() || z == S.I, true);
+  }
+
+  /**
+   * Whether a call of {@link #isCutCall} has its argument on the negative real axis at the finite
+   * limit point, so that the two sides of the point may take the two sides of the cut.
+   */
+  private static boolean hasCutAtFinitePoint(IExpr function, IAST rule, EvalEngine engine) {
+    if (!rule.arg1().isSymbol() || !rule.arg2().isNumericFunction()
+        || rule.arg2().isDirectedInfinity()) {
+      return false;
+    }
+    final ISymbol x = (ISymbol) rule.arg1();
+    final IExpr x0 = rule.arg2();
+    return function.has(e -> {
+      if (!isCutCall(e, x)) {
+        return false;
+      }
+      if (e.isAST(S.ArcTan, 3)) {
+        IExpr u0 = engine.evalQuiet(F.subst(e.first(), x, x0));
+        return engine.evalQuiet(F.subst(e.second(), x, x0)).isZero()
+            && (u0.isZero() || isNegativeConstant(u0));
+      }
+      IExpr u = e.isPower() ? e.base() : e.first();
+      return isNegativeConstant(engine.evalQuiet(F.subst(u, x, x0)));
+    }, true);
+  }
+
+  /** Whether <code>r</code> is a quotient of two polynomials in <code>x</code>. */
+  private static boolean isRationalIn(IExpr r, ISymbol x, EvalEngine engine) {
+    return engine.evalQuiet(F.Numerator(r)).isPolynomial(F.list(x))
+        && engine.evalQuiet(F.Denominator(r)).isPolynomial(F.list(x));
+  }
+
+  private static boolean isNegativeConstant(IExpr c) {
+    return c.isPresent() && c.isNumericFunction() && c.isRealResult() && c.isNegativeResult();
   }
 
   /**
@@ -4438,7 +4545,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     int sign = 0;
     for (IExpr h : new IExpr[] {F.Power(F.C10, F.CN6), F.Power(F.C10, F.ZZ(-9))}) {
       IExpr point = direction == Direction.FROM_BELOW ? F.Subtract(x0, h) : F.Plus(x0, h);
-      IExpr value = engine.evalQuiet(F.N(F.subst(p, x, point)));
+      IExpr substituted = F.subst(p, x, point);
+      IExpr value = engine.evalQuiet(F.N(substituted));
+      if (value.isZero()) {
+        // a cancellation: 1-Cos(x) at x == 10^-9 is 0 at machine precision
+        value = engine.evalQuiet(F.N(substituted, F.ZZ(30)));
+      }
       if (!value.isReal() || value.isZero()) {
         return 0;
       }
@@ -5111,6 +5223,15 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             if (value.isPresent()) {
               return value;
             }
+          }
+          if (c.isRealResult() && r.isRealResult()) {
+            // an odd function: saturation*Sign(c*r) for a real r != 0. At r == 0 the argument
+            // isn't infinite: ArcTan((p-q)*x+1) tends to ArcTan(1) for p == q
+            IExpr value = F.Times(saturation, F.Sign(F.Times(c, r)));
+            if (EvalEngine.get().evalTrue(F.Refine(F.Unequal(r, F.C0)))) {
+              return value;
+            }
+            return F.ConditionalExpression(value, F.Unequal(r, F.C0));
           }
           if (c.isRealResult()) {
             // an odd function: the sign of the direction decides, under the condition r > 0
@@ -5853,7 +5974,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // The two sides of a point can take different branches of an even root. If both one-sided
       // limits are found, they decide the two-sided one.
       if (direction == Direction.TWO_SIDED && builtinDepth == 0
-          && hasEvenRootAtFinitePoint(arg1, rule)) {
+          && (hasEvenRootAtFinitePoint(arg1, rule) || hasCutAtFinitePoint(arg1, rule, engine))) {
         IExpr fromBelow = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.C1)));
         if (fromBelow.isFree(S.Limit, true) && !fromBelow.isConditionalExpression()) {
           IExpr fromAbove = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.CN1)));

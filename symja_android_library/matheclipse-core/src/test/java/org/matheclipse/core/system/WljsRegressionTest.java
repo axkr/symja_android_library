@@ -571,6 +571,32 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "a^3+3*a^2*b+3*a*b^2+b^3");
   }
 
+  /**
+   * The text of a string token is the inside of a string literal: every escape in it is decoded
+   * once, and an escaped backslash does not start another escape.
+   */
+  @Test
+  public void testCompressedStringEscapes() {
+    // the tokens m\\n\"o, \:00e9t\\:0041\n\[Gamma]\|01F600 and tab\tend\101
+    check(
+        "ToCharacterCode[Uncompress[\"1:eJxTTMoPSmNmYGAoZgESPpnFJcHsQEZuTExejFJ+sAKQHWNlYJBqWRIDok0MgeLR7om5uYmxMTUGhm5mBgbBPEBFJYlJMSWpeSkxhgaGAEB2FS4=\"]]", //
+        "{{109,92,110,34,111},{233,116,92,58,48,48,52,49,10,947,128512},{116,97,98,9,101,\n"
+            + "110,100,65}}");
+    // written as the tokens p\\q"r, \:03B2\|01F600\377\177\001 and Sym\:03B2: a backslash doubled,
+    // a quote as is, control and Latin-1 characters in octal, the others in upper case hex
+    check(
+        "Compress[{\"p\\\\q\\\"r\", \"\\[Beta]\" <> FromCharacterCode[{128512, 255, 127, 1}], "
+            + "Sym\\[Beta]}]", //
+        "1:eJxTTMoPSmNmYGAoZgESPpnFJcFsQEZBTEyhUlGwFJAZY2Vg7GQUU2Ng6GZmYBBjbG4eYwjEBgaGxZxA6eDKXIgKAE2TED0=");
+    // backslashes, quotes, control characters and text that looks like an escape come back as
+    // they were
+    check(
+        "s = \"1\\\\n\" <> FromCharacterCode[{10, 9, 92, 34, 200, 0}] "
+            + "<> \"\\\\[Alpha]\\\\:0041\\\\012\"; "
+            + "{Uncompress[Compress[s]] === s, Uncompress[Compress[{s, h[s]}]] === {s, h[s]}}", //
+        "{True,True}");
+  }
+
   @Test
   public void testWritingToTheProcessOutput() {
     // Kernel/Utils.wl says

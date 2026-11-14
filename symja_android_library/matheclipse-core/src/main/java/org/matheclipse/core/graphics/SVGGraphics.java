@@ -4,6 +4,7 @@ import org.matheclipse.core.graphics.svg.SvgGraphics2D;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import j2html.tags.ContainerTag;
 
@@ -144,6 +145,49 @@ public class SVGGraphics {
    * @return <code>null</code> if <code>base64Png</code> does not start with a PNG header
    */
   public static String imageDocument(String base64Png) {
+    long[] size = pngSize(base64Png);
+    if (size == null) {
+      return null;
+    }
+    long width = size[0];
+    long height = size[1];
+    return XML_DECLARATION + "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + width
+        + "\" height=\"" + height + "\" viewBox=\"0 0 " + width + " " + height + "\">"
+        + imageElement(base64Png, width, height) + "</svg>\n";
+  }
+
+  /**
+   * The <code>&lt;image&gt;</code> element showing a raster image pixel for pixel at the origin.
+   *
+   * @param base64Png the base64 encoded PNG file of the picture
+   * @param width the width in pixels, as {@link #pngSize(String)} reads it
+   * @param height the height in pixels
+   */
+  public static String imageElement(String base64Png, long width, long height) {
+    return "<image width=\"" + width + "\" height=\"" + height
+        + "\" image-rendering=\"pixelated\" href=\"data:image/png;base64," + base64Png + "\"/>";
+  }
+
+  /**
+   * The base64 encoded PNG file an image object holds, the form it is shown and exported from.
+   *
+   * @return <code>null</code> if <code>expr</code> is not an <code>Image</code> holding one
+   */
+  public static String imagePngBase64(IExpr expr) {
+    if (expr.head() == S.Image && expr instanceof IDataExpr
+        && ((IDataExpr<?>) expr).toData() instanceof byte[]) {
+      return new String((byte[]) ((IDataExpr<?>) expr).toData(),
+          java.nio.charset.StandardCharsets.UTF_8);
+    }
+    return null;
+  }
+
+  /**
+   * The width and the height of a base64 encoded PNG file, read from its header.
+   *
+   * @return <code>null</code> if <code>base64Png</code> does not start with a PNG header
+   */
+  public static long[] pngSize(String base64Png) {
     // the signature, the length and the name of the IHDR chunk, then the width and the height
     if (base64Png.length() < 32) {
       return null;
@@ -158,13 +202,7 @@ public class SVGGraphics {
         || header[12] != 'I' || header[13] != 'H' || header[14] != 'D' || header[15] != 'R') {
       return null;
     }
-    long width = readInt(header, 16);
-    long height = readInt(header, 20);
-    return XML_DECLARATION + "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + width
-        + "\" height=\"" + height + "\" viewBox=\"0 0 " + width + " " + height + "\">"
-        + "<image width=\"" + width + "\" height=\"" + height
-        + "\" image-rendering=\"pixelated\" href=\"data:image/png;base64," + base64Png
-        + "\"/></svg>\n";
+    return new long[] {readInt(header, 16), readInt(header, 20)};
   }
 
   /** The big-endian unsigned 32 bit integer at <code>offset</code>. */

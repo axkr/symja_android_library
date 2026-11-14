@@ -584,7 +584,8 @@ public class ApfloatNum implements INum {
    */
   private static ApfloatNum sumResult(final Apfloat value, final double accuracy1,
       final double accuracy2, final boolean machine) {
-    if (EvalEngine.get().isSignificanceSuspended()) {
+    final EvalEngine engine = EvalEngine.get();
+    if (engine.isSignificanceSuspended()) {
       return valueOf(value);
     }
     final double accuracy = ApfloatSignificance.sumAccuracy(accuracy1, accuracy2);
@@ -599,7 +600,7 @@ public class ApfloatNum implements INum {
       // not one digit of the sum is known
       return zero(accuracy);
     }
-    return valueOf(value, precision);
+    return valueOf(value, engine.boundedPrecision(precision));
   }
 
   /**
@@ -607,7 +608,8 @@ public class ApfloatNum implements INum {
    * relative errors add. A zero of a given accuracy keeps an accuracy.
    */
   private ApfloatNum productResult(final Apfloat value, final Object operand) {
-    if (EvalEngine.get().isSignificanceSuspended()) {
+    final EvalEngine engine = EvalEngine.get();
+    if (engine.isSignificanceSuspended()) {
       return valueOf(value);
     }
     final boolean thisZero = fSignificance == ZERO_ACCURACY;
@@ -635,7 +637,7 @@ public class ApfloatNum implements INum {
     if (precision <= 0.0) {
       return zero(precision - ApfloatSignificance.log10Abs(value));
     }
-    return valueOf(value, precision);
+    return valueOf(value, engine.boundedPrecision(precision));
   }
 
   /** The value of a real operand, or <code>null</code>. */

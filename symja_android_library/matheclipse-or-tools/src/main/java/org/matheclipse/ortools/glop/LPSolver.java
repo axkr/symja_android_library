@@ -468,7 +468,8 @@ public final class LPSolver {
         solution.constraintStatuses[row] = revisedSimplex.getConstraintStatus(row);
       }
       if (!parameters.getUsePreprocessing() && !parameters.getUseScaling()) {
-        if (solution.status == ProblemStatus.PRIMAL_UNBOUNDED) {
+        if (solution.status == ProblemStatus.PRIMAL_UNBOUNDED
+            || solution.status == ProblemStatus.DUAL_INFEASIBLE) {
           primalRay = Arrays.copyOf(revisedSimplex.getPrimalRay(), numCols);
         } else if (solution.status == ProblemStatus.DUAL_UNBOUNDED) {
           constraintsDualRay = revisedSimplex.getDualRay().clone();

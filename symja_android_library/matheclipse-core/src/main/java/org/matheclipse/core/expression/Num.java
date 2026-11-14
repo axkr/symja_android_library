@@ -291,9 +291,53 @@ public class Num implements INum {
     return val.add(this);
   }
 
+  /**
+   * The arithmetic-geometric mean of two machine numbers of the same sign by the iteration
+   * <code>a' = (a+b)/2, b' = Sqrt(a*b)</code> in machine arithmetic, until the two meet or come
+   * no closer. The last digit is the one of this iteration, which is not always the correctly
+   * rounded one. A product which underflows to zero takes the mean to zero; a product beyond the
+   * range is avoided by scaling both numbers with a power of two, which is exact.
+   *
+   * @return <code>NaN</code> if the numbers aren't finite, one is zero or the signs differ
+   */
+  private static double machineAGM(double a, double b) {
+    if (!Double.isFinite(a) || !Double.isFinite(b) || a == 0.0 || b == 0.0
+        || (a < 0.0) != (b < 0.0)) {
+      return Double.NaN;
+    }
+    if (a < 0.0) {
+      return -machineAGM(-a, -b);
+    }
+    int exponent = 0;
+    if (Double.isInfinite(a * b)) {
+      exponent = Math.getExponent(Math.max(a, b));
+      a = Math.scalb(a, -exponent);
+      b = Math.scalb(b, -exponent);
+    }
+    double gap = Math.abs(a - b);
+    for (int i = 0; i < 128 && gap > 0.0; i++) {
+      final double product = a * b;
+      if (product == 0.0) {
+        return 0.0;
+      }
+      a = (a + b) / 2.0;
+      b = Math.sqrt(product);
+      final double nextGap = Math.abs(a - b);
+      if (nextGap >= gap) {
+        break;
+      }
+      gap = nextGap;
+    }
+    return Math.scalb(a, exponent);
+  }
+
   @Override
   public IExpr agm(IExpr arg2) {
     if (arg2 instanceof IReal) {
+      final double machine = machineAGM(value, ((IReal) arg2).doubleValue());
+      if (!Double.isNaN(machine)) {
+        return F.num(machine);
+      }
       try {
         Apfloat agm =
             EvalEngine.getApfloatDouble().agm(apfloatValue(), ((IReal) arg2).apfloatValue());

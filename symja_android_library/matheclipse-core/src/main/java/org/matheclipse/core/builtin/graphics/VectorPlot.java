@@ -89,6 +89,8 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     IExpr colorFunctionScaling = S.True;
     RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
+    // the options of the streamlines drawn over the arrows of a plane field
+    IASTAppendable streamOptions = F.ListAlloc();
     // CPD-OFF the vector plots handle different option keys
     for (int i = dimension + 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
@@ -129,6 +131,10 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         scaledLengths = engine.evaluate(option.second()) == S.Automatic;
         continue;
       }
+      if (dimension == 2 && StreamPlot.isStreamOption(key)) {
+        streamOptions.append(option);
+        continue;
+      }
       graphicsOptions.append(option);
     }
     boolean styleColored = style.isPresent() && containsColor(style);
@@ -137,9 +143,10 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       colored = false;
     }
     if (dimension == 2 && explicitPoints == null) {
-      return planeGraphics(point -> fieldAt(field, variables, point, engine), min, max,
+      IAST graphics = planeGraphics(point -> fieldAt(field, variables, point, engine), min, max,
           planeVectorPoints(ast, 4, engine), scale, scaledLengths, !styleColored, style, colored,
           region, graphicsOptions, engine);
+      return withStreams(graphics, field, variables, min, max, region, streamOptions, engine);
     }
 
     // in space a list of fields draws each of them, every one in a colour of its own
@@ -253,6 +260,12 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     }
     IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
+    if (dimension == 2) {
+      IAST streams = streamPrimitives(field, variables, min, max, region, streamOptions, engine);
+      if (streams.isPresent()) {
+        primitives.append(streams);
+      }
+    }
     if (!hasOption(graphicsOptions, S.PlotRange)) {
       result.append(F.Rule(S.PlotRange, range));
     }
@@ -269,6 +282,41 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * The <code>Graphics</code> of the arrows with the streamlines <code>StreamPoints</code> asks for
+   * drawn over them.
+   */
+  private static IAST withStreams(IAST graphics, IExpr field, ISymbol[] variables, double[] min,
+      double[] max, RegionFunctionFilter region, IAST streamOptions, EvalEngine engine) {
+    IAST streams = streamPrimitives(field, variables, min, max, region, streamOptions, engine);
+    if (streams.isNIL()) {
+      return graphics;
+    }
+    // in a list of their own, so that the style of the lines stays with them
+    IASTAppendable primitives = ((IAST) graphics.arg1()).copyAppendable();
+    primitives.append(streams);
+    return graphics.setAtCopy(1, primitives);
+  }
+
+  /**
+   * The streamlines of a plane field which <code>StreamPoints</code> asks for, or {@link F#NIL}
+   * when it asks for none, as it does by default.
+   */
+  private static IAST streamPrimitives(IExpr field, ISymbol[] variables, double[] min,
+      double[] max, RegionFunctionFilter region, IAST streamOptions, EvalEngine engine) {
+    IExpr spec = S.None;
+    for (IExpr option : streamOptions) {
+      if (option.first() == S.StreamPoints) {
+        spec = engine.evaluate(option.second());
+      }
+    }
+    if (spec.isNone() || spec.isFalse()) {
+      return F.NIL;
+    }
+    return StreamPlot.streams(field, variables[0], variables[1], min[0], max[0], min[1], max[1],
+        region, spec, streamOptions, true, engine);
   }
 
   /**

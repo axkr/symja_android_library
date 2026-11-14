@@ -150,6 +150,74 @@ public class VectorPlotTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testVectorPlotHeadlessArrows() {
+    // arrowheads of size zero still draw arrows, with the style's heads
+    check(
+        "g = VectorPlot({x, 2}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
+            + "VectorStyle -> {Blue, Arrowheads(0)}); "
+            + "{Length(Cases(g, _Line, Infinity)), Length(Cases(g, _Arrow, Infinity)), "
+            + "Union(Cases(g, _Arrowheads, Infinity))}", //
+        "{0,10,{Arrowheads(0)}}");
+  }
+
+  @Test
+  public void testStreamPlotColors() {
+    // a field which is equally fast everywhere has the weakest colour
+    check(
+        "Union(Cases(StreamPlot({0, 3}, {x, -2, 2}, {y, -2, 2}, StreamPoints -> 3), "
+            + "{c_, _Arrow} :> c, Infinity))", //
+        "{LABColor(0.188668,0.522596,-0.857211)}");
+    // a StreamColorFunction is handed the scaled position of a line
+    check(
+        "Union(Cases(StreamPlot({0, 3}, {x, -2, 2}, {y, -2, 2}, StreamPoints -> 2, "
+            + "StreamColorFunction -> Function({x, y}, Hue(x))), {c_, _Arrow} :> c, Infinity))", //
+        "{Hue(0.25),Hue(0.75)}");
+    // a streamline is a run of arrows, each 0.08 of the plot long or what is left, a head of a
+    // quarter of that and at most 0.02 on each
+    check(
+        "g = StreamPlot({0, 3}, {x, -2, 2}, {y, -2, 2}, StreamPoints -> 2); "
+            + "{Union(Cases(g, {Arrowheads({{h_, _}}), {_, Arrow(p_)}} :> "
+            + "Round({p[[-1, 2]] - p[[1, 2]], 4*h}, 0.001), Infinity))}", //
+        "{{{0.208,0.052},{0.32,0.08}}}");
+    // whole lines without heads, behind one Directive of the style
+    check(
+        "g = StreamPlot({0, 3}, {x, -2, 2}, {y, -2, 2}, StreamPoints -> 2, StreamScale -> None, "
+            + "StreamColorFunction -> None, StreamStyle -> Orange); "
+            + "{Cases(g, {d_Directive, l__Line} :> {d, Length({l})}, Infinity), "
+            + "Length(Cases(g, _Arrow, Infinity))}", //
+        "{{{Directive(RGBColor(1.0,0.5,0.0)),2}},0}");
+  }
+
+  @Test
+  public void testVectorPlotStreamPoints() {
+    // no streamlines unless StreamPoints asks for them
+    check(
+        "Length(Cases(VectorPlot({0, 1}, {x, 0, 2}, {y, 0, 2}, VectorPoints -> 3), _Line, "
+            + "Infinity))", //
+        "0");
+    // whole headless lines in a list of their own behind the style, one through each column of
+    // seeds
+    check(
+        "g = VectorPlot({0, 1}, {x, 0, 2}, {y, 0, 2}, VectorPoints -> 3, StreamPoints -> 5, "
+            + "StreamScale -> None, StreamStyle -> Green); "
+            + "{Cases(g, {d_Directive, __Line} :> d, Infinity), "
+            + "Union(Cases(g, Line(p_) :> Round(p[[1, 1]], 0.01), Infinity)), "
+            + "Union(Cases(g, Line(p_) :> Round(Abs(p[[-1, 2]] - p[[1, 2]]), 0.1), Infinity))}", //
+        "{{Directive(RGBColor(0,1,0))},{0.2,0.6,1.0,1.4,1.8},{2.0}}");
+    // Coarse asks for fewer lines than the default
+    check(
+        "Map(Length(Cases(VectorPlot({0, 1}, {x, 0, 2}, {y, 0, 2}, VectorPoints -> 3, "
+            + "StreamPoints -> #, StreamScale -> None), _Line, Infinity)) &, {Coarse, Automatic})", //
+        "{8,14}");
+    // a line through each point given
+    check(
+        "Cases(VectorPlot({0, 1}, {x, 0, 2}, {y, 0, 2}, VectorPoints -> 3, "
+            + "StreamPoints -> {{0.5, 1}, {1.5, 1}}, StreamScale -> None), "
+            + "Line(p_) :> Round(p[[1, 1]], 0.01), Infinity)", //
+        "{0.5,1.5}");
+  }
+
+  @Test
   public void testVectorPlot3DColors() {
     // a ColorFunction colours every arrow
     check(

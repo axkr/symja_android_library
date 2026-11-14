@@ -96,14 +96,8 @@ public class ApfloatToMMA {
         out.write("<mo>&#0183;</mo><msup><mn>10</mn><mn>");
         out.write(String.valueOf(exponent));
         out.write("</mn></msup>");
-      } else if (style == OutputStyle.TEX) {
-        out.write("*10^");
-        out.write('{');
-        out.write(String.valueOf(exponent));
-        out.write('}');
       } else {
-        out.write("*10^");
-        out.write(String.valueOf(exponent));
+        DoubleToMMA.appendPowerOfTen(out, exponent, style == OutputStyle.TEX);
       }
     }
     if (style == OutputStyle.MATHML) {

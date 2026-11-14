@@ -18,6 +18,31 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testArgumentsOfOwnPrecision() {
+    // numbers of 25 digits outside N(): the value has their digits, not those of a machine number
+    check("Abs(EllipticF(N(2/7, 25), N(3/11, 25)) - N(EllipticF(2/7, 3/11), 25)) < 10^-23", //
+        "True");
+    check("Precision(EllipticE(N(2/7, 25), N(3/11, 25)))", //
+        "25");
+    check("Precision(EllipticPi(N(1/9, 25), N(2/7, 25), N(3/11, 25)))", //
+        "25");
+    // the lowest precision of the arguments
+    check("Precision(EllipticF(N(2/7, 40), N(3/11, 22)))", //
+        "22");
+    check("Precision(InverseJacobiSN(N(2/7, 25), N(3/11, 25)))", //
+        "25");
+    check("Precision(CarlsonRF(N(2/7, 25), N(3/11, 25), N(1/5, 25)))", //
+        "25");
+    // real arguments inside the real range give a real machine number
+    check("Head(EllipticF(0.29, 0.25))", //
+        "Real");
+    check("Head(EllipticE(0.29, 0.25))", //
+        "Real");
+    check("Head(EllipticPi(0.1, 0.29, 0.25))", //
+        "Real");
+  }
+
+  @Test
   public void testEllipticFArbitraryPrecision() {
     check("N(EllipticF(1, 1/3), 20)", //
         "1.0515224356380810195");

@@ -71,8 +71,8 @@ public class Export extends AbstractEvaluator {
         // The text formats go through ExportString, which knows them, and the file is written only
         // once there is something to write: the writer below opens the file first and would leave
         // an empty one behind for a format it then finds no handler for.
-        IExpr text = engine.evaluate(
-            F.binaryAST2(S.ExportString, arg2, F.stringx(format.toString())));
+        IExpr text = ExportString.exportText(
+            F.binaryAST2(S.ExportString, arg2, F.stringx(format.toString())), engine);
         if (!text.isString()) {
           return F.NIL;
         }

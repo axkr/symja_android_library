@@ -55,6 +55,20 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveDomainFromElementConditions() {
+    // Element(var, dom) for every variable solves over that domain
+    check("Solve({y^2 == 9, Element(y, Integers)}, y)", //
+        "{{y->-3},{y->3}}");
+    check("Solve({y^2 == -9, Element(y, Reals)}, y)", //
+        "{}");
+    check("Solve({u + v == 4, u - v == 2, Element({u, v}, Reals)}, {u, v})", //
+        "{{u->3,v->1}}");
+    // a condition on a parameter is no domain of the variables
+    check("Solve({y^2 == a, Element(a, Reals)}, y)", //
+        "Solve({y^2==a,a∈Reals},y)");
+  }
+
+  @Test
   public void testSimple() {
     check("Solve(True,{x,y,z})", //
         "{{}}");

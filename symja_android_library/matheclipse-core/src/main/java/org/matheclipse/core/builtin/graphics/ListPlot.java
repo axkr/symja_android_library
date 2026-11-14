@@ -73,6 +73,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return data == ast.arg1() ? ast : ast.setAtCopy(1, data);
   }
 
+  /** The default point size of a list plot, as a fraction of the width of the plot. */
+  private static final double LIST_PLOT_POINT_SIZE = 0.012833333333333334;
+
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
@@ -124,6 +127,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     }
 
+    if (ast.topHead() == S.ListPlot) {
+      // the size points are drawn with, as a fraction of the width of the plot
+      graphicsOptions.setCurveStyleLead(F.list(F.PointSize(F.num(LIST_PLOT_POINT_SIZE))));
+    }
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       if (highlights.isPresent() && highlights.argSize() > 0 && graphicsPrimitives.isList()) {
@@ -618,7 +625,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         // a curve styled None isn't drawn, but a filling toward it still is
         boolean hidden = false;
         if (!plotStyle.isNone()) {
-          IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
+          IExpr userStyle =
+              GraphicsOptions.curvePlotStyle(plotStyle, j - 1, listOfLists.argSize());
           hidden = userStyle.isNone();
           if (!hidden) {
             style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
@@ -707,7 +715,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IAST defaultColor = graphicsOptions.nextCurveStyle();
           IExpr style = defaultColor;
           if (plotStyle.isPresent() && plotStyle != S.None) {
-            IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
+            IExpr userStyle = GraphicsOptions.curvePlotStyle(plotStyle, 0, 1);
             style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
           }
 
@@ -746,7 +754,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             IAST defaultColor = graphicsOptions.nextCurveStyle();
             IExpr style = defaultColor;
             if (plotStyle.isPresent() && plotStyle != S.None) {
-              IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, i - 1);
+              IExpr userStyle =
+                  GraphicsOptions.curvePlotStyle(plotStyle, i - 1, listOfLists.argSize());
               style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
             }
 
@@ -780,7 +789,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       IAST defaultColor = graphicsOptions.nextCurveStyle();
       IExpr style = defaultColor;
       if (plotStyle.isPresent() && plotStyle != S.None) {
-        IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, 0);
+        IExpr userStyle = GraphicsOptions.curvePlotStyle(plotStyle, 0, 1);
         style = GraphicsOptions.withUserStyle(defaultColor, userStyle);
       }
 

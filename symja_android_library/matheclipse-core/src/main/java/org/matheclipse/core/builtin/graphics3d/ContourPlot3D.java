@@ -115,7 +115,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
         IExpr style =
             levelStyle(surfaceIndex++, value, levelColors, ownLights, styleSource, min, max);
         IExpr complex = surface(grids[f], axis, value, style, options[Plot3DTools.X_MESH],
-            boundaryStyle);
+            options[Plot3DTools.X_MESH_STYLE], boundaryStyle);
         if (complex.isPresent()) {
           surfaces.append(complex);
         }
@@ -151,10 +151,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
    * is none.
    */
   static IExpr surface(double[][][] grid, double[][] axis, double value, IExpr style,
-      IExpr meshOption, IExpr boundaryStyle) {
+      IExpr meshOption, IExpr meshStyle, IExpr boundaryStyle) {
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
     Plot3DTools.applyStyle(builder, style, meshOption);
     MarchingCubes.marchingCubes(builder, grid, value, axis);
+    addMesh(builder, axis, meshOption, meshStyle);
     // the rim where the surface leaves the box, outlined unless told not to: the edges only
     // one triangle has
     if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
@@ -165,6 +166,89 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
     return builder.build();
+  }
+
+  /**
+   * The mesh of a contour surface: the curves in which planes perpendicular to the x, y and z axis
+   * cut it. The curves of one axis form one {@code Line} of coordinate lists after the style of
+   * that axis, the styles of a {@code MeshStyle} list being taken in turn.
+   *
+   * <p>
+   * {@code Mesh -> n} cuts each axis at n evenly spaced positions strictly inside the plotted
+   * box, {@code Mesh -> {mx, my, mz}} gives each axis its own count or list of positions. Without
+   * an explicit mesh specification the surface is drawn without mesh lines.
+   */
+  private static void addMesh(GraphicsComplexBuilder builder, double[][] axis, IExpr meshOption,
+      IExpr meshStyle) {
+    if (meshOption == null || meshStyle == null || meshStyle.isNone() || meshStyle.isFalse()) {
+      return;
+    }
+    for (int c = 0; c < 3; c++) {
+      double[] positions = meshPositions(meshOption, c, axis[c][0], axis[c][axis[c].length - 1]);
+      if (positions.length == 0) {
+        continue;
+      }
+      IASTAppendable curves = F.ListAlloc();
+      for (double position : positions) {
+        for (java.util.List<double[]> curve : builder.planeSections(c, position)) {
+          IASTAppendable line = F.ListAlloc(curve.size());
+          for (double[] point : curve) {
+            line.append(F.List(F.num(point[0]), F.num(point[1]), F.num(point[2])));
+          }
+          curves.append(line);
+        }
+      }
+      if (curves.argSize() > 0) {
+        builder.addPrimitive(F.List(meshAxisStyle(meshStyle, c), F.Line(curves)));
+      }
+    }
+  }
+
+  /** The style of the mesh lines across axis {@code c}. */
+  private static IExpr meshAxisStyle(IExpr meshStyle, int c) {
+    if (meshStyle.isAutomatic()) {
+      return Plot3DTools.MESH_STYLE;
+    }
+    if (meshStyle.isList() && meshStyle.argSize() > 0) {
+      return meshStyle.getAt(c % meshStyle.argSize() + 1);
+    }
+    return meshStyle;
+  }
+
+  /** The positions along axis {@code c}, from {@code min} to {@code max}, where it is cut. */
+  static double[] meshPositions(IExpr meshOption, int c, double min, double max) {
+    IExpr entry = meshOption;
+    if (meshOption.isList()) {
+      if (meshOption.argSize() != 3) {
+        return new double[0];
+      }
+      entry = meshOption.getAt(c + 1);
+      if (entry.isList()) {
+        IAST list = (IAST) entry;
+        double[] explicit = new double[list.argSize()];
+        int n = 0;
+        for (int i = 1; i <= list.argSize(); i++) {
+          double v = list.get(i).evalfNaN();
+          if (Double.isFinite(v)) {
+            explicit[n++] = v;
+          }
+        }
+        return java.util.Arrays.copyOf(explicit, n);
+      }
+    }
+    if (!entry.isInteger()) {
+      return new double[0];
+    }
+    int count = entry.toIntDefault(0);
+    if (count < 1 || !(max > min)) {
+      return new double[0];
+    }
+    count = Math.min(count, 100);
+    double[] positions = new double[count];
+    for (int k = 1; k <= count; k++) {
+      positions[k - 1] = min + (max - min) * k / (count + 1.0);
+    }
+    return positions;
   }
 
   /** The coordinates of <code>counts[c]</code> evenly spaced samples from min to max per axis. */
@@ -327,6 +411,9 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     GraphicsOptions.OptionSet options =
         Plot3DTools.frameExtras(Plot3DTools.surfaceExtras(Plot3DTools.base3D()).add(S.Automatic,
             S.Contours, S.ContourStyle, S.RegionBoundaryStyle));
+    // the mesh lines are cut by planes across the x, y and z axis
+    options.override(S.MeshFunctions, F.List(F.Function(F.Slot1), F.Function(F.Slot2),
+        F.Function(F.Slot3)));
     setOptions(newSymbol, options.keys(), options.values());
   }
 }

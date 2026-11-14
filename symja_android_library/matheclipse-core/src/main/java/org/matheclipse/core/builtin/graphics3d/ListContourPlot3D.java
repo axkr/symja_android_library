@@ -83,7 +83,8 @@ public class ListContourPlot3D extends AbstractFunctionOptionEvaluator {
       IExpr style =
           ContourPlot3D.levelStyle(i, levels[i], levelColors, ownLights, styleSource, min, max);
       IExpr complex = ContourPlot3D.surface(grid, axis, levels[i], style,
-          options[Plot3DTools.X_MESH], options[Plot3DTools.X_BOUNDARY_STYLE]);
+          options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE],
+          options[Plot3DTools.X_BOUNDARY_STYLE]);
       if (complex.isPresent()) {
         surfaces.append(complex);
       }

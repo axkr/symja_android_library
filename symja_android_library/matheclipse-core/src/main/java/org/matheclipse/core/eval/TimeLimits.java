@@ -184,12 +184,24 @@ public final class TimeLimits {
    */
   public static IExpr evaluateOrNil(IExpr expr, long millis) {
     final EvalEngine engine = EvalEngine.get();
+    return callOrNil(engine, () -> engine.evaluate(expr), millis);
+  }
+
+  /**
+   * Run the internal step <code>work</code> under a limit of <code>millis</code> milliseconds, see
+   * {@link #evaluateOrNil(IExpr, long)}.
+   *
+   * @return {@link F#NIL} if the limit runs out, the step exceeds a limit of the engine or returns
+   *         <code>null</code>
+   */
+  public static IExpr callOrNil(EvalEngine engine, Supplier<IExpr> work, long millis) {
     final int modeFlags = engine.modeFlags();
     final int conditionDepth = engine.conditionDepth();
     final long precision = engine.getNumericPrecision();
     final int significantFigures = engine.getSignificantFigures();
     try {
-      return call(engine, () -> engine.evaluate(expr), millis, () -> F.NIL);
+      IExpr result = call(engine, work, millis, () -> F.NIL);
+      return result == null ? F.NIL : result;
     } catch (LimitException le) {
       engine.restoreModes(modeFlags, conditionDepth, precision, significantFigures);
       return F.NIL;

@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -267,29 +268,76 @@ public class QuantityFunctions {
         }
         return F.binaryAST2(S.QuantityArray, magnitudes, normalized);
       }
-      // 1-arg form: compact a flat vector of same-unit quantities
+      if (ast.isAST1()) {
+        IExpr compact = fromStructuredData(ast.arg1());
+        if (compact.isPresent()) {
+          return compact;
+        }
+      }
+      // 1-arg form: compact an array of quantities
       if (ast.isAST1() && ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        if (list.argSize() == 0) {
-          return F.NIL;
-        }
-        IExpr unit = null;
-        org.matheclipse.core.interfaces.IASTAppendable magnitudes = F.ListAlloc(list.argSize());
-        for (int i = 1; i < list.size(); i++) {
-          if (!list.get(i).isQuantity()) {
-            return F.NIL;
-          }
-          IAST quantity = (IAST) list.get(i);
-          if (unit == null) {
-            unit = quantity.arg2();
-          } else if (!unit.equals(quantity.arg2())) {
-            return F.NIL;
-          }
-          magnitudes.append(quantity.arg1());
-        }
-        return F.binaryAST2(S.QuantityArray, magnitudes, unit);
+        return compactQuantities(ast.arg1());
       }
       return F.NIL;
+    }
+
+    /**
+     * The structured data form <code>StructuredArray`StructuredData(dims, {values, unit, {{1, 2,
+     * ..., depth}}})</code> of an array whose elements all share one unit, as the compact form
+     * <code>QuantityArray(values, unit)</code>. The unit applies to every level of the array.
+     *
+     * @return {@link F#NIL} if the argument is not of this form, its values do not have the stated
+     *         dimensions or the unit spec is not a single unit for every level
+     */
+    private static IExpr fromStructuredData(IExpr arg) {
+      if (!arg.isAST() || arg.argSize() != 2 || !arg.head().isSymbol()) {
+        return F.NIL;
+      }
+      ISymbol head = (ISymbol) arg.head();
+      String name = head.getSymbolName();
+      if (name.indexOf('`') < 0) {
+        name = head.getContext().completeContextName() + name;
+      }
+      // the relaxed parser lower-cases the symbol name
+      boolean structuredData = EvalEngine.get().isRelaxedSyntax()
+          ? "StructuredArray`StructuredData".equalsIgnoreCase(name)
+          : "StructuredArray`StructuredData".equals(name);
+      if (!structuredData) {
+        return F.NIL;
+      }
+      IExpr dims = arg.first();
+      IExpr data = arg.second();
+      if (!dims.isList() || ((IAST) dims).argSize() == 0 || !data.isList3()) {
+        return F.NIL;
+      }
+      IExpr values = data.first();
+      IExpr unit = data.second();
+      IExpr levels = ((IAST) data).arg3();
+      int depth = ((IAST) dims).argSize();
+      if (!values.isList() || unit.isList() || !hasDimensions(values, (IAST) dims, 1)
+          || !levels.isList1() || !levels.first().isList()
+          || ((IAST) levels.first()).argSize() != depth) {
+        return F.NIL;
+      }
+      IAST levelList = (IAST) levels.first();
+      for (int i = 1; i <= depth; i++) {
+        if (levelList.get(i).toIntDefault() != i) {
+          return F.NIL;
+        }
+      }
+      return F.binaryAST2(S.QuantityArray, values, unit);
+    }
+
+    /** Whether <code>values</code> is a nested list with the dimensions from position k on. */
+    private static boolean hasDimensions(IExpr values, IAST dims, int k) {
+      if (k >= dims.size()) {
+        return !values.isList();
+      }
+      int n = dims.get(k).toIntDefault();
+      if (!values.isList() || ((IAST) values).argSize() != n || n <= 0) {
+        return false;
+      }
+      return ((IAST) values).forAll(x -> hasDimensions(x, dims, k + 1));
     }
 
     /** Expands a QuantityArray into a plain array of Quantity objects (used by Normal). */
@@ -567,6 +615,140 @@ public class QuantityFunctions {
     return magnitudes;
   }
 
+
+  /**
+   * <code>Plus</code> or <code>Times</code> with a <code>QuantityArray</code> argument: the arrays
+   * are expanded to their quantities, the arithmetic threads over them element-wise, and an array
+   * of quantities as result is compacted to a <code>QuantityArray</code> again.
+   *
+   * @return {@link F#NIL} if no argument is a <code>QuantityArray</code> which can be expanded
+   */
+  public static IExpr quantityArrayArithmetic(IAST ast, EvalEngine engine) {
+    IASTMutable expanded = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isAST(S.QuantityArray, 3)) {
+        IExpr normal = quantityArrayNormal((IAST) arg);
+        if (normal.isNIL()) {
+          return F.NIL;
+        }
+        if (expanded.isNIL()) {
+          expanded = ast.copy();
+        }
+        expanded.set(i, normal);
+      }
+    }
+    if (expanded.isNIL()) {
+      return F.NIL;
+    }
+    // a result which is no array of quantities - a quantity plus a number, say - leaves the
+    // arithmetic unevaluated with the array intact
+    return compactQuantities(engine.evaluate(expanded));
+  }
+
+  /**
+   * <code>Part(QuantityArray(magnitudes, unit), i, j, ...)</code>: with one unit for every element
+   * the part of the magnitudes, with that unit - a <code>QuantityArray</code> for a sub-array, a
+   * <code>Quantity</code> for an element; with a unit per position the part of the array of
+   * quantities, compacted again.
+   *
+   * @param part the evaluated <code>Part</code> call
+   * @return {@link F#NIL} if a part specification is <code>0</code> or the part does not exist
+   */
+  public static IExpr quantityArrayPart(IAST quantityArray, IAST part, EvalEngine engine) {
+    if (part.exists(x -> x.isZero(), 2)) {
+      return F.NIL;
+    }
+    IExpr magnitudes = quantityArray.arg1();
+    IExpr unit = quantityArray.arg2();
+    if (unit.isList()) {
+      IExpr normal = quantityArrayNormal(quantityArray);
+      if (normal.isNIL()) {
+        return F.NIL;
+      }
+      IExpr result = engine.evaluate(part.setAtCopy(1, normal));
+      if (result.isAST(S.Part)) {
+        return F.NIL;
+      }
+      return compactQuantities(result).orElse(result);
+    }
+    IExpr result = engine.evaluate(part.setAtCopy(1, magnitudes));
+    if (result.isAST(S.Part)) {
+      return F.NIL;
+    }
+    if (result.isList()) {
+      return result.argSize() == 0 ? result : F.binaryAST2(S.QuantityArray, result, unit);
+    }
+    return F.Quantity(result, unit);
+  }
+
+  /**
+   * A rectangular array of quantities as <code>QuantityArray(magnitudes, unit)</code>; with a
+   * unit per position at the deepest level as <code>QuantityArray(magnitudes, {unit1, ...})</code>.
+   *
+   * @return {@link F#NIL} if the expression is no such array
+   */
+  public static IExpr compactQuantities(IExpr array) {
+    if (!array.isList() || array.argSize() == 0) {
+      return F.NIL;
+    }
+    // the dimensions and the units at the deepest level along the first elements
+    IExpr deepest = array;
+    while (deepest.isList() && deepest.argSize() > 0 && deepest.first().isList()) {
+      deepest = deepest.first();
+    }
+    if (!deepest.isList() || deepest.argSize() == 0) {
+      return F.NIL;
+    }
+    IAST units = ((IAST) deepest).map(x -> x.isQuantity() ? ((IAST) x).arg2() : F.NIL);
+    if (units.exists(x -> x.isNIL())) {
+      return F.NIL;
+    }
+    IExpr magnitudes = magnitudesOf(array, units);
+    if (magnitudes.isNIL()) {
+      return F.NIL;
+    }
+    IASTAppendable dims = F.ListAlloc();
+    for (IExpr level = magnitudes; level.isList(); level = level.first()) {
+      dims.append(F.ZZ(level.argSize()));
+    }
+    if (!QuantityArray.hasDimensions(magnitudes, dims, 1)) {
+      return F.NIL;
+    }
+    IExpr first = units.arg1();
+    IExpr spec = units.forAll(x -> x.equals(first)) ? first : units;
+    return F.binaryAST2(S.QuantityArray, magnitudes, spec);
+  }
+
+  /** The magnitudes of a rectangular array whose deepest lists have the given units. */
+  private static IExpr magnitudesOf(IExpr array, IAST units) {
+    if (!array.isList() || array.argSize() == 0) {
+      return F.NIL;
+    }
+    IAST list = (IAST) array;
+    IASTAppendable result = F.ListAlloc(list.argSize());
+    if (list.arg1().isList()) {
+      for (int i = 1; i < list.size(); i++) {
+        IExpr row = magnitudesOf(list.get(i), units);
+        if (row.isNIL()) {
+          return F.NIL;
+        }
+        result.append(row);
+      }
+      return result;
+    }
+    if (list.argSize() != units.argSize()) {
+      return F.NIL;
+    }
+    for (int i = 1; i < list.size(); i++) {
+      IExpr element = list.get(i);
+      if (!element.isQuantity() || !((IAST) element).arg2().equals(units.get(i))) {
+        return F.NIL;
+      }
+      result.append(((IAST) element).arg1());
+    }
+    return result;
+  }
 
   public static IExpr normalizeQuantityArray(IExpr expr) {
     if (expr.isAST(S.QuantityArray, 3)) {

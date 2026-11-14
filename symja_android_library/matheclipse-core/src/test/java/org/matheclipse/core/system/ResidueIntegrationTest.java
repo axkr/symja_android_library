@@ -270,9 +270,9 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
         "-2.80993");
     check("NIntegrate(1/(-3+2*Cos(x)), {x,0,2*Pi})", //
         "-2.80993");
-    // no assumptions: k may be complex
-    check("FreeQ(Integrate(Cos(k*x)/(x^2+1), {x,-Infinity,Infinity}), Abs)", //
-        "True");
+    // no assumptions: k may be complex, the value holds for a real k only
+    check("Integrate(Cos(k*x)/(x^2+1), {x,-Infinity,Infinity})", //
+        "ConditionalExpression(Pi/E^Abs(k),k∈Reals)");
     check("Integrate(1/(c+d*Cos(x)), {x,0,2*Pi}, Assumptions->c>Abs(d))", //
         "(2*Pi)/Sqrt(c^2-d^2)");
   }

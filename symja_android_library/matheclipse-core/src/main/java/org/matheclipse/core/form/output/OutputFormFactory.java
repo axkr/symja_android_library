@@ -56,6 +56,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.external.fastutil.ints.IntList;
 import org.matheclipse.parser.client.Characters;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -82,6 +83,9 @@ public class OutputFormFactory {
    * tighter than every operator.
    */
   private static final int HEAD_PRECEDENCE = 1000;
+
+  /** The precedence of <code>:</code> giving a pattern a default, <code>p:v</code>. */
+  private static final int OPTIONAL_PRECEDENCE = 140;
 
   /**
    * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
@@ -1203,34 +1207,35 @@ public class OutputFormFactory {
 
   /**
    * The text of a string literal for <code>str</code>, without the enclosing quotes:
-   * <code>"</code> and <code>\</code> are written <code>\"</code> and <code>\\</code>, a newline,
-   * tab and carriage return <code>\n</code>, <code>\t</code> and <code>\r</code>.
+   * <code>"</code> and <code>\</code> are written <code>\"</code> and <code>\\</code>, a control
+   * character as in {@link Characters#appendControlEscape(StringBuilder, char)}. Inside a box
+   * escape <code>\( ... \)</code> an operator of the linear box syntax like <code>\^</code> or
+   * <code>\&amp;</code> is kept as it is.
    */
   public static String escapeStringLiteral(String str) {
     StringBuilder buf = null;
+    // the nesting depth of the box escapes \( ... \)
+    int boxDepth = 0;
     for (int i = 0; i < str.length(); i++) {
       char ch = str.charAt(i);
+      if (ch == Scanner.BOX_OPEN) {
+        boxDepth++;
+      } else if (ch == Scanner.BOX_CLOSE) {
+        boxDepth--;
+      }
       String escape;
-      switch (ch) {
-        case '"':
-          escape = "\\\"";
-          break;
-        case '\\':
-          // a named character \[Name] stands for one character and is kept as it is
-          escape = isNamedCharacter(str, i) ? null : "\\\\";
-          break;
-        case '\n':
-          escape = "\\n";
-          break;
-        case '\t':
-          escape = "\\t";
-          break;
-        case '\r':
-          escape = "\\r";
-          break;
-        default:
-          escape = null;
-          break;
+      if (ch == '"') {
+        escape = "\\\"";
+      } else if (ch == '\\') {
+        // a named character \[Name] stands for one character and is kept as it is
+        escape = isNamedCharacter(str, i) || (boxDepth > 0 && isBoxOperator(str, i)) ? null
+            : "\\\\";
+      } else if (Characters.isControlCharacter(ch)) {
+        StringBuilder control = new StringBuilder(6);
+        Characters.appendControlEscape(control, ch);
+        escape = control.toString();
+      } else {
+        escape = null;
       }
       if (escape != null && buf == null) {
         buf = new StringBuilder(str.length() + 16).append(str, 0, i);
@@ -1244,6 +1249,11 @@ public class OutputFormFactory {
       }
     }
     return buf == null ? str : buf.toString();
+  }
+
+  /** Whether an operator of the linear box syntax, <code>\^</code> or another, starts here. */
+  private static boolean isBoxOperator(String str, int index) {
+    return index + 1 < str.length() && "^_&%@/+".indexOf(str.charAt(index + 1)) >= 0;
   }
 
   /** Whether a named character <code>\[Name]</code> starts at <code>index</code>. */
@@ -1293,11 +1303,9 @@ public class OutputFormFactory {
     if (fInputForm && pattern instanceof PatternNested && symbol != null
         && !(symbol instanceof FormalSymbol)) {
       // x:p with p printed as an expression, so that a string in it keeps its quotes
-      append(buf, "(");
       convertSymbol(buf, symbol);
       append(buf, ":");
-      convert(buf, ((PatternNested) pattern).getPatternExpr(), Integer.MIN_VALUE, false);
-      append(buf, ")");
+      convert(buf, ((PatternNested) pattern).getPatternExpr(), Precedence.PATTERN, false);
       return;
     }
     String str = pattern.toString();
@@ -2333,9 +2341,17 @@ public class OutputFormFactory {
               break;
             case ID.Optional:
               if (list.isAST2() && (list.arg1().isBlank() || list.arg1().isPattern())) {
+                // p:v binds weaker than every operator a pattern is an operand of: (_:1)|2
+                final boolean parenthesize = fInputForm && OPTIONAL_PRECEDENCE < precedence;
+                if (parenthesize) {
+                  append(buf, "(");
+                }
                 convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 buf.append(":");
                 convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                if (parenthesize) {
+                  append(buf, ")");
+                }
                 return;
               }
               break;
@@ -2398,9 +2414,12 @@ public class OutputFormFactory {
     } else if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
     } else if (o instanceof IPatternObject) {
-      // a named pattern binds weaker than a product: 2*(a_)
-      final boolean parenthesize = fInputForm && Precedence.TIMES <= precedence
-          && precedence <= Precedence.POWER && ((IPatternObject) o).getSymbol() != null;
+      // a named pattern x_ or x:p and a pattern with a default _. are operators themselves, which
+      // bind weaker than the operators they are an operand of: 2*(a_), (x_)|(y_), (_.)+1
+      final IPatternObject patternObject = (IPatternObject) o;
+      final boolean parenthesize = fInputForm
+          && (patternObject.getSymbol() != null ? Precedence.PATTERN < precedence
+              : patternObject.isPatternDefault() && OPTIONAL_PRECEDENCE < precedence);
       if (parenthesize) {
         append(buf, "(");
       }

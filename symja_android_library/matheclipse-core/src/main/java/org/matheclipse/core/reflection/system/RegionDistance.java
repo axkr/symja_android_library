@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AffineFlat;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -56,6 +57,12 @@ public class RegionDistance extends AbstractFunctionEvaluator {
             return halfSpaceDistance(reg, p, engine);
           case ID.StadiumShape:
             return stadiumShapeDistance(reg, p, engine);
+          case ID.InfiniteLine:
+          case ID.InfinitePlane: {
+            // a degenerate line or plane has the distance to the span of its points
+            AffineFlat flat = AffineFlat.parseSpan(reg, engine);
+            return flat == null ? F.NIL : flat.distance(p, engine);
+          }
         }
       }
     }

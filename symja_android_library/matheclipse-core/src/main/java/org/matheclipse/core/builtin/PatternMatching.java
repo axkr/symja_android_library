@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ClassifierFunctionExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -1367,6 +1368,31 @@ public final class PatternMatching {
 
   private static final class Information extends AbstractCoreFunctionEvaluator {
 
+    /**
+     * The information about a data object which answers properties itself: an image, or a trained
+     * classifier (whose <code>c["Property"]</code> would take the name for an example).
+     *
+     * @param object the evaluated first argument
+     * @param property the property name, or <code>null</code> for <code>Information[object]</code>
+     * @return {@link F#NIL} if <code>object</code> is no such data object
+     */
+    private static IExpr dataObjectInformation(IExpr object, String property, EvalEngine engine) {
+      if (!(object instanceof org.matheclipse.core.interfaces.IDataExpr)) {
+        return F.NIL;
+      }
+      if (object.head() == S.Image) {
+        // an image's properties, as Information[image] and Information[image, "Property"]
+        // answer them; the WLJS notebook reads them before it shows an image
+        return imageInformation(object, property, engine);
+      }
+      if (object instanceof ClassifierFunctionExpr && property != null) {
+        IExpr value = ((ClassifierFunctionExpr) object).information(property);
+        return value.isPresent() ? value
+            : F.Missing(F.stringx("UnknownProperty"), F.stringx(property));
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2 || ast.size() == 3) {
@@ -1391,12 +1417,11 @@ public final class PatternMatching {
               // how a front end collects what it shows beside a completion
               arg1 = F.symbol(arg1.toString(), engine);
             }
-            if (arg1.head() == S.Image
-                && arg1 instanceof org.matheclipse.core.interfaces.IDataExpr) {
-              // an image's properties, as Information[image] and Information[image, "Property"]
-              // answer them; the WLJS notebook reads them before it shows an image
-              return imageInformation(arg1,
-                  ast.size() == 3 && ast.arg2().isString() ? ast.arg2().toString() : null, engine);
+            // any expression giving a data object, for example cs[[1]] or First[cs]
+            IExpr information = dataObjectInformation(arg1,
+                ast.size() == 3 && ast.arg2().isString() ? ast.arg2().toString() : null, engine);
+            if (information.isPresent()) {
+              return information;
             }
             if (!arg1.isSymbol()) {
               // "sym", "Argument `1` at position `2` is expected to be a symbol.", //
@@ -1405,6 +1430,15 @@ public final class PatternMatching {
             symbol = (ISymbol) arg1;
           } else {
             symbol = (ISymbol) ast.arg1();
+            if (ast.size() == 3 && ast.arg2().isString() && symbol.hasAssignedSymbolValue()) {
+              // a property of the data object which is the value of the symbol;
+              // Information[symbol] without a property still describes the symbol
+              IExpr information =
+                  dataObjectInformation(symbol.assignedValue(), ast.arg2().toString(), engine);
+              if (information.isPresent()) {
+                return information;
+              }
+            }
           }
           if (ast.size() == 3 && ast.arg2().isString()) {
             // Information[expr, "Property"] answers with the property rather than printing
@@ -2582,6 +2616,12 @@ public final class PatternMatching {
           if (head.topHead() == S.Association) {
             head = S.Association;
           }
+          if (isProtectedAtomHead(leftHandSide, head)) {
+            // Tag `1` in `2` is Protected.
+            Errors.printMessage(S.Set, "write",
+                F.list(head.head(), ((IAST) leftHandSide).setAtCopy(0, head)), engine);
+            return ast.arg2();
+          }
         }
         IExpr rightHandSide = ast.arg2();
         // try {
@@ -2642,6 +2682,15 @@ public final class PatternMatching {
     }
   }
 
+
+  /**
+   * Whether the head of <code>lhs</code> evaluates to a number or a string: <code>n[p][1] = v</code>
+   * where <code>n[p]</code> is <code>1</code> assigns to <code>1[1]</code>, and the tag
+   * <code>Integer</code> of that is protected.
+   */
+  private static boolean isProtectedAtomHead(IExpr lhs, IExpr evaluatedHead) {
+    return lhs.isAST() && (evaluatedHead.isNumber() || evaluatedHead.isString());
+  }
 
   /** Whether <code>lhs</code> is <code>h /; test</code> with a symbol <code>h</code>. */
   private static boolean isConditionalSymbol(IExpr lhs) {
@@ -2752,6 +2801,12 @@ public final class PatternMatching {
         }
         if (head.isAssociation()) {
           head = S.Association;
+        }
+        if (isProtectedAtomHead(leftHandSide, head)) {
+          // Tag `1` in `2` is Protected.
+          Errors.printMessage(S.SetDelayed, "write",
+              F.list(head.head(), ((IAST) leftHandSide).setAtCopy(0, head)), engine);
+          return S.$Failed;
         }
         try {
           final IExpr rightHandSide = ast.arg2();

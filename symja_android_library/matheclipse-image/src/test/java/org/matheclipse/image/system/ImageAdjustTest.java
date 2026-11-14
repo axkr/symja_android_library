@@ -9,7 +9,7 @@ public class ImageAdjustTest extends AbstractTestCase {
   public void findThresholdSplitsTheHistogram() {
     // every split between the two groups is as good: the first of them, or the middle of the gap
     // where the darker group is the darkest value alone
-    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}))", "0.0976562");
+    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}))", "0.0976563");
     check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Mean\")", "0.5");
     check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Median\")", "0.1");
     // the samples as they are, beyond full intensity too

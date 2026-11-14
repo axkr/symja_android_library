@@ -64,6 +64,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
     int counter = 0;
     boolean evaled = true;
+    IAST listOfRules;
     while (argSize > minNumberOfArgs && evaled && counter < optionSymbol.length) {
       IExpr arg = ast.get(argSize);
 
@@ -95,8 +96,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           argSize--;
           evaled = true;
         }
-      } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
-        IAST listOfRules = (IAST) arg;
+      } else if (arg.isList() && !arg.isEmptyList()
+          && (listOfRules = optionRules((IAST) arg)).isPresent()) {
         boolean listUsed = false;
         for (int j = 1; j < listOfRules.size(); j++) {
           IAST rule = (IAST) listOfRules.get(j);
@@ -164,6 +165,32 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         }
       }
     }
+  }
+
+  /**
+   * The rules of a list of options, which may hold lists of options itself:
+   * <code>{a -&gt; 1, {b -&gt; 2, {c -&gt; 3}}}</code>.
+   *
+   * @return the list itself if it holds only rules and empty lists, the rules of a nested list as
+   *         one list, or {@link F#NIL} if the list holds anything else or no rule at all
+   */
+  private static IAST optionRules(IAST list) {
+    if (list.isListOfRules(true)) {
+      return list;
+    }
+    IASTAppendable rules = F.ListAlloc(list.argSize());
+    return appendOptionRules(list, rules) && rules.argSize() > 0 ? rules : F.NIL;
+  }
+
+  private static boolean appendOptionRules(IAST list, IASTAppendable rules) {
+    for (IExpr item : list) {
+      if (item.isRuleAST()) {
+        rules.append(item);
+      } else if (!item.isList() || !appendOptionRules((IAST) item, rules)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

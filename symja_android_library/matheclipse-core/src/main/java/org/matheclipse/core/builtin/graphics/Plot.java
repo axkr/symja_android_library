@@ -129,6 +129,8 @@ public class Plot extends ListPlot {
 
             // simulate ListPlot data
             GraphicsOptions listPlotOptions = graphicsOptions.copy();
+            // a function's curve is drawn fully opaque unless its style says otherwise
+            listPlotOptions.setCurveStyleLead(F.list(F.Opacity(F.num(1.0))));
             IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
             IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
             if (graphicsPrimitives.isPresent()) {
@@ -336,8 +338,9 @@ public class Plot extends ListPlot {
       }
       data = org.matheclipse.core.sympy.plotting.Plot.computePlot(sampled, data, xMinD, xMaxD,
           scale, plotPoints, maxRecursion, true);
+      // a function without data keeps its place, so the styles stay with their functions
+      dataList.add(data);
       if (data != null) {
-        dataList.add(data);
         for (int j = 0; j < data[0].length; j++) {
           if (Double.isFinite(data[1][j])) {
             sampledX[0] = Math.min(sampledX[0], data[0][j]);
@@ -350,16 +353,23 @@ public class Plot extends ListPlot {
       }
     }
     // graphicsOptions.mergeOptions(graphicsOptions.options().getListOfRules(), yMinMax);
+    boolean drawn = false;
     for (int i = 0; i < dataList.size(); i++) {
-      IExpr temp =
-          plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine, exclusions);
+      IExpr temp = dataList.get(i) == null ? F.NIL
+          : plotLine(dataList.get(i), x, xMinD, xMaxD, yMinMax, graphicsOptions, engine,
+              exclusions);
       if (temp.isPresent()) {
         // the curve is handed on wrapped exactly as a caller could have typed it into ListPlot,
         // so the tooltip needs no machinery of its own here
         listOfLines.append(curves.decorate(i + 1, temp));
+        drawn = true;
+      } else {
+        // an empty curve in the place of a function that has nothing to draw, so the curves
+        // after it keep their number - for PlotStyle and for Filling
+        listOfLines.append(F.CEmptyList);
       }
     }
-    return listOfLines;
+    return drawn ? listOfLines : F.ListAlloc();
   }
 
   /**

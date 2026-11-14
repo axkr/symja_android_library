@@ -238,7 +238,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LegendreQ(60,0.3)", //
         "-0.06651569328662452");
     check("BellB(60,-0.9)", //
-        "ScriptEngine: ERROR-IN-OUTPUTFORM");
+        "-4098664226501732000000000000000000000000000000000000.0");
     check("SphericalHarmonicY(60,3,0.3,0.5)", //
         "-0.03959101855479954+I*(-0.558289578777496)");
     check("LegendreP(60,0.5+0.25*I)", //

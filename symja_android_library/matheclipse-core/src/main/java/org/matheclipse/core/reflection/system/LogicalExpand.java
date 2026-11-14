@@ -197,6 +197,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
             case ID.Nand:
             case ID.Nor:
             case ID.Xnor:
+            case ID.Majority:
             case ID.BooleanFunction:
               converted = applyBooleanConvert(formula, engine);
               break;
@@ -312,7 +313,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
         }
       }
 
-      // Enforce standardized canonical order
+      // the terms and the parts of each term in canonical order
       result.sortInplace();
 
       if (changed || !result.equals(orAST)) {

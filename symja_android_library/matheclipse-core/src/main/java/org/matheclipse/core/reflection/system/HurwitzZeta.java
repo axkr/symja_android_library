@@ -32,6 +32,12 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
   /** Largest number of terms with a negative <code>k+a</code> which are summed one by one. */
   private static final double MAX_SHIFTED_TERMS = 1.0e6;
 
+  /**
+   * The most terms of <code>Zeta(s) - Sum(k^(-s), {k, 1, a-1})</code> which are added exactly for
+   * an integer <code>a</code>: the sum of a million fractions has a denominator of 870000 digits.
+   */
+  private static final int MAX_EXACT_TERMS = 20000;
+
   /** <code>HurwitzZeta(s, a)</code> of two real arbitrary precision numbers. */
   public static IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -116,7 +122,7 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
           // http://fungrim.org/entry/6e69fc/
           int n = a.toIntDefault();
           int sNegate = sInt.negate().toIntDefault();
-          if (n > Integer.MIN_VALUE && sNegate > Integer.MIN_VALUE) {
+          if (n > Integer.MIN_VALUE && n <= MAX_EXACT_TERMS && sNegate > Integer.MIN_VALUE) {
             return F.Subtract(F.Zeta(s), F.sum(k -> {
               return k.power(sNegate);
             }, 1, n - 1));

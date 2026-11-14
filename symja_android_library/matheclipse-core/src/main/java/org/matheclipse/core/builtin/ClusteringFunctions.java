@@ -753,6 +753,11 @@ public class ClusteringFunctions {
       S.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
       S.CanberraDistance.setEvaluator(new CanberraDistance());
       S.ChessboardDistance.setEvaluator(new ChessboardDistance());
+      S.ClassifierFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.ClassifierFunction());
+      S.ClassifierMeasurements
+          .setEvaluator(new org.matheclipse.core.reflection.system.ClassifierMeasurements());
+      S.Classify.setEvaluator(new org.matheclipse.core.reflection.system.Classify());
       S.CorrelationDistance.setEvaluator(new CorrelationDistance());
       S.CosineDistance.setEvaluator(new CosineDistance());
       S.EuclideanDistance.setEvaluator(new EuclideanDistance());

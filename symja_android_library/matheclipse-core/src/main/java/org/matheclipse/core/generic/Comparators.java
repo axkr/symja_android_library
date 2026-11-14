@@ -115,29 +115,19 @@ public final class Comparators {
      */
     @Override
     public int compare(final IExpr o1, final IExpr o2) {
+      if ((o1.isNot() || o2.isNot()) && isLiteral(o1) && isLiteral(o2)) {
+        // literals are ordered by their variable, a variable before its negation
+        final IExpr variable1 = o1.isNot() ? o1.first() : o1;
+        final IExpr variable2 = o2.isNot() ? o2.first() : o2;
+        int ct = variable1.compareTo(variable2);
+        if (ct != 0) {
+          return ct;
+        }
+        return o1.isNot() ? (o2.isNot() ? 0 : 1) : -1;
+      }
       if (o1.isAST() && o2.isAST()) {
         IAST lhsAST = (IAST) o1;
         IAST rhsAST = (IAST) o2;
-
-        if (lhsAST.isNot()) {
-          IExpr arg1 = lhsAST.arg1();
-          if ((rhsAST.isSymbol() && arg1.isSymbol()) || (rhsAST.isSlot() && arg1.isSlot())) {
-            int ct = arg1.compareTo(rhsAST);
-            if (ct != 0) {
-              return ct;
-            }
-            return 1;
-          }
-        } else if (rhsAST.isNot()) {
-          IExpr arg1 = rhsAST.arg1();
-          if ((lhsAST.isSymbol() && arg1.isSymbol()) || (lhsAST.isSlot() && arg1.isSlot())) {
-            int ct = lhsAST.compareTo(arg1);
-            if (ct != 0) {
-              return ct;
-            }
-            return 1;
-          }
-        }
 
         // compare the headers
         int cp = lhsAST.head().compareTo(rhsAST.head());
@@ -147,7 +137,7 @@ public final class Comparators {
 
         final int minimumSize = (lhsAST.size() > rhsAST.size()) ? rhsAST.size() : lhsAST.size();
         for (int i = 1; i < minimumSize; i++) {
-          cp = lhsAST.get(i).compareTo(rhsAST.get(i));
+          cp = compare(lhsAST.get(i), rhsAST.get(i));
           if (cp != 0) {
             return cp;
           }
@@ -163,6 +153,12 @@ public final class Comparators {
       }
       return o1.compareTo(o2);
     }
+  }
+
+  /** A symbol or a slot, or the negation of one. */
+  private static boolean isLiteral(IExpr expr) {
+    final IExpr variable = expr.isNot() ? expr.first() : expr;
+    return variable.isSymbol() || variable.isSlot();
   }
 
   /**

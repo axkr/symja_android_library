@@ -36,6 +36,11 @@ public final class GraphicsOptions2D {
   public double[] imageSize = {360, 360};
   public boolean imageSizeSet = false;
   public boolean imageSizeHeightSet = false;
+  /**
+   * Whether the {@code ImageSize} rule gives a width. <code>ImageSize -&gt; {Automatic, h}</code>
+   * gives the height alone, the width then follows from the aspect ratio.
+   */
+  public boolean imageSizeWidthSet = false;
   /** {@code ImageSize -> All}: leave room for the largest item, shown or not. */
   public boolean imageSizeAll = false;
   /**
@@ -162,28 +167,38 @@ public final class GraphicsOptions2D {
   // CPD-OFF option-rule loop of the 2D and the 3D option parsers
   public void parse(IAST ast, PrimitiveCollector collector) {
     for (int i = 2; i <= ast.argSize(); i++) {
-      IExpr arg = ast.get(i);
-      if (!arg.isRuleAST()) {
-        continue;
-      }
-      IAST rule = (IAST) arg;
-      IExpr key = rule.arg1();
-      // PlotRange -> Dynamic[r] is drawn with the current value of r, not as if it were absent
-      IExpr value = Dynamics.currentValue(rule.arg2());
-      if (!key.isBuiltInSymbol()) {
-        continue;
-      }
-      // CPD-ON
-      try {
-        apply(((IBuiltInSymbol) key).ordinal(), value, collector);
-      } catch (RuntimeException rex) {
-        // a malformed option falls back to its default rather than losing the picture
-      }
+      parseOption(ast.get(i), collector);
     }
     // the ticks styles go on top of the axes, frame and label styles, whichever order the
     // options were written in
     ticksStyle = ticksStyle(ticksStyleValue, axesStyle, collector);
     frameTicksStyle = ticksStyle(frameTicksStyleValue, frameStyle, collector);
+  }
+
+  /** Read an option <code>name -&gt; value</code>, or every option of a list of options. */
+  private void parseOption(IExpr arg, PrimitiveCollector collector) {
+    if (arg.isList()) {
+      for (IExpr option : (IAST) arg) {
+        parseOption(option, collector);
+      }
+      return;
+    }
+    if (!arg.isRuleAST()) {
+      return;
+    }
+    IAST rule = (IAST) arg;
+    IExpr key = rule.arg1();
+    // PlotRange -> Dynamic[r] is drawn with the current value of r, not as if it were absent
+    IExpr value = Dynamics.currentValue(rule.arg2());
+    if (!key.isBuiltInSymbol()) {
+      return;
+    }
+    // CPD-ON
+    try {
+      apply(((IBuiltInSymbol) key).ordinal(), value, collector);
+    } catch (RuntimeException rex) {
+      // a malformed option falls back to its default rather than losing the picture
+    }
   }
 
   /**
@@ -482,6 +497,24 @@ public final class GraphicsOptions2D {
     }
   }
 
+  /**
+   * Whether the value of <code>Ticks</code> draws no ticks at all: <code>None</code>,
+   * <code>False</code>, <code>{}</code>, or a pair of those, as <code>{{}, {}}</code>, to which
+   * the plot functions normalize <code>Ticks -&gt; False</code>.
+   */
+  public static boolean ticksOff(IExpr ticks) {
+    if (ticks.isNone() || ticks.isFalse() || ticks.isEmptyList()) {
+      return true;
+    }
+    if (ticks.isList() && ((IAST) ticks).argSize() == 2) {
+      IExpr x = ticks.first();
+      IExpr y = ticks.second();
+      return (x.isNone() || x.isFalse() || x.isEmptyList())
+          && (y.isNone() || y.isFalse() || y.isEmptyList());
+    }
+    return false;
+  }
+
   private void applyImageSize(IExpr value) {
     imageSizeSet = true;
     imageSizeExplicit = true;
@@ -502,6 +535,7 @@ public final class GraphicsOptions2D {
           Double.NaN);
       if (!Double.isNaN(w) && w > 0) {
         imageSize[0] = w;
+        imageSizeWidthSet = true;
       }
       if (!Double.isNaN(h) && h > 0) {
         imageSize[1] = h;
@@ -518,6 +552,7 @@ public final class GraphicsOptions2D {
     double s = namedImageSize(value, Double.NaN);
     if (!Double.isNaN(s) && s > 0) {
       imageSize[0] = s;
+      imageSizeWidthSet = true;
     }
   }
 

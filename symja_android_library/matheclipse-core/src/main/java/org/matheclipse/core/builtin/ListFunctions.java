@@ -380,6 +380,7 @@ public final class ListFunctions {
       S.SplitBy.setEvaluator(new SplitBy());
       S.Subdivide.setEvaluator(new Subdivide());
       S.Table.setEvaluator(new Table());
+      S.SubsetMap.setEvaluator(new SubsetMap());
       S.Take.setEvaluator(new Take());
       S.TakeLargest.setEvaluator(new TakeLargestSmallest(false));
       S.TakeLargestBy.setEvaluator(new TakeLargestSmallestBy(false));
@@ -671,6 +672,14 @@ public final class ListFunctions {
    * {1,3,6}
    * </pre>
    */
+  /**
+   * A number, symbol or string: an atom without parts, unlike a sparse or numeric array, which
+   * stands for a list.
+   */
+  private static boolean isPlainAtom(IExpr x) {
+    return x.isNumber() || x.isSymbol() || x.isString();
+  }
+
   private static final class Accumulate extends AbstractEvaluator {
 
     @Override
@@ -688,6 +697,10 @@ public final class ListFunctions {
         // of a long list exceeds the recursion limit
         return foldLeft(null, list, 1, size,
             (x, y) -> engine.evaluate(F.binaryAST2(S.Plus, x, y)), resultList);
+      }
+      if (isPlainAtom(arg1)) {
+        // Nonatomic expression expected at position `1` in `2`.
+        return Errors.printMessage(S.Accumulate, "normal", F.List(F.C1, ast), engine);
       }
       return F.NIL;
     }
@@ -2048,8 +2061,15 @@ public final class ListFunctions {
       }
       IAST list = (IAST) ast.arg1();
       int n = -1;
+      // UpTo(n) asks for at most n elements: fewer distinct elements are no reason to warn
+      boolean upTo = false;
       if (ast.isAST2()) {
-        n = Validate.checkIntType(S.Commonest, ast.arg2(), 0, engine);
+        IExpr arg2 = ast.arg2();
+        if (arg2.isAST(S.UpTo, 2)) {
+          upTo = true;
+          arg2 = arg2.first();
+        }
+        n = Validate.checkIntType(S.Commonest, arg2, 0, engine);
         if (F.isNotPresent(n)) {
           return F.NIL;
         }
@@ -2085,7 +2105,7 @@ public final class ListFunctions {
               break;
             }
           }
-          if (counter < n) {
+          if (counter < n && !upTo) {
             // print warning (not an error)
             // The requested number of elements `1` is greater than the number of distinct
             // elements `2` only `2` elements will be returned.
@@ -2847,6 +2867,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
+      if (isPlainAtom(arg1)) {
+        // an atom has no parts to delete
+        return arg1;
+      }
       if (arg1.isASTOrAssociation()) {
         final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
         boolean includeHeads = false;
@@ -3323,41 +3347,23 @@ public final class ListFunctions {
      */
     private static IAST drop(final IASTAppendable resultList, final int level,
         final ISequence[] sequenceSpecifications) {
-      sequenceSpecifications[level].setListSize(resultList.size());
+      final ISequence sequ = sequenceSpecifications[level];
       final int newLevel = level + 1;
-      int j = sequenceSpecifications[level].getStart();
-      int end = sequenceSpecifications[level].getEnd();
-      int step = sequenceSpecifications[level].getStep();
-      if (step < 0) {
-        end--;
-        if (j < end || end <= 0) {
-          throw new ArgumentTypeException("cannot drop positions "
-              + sequenceSpecifications[level].getStartOffset() + " through "
-              + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
-        }
-        for (int i = j; i >= end; i += step) {
-          if (j >= resultList.size()) {
-            throw new ArgumentTypeException("cannot drop positions "
-                + sequenceSpecifications[level].getStartOffset() + " through "
-                + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
-          }
-          resultList.remove(j);
-          j += step;
-        }
-      } else {
-        if (j == 0) {
-          throw new ArgumentTypeException("cannot drop positions "
-              + sequenceSpecifications[level].getStartOffset() + " through "
-              + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
-        }
-        for (int i = j; i < end; i += step) {
-          if (j >= resultList.size()) {
-            throw new ArgumentTypeException("cannot drop positions "
-                + sequenceSpecifications[level].getStartOffset() + " through "
-                + sequenceSpecifications[level].getEndOffset() + " in " + resultList);
-          }
-          resultList.remove(j);
-          j += step - 1;
+      final int[] range = Sequence.range(sequ, resultList.argSize());
+      if (range == null) {
+        // Cannot drop positions `1` through `2` in `3`.
+        String str = Errors.getMessage("drop", F.list(F.ZZ(sequ.getStartOffset()),
+            F.ZZ(Sequence.reportedEnd(sequ)), resultList), EvalEngine.get());
+        throw new ArgumentTypeException(str);
+      }
+      final int count = Sequence.rangeCount(range);
+      if (count > 0) {
+        // from the highest position downwards, so that the positions still to remove stay valid
+        final int absStep = Math.abs(range[2]);
+        int position = range[2] > 0 ? range[0] + (count - 1) * absStep : range[0];
+        for (int i = 0; i < count; i++) {
+          resultList.remove(position);
+          position -= absStep;
         }
       }
       for (int j2 = 1; j2 < resultList.size(); j2++) {
@@ -4070,13 +4076,198 @@ public final class ListFunctions {
   /**
    * <code>TakeDrop(list, spec)</code> - the pair <code>{Take(list, spec), Drop(list, spec)}</code>.
    */
+  /**
+   * <code>SubsetMap(f, expr, positions)</code> applies <code>f</code> to the parts of
+   * <code>expr</code> at <code>positions</code> and puts the elements of the result back at these
+   * positions. <code>SubsetMap(f, positions)(expr)</code> is the operator form.
+   *
+   * <p>
+   * The parts are taken with <code>Part</code>: a list of integers names positions on the first
+   * level, a span its range, a list of other specifications (such as <code>{All, 2}</code>) one
+   * specification for each level. A list of lists names the positions themselves, as
+   * <code>Extract</code> takes them.
+   */
+  private static final class SubsetMap extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST call = ast;
+      if (ast.head().isAST(S.SubsetMap, 3)) {
+        if (!ast.isAST1()) {
+          return F.NIL;
+        }
+        IAST head = (IAST) ast.head();
+        call = F.ternaryAST3(S.SubsetMap, head.arg1(), ast.arg1(), head.arg2());
+        IExpr result = evaluateSubsetMap(call, engine);
+        return result.isPresent() ? result : call;
+      }
+      if (!ast.head().equals(S.SubsetMap)) {
+        return F.NIL;
+      }
+      if (ast.argSize() < 2 || ast.argSize() > 3) {
+        return Errors.printArgMessage(ast, ARGS_2_3, engine);
+      }
+      if (ast.isAST2()) {
+        // the operator form waits for its argument
+        return F.NIL;
+      }
+      return evaluateSubsetMap(call, engine);
+    }
+
+    private static IExpr evaluateSubsetMap(final IAST ast, EvalEngine engine) {
+      final IExpr function = ast.arg1();
+      final IExpr expr = ast.arg2();
+      final IExpr spec = ast.arg3();
+      if (!expr.isAST() || expr.isAssociation()) {
+        return F.NIL;
+      }
+      final IExpr parts;
+      final IExpr labels;
+      if (spec.isListOfLists() && spec.argSize() > 0) {
+        // explicit positions
+        parts = engine.evaluate(F.Extract(expr, spec));
+        if (parts.isAST(S.Extract)) {
+          return F.NIL;
+        }
+        labels = ((IAST) spec).map(position -> F.Hold(position), 1);
+      } else {
+        // one Part specification for each level; a list of integers is one specification
+        final IAST levels =
+            spec.isList() && !((IAST) spec).forAll(x -> x.isInteger()) ? (IAST) spec
+                : F.list(spec);
+        if (levels.argSize() == 0) {
+          return F.NIL;
+        }
+        IASTAppendable part = F.ast(S.Part, levels.argSize() + 1);
+        part.append(expr);
+        part.appendArgs(levels);
+        parts = engine.evaluate(part);
+        if (parts.isAST(S.Part)) {
+          return F.NIL;
+        }
+        IASTAppendable labelPart = F.ast(S.Part, levels.argSize() + 1);
+        labelPart.append(positionLabels(expr, levels.argSize(), F.CEmptyList));
+        labelPart.appendArgs(levels);
+        labels = engine.evalQuiet(labelPart);
+        if (labels.isAST(S.Part)) {
+          return F.NIL;
+        }
+      }
+      final IExpr mapped = engine.evaluate(F.unaryAST1(function, parts));
+      final List<IAST> positions = new ArrayList<IAST>();
+      final List<IExpr> values = new ArrayList<IExpr>();
+      if (!collectAssignments(labels, mapped, positions, values)) {
+        // The function `1` does not give a list of the same length when applied to list `2`.
+        return Errors.printMessage(S.SubsetMap, "newls", F.list(function, parts), engine);
+      }
+      IExpr result = expr;
+      for (int i = 0; i < positions.size(); i++) {
+        result = setPart(result, positions.get(i), 1, values.get(i));
+        if (result.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
+
+    /**
+     * A copy of <code>expr</code> whose parts at level <code>depth</code> are replaced by
+     * <code>Hold(position)</code>.
+     */
+    private static IExpr positionLabels(IExpr expr, int depth, IAST position) {
+      if (depth == 0) {
+        return F.Hold(position);
+      }
+      if (!expr.isAST() || expr.isAssociation()) {
+        return expr;
+      }
+      IAST ast = (IAST) expr;
+      IASTAppendable result = F.ast(ast.head(), ast.argSize());
+      for (int i = 1; i < ast.size(); i++) {
+        result.append(positionLabels(ast.get(i), depth - 1, position.appendClone(F.ZZ(i))));
+      }
+      return result;
+    }
+
+    /**
+     * Pair the positions in <code>labels</code> with the parts of <code>mapped</code> which have
+     * the same place in it.
+     *
+     * @return <code>false</code> if <code>mapped</code> doesn't have the shape of
+     *         <code>labels</code>
+     */
+    private static boolean collectAssignments(IExpr labels, IExpr mapped, List<IAST> positions,
+        List<IExpr> values) {
+      if (labels.isAST(S.Hold, 2)) {
+        positions.add((IAST) labels.first());
+        values.add(mapped);
+        return true;
+      }
+      if (!labels.isList() || !mapped.isList() || labels.argSize() != mapped.argSize()) {
+        return false;
+      }
+      for (int i = 1; i < labels.size(); i++) {
+        if (!collectAssignments(((IAST) labels).get(i), ((IAST) mapped).get(i), positions,
+            values)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /** A copy of <code>expr</code> with <code>value</code> at <code>position</code>. */
+    private static IExpr setPart(IExpr expr, IAST position, int index, IExpr value) {
+      if (index >= position.size()) {
+        return value;
+      }
+      if (!expr.isAST()) {
+        return F.NIL;
+      }
+      IAST ast = (IAST) expr;
+      int i = position.get(index).toIntDefault();
+      if (i < 0) {
+        i = ast.size() + i;
+      }
+      if (i <= 0 || i >= ast.size()) {
+        return F.NIL;
+      }
+      IExpr part = setPart(ast.get(i), position, index + 1, value);
+      return part.isPresent() ? ast.setAtCopy(i, part) : F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // the operator form SubsetMap(f, positions)(expr) puts expr in the middle, which the
+      // generic operator forms don't do: the arguments are checked in evaluate()
+      return null;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.PROTECTED, Attribute.READPROTECTED);
+    }
+  }
+
   private static final class TakeDrop extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr take = engine.evaluate(F.Take(ast.arg1(), ast.arg2()));
-      if (take.isAST(S.Take)) {
-        return F.NIL;
+      final IExpr arg1 = ast.arg1();
+      final IExpr take;
+      if (arg1.isASTOrAssociation()) {
+        // a specification which doesn't fit is reported for this function, not for the two it is
+        // made of
+        take = engine.evalQuiet(F.Take(arg1, ast.arg2()));
+        if (take.isAST(S.Take)) {
+          // Invalid sequence specification `1` for an expression of length `2`.
+          return Errors.printMessage(S.TakeDrop, "iseq",
+              F.list(ast.arg2(), F.ZZ(arg1.argSize())), engine);
+        }
+      } else {
+        take = engine.evaluate(F.Take(arg1, ast.arg2()));
+        if (take.isAST(S.Take)) {
+          return F.NIL;
+        }
       }
       IExpr drop = engine.evaluate(F.Drop(ast.arg1(), ast.arg2()));
       if (drop.isAST(S.Drop)) {
@@ -5886,16 +6077,16 @@ public final class ListFunctions {
       if ((list.isASTOrAssociation() || list.isSparseArray())
           && (selection.isASTOrAssociation() || selection.isSparseArray())) {
         // TODO optimize for SparseArray
-        IAST arg1AST = (IAST) list.normal(false);
-        IAST arg2AST = (IAST) selection.normal(false);
+        // an association stays one: its values are picked and what is picked keeps its key
+        IAST arg1AST = list.isAssociation() ? (IAST) list : (IAST) list.normal(false);
+        IAST arg2AST =
+            selection.isAssociation() ? (IAST) selection : (IAST) selection.normal(false);
         if (arg1AST.size() != arg2AST.size()) {
           // Expressions `1` and `2` have incompatible shapes.
           return Errors.printMessage(ast.topHead(), "incomp", F.list(list, selection), engine);
         }
         try {
-          IASTAppendable result = arg1AST.copyHead();
-          IExpr temp = pickRecursive(arg1AST, arg2AST, matcher, result);
-          return temp;
+          return pickRecursive(arg1AST, arg2AST, matcher);
         } catch (StopVisit stop) {
           // Expressions `1` and `2` have incompatible shapes.
           return Errors.printMessage(ast.topHead(), "incomp", F.list(list, selection), engine);
@@ -5910,27 +6101,41 @@ public final class ListFunctions {
      * <a href="https://mathematica.stackexchange.com/a/119235/21734">Stackexchange - The Pick
      * Process</a>
      *
+     * <p>
+     * The elements of an association are its values: a picked value keeps its key in the result,
+     * which is an association again.
+     *
      * @param list
      * @param selection
      * @param matcher
-     * @param result append the matched elements to this <code>IASTAppendable</code>
      * @return the elements of <code>list</code> those values in the corresponding position in
      *         <code>selection</code> match with <code>matcher</code>.
      */
-    private static IExpr pickRecursive(IAST list, IAST selection, IPatternMatcher matcher,
-        IASTAppendable result) {
+    private static IExpr pickRecursive(IAST list, IAST selection, IPatternMatcher matcher) {
+      final IAssociation association = list.isAssociation() ? (IAssociation) list : null;
+      final IAssociation selectionAssociation =
+          selection.isAssociation() ? (IAssociation) selection : null;
+      final IASTAppendable result = association != null ? F.assoc() : list.copyHead();
       for (int i = 1; i < list.size(); i++) {
-        IExpr arg1 = list.getRule(i);
-        IExpr arg2 = selection.getRule(i);
+        final IAST rule = association != null ? association.getRule(i) : F.NIL;
+        final IExpr arg1 = rule.isPresent() ? rule.second() : list.get(i);
+        final IExpr arg2 = selectionAssociation != null ? selectionAssociation.getValue(i)
+            : selection.get(i);
+        IExpr picked = F.NIL;
         if (matcher.test(arg2)) {
-          result.append(arg1);
+          picked = arg1;
         } else if (arg1.isASTOrAssociation() && arg2.isASTOrAssociation()) {
           if (arg1.size() != arg2.size()) {
             throw StopVisit.STOP;
           }
-          IASTAppendable appendable = ((IAST) arg1).copyHead();
-          IExpr temp = pickRecursive((IAST) arg1, (IAST) arg2, matcher, appendable);
-          result.append(temp);
+          picked = pickRecursive((IAST) arg1, (IAST) arg2, matcher);
+        }
+        if (picked.isPresent()) {
+          if (rule.isPresent()) {
+            result.appendRule(picked == arg1 ? rule : rule.setAtCopy(2, picked));
+          } else {
+            result.append(picked);
+          }
         }
       }
       return result;
@@ -6607,7 +6812,7 @@ public final class ListFunctions {
     return false;
   }
 
-  private static final class Replace extends AbstractEvaluator {
+  private static final class Replace extends AbstractFunctionOptionEvaluator {
 
     private static final class ReplaceFunction implements Function<IExpr, IExpr> {
       private final EvalEngine engine;
@@ -6695,12 +6900,12 @@ public final class ListFunctions {
     }
 
     private static IExpr replaceExprWithLevelSpecification(final IAST ast, IExpr arg1, IExpr rules,
-        IExpr levelSpecification, EvalEngine engine) {
+        IExpr levelSpecification, boolean includeHeads, EvalEngine engine) {
       // use replaceFunction#setRule() method to set the current rules which
       // are initialized with an empty list { }
       ReplaceFunction replaceFunction = new ReplaceFunction(F.CEmptyList, engine);
-      VisitorLevelSpecification level =
-          new VisitorLevelSpecification(replaceFunction, levelSpecification, false, 0, engine);
+      VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction,
+          levelSpecification, includeHeads, 0, engine);
       replaceFunction.setRule(rules);
       return arg1.accept(level).orElse(arg1);
     }
@@ -6722,8 +6927,9 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() < 3 || ast.size() > 4) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize < 2 || argSize > 3) {
         return F.NIL;
       }
       IExpr arg1 = ast.arg1();
@@ -6732,10 +6938,12 @@ public final class ListFunctions {
         return rules.mapThread(ast, 2);
       }
 
-      if (ast.isAST3()) {
+      if (argSize == 3) {
         // arg3 should contain a "level specification":
-        return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
+        return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), option[0].isTrue(),
+            engine);
       }
+      // the whole expression is level 0, which has no head to include
       return replaceExpr(ast, arg1, rules, engine);
     }
 
@@ -6744,6 +6952,10 @@ public final class ListFunctions {
       return ARGS_1_3_1;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
+    }
   }
 
   /**
@@ -7282,23 +7494,22 @@ public final class ListFunctions {
         IExpr arg2 = ast.arg2();
         if (arg2.isList()) {
           IAST levels = (IAST) arg2;
-          IExpr current = arg1;
-          for (int i = 1; i <= levels.argSize(); i++) {
-            int n = levels.get(i).toMachineInt();
-            if (n > 0) {
-              current = reverseAtLevel(current, n);
+          if (levels.forAll(x -> x.isInteger() && x.toIntDefault() > 0)) {
+            IExpr current = arg1;
+            for (int i = 1; i <= levels.argSize(); i++) {
+              current = reverseAtLevel(current, levels.get(i).toIntDefault());
             }
+            return current;
           }
-          return current;
-        } else {
-          int n = arg2.toMachineInt();
+        } else if (arg2.isInteger()) {
+          int n = arg2.toIntDefault();
           if (n > 0) {
             return reverseAtLevel(arg1, n);
           }
         }
       }
-
-      return Errors.printMessage(S.Reverse, "normal", F.list(F.C1, ast), engine);
+      // Single or list of positive machine-sized integers expected at position `1` of `2`.
+      return Errors.printMessage(S.Reverse, "ilsmp", F.list(F.C2, ast), engine);
     }
 
     private static IExpr reverseAtLevel(IExpr expr, int n) {
@@ -7724,6 +7935,10 @@ public final class ListFunctions {
             }
             return list.select(x -> engine.evalTrue(predicateHead, x), maxNumberOfResults);
           }
+        }
+        if (isPlainAtom(ast.arg1())) {
+          // Nonatomic expression expected at position `1` in `2`.
+          return Errors.printMessage(S.Select, "normal", F.List(F.C1, ast), engine);
         }
       } catch (IllegalArgumentException iae) {
         return Errors.printMessage(S.Select, iae, engine);
@@ -8665,34 +8880,35 @@ public final class ListFunctions {
       final int[] step = new int[levels];
       final int[] count = new int[levels];
       for (int l = 0; l < levels; l++) {
-        ISequence sequ = sequenceSpecifications[l];
-        // the size of a list includes its head
-        final int size = dims[l] + 1;
-        sequ.setListSize(size);
-        int first = sequ.getStart();
-        int end = sequ.getEnd();
-        int stepSize = sequ.getStep();
-        if (stepSize < 0) {
-          end--;
-          if (first < end || end <= 0 || first >= size) {
-            invalidLevel[0] = l;
-            return null;
-          }
-          count[l] = (first - end) / (-stepSize) + 1;
-        } else {
-          final int endOffset = sequ.getEndOffset();
-          if (first <= 0 || stepSize == 0
-              || (endOffset != Integer.MAX_VALUE && endOffset > size - 1)) {
-            invalidLevel[0] = l;
-            return null;
-          }
-          // no position, as Take(s, 0), gives an empty level
-          count[l] = end > first ? (end - first + stepSize - 1) / stepSize : 0;
+        final int[] range = Sequence.range(sequenceSpecifications[l], dims[l]);
+        if (range == null) {
+          invalidLevel[0] = l;
+          return null;
         }
-        start[l] = first;
-        step[l] = stepSize;
+        // no position, as Take(s, 0), gives an empty level
+        count[l] = Sequence.rangeCount(range);
+        start[l] = range[0];
+        step[l] = range[2];
       }
       return sparseArray.takeRanges(start, step, count);
+    }
+
+    /**
+     * The range of positions which <code>sequ</code> takes from <code>list</code>.
+     *
+     * @throws ArgumentTypeException if the specification doesn't fit the list
+     * @see Sequence#range(ISequence, int)
+     */
+    private static int[] takeRange(ISequence sequ, IAST list) {
+      final int[] range = Sequence.range(sequ, list.argSize());
+      if (range == null) {
+        // Cannot take positions `1` through `2` in `3`.
+        String str = Errors.getMessage("take",
+            F.list(F.ZZ(sequ.getStartOffset()), F.ZZ(Sequence.reportedEnd(sequ)), list),
+            EvalEngine.get());
+        throw new ArgumentTypeException(str);
+      }
+      return range;
     }
 
     /**
@@ -8702,54 +8918,17 @@ public final class ListFunctions {
      * @param list
      * @param level recursion level
      * @param sequenceSpecifications one or more ISequence specifications
-     * @return
      */
-    /** A negative start of <code>sequ</code> must lie in <code>list</code>, not in front of it. */
-    private static void checkTakeStart(ISequence sequ, IAST list) {
-      final int start = sequ.getStart();
-      if (start < 0 || (start == 0 && sequ.getStartOffset() < 0)) {
-        final int last = sequ.getEndOffset() == Integer.MAX_VALUE ? -1 : sequ.getEndOffset();
-        // Cannot take positions `1` through `2` in `3`.
-        String str = Errors.getMessage("take",
-            F.list(F.ZZ(sequ.getStartOffset()), F.ZZ(last), list), EvalEngine.get());
-        throw new ArgumentTypeException(str);
-      }
-    }
-
     private static IAST take(final IAST list, final int level,
         final ISequence[] sequenceSpecifications) {
-      ISequence sequ = sequenceSpecifications[level];
-      int size = list.size();
-      sequ.setListSize(size);
+      final int[] range = takeRange(sequenceSpecifications[level], list);
+      final int size = list.size();
       final IASTAppendable resultList = list.copyHead(10 > size ? size : 10);
       final int newLevel = level + 1;
-      int start = sequ.getStart();
-      int end = sequ.getEnd();
-      int step = sequ.getStep();
-      if (step < 0) {
-        end--;
-        if (start < end || end <= 0 || start >= list.size()) {
-          // Cannot take positions `1` through `2` in `3`.
-          String str =
-              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), list), EvalEngine.get());
-          throw new ArgumentTypeException(str);
-        }
-      } else {
-        checkTakeStart(sequ, list);
-        final int endOffset = sequ.getEndOffset();
-        if (endOffset != Integer.MAX_VALUE && endOffset > size - 1) {
-          // requested end position exceeds the number of elements: Take does not silently truncate
-          // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(endOffset), list),
-              EvalEngine.get());
-          throw new ArgumentTypeException(str);
-        }
-        if (start == 0) {
-          return resultList;
-        }
-      }
-      // a negative step runs down to end inclusive, a positive one up to end exclusive
-      for (int i = start; step < 0 ? i >= end : i < end; i += step) {
+      final int end = range[1];
+      final int step = range[2];
+      // a negative step runs down to the end, a positive one up to it
+      for (int i = range[0]; step < 0 ? i >= end : i <= end; i += step) {
         IExpr arg = list.get(i);
         if (sequenceSpecifications.length > newLevel) {
           if (arg.isAssociation()) {
@@ -8770,41 +8949,14 @@ public final class ListFunctions {
 
     private static IAST take(final IAssociation assoc2, final int level,
         final ISequence[] sequenceSpecifications) {
-      ISequence sequ = sequenceSpecifications[level];
-      // IAST normal = assoc2.normal(false);
-      int size = assoc2.size();
-      sequ.setListSize(size);
+      final int[] range = takeRange(sequenceSpecifications[level], assoc2);
+      final int size = assoc2.size();
       final IASTAppendable resultAssoc = assoc2.copyHead(10 > size ? size : 10);
       final int newLevel = level + 1;
-      int start = sequ.getStart();
-      int end = sequ.getEnd();
-      int step = sequ.getStep();
-      if (step < 0) {
-        end--;
-        if (start < end || end <= 0 || start >= assoc2.size()) {
-          // Cannot take positions `1` through `2` in `3`.
-          String str =
-              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), assoc2), EvalEngine.get());
-          throw new ArgumentTypeException(str);
-        }
-        // negative step used here
-        for (int i = start; i >= end; i += step) {
-          appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
-        }
-      } else {
-        checkTakeStart(sequ, assoc2);
-        if (start == 0) {
-          return resultAssoc;
-        }
-        if (end > assoc2.size()) {
-          // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), assoc2),
-              EvalEngine.get());
-          throw new ArgumentTypeException(str);
-        }
-        for (int i = start; i < end; i += step) {
-          appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
-        }
+      final int end = range[1];
+      final int step = range[2];
+      for (int i = range[0]; step < 0 ? i >= end : i <= end; i += step) {
+        appendTaken(resultAssoc, assoc2, i, newLevel, sequenceSpecifications);
       }
       return resultAssoc;
     }
@@ -9342,7 +9494,12 @@ public final class ListFunctions {
         level = new TotalLevelSpecification(tf, 1, false);
       }
 
-      IExpr arg1 = ast.arg1();
+      // a QuantityArray is totalled as the array of quantities it stands for
+      IExpr arg1 = QuantityFunctions.normalizeQuantityArray(ast.arg1());
+      if (isPlainAtom(arg1)) {
+        // the total of an atom is the atom
+        return arg1;
+      }
       if (arg1.isNumericArray()) {
         // the sums are ordinary numbers and lists
         return NumericArrayExpr.evalNormal(ast, false, engine);
@@ -9382,6 +9539,11 @@ public final class ListFunctions {
         IExpr arg2 = ast.arg2();
         int n = arg2.isInfinity() || arg2.isMinusOne() ? Integer.MAX_VALUE : arg2.toIntDefault();
         if (n >= 2) {
+          // exact numbers are added up as they are met, without a sum of every element
+          IRational exactSum = exactTotal(arg1, n, F.C0, engine);
+          if (exactSum != null) {
+            return exactSum;
+          }
           IASTAppendable sum = F.PlusAlloc(16);
           totalElements(arg1, n, sum);
           return engine.evaluate(sum);
@@ -9452,6 +9614,28 @@ public final class ListFunctions {
         return F.NIL;
       }
       return F.num(sum);
+    }
+
+    /**
+     * Add the elements of <code>expr</code> down to level <code>depth</code> to
+     * <code>sum</code>, going through lists and the values of associations only.
+     *
+     * @return <code>null</code> if an element is no integer or fraction
+     */
+    private static IRational exactTotal(IExpr expr, int depth, IRational sum, EvalEngine engine) {
+      if (depth > 0 && (expr.isList() || expr.isAssociation())) {
+        IAST collection = (IAST) expr;
+        engine.checkTimeLimit();
+        for (int i = 1; i < collection.size(); i++) {
+          // the value of a rule of an association
+          sum = exactTotal(collection.get(i), depth - 1, sum, engine);
+          if (sum == null) {
+            return null;
+          }
+        }
+        return sum;
+      }
+      return expr instanceof IRational ? sum.add((IRational) expr) : null;
     }
 
     /**

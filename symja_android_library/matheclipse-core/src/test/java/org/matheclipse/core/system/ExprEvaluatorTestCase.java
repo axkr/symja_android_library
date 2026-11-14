@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.util.Locale;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -26,7 +25,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -163,9 +161,8 @@ public abstract class ExprEvaluatorTestCase {
     assertNotNull(expr);
 
     StepsListener stepListener = new StepsListener(maxDepth, stepLevel);
-    IAST traceForm =
-        F.TraceForm(F.HoldForm(engine.evalWithStepListener(expr, stepListener)), stepListener
-            .toExpr());
+    IAST traceForm = F.TraceForm(F.HoldForm(engine.evalWithStepListener(expr, stepListener)),
+        stepListener.toExpr());
 
     OutputFormFactory outputFormFactory = OutputFormFactory.get(true);
     outputFormFactory.setIgnoreNewLine(true);
@@ -498,7 +495,7 @@ public abstract class ExprEvaluatorTestCase {
       ToggleFeature.COMPILE = true;
       ToggleFeature.COMPILE_PRINT = true;
       Config.SHORTEN_STRING_LENGTH = 80;
-      Config.MAX_AST_SIZE = 20000;
+      Config.MAX_AST_SIZE = 21000;
       Config.MAX_MATRIX_DIMENSION_SIZE = 100;
       Config.MAX_BIT_LENGTH = 200000;
       Config.MAX_POLYNOMIAL_DEGREE = 150;

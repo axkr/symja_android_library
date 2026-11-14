@@ -417,6 +417,70 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A prefix <code>++</code> or <code>--</code> takes its operand before a <code>'</code>: the
+   * derivative applies to the incremented expression.
+   */
+  @Test
+  public void testDerivativeAfterPrefixIncrement() {
+    check("FullForm(Hold(++g'))", //
+        "Hold(Derivative(1)[PreIncrement(g)])");
+    check("FullForm(Hold(--y''))", //
+        "Hold(Derivative(2)[PreDecrement(y)])");
+    check("FullForm(Hold(++(g')))", //
+        "Hold(PreIncrement(Derivative(1)[g]))");
+    check("FullForm(Hold(-g'^3))", //
+        "Hold(Times(-1, Power(Derivative(1)[g], 3)))");
+    // so do @, /@ and !, while ^ takes the derivative as its operand
+    check("FullForm(Hold({h@g', h/@g', n!', u^v'}))", //
+        "Hold(List(Derivative(1)[h(g)], Derivative(1)[Map(h, g)], Derivative(1)[Factorial(n)], "
+            + "Power(u, Derivative(1)[v])))");
+    check("Map(Cos', {0, Pi/2})", //
+        "{0,-1}");
+    // a pattern test takes its operand before a ' as well
+    check("FullForm(Hold(u_?g'))", //
+        "Hold(Derivative(1)[PatternTest(Pattern(u, Blank()), g)])");
+  }
+
+  /** A parsed minus folded into a machine zero gives zero, not a negative zero. */
+  @Test
+  public void testMinusFoldedIntoZero() {
+    check("FullForm(Hold(u - 0.))", //
+        "Hold(Plus(u, 0.0`))");
+    check("FullForm(Hold({-(0.), u - 0, u - 3.}))", //
+        "Hold(List(0.0`, Plus(u, 0), Plus(u, -3.0`)))");
+  }
+
+  /** <code>//=</code> binds looser than <code>&amp;</code>, and prints accordingly. */
+  @Test
+  public void testApplyToPrecedence() {
+    check("FullForm(Hold(y //= g &))", //
+        "Hold(ApplyTo(y, Function(g)))");
+    check("FullForm(Hold(u += v //= g))", //
+        "Hold(ApplyTo(AddTo(u, v), g))");
+    check("Hold(Function(ApplyTo(y, g)))", //
+        "Hold((y//=g)&)");
+    check("Hold(ApplyTo(y, Function(g)))", //
+        "Hold(y//=g&)");
+    check("Module({v = 9}, v //= Sqrt; v)", //
+        "3");
+  }
+
+  /** <code>===</code> and <code>=!=</code> bind looser than the comparisons, and print so. */
+  @Test
+  public void testSameQLooserThanComparisons() {
+    check("FullForm(Hold(p === q == r))", //
+        "Hold(SameQ(p, Equal(q, r)))");
+    check("FullForm(Hold(p =!= q >= r))", //
+        "Hold(UnsameQ(p, GreaterEqual(q, r)))");
+    check("Hold(Equal(SameQ(p, q), r))", //
+        "Hold((p===q)==r)");
+    check("Hold(SameQ(p, Equal(q, r)))", //
+        "Hold(p===q==r)");
+    check("3 === 1 + 2 == 3", //
+        "False");
+  }
+
+  /**
    * The escape ends at the <code>\)</code> which closes it: escapes nest, a <code>\)</code> in a
    * string is none, and a string keeps an escape as characters of its own which are read again.
    */

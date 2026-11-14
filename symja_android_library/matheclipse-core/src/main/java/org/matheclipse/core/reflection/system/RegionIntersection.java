@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AffineFlat;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -78,6 +79,9 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     IExpr combined = boxes(regions, embeddingDimension, empty);
     if (combined.isNIL()) {
       combined = segments(regions, empty, engine);
+    }
+    if (combined.isNIL()) {
+      combined = flats(regions, empty, engine);
     }
     if (combined.isNIL()) {
       combined = concentricBalls(regions);
@@ -183,6 +187,48 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     }
     IASTAppendable list = F.ListAlloc(found);
     return F.unaryAST1(S.Point, engine.evaluate(F.Sort(list)));
+  }
+
+  /**
+   * An <code>InfiniteLine</code> or <code>InfinitePlane</code> with a <code>Line</code> (a segment
+   * or a polyline), an <code>InfiniteLine</code>, or - two planes of space - an
+   * <code>InfinitePlane</code>: the points where they cross, the line where two planes meet, the
+   * line or segment itself if it lies in the other region, or the empty region.
+   */
+  private static IExpr flats(List<IExpr> regions, IExpr empty, EvalEngine engine) {
+    if (regions.size() != 2) {
+      return F.NIL;
+    }
+    for (int i = 0; i < 2; i++) {
+      AffineFlat flat = AffineFlat.parse(regions.get(i), engine);
+      if (flat == null || !flat.isReal()) {
+        continue;
+      }
+      IExpr other = regions.get(1 - i);
+      if (other.isAST(S.Line, 2) && other.first().isListOfLists()
+          && other.first().argSize() >= 2) {
+        IAST points = (IAST) other.first();
+        boolean[] inexact = new boolean[1];
+        for (IExpr point : points) {
+          if (!AffineFlat.isRealPoint(point, flat.dimension, inexact)) {
+            return F.NIL;
+          }
+        }
+        return flat.polylineIntersection(other, points, empty, engine);
+      }
+      AffineFlat second = AffineFlat.parse(other, engine);
+      if (second == null || !second.isReal() || second.dimension != flat.dimension) {
+        return F.NIL;
+      }
+      if (second.flatDimension() == 1) {
+        return flat.lineIntersection(other, second, empty, engine);
+      }
+      if (flat.flatDimension() == 2) {
+        return flat.planeIntersection(regions.get(i), second, empty, engine);
+      }
+      // a line with a plane: the plane is taken as the flat in the next round
+    }
+    return F.NIL;
   }
 
   /** The points of a line as machine numbers. */

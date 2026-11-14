@@ -107,7 +107,7 @@ final class LevelBounds {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
               if (!negativeToInfinity) {
-                // Level specification `1` is not of the form n, {n}, or {m, n}.
+                // Level specification `1` is not of the form n, {n} or {m, n}.
                 String str = Errors.getMessage("level", F.list(levelExpr), engine);
                 throw new ArgumentTypeException(str);
               }
@@ -141,7 +141,7 @@ final class LevelBounds {
       toDepth = -1;
       return;
     }
-    // Level specification `1` is not of the form n, {n}, or {m, n}.
+    // Level specification `1` is not of the form n, {n} or {m, n}.
     String str = Errors.getMessage("level", F.list(levelExpr), engine);
     throw new ArgumentTypeException(str);
   }

@@ -356,7 +356,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // less useful than the unevaluated integral, so hand that back instead.
         return F.NIL;
       }
-      return result;
+      return distributeNumberFactors(result, engine);
     } finally {
       IN_RUBI_RULES.set(calledFromRubiRule);
       if (depth == 0) {
@@ -371,6 +371,38 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         EVAL_DEPTH.set(depth);
       }
     }
+  }
+
+  /**
+   * A sum whose terms <code>c*(u+v+...)</code> with a number <code>c</code> cancel against each
+   * other once <code>c</code> is distributed: the rules integrate the pieces of a sum separately,
+   * and <code>(2*s+L)/3+(-2*s-L)/3</code> came back from the derivative of
+   * <code>Log(x)*Sqrt(1+x^3)</code>.
+   *
+   * @return the distributed sum if it is smaller, <code>result</code> otherwise
+   */
+  private static IExpr distributeNumberFactors(IExpr result, EvalEngine engine) {
+    if (!result.isPlus() || !result.isFree(S.Integrate, true)) {
+      return result;
+    }
+    boolean distributed = false;
+    IASTAppendable sum = F.PlusAlloc(result.argSize() + 8);
+    for (IExpr term : (IAST) result) {
+      if (term.isTimes() && term.argSize() == 2 && term.first().isNumber()
+          && term.second().isPlus()) {
+        for (IExpr part : (IAST) term.second()) {
+          sum.append(F.Times(term.first(), part));
+        }
+        distributed = true;
+      } else {
+        sum.append(term);
+      }
+    }
+    if (!distributed) {
+      return result;
+    }
+    IExpr value = engine.evaluate(sum);
+    return value.leafCount() < result.leafCount() ? value : result;
   }
 
   /**
@@ -620,6 +652,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       engine.setNumericMode(false);
 
+      if (argSize == 2) {
+        // The limits are evaluated before the integrand is looked at: an integral which stays
+        // unevaluated shows them evaluated, as Integrate(g(k), {k, 0*a+y, b}) its limit y, and
+        // equal limits are seen as equal.
+        IExpr limits = engine.evaluateNIL(holdallAST.arg2());
+        if (limits.isList3()) {
+          return engine.evaluate(holdallAST.setAtCopy(2, limits));
+        }
+      }
+
       final IExpr arg1Holdall = holdallAST.arg1();
       if (argSize == 2 && hasInterpolatingFunction(arg1Holdall, engine)) {
         // an interpolating function stands for numeric data, its definite integral is numeric
@@ -671,6 +713,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (arg2.isList()) {
         IAST xList = (IAST) arg2;
         if (xList.isList3()) {
+          if (xList.arg2().equals(xList.arg3()) && !xList.arg2().isDirectedInfinity()
+              && !arg1.isDirectedInfinity() && !arg1.isIndeterminate()) {
+            // an interval of no width, whatever the integrand is
+            return F.C0;
+          }
           // Integrate(Derivative(n)[f][x], {x,a,b}) for an unknown function f stays unevaluated,
           // the fundamental theorem of calculus value f(b)-f(a) needs f' to be integrable on [a,b],
           // which cannot be assumed for an arbitrary f. (The indefinite
@@ -723,6 +770,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
                 ? ResidueIntegration.integrateByMeijerConvolution(arg1, xList.arg1(),
                     assumptionExpr.isAST() ? assumptionExpr : F.NIL, engine)
                 : F.NIL;
+          }
+          if (forcedMethod == null) {
+            // Integrate(E^(-s*x)*Abs(Sin(x)), {x,0,Infinity}) - one period of a periodic factor
+            IExpr periodic = periodicTimesDecay(arg1, xList.arg1(), xList.arg2(), xList.arg3(),
+                engine);
+            if (periodic.isPresent()) {
+              return periodic;
+            }
           }
           if (forcedMethod == null) {
             // Integrate(Abs(x)*Cos(3*x), {x,-Pi,Pi}) - split the interval at the numeric break
@@ -830,6 +885,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
           // An antiderivative was found but would not evaluate at the limits. That is not a region
           // problem, so it stays unevaluated, as it did before there was anything to try here.
+          if (forcedMethod == null && !assumptionExpr.isAST()) {
+            // the value for real parameters
+            IExpr conditional = withRealParameters(arg1, xList, engine);
+            if (conditional.isPresent()) {
+              return conditional;
+            }
+          }
           return antiderivative ? F.NIL : integrateBooleTimesFxRegion(arg1, xList, false, engine);
         }
         // Invalid integration variable or limit(s) in `1`.
@@ -1089,24 +1151,34 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
           // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
           // Cos and Sin.
-          if (!rubiResult.equals(ast) && !unfinishedSubstitution
+          // a constant isn't the antiderivative of an integrand with x in it: an Indeterminate
+          // inside a rule's substitution was dropped to 0
+          boolean constantAnswer = rubiResult.isFree(x, true) && !fx.isFree(x, true)
+              && !engine.evalTrue(F.PossibleZeroQ(fx));
+          if (!rubiResult.equals(ast) && !unfinishedSubstitution && !constantAnswer
               && isFiniteAntiderivative(rubiResult)) {
             if (!rubiResult.isFree(S.Integrate, true)) {
+              // the rules integrated a sum term by term and left terms which are not elementary on
+              // their own, like Log(x)/Sqrt(1+x^2) in the derivative of Log(x)*ArcSinh(x) or
+              // x*E^x/(1+E^x)^2 in the one of x*E^x/(1+E^x): the parallel integration takes the
+              // integrand as a whole - over Log and Exp alone first, its ansatz is small, while
+              // integrating each leftover again costs a budget per leftover
+              final boolean transcendental = RischNorman.isTranscendentalTower(fx, x);
+              if (transcendental) {
+                IExpr whole = parallelIntegrationOfWhole(fx, x, engine);
+                if (whole.isPresent()) {
+                  return whole;
+                }
+              }
               IExpr finished = finishPartialAnswer(rubiResult, fx, x, engine);
               if (finished.isPresent()) {
                 return finished;
               }
-            }
-            if (!rubiResult.isFree(S.Integrate, true) && RischNorman.isRadicalTower(fx, x)) {
-              // the rules integrated a sum term by term and left terms which are not elementary on
-              // their own, like Log(x)/Sqrt(1+x^2) in the derivative of Log(x)*ArcSinh(x): the
-              // radical tower stage takes the integrand as a whole
-              IExpr whole = quietStage(engine, fx, x, "parallel integration over a radical tower",
-                  () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
-                      MachineProfile
-                          .millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
-              if (whole.isPresent()) {
-                return whole;
+              if (!transcendental) {
+                IExpr whole = parallelIntegrationOfWhole(fx, x, engine);
+                if (whole.isPresent()) {
+                  return whole;
+                }
               }
             }
             return rubiResult;
@@ -1135,16 +1207,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
-          // Parallel integration over a tower with one radical in it, such as the derivative of
-          // Log(x)*Log(x+Sqrt(x^2+1)): a class the rules measurably leave unanswered. Only for a
-          // root together with Log, Exp or Tan, and verified by differentiation before it returns.
-          if (RischNorman.isRadicalTower(fx, x)) {
-            result = quietStage(engine, fx, x, "parallel integration over a radical tower",
-                () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
-                    MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
-            if (result.isPresent()) {
-              return result;
-            }
+          // Parallel integration over a tower of Log, Exp or Tan kernels, with at most one radical
+          // in it, such as the derivative of Log(x)*Log(x+Sqrt(x^2+1)) or of
+          // Log(1+E^(2*x))+Log(1+x): a class the rules measurably leave unanswered.
+          result = parallelIntegrationOfWhole(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
           }
           // A root over Sqrt(quadratic), like Sqrt(2*x^2+x*Sqrt(4*x^2+3)): an Euler substitution
           // rationalizes the conic and leaves a root the rules can integrate.
@@ -1357,6 +1425,33 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr quietStage(final EvalEngine engine, final Supplier<IExpr> stage) {
     return engine.withQuietMode(stage);
+  }
+
+  /**
+   * Parallel integration of the integrand as a whole: over a tower with one radical in it (the
+   * larger budget) or over a tower of <code>Log, Exp, Tan</code> kernels alone, whose ansatz is
+   * smaller.
+   *
+   * @return {@link F#NIL} if the integrand is no such tower or the stage has no answer in time
+   */
+  private static IExpr parallelIntegrationOfWhole(final IExpr fx, final IExpr x,
+      final EvalEngine engine) {
+    final long millis;
+    final String step;
+    if (RischNorman.isRadicalTower(fx, x)) {
+      millis = Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS;
+      step = "parallel integration over a radical tower";
+    } else if (EVAL_DEPTH.get() == 1 && RischNorman.isTranscendentalTower(fx, x)) {
+      // only for the integral the user asked for: the rules and the stages hand many pieces of
+      // it back to Integrate, and the ansatz of each would cost its budget once more
+      millis = 2L * Config.INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS;
+      step = "parallel integration over a tower of functions";
+    } else {
+      return F.NIL;
+    }
+    return quietStage(engine, fx, x, step,
+        () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
+            MachineProfile.millis(millis)));
   }
 
   /**
@@ -1583,8 +1678,120 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * A rational function whose numerator and denominator with integer coefficients have a common
+   * factor, divided through by it: <code>2*x/(-2+2*x)</code> is <code>x/(-1+x)</code>, whose
+   * integral has no constant factor left over its terms, and <code>-x/(x-2*x^2)</code> is
+   * <code>1/(-1+2*x)</code> - a negative constant numerator left over goes into the denominator.
+   *
+   * @return {@link F#NIL} if numerator and denominator have no common factor
+   */
+  private static IExpr withoutCommonFactor(final IAST function, final IExpr x,
+      final EvalEngine engine) {
+    final IExpr numerator = engine.evaluate(F.Numerator(function));
+    final IExpr denominator = engine.evaluate(F.Denominator(function));
+    if (!denominator.isPlus() || !numerator.isPolynomial(x) || !denominator.isPolynomial(x)
+        || !hasIntegerCoefficients(numerator, x, engine)
+        || !hasIntegerCoefficients(denominator, x, engine)) {
+      return F.NIL;
+    }
+    final IExpr gcd = engine.evaluate(F.PolynomialGCD(numerator, denominator));
+    if (gcd.isOne() || gcd.isMinusOne() || !gcd.isPolynomial(x)) {
+      return F.NIL;
+    }
+    IExpr reducedNumerator =
+        engine.evaluate(F.Expand(F.PolynomialQuotient(numerator, gcd, x)));
+    IExpr reducedDenominator =
+        engine.evaluate(F.Expand(F.PolynomialQuotient(denominator, gcd, x)));
+    if (!gcd.isFree(x) && reducedNumerator.isNumber() && reducedNumerator.isNegative()) {
+      reducedNumerator = reducedNumerator.negate();
+      reducedDenominator = engine.evaluate(F.Expand(F.Negate(reducedDenominator)));
+    }
+    return engine.evaluate(F.Divide(reducedNumerator, reducedDenominator));
+  }
+
+  /**
+   * A quick look at the factors before {@link #withoutCommonFactor}: numbers, polynomials in
+   * <code>x</code> and integer powers of them, at least one of them with a negative exponent.
+   */
+  private static boolean isRationalProduct(final IAST product, final IExpr x) {
+    boolean quotient = false;
+    for (IExpr factor : product) {
+      if (factor.isNumber()) {
+        continue;
+      }
+      if (factor.isPower() && factor.exponent().isInteger()) {
+        if (factor.exponent().isNegative()) {
+          quotient = true;
+        }
+        factor = factor.base();
+      }
+      if (!factor.isPolynomial(x)) {
+        return false;
+      }
+    }
+    return quotient;
+  }
+
+  private static boolean hasIntegerCoefficients(final IExpr polynomial, final IExpr x,
+      final EvalEngine engine) {
+    final IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, x));
+    return coefficients.isList() && ((IAST) coefficients).forAll(c -> c.isInteger());
+  }
+
+  /**
+   * <code>c/(a*x+b)</code> with rational numbers <code>a, b, c</code>: <code>c/a*Log(a*x+b)</code>
+   * with the denominator as it is written, <code>1/(5-10*x)</code> gives
+   * <code>-1/10*Log(5-10*x)</code>.
+   *
+   * @return {@link F#NIL} if the integrand is not of this form
+   */
+  private static IExpr integrateReciprocalLinear(final IAST function, final IExpr x,
+      final EvalEngine engine) {
+    IExpr c = F.C1;
+    IExpr reciprocal = function;
+    if (function.isTimes()) {
+      if (!function.isAST2() || !function.arg1().isRational()) {
+        return F.NIL;
+      }
+      c = function.arg1();
+      reciprocal = function.arg2();
+    }
+    if (!reciprocal.isPower() || !reciprocal.exponent().isMinusOne()
+        || !reciprocal.base().isPlus()) {
+      return F.NIL;
+    }
+    final IExpr linear = reciprocal.base();
+    if (!linear.isPolynomial(x)) {
+      return F.NIL;
+    }
+    final IExpr coefficients = engine.evaluate(F.CoefficientList(linear, x));
+    if (!coefficients.isList() || coefficients.argSize() != 2
+        || !((IAST) coefficients).forAll(e -> e.isRational()) || coefficients.first().isZero()) {
+      return F.NIL;
+    }
+    final IRational a = (IRational) coefficients.second();
+    // the argument keeps its sign: a negated argument, as for -1/(5+3*x), would put a complex
+    // constant into the results built from the integral, like solutions of differential equations
+    return step(engine, function, x, F.Times(F.Divide(c, a), F.Log(linear)), "LinearDenominator",
+        linear);
+  }
+
   private static IExpr integrateTimesPower(final IAST function, final IExpr x) {
     final EvalEngine engine = EvalEngine.get();
+    if (function.isTimes() && isRationalProduct(function, x)) {
+      final IExpr reduced = withoutCommonFactor(function, x, engine);
+      if (reduced.isPresent() && !reduced.equals(function)) {
+        // Integrate(g*p/(g*q), x) -> Integrate(p/q, x)
+        return step(engine, function, x, Integrate(reduced, x), "SharedContent", reduced);
+      }
+    }
+    if (function.isTimes() || function.isPower()) {
+      final IExpr logarithm = integrateReciprocalLinear(function, x, engine);
+      if (logarithm.isPresent()) {
+        return logarithm;
+      }
+    }
     if (function.isTimes()) {
       IAST[] temp = function.filter(arg -> arg.isFree(x));
       IExpr free = temp[0].oneIdentity1();
@@ -2738,6 +2945,175 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * <code>Integrate(E^(l*x)*g(x), {x, a, Infinity})</code> with a real <code>a</code>,
+   * <code>Re(l) &lt; 0</code> and a factor <code>g</code> with <code>Abs</code> or
+   * <code>Sign</code> of sines and cosines of one frequency <code>c*x</code>: <code>g</code> has
+   * the period <code>T == 2*Pi/c</code> (or <code>T/2</code>), and the integral is the one over
+   * <code>{x, a, a+T}</code> divided by <code>1-E^(l*T)</code>. Splitting the infinite interval at
+   * the zeros of the sine never ends.
+   *
+   * @return {@link F#NIL} if the integral isn't of this kind
+   */
+  private static IExpr periodicTimesDecay(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (!lower.isRealResult() || !lower.isFree(x, true) || !upper.isInfinity() || !x.isSymbol()
+        || integrand.isFree(e -> e.isAST(S.Abs, 2) || e.isAST(S.Sign, 2), true)) {
+      return F.NIL;
+    }
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr decay = F.C0;
+    IASTAppendable rest = F.TimesAlloc(factors.argSize());
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().equals(S.E) && !factor.exponent().isFree(x, true)) {
+        IExpr[] linear = factor.exponent().linear(x);
+        if (linear == null) {
+          return F.NIL;
+        }
+        decay = F.Plus(decay, linear[1]);
+        rest.append(F.Exp(linear[0]));
+      } else {
+        rest.append(factor);
+      }
+    }
+    final IExpr lambda = engine.evaluate(decay);
+    if (lambda.isZero() || !engine.evalTrue(F.Less(F.Re(lambda), F.C0))) {
+      return F.NIL;
+    }
+    final IExpr g = rest.oneIdentity1();
+    // the frequency: every Sin/Cos argument is c*x with the same Abs(c)
+    IExpr[] frequency = {F.NIL};
+    boolean[] periodic = {true};
+    // has() visits every subexpression when the predicate never holds
+    g.has(e -> {
+      if ((e.isSin() || e.isCos()) && !e.first().isFree(x, true)) {
+        IExpr[] linear = e.first().linear(x);
+        IExpr c = linear == null ? F.NIL : engine.evaluate(F.Abs(linear[1]));
+        if (c.isNIL() || !linear[0].isZero() || !c.isFree(x, true)
+            || (frequency[0].isPresent() && !frequency[0].equals(c))) {
+          periodic[0] = false;
+        } else {
+          frequency[0] = c;
+        }
+      }
+      return false;
+    }, true);
+    if (!periodic[0] || frequency[0].isNIL()) {
+      return F.NIL;
+    }
+    // x only inside of the Sin and Cos arguments
+    IExpr withoutTrig = F.subst(g, e -> (e.isSin() || e.isCos()) ? F.C1 : F.NIL);
+    if (!withoutTrig.isFree(x, true)) {
+      return F.NIL;
+    }
+    IExpr period = engine.evaluate(F.Divide(F.C2Pi, frequency[0]));
+    IExpr half = engine.evaluate(F.Divide(period, F.C2));
+    IExpr shifted = engine.evaluate(F.Subtract(F.subst(g, x, F.Plus(x, half)), g));
+    if (shifted.isZero() || engine.evalTrue(F.PossibleZeroQ(shifted))) {
+      period = half;
+    }
+    IExpr onePeriod =
+        engine.evalQuiet(F.Integrate(integrand, F.List(x, lower, F.Plus(lower, period))));
+    if (!onePeriod.isFreeAST(S.Integrate) || !onePeriod.isSpecialsFree()) {
+      return F.NIL;
+    }
+    final IExpr value = engine.evaluate(
+        F.Divide(onePeriod, F.Subtract(F.C1, F.Exp(F.Times(lambda, period)))));
+    IExpr simplified = TimeLimits.callOrNil(engine, () -> engine.evaluate(F.Simplify(value)),
+        MachineProfile.millis(PERIODIC_SIMPLIFY_MILLIS));
+    return simplified.isPresent() && simplified.leafCount() < value.leafCount() ? simplified
+        : value;
+  }
+
+  /** The time budget of the simplification in {@link #periodicTimesDecay}. */
+  private static final long PERIODIC_SIMPLIFY_MILLIS = 1_000L;
+
+  /**
+   * Whether the limit of an antiderivative has an infinity inside of a sum next to another
+   * infinity: the infinite parts of the terms didn't cancel, and the limit isn't decided.
+   */
+  private static boolean isUnsettledInfinity(IExpr limit) {
+    if (!limit.isPlus()) {
+      return false;
+    }
+    int infiniteTerms = 0;
+    for (IExpr term : (IAST) limit) {
+      if (!term.isFree(t -> t.isDirectedInfinity() || t.isIndeterminate(), true)
+          && ++infiniteTerms > 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The largest number of parameters {@link #withRealParameters} assumes to be real. */
+  private static final int MAX_REAL_PARAMETERS = 3;
+
+  /** The time budget of the integral with real parameters in {@link #withRealParameters}. */
+  private static final long REAL_PARAMETERS_MILLIS = 4_000L;
+
+  /**
+   * <code>Integrate(f, {x, a, b})</code> without assumptions, whose integrand has parameters: the
+   * integral with the parameters assumed real, as a <code>ConditionalExpression</code>.
+   * <code>Cos(c*x)/(x^2+1)</code> on the real line converges for every real <code>c</code> only.
+   *
+   * @return {@link F#NIL} if there are no parameters or no value for real ones
+   */
+  private static IExpr withRealParameters(IExpr integrand, IAST xList, EvalEngine engine) {
+    if (engine.getAssumptions() != null) {
+      return F.NIL;
+    }
+    IAST parameters = integrandParameters(integrand, xList.arg1());
+    if (parameters.argSize() == 0 || parameters.argSize() > MAX_REAL_PARAMETERS
+        || parameters.exists(p -> !xList.arg2().isFree(p, true) || !xList.arg3().isFree(p, true))) {
+      return F.NIL;
+    }
+    IExpr condition = parameters.argSize() == 1 ? F.Element(parameters.arg1(), S.Reals)
+        : F.Element(parameters, S.Reals);
+    final IExpr realIntegral = F.Integrate(integrand, xList, F.Rule(S.Assumptions, condition));
+    IExpr value = IntegrateTimeBudget.runWithin(() -> engine.evalQuiet(realIntegral),
+        MachineProfile.millis(REAL_PARAMETERS_MILLIS));
+    if (value.isPresent() && value.isFreeAST(S.Integrate) && value.isSpecialsFree()
+        && !value.isIndeterminate()) {
+      if (value.isConditionalExpression()) {
+        // one condition: both have to hold
+        return engine.evaluate(
+            F.ConditionalExpression(value.first(), F.And(condition, value.second())));
+      }
+      return F.ConditionalExpression(value, condition);
+    }
+    return F.NIL;
+  }
+
+  /** The symbols of <code>integrand</code> other than <code>x</code> and the constants. */
+  private static IAST integrandParameters(IExpr integrand, IExpr x) {
+    IAST variables = new VariablesSet(integrand).getVarList();
+    IASTAppendable parameters = F.ListAlloc(variables.argSize());
+    for (IExpr v : variables) {
+      if (!v.equals(x)) {
+        parameters.append(v);
+      }
+    }
+    return parameters;
+  }
+
+  /**
+   * The integral doesn't converge: the message <code>Integrate::idiv</code>, unless the limit of the
+   * antiderivative which said so has a parameter of the integrand in it and there are no
+   * assumptions: its values may decide the convergence.
+   *
+   * @param limit the value of the antiderivative at the bound which isn't finite
+   */
+  private static IExpr divergence(IAST originalAST, IExpr limit, IExpr x, EvalEngine engine) {
+    if (engine.getAssumptions() == null && integrandParameters(originalAST.arg1(), x)
+        .exists(p -> !limit.isFree(p, true))) {
+      return F.NIL;
+    }
+    // Integral of `1` does not converge on `2`.
+    return Errors.printMessage(S.Integrate, "idiv",
+        F.List(originalAST.arg1(), originalAST.arg2()), engine);
+  }
+
+  /**
    * Given a continuous <code>function</code> of a real variable <code>x</code> and an interval
    * <code>[lower, upper]</code> of the real line, calculate the definite integral
    * <code>F(upper)-F(lower)</code>.
@@ -2866,15 +3242,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
       return F.NIL;
     }
-    if (!lowerLimit.isSpecialsFree() || lowerLimit.isInterval() || lowerLimit.isIntervalData()) {
-      // Integral of `1` does not converge on `2`.
-      return Errors.printMessage(S.Integrate, "idiv",
-          F.List(originalAST.arg1(), originalAST.arg2()), engine);
-    }
-    if (!lowerLimit.isFreeAST(S.Limit)) {
+    if (!lowerLimit.isFreeAST(S.Limit) || isUnsettledInfinity(lowerLimit)) {
       // the limit stayed unevaluated - neither convergence nor divergence can be decided, so
-      // don't assemble a result containing raw Limit() calls; leave the integral unevaluated
+      // don't assemble a result containing raw Limit() calls; leave the integral unevaluated.
+      // First: the Infinity of its rule x->Infinity is no divergence. Infinities which didn't
+      // cancel, Infinity-I*Infinity/c+..., say nothing either.
       return F.NIL;
+    }
+    if (!lowerLimit.isSpecialsFree() || lowerLimit.isInterval() || lowerLimit.isIntervalData()) {
+      return divergence(originalAST, lowerLimit, x, engine);
     }
     // quiet: an Infinity-Infinity inside of the limit is no message of the integral
     IExpr upperLimit = limitTermwise(function, x, upper, upperDirection, engine)
@@ -2884,13 +3260,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
       return F.NIL;
     }
-    if (!upperLimit.isSpecialsFree() || upperLimit.isInterval() || upperLimit.isIntervalData()) {
-      // Integral of `1` does not converge on `2`.
-      return Errors.printMessage(S.Integrate, "idiv",
-          F.List(originalAST.arg1(), originalAST.arg2()), engine);
-    }
-    if (!upperLimit.isFreeAST(S.Limit)) {
+    if (!upperLimit.isFreeAST(S.Limit) || isUnsettledInfinity(upperLimit)) {
       return F.NIL;
+    }
+    if (!upperLimit.isSpecialsFree() || upperLimit.isInterval() || upperLimit.isIntervalData()) {
+      return divergence(originalAST, upperLimit, x, engine);
     }
     // a complex argument of Log or ExpIntegralEi crossing the negative real axis inside the
     // interval: the antiderivative jumps there, the integral doesn't
@@ -3125,8 +3499,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   /**
    * The sum of the jumps <code>F(p+0) - F(p-0)</code> of the antiderivative <code>F</code> at the
    * points <code>lower &lt; p &lt; upper</code> where the complex argument <code>u</code> of a
-   * <code>Log(u)</code> or <code>ExpIntegralEi(u)</code> crosses the negative real axis: both jump
-   * by <code>2*Pi*I</code> from below to above the cut. A bound on the cut is no jump: the
+   * <code>Log(u)</code>, <code>ExpIntegralEi(u)</code> or <code>u^q</code> with a non-integer real
+   * <code>q</code> crosses the negative real axis: the first two jump by <code>2*Pi*I</code> from
+   * below to above the cut, the power by <code>(-u)^q*2*I*Sin(Pi*q)</code>. A bound on the cut is
+   * no jump: the
    * one-sided limit there gives the value on the side of the interval. <code>F</code> has to be
    * linear in that
    * function; <code>E^(I*x)/(1+x^2)</code> has <code>E*ExpIntegralEi(-1+I*x)*I/2</code>, which
@@ -3144,6 +3520,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if ((e.isLog() || e.isAST(S.ExpIntegralEi, 2)) && !e.first().isFree(x)
           && e.first().isPolynomial(F.list(x)) && hasComplexNumber(e.first())) {
         cutFunctions.add(e);
+      } else if (e.isPower() && e.exponent().isReal() && !e.exponent().isInteger()
+          && !e.base().isFree(x) && e.base().isPolynomial(F.list(x))
+          && hasComplexNumber(e.base())) {
+        cutFunctions.add(e);
       }
       return false;
     }, true);
@@ -3153,7 +3533,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     try {
       IASTAppendable sum = F.PlusAlloc(4);
       for (IExpr cutFunction : cutFunctions) {
-        IExpr u = cutFunction.first();
+        IExpr u = cutFunction.isPower() ? cutFunction.base() : cutFunction.first();
         IExpr im = engine.evaluate(F.ComplexExpand(F.Im(u)));
         IExpr re = engine.evaluate(F.ComplexExpand(F.Re(u)));
         if (im.isZero() || !im.isPolynomial(F.list(x)) || !re.isPolynomial(F.list(x))) {
@@ -3205,7 +3585,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             // cut
             continue;
           }
-          sum.append(F.Times(F.ZZ(direction), F.C2, S.Pi, F.CI, coefficientAtP));
+          if (cutFunction.isPower()) {
+            // (-u)^q*(E^(I*Pi*q)-E^(-I*Pi*q)) from below to above the cut
+            IExpr q = cutFunction.exponent();
+            sum.append(F.Times(F.ZZ(direction), F.C2, F.CI, F.Sin(F.Times(S.Pi, q)),
+                F.Power(F.Negate(reAtP), q), coefficientAtP));
+          } else {
+            sum.append(F.Times(F.ZZ(direction), F.C2, S.Pi, F.CI, coefficientAtP));
+          }
         }
       }
       return sum.argSize() == 0 ? F.NIL : engine.evaluate(sum);
@@ -3275,7 +3662,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (rest.argSize() > 0) {
-      finite.append(engine.evalQuiet(F.Limit(rest.oneIdentity0(), F.Rule(x, point), direction)));
+      IExpr restLimit =
+          engine.evalQuiet(F.Limit(rest.oneIdentity0(), F.Rule(x, point), direction));
+      if (!restLimit.isSpecialsFree()) {
+        // the divergent terms may cancel in the whole function, not in a part of it: ArcTan(2*x)
+        // times the Log terms of Log(4+9*x^2)/(1+4*x^2)^2 - the limit of the function decides,
+        // also a divergence
+        return engine.evalQuiet(F.Limit(function, F.Rule(x, point), direction));
+      }
+      finite.append(restLimit);
     }
     return engine.evaluate(finite.oneIdentity0());
   }

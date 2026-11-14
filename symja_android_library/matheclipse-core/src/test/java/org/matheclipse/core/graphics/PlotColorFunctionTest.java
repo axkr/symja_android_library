@@ -106,6 +106,25 @@ public class PlotColorFunctionTest {
     assertTrue(byName.isGradient() && byObject.isGradient());
   }
 
+  /**
+   * A colour head named on its own takes one number, the gradient slot's: handed the whole tuple
+   * of a parametric surface it would be the five-argument {@code Hue(x, y, z, u, v)}, no colour.
+   */
+  @Test
+  public void testABareColorHeadIsFedItsFamilysSlot() {
+    PlotColorFunction hue =
+        build(Family.PARAMETRIC_3D_UV, "Hue", 0, 2, 0, 2, 0, 4, 0, 1, 0, 1);
+    assertNotNull(hue);
+    assertTrue(hue.isGradient());
+    assertEquals("Hue(0.75)", hue.color(1.9, 0.1, 3.0, 0.2, 0.8).toString());
+    PlotColorFunction gray = build(Family.CURVE_2D, "GrayLevel", 0, 1, -2, 2);
+    assertEquals("GrayLevel(0.25)", gray.color(0.9, -1.0).toString());
+    // unscaled, Hue keeps going round its circle rather than stopping at 1
+    PlotColorFunction raw = PlotColorFunction
+        .of(Family.SURFACE_3D, eval("Hue"), S.False, S.Plot3D, EvalEngine.get()).build();
+    assertEquals("Hue(2.5)", raw.color(0.0, 0.0, 2.5).toString());
+  }
+
   // ------------------------------------------------------- the tuple
 
   @Test

@@ -318,8 +318,9 @@ public class AssociationFunctions {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public IExpr evaluateSet(IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      leftHandSide = uncurryKeys(leftHandSide);
       if (leftHandSide.head().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.head();
 
@@ -355,6 +356,31 @@ public class AssociationFunctions {
       }
       Errors.printMessage(builtinSymbol, "setps", F.list(leftHandSide.head()), engine);
       return rightHandSide;
+    }
+
+    /**
+     * <code>a[k1][k2][k3]</code> addresses the same nested value as <code>a[k1, k2, k3]</code>: the
+     * keys of the curried applications are collected, outermost first, into one application of the
+     * innermost head. Anything else is returned unchanged.
+     */
+    private static IExpr uncurryKeys(IExpr leftHandSide) {
+      if (!leftHandSide.isAST() || !leftHandSide.head().isAST()) {
+        return leftHandSide;
+      }
+      java.util.ArrayDeque<IAST> applications = new java.util.ArrayDeque<IAST>();
+      IExpr expr = leftHandSide;
+      while (expr.isAST() && !expr.isAssociation()) {
+        applications.push((IAST) expr);
+        expr = expr.head();
+      }
+      if (!expr.isSymbol()) {
+        return leftHandSide;
+      }
+      IASTAppendable keys = F.ast(expr);
+      for (IAST application : applications) {
+        keys.appendArgs(application);
+      }
+      return keys;
     }
 
     /**

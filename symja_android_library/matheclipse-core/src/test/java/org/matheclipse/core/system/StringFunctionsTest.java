@@ -59,6 +59,83 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBackspaceAndFormFeedEscapes() {
+    // \b and \f in a string literal are the characters 8 and 12
+    check("ToCharacterCode(\"p\\bq\\fr\")", //
+        "{112,8,113,12,114}");
+    // InputForm and FullForm write them back as escapes
+    check("ToString(FromCharacterCode({12, 65, 8}), InputForm)", //
+        "\"\\fA\\b\"");
+    check("FullForm(FromCharacterCode({66, 8, 12}))", //
+        "\"B\\b\\f\"");
+  }
+
+  @Test
+  public void testControlCharacterEscapes() {
+    // control characters are written as three digit octal codes, the escape character by name
+    check("ToString(FullForm(FromCharacterCode({1, 27, 30, 127, 66})))", //
+        "\"\\001\\[RawEscape]\\036\\177B\"");
+    check("ToString(FromCharacterCode({7, 10, 13}), InputForm)", //
+        "\"\\007\\n\\r\"");
+    // and read back
+    check("ToCharacterCode(\"x\\001y\\036z\\177\\[RawEscape]\")", //
+        "{120,1,121,30,122,127,27}");
+    check("ToCharacterCode(ToExpression(ToString(FromCharacterCode({2, 9, 27, 127, 3}), InputForm)))", //
+        "{2,9,27,127,3}");
+  }
+
+  @Test
+  public void testLinearBoxSyntaxInStrings() {
+    // an operator of the linear box syntax stays in the string
+    check("ToCharacterCode(\"\\!\\(q\\_3\\)\") // Length", //
+        "7");
+    check("ToString(\"\\!\\(q\\_3\\)\", InputForm)", //
+        "\"\\!\\(q\\_3\\)\"");
+    check("ToExpression(\"\\!\\(q\\_3\\)\")", //
+        "Subscript(q,3)");
+  }
+
+  @Test
+  public void testMachineRealDisplayRounding() {
+    // the shortest decimal digits are rounded half up, not the binary value
+    check("{ToString(0.4567885), ToString(-0.4567885), ToString(2.3456785*^-9)}", //
+        "{0.456789,-0.456789,2.34568*10^-9}");
+    // a carry into a new leading digit moves the exponent
+    check("{ToString(N(39999999/40, 3)), ToString(-99999.99*^7)}", //
+        "{1.*10^6,-1.*10^12}");
+    check("ToString(7.2500065*^11, TeXForm)", //
+        "7.25001\\times 10^{11}");
+    check("ToString(4.15*^7, TeXForm)", //
+        "4.15\\times 10^7");
+  }
+
+  @Test
+  public void testTextStringOfLargeMachineReals() {
+    // all integer digits below 10^16, six significant digits padded with zeros from there on
+    check("{TextString(4567890.), TextString(-2.5*^12), TextString(4567890.25), TextString(3.14159265*^19), TextString(87654.)}", //
+        "{4567890.,-2500000000000.,4567890.,31415900000000000000.,87654.0}");
+    // a small nonzero machine real is written without a power of ten too
+    check("{TextString(2.75*^-9), TextString(-4.125*^-7), TextString(0.0)}", //
+        "{0.00000000275,-0.0000004125,0.0}");
+  }
+
+  @Test
+  public void testIntegerStringRomanThousandsUnderABar() {
+    check("{IntegerString(4888, \"Roman\"), IntegerString(-2024, \"Roman\")}", //
+        "{MMMMDCCCLXXXVIII,MMXXIV}");
+    // the thousands above the plain M are a numeral under a bar
+    check("ToString({IntegerString(7000, \"Roman\"), IntegerString(48002, \"Roman\"), IntegerString(6000000, \"Roman\")}, InputForm)", //
+        "{\"\\!\\(\\(\\\"V\\\"\\)\\&_\\)MM\","
+            + "\"\\!\\(\\(\\\"XLV\\\"\\)\\&_\\)MMMII\","
+            + "\"\\!\\(\\(\\(\\(\\\"V\\\"\\)\\&_\\)\\)\\&_\\)\\!\\(\\(\\\"M\\\"\\)\\&_\\)\"}");
+    // a number which is no integer is reported, a symbol is not
+    check("IntegerString(3/4, \"Roman\")", //
+        "IntegerString(3/4,Roman)");
+    check("{Check(IntegerString(0.5, 16), m), Check(IntegerString(y, 16), m)}", //
+        "{m,IntegerString(y,16)}");
+  }
+
+  @Test
   public void testIntegerString() {
     check("IntegerString(255, 16) // InputForm", //
         "\"ff\"");
@@ -1369,8 +1446,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{xx,qq,rr}");
     check("StringSplit(\"a11b22c34d\", x_?DigitQ ~~ x_?DigitQ)", //
         "{a,b,c34d}");
-    // in the branches of an alternative the name is bound by the branch which matches
-    check("{StringMatchQ(\"q\", x_?DigitQ | x_?LetterQ), StringMatchQ(\"q\", x:DigitCharacter | x:LetterCharacter)}", //
+    // in the branches of an alternative the name is bound by the branch which matches; without
+    // the parentheses x:a|x:b is Optional(x:(a|x), b)
+    check("{StringMatchQ(\"q\", x_?DigitQ | x_?LetterQ), StringMatchQ(\"q\", (x:DigitCharacter) | (x:LetterCharacter))}", //
         "{True,True}");
     check("StringReplace(\"q7\", x_?DigitQ | x_?LetterQ :> \"[\"<>x<>\"]\")", //
         "[q][7]");

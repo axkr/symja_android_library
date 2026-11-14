@@ -15,6 +15,9 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class ColorData extends AbstractFunctionEvaluator {
 
+  /** The runs of numbers, first and last, of the indexed schemes for charts. */
+  private static final int[][] CHARTING = {{44, 62}, {64, 93}, {97, 119}};
+
   public ColorData() {}
 
   private IExpr createColorDataFunction(String name, String type, IExpr range) {
@@ -43,6 +46,17 @@ public class ColorData extends AbstractFunctionEvaluator {
         return getAllGradients();
       } else if (name.equalsIgnoreCase("Indexed")) {
         return getAllIndexed();
+      } else if (name.equals("Charting") && ast.isAST1()) {
+        // the numbers of the indexed schemes made for charts which have colors here
+        IASTAppendable charting = F.ListAlloc(72);
+        for (int[] run : CHARTING) {
+          for (int n = run[0]; n <= run[1]; n++) {
+            if (colorListLength(String.format(Locale.US, "_%03d", n)) > 0) {
+              charting.append(F.ZZ(n));
+            }
+          }
+        }
+        return charting;
       } else if (name.equalsIgnoreCase("Named") && ast.isAST1()) {
         return F.List(F.stringx("Atoms"), F.stringx("Crayola"), F.stringx("GeologicAges"),
             F.stringx("HTML"), F.stringx("Legacy"), F.stringx("WebSafe"));
@@ -127,8 +141,8 @@ public class ColorData extends AbstractFunctionEvaluator {
           if (function.arg2().toString().equals("Gradients")) {
             return F.stringx(gradientTitle(function.arg1().toString()));
           }
-          if (ast.arg1().isString()) {
-            // the name as the scheme is called
+          if (ast.arg1().isString() || ast.arg1().isInteger()) {
+            // the name as the scheme is called; an indexed scheme is called by its number
             return ast.arg1();
           }
           if (colorDataFunction.argSize() >= 1) {

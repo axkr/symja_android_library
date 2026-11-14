@@ -291,11 +291,8 @@ public final class BoxNotation {
           break;
         default:
           if (codePoint < 0x20 || codePoint == 0x7F) {
-            buf.append("\\.");
-            if (codePoint < 0x10) {
-              buf.append('0');
-            }
-            buf.append(Integer.toHexString(codePoint));
+            // \000 in octal, \[RawEscape] for the escape character
+            Characters.appendControlEscape(buf, (char) codePoint);
           } else if (codePoint >= 0x80) {
             Characters.appendASCIIEscape(buf, codePoint);
           } else {
@@ -942,6 +939,10 @@ public final class BoxNotation {
           // a function tag rebuilds the wrapper: TagBox[box, NumberForm[#1, {4, 2}]&]
           return slot(args.get(1)) + "[" + source(args.get(0)) + "]";
         }
+        if (size >= 2 && org.matheclipse.core.form.NumberFormatter.formKind(args.get(1)) != null) {
+          // a number form name as the tag: TagBox[InterpretationBox[...], NumberForm]
+          return slot(args.get(1)) + "[" + source(args.get(0)) + "]";
+        }
         if (size >= 1) {
           return source(args.get(0));
         }
@@ -1140,6 +1141,10 @@ public final class BoxNotation {
       }
       return buf.append(']').toString();
     }
+    if (tag.equals("Mod") && parts.size() == 2) {
+      // the notation m mod n
+      return "Mod[" + source(parts.get(0)) + ", " + source(parts.get(1)) + "]";
+    }
     if (parts.isEmpty()) {
       throw new Unreadable();
     }
@@ -1180,6 +1185,9 @@ public final class BoxNotation {
       } else if (runHasLetter) {
         result.append('*');
       }
+    } else if (runHasLetter && piece.length() > 0 && Character.isDigit(piece.charAt(0))) {
+      // a number behind a name is a factor of its own: "mod", "7" is not the name mod7
+      result.append('*');
     }
     result.append(piece);
   }

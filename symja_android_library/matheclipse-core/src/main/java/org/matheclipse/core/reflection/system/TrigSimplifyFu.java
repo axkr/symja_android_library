@@ -705,20 +705,36 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         IExpr a = plus.arg1();
         IExpr b = plus.rest().oneIdentity0();
         final IExpr tb, ta;
+        final IExpr numerator, denominator;
         if (rv.isTan()) {
           ta = F.Tan(a);
           tb = b.isPlus() ? tr12Step(F.Tan(b)) : F.Tan(b);
           // (tan(a) + tb)/(1 - tan(a)*tb)
-          return F.Divide(F.Plus(ta, tb), F.Subtract(F.C1, F.Times(ta, tb)));
+          numerator = F.Plus(ta, tb);
+          denominator = F.Subtract(F.C1, F.Times(ta, tb));
         } else { // Cot
           ta = F.Cot(a);
           tb = b.isPlus() ? tr12Step(F.Cot(b)) : F.Cot(b);
           // (ta*tb-1)/(ta+tb)
-          return F.Divide(F.Subtract(F.Times(ta, tb), F.C1), F.Plus(ta, tb));
+          numerator = F.Subtract(F.Times(ta, tb), F.C1);
+          denominator = F.Plus(ta, tb);
         }
+        // a part at a pole, Cot(1) == Tan(Pi/2-1) with Tan(Pi/2), or a sum at a pole: the
+        // addition formula has no value there
+        if (tb.isNIL() || !isFiniteValue(ta) || !isFiniteValue(tb)
+            || EvalEngine.get().evalQuiet(denominator).isZero()) {
+          return F.NIL;
+        }
+        return F.Divide(numerator, denominator);
       }
     }
     return F.NIL;
+  }
+
+  /** Whether the value of a tangent or cotangent isn't a pole. */
+  private static boolean isFiniteValue(IExpr value) {
+    IExpr v = value.isTan() || value.isAST(S.Cot, 2) ? EvalEngine.get().evalQuiet(value) : value;
+    return v.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate(), true);
   }
 
   public static IExpr tr13(IExpr expr) {
@@ -749,6 +765,13 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         IExpr t2 = t.pop();
         // 1 - (tan(t1)/tan(t1 + t2) + tan(t2)/tan(t1 + t2))
         IExpr t1Pt2 = F.Tan(F.Plus(t1, t2));
+        IExpr value = EvalEngine.get().evalQuiet(t1Pt2);
+        if (value.isZero() || !isFiniteValue(value)) {
+          // t1 + t2 is a multiple of Pi/2: no division by its tangent
+          timesResult.append(F.Tan(t1));
+          timesResult.append(F.Tan(t2));
+          continue;
+        }
         timesResult.append(
             F.Subtract(F.C1, F.Plus(F.Divide(F.Tan(t1), t1Pt2), F.Divide(F.Tan(t2), t1Pt2))));
       }
@@ -760,6 +783,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         IExpr t2 = c.pop();
         // 1 + cot(t1)*cot(t1 + t2) + cot(t2)*cot(t1 + t2)
         IExpr t1Pt2 = F.Cot(F.Plus(t1, t2));
+        if (!isFiniteValue(EvalEngine.get().evalQuiet(t1Pt2))) {
+          // t1 + t2 is a multiple of Pi
+          timesResult.append(F.Cot(t1));
+          timesResult.append(F.Cot(t2));
+          continue;
+        }
         timesResult.append(F.Plus(F.C1, F.Times(F.Cot(t1), t1Pt2), F.Times(F.Cot(t2), t1Pt2)));
       }
       if (c.argSize() > 0) {

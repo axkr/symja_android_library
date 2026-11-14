@@ -206,4 +206,32 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("Map[ToBoxes, {123, 1/23, 1.23, 1 + 23 I}] // InputForm", //
         "{\"123\",FractionBox(\"1\",\"23\"),\"1.23`\",RowBox({\"1\",\"+\",RowBox({\"23\",\" \",\"I\"})})}");
   }
+
+  @Test
+  public void testToBoxesRawBoxes() {
+    // raw boxes are inserted as they are
+    check("ToBoxes[RawBoxes[\"]\"]] // InputForm", //
+        "\"]\"");
+    check("ToBoxes[g[RawBoxes[SqrtBox[\"k\"]], 3]] // InputForm", //
+        "RowBox({\"g\",\"[\",RowBox({SqrtBox(\"k\"),\",\",\"3\"}),\"]\"})");
+  }
+
+  @Test
+  public void testToBoxesNumberForm() {
+    // the digits are a string box drawn without its quotation marks; the tag rebuilds the wrapper
+    check("ToBoxes[NumberForm[-6.0372, {4, 1}]] // FullForm", //
+        "TagBox(InterpretationBox(StyleBox(\"\\\"-6.0\\\"\", Rule(ShowStringCharacters, False)), -6.0372`, "
+            + "Rule(AutoDelete, True)), Function(NumberForm(Slot(1), List(4, 1))))");
+    // an integer is not editable
+    check("ToBoxes[NumberForm[2047, 6]] // FullForm", //
+        "TagBox(InterpretationBox(StyleBox(\"\\\"2047\\\"\", Rule(ShowStringCharacters, False)), 2047, "
+            + "Rule(Editable, False)), Function(NumberForm(Slot(1), 6)))");
+    // without a specification the tag is the bare form
+    check("ToBoxes[PaddedForm[-31.5]] // FullForm", //
+        "TagBox(InterpretationBox(StyleBox(\"\\\"-31.5\\\"\", Rule(ShowStringCharacters, False)), -31.5`, "
+            + "Rule(AutoDelete, True)), PaddedForm)");
+    // scientific notation: the mantissa and the exponent are string boxes
+    check("ToBoxes[ScientificForm[0.000713, 2]][[1, 1, 1]] // FullForm", //
+        "RowBox(List(\"\\\"7.1\\\"\", \"\\[Times]\", SuperscriptBox(\"10\", \"\\\"-4\\\"\")))");
+  }
 }

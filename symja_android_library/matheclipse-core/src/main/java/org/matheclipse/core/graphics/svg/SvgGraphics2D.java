@@ -454,10 +454,22 @@ public class SvgGraphics2D {
   /** The most of the width the left and right margins together may take. */
   private static final double MAX_PADDING_SHARE = 0.6;
 
-  private void fitHeightToAspectRatio(double[] padding) {
-    if (fixedHeight || options.imageSizeHeightSet) {
-      return;
-    }
+  /**
+   * The height of the drawing relative to its width: the explicit {@code AspectRatio}, else the
+   * ratio of the plot ranges.
+   *
+   * @return {@link Double#NaN} if the ratio cannot be told
+   */
+  private double drawingAspectRatio() {
+    return drawingAspectRatio(false);
+  }
+
+  /**
+   * @param wholePicture for a picture which is no plot, take an automatic ratio from the ranges
+   *        padded on every side by 2 percent of the larger one, the room the whole picture leaves
+   *        around its contents
+   */
+  private double drawingAspectRatio(boolean wholePicture) {
     double ratio;
     if (!options.aspectRatioAutomatic && !Double.isNaN(options.aspectRatio)
         && options.aspectRatio > 0) {
@@ -467,11 +479,58 @@ public class SvgGraphics2D {
       double rangeX = viewport.maxX - viewport.minX;
       double rangeY = viewport.maxY - viewport.minY;
       if (!(rangeX > 0) || !(rangeY > 0)) {
-        return;
+        return Double.NaN;
       }
-      ratio = rangeY / rangeX;
+      double pad = wholePicture && !options.plotGenerated
+          ? RANGE_PADDING_SHARE * Math.max(rangeX, rangeY)
+          : 0.0;
+      ratio = (rangeY + 2.0 * pad) / (rangeX + 2.0 * pad);
     }
-    if (!Double.isFinite(ratio) || ratio <= 0) {
+    return Double.isFinite(ratio) && ratio > 0 ? ratio : Double.NaN;
+  }
+
+  /** The share of the larger range a picture leaves on every side of its contents. */
+  private static final double RANGE_PADDING_SHARE = 0.02;
+
+  /**
+   * The padding the aspect ratio of a whole picture leaves out: half a pixel on a side which holds
+   * nothing but the bare edge, all of it on a side with tick labels, a frame or a label.
+   */
+  private static double ratioPadding(double padding) {
+    return padding <= MIN_PADDING ? 0.5 : padding;
+  }
+
+  private void fitHeightToAspectRatio(double[] padding) {
+    if (fixedHeight) {
+      return;
+    }
+    if (options.imageSizeHeightSet) {
+      if (!options.imageSizeWidthSet) {
+        // ImageSize -> {Automatic, h}: the height is kept, the width follows from the ratio of
+        // the whole picture
+        double ratio = drawingAspectRatio(true);
+        double drawHeight =
+            options.imageSize[1] - ratioPadding(padding[2]) - ratioPadding(padding[3]);
+        if (!Double.isNaN(ratio) && drawHeight > 0) {
+          options.imageSize[0] =
+              drawHeight / ratio + ratioPadding(padding[0]) + ratioPadding(padding[1]);
+        }
+      }
+      return;
+    }
+    if (options.imageSizeGiven && !options.plotGenerated) {
+      // a picture of a given width: the ratio is the one of the whole picture
+      double ratio = drawingAspectRatio(true);
+      double drawWidth =
+          options.imageSize[0] - ratioPadding(padding[0]) - ratioPadding(padding[1]);
+      if (!Double.isNaN(ratio) && drawWidth > 0) {
+        options.imageSize[1] =
+            drawingHeight(drawWidth, ratio) + ratioPadding(padding[2]) + ratioPadding(padding[3]);
+      }
+      return;
+    }
+    double ratio = drawingAspectRatio();
+    if (Double.isNaN(ratio)) {
       return;
     }
     double drawWidth = options.imageSize[0] - padding[0] - padding[1];
@@ -490,9 +549,18 @@ public class SvgGraphics2D {
         return;
       }
     }
-    // a ratio far from square would otherwise produce an unusable canvas
-    double drawHeight = Math.max(MIN_DRAWING_HEIGHT, Math.min(drawWidth * ratio, drawWidth * 4.0));
-    options.imageSize[1] = drawHeight + padding[2] + padding[3];
+    options.imageSize[1] = drawingHeight(drawWidth, ratio) + padding[2] + padding[3];
+  }
+
+  /**
+   * The height of a drawing <code>drawWidth</code> wide at the given aspect ratio, kept between a
+   * floor and four times the width: a ratio far from square would otherwise produce an unusable
+   * canvas. The floor is never higher than the drawing is wide, so a small picture keeps the shape
+   * it asked for.
+   */
+  private static double drawingHeight(double drawWidth, double ratio) {
+    return Math.max(Math.min(MIN_DRAWING_HEIGHT, drawWidth),
+        Math.min(drawWidth * ratio, drawWidth * 4.0));
   }
 
   /**
@@ -540,7 +608,7 @@ public class SvgGraphics2D {
     // there is an axis or a frame there reserved it even when the ticks had been switched off, and
     // a small picture then spent most of its width on margins holding nothing - which is what made
     // the cells of a grid of framed plots draw a fraction of the size they were given.
-    boolean axesTicks = !(options.ticks.isNone() || options.ticks.isFalse());
+    boolean axesTicks = !GraphicsOptions2D.ticksOff(options.ticks);
     boolean frameTicks = !(options.frameTicks.isNone() || options.frameTicks.isFalse());
     boolean labelsLeft = (options.axesY && axesTicks) || (options.frame[0] && frameTicks);
     boolean labelsBottom = (options.axesX && axesTicks) || (options.frame[2] && frameTicks);

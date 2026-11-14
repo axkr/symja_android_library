@@ -2112,6 +2112,36 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * The precision with which a numeric function of numbers is evaluated outside an arbitrary
+   * precision evaluation: the lowest one of its arguments of a precision of their own, if all its
+   * arguments are numbers and none is a machine number. Without it a function of several
+   * arguments takes the machine precision of the engine: <code>EllipticF(a, m)</code> of two
+   * 30-digit numbers gave a machine number. The arithmetic of <code>Plus, Times, Power</code> keeps
+   * the precision of its operands by itself.
+   *
+   * @return <code>0</code> if the precision of the engine stays
+   */
+  private long numericArgumentPrecision(final ISymbol symbol, final IAST ast) {
+    if (isArbitraryMode() || ast.argSize() < 1 || symbol == S.Plus || symbol == S.Times
+        || symbol == S.Power) {
+      return 0L;
+    }
+    long precision = Long.MAX_VALUE;
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (hasOwnPrecision(arg)) {
+        precision = Math.min(precision, arg.determinePrecision(false));
+      } else if (!arg.isNumber() || arg.isInexactNumber()) {
+        // a symbolic argument, or a machine number which decides the precision of the value
+        return 0L;
+      }
+    }
+    // a tracked precision below the machine one is no arbitrary precision of the engine
+    return precision == Long.MAX_VALUE || precision <= ParserConfig.MACHINE_PRECISION ? 0L
+        : precision;
+  }
+
+  /**
    * Test if <code>number</code> brings a precision of its own: a tracked one, or more digits than
    * machine precision. An exact value in an apfloat (a zero of infinite precision, which a solver
    * may return) has none - taken as the precision of the evaluation it would ask for infinitely
@@ -2476,19 +2506,33 @@ public class EvalEngine implements Serializable {
           } else {
             // a numeric function without condition numbers: the precision of its arguments
             final double opaquePrecision = SignificanceArithmetic.opaquePrecision(symbol, newAST);
+            // numbers of a precision of their own: the function works with their digits
+            final long argumentPrecision = Attribute.NUMERICFUNCTION.isSetIn(attributes)
+                ? numericArgumentPrecision(symbol, newAST)
+                : 0L;
+            final long oldPrecision = getNumericPrecision();
+            if (argumentPrecision > 0L) {
+              setNumericPrecision(argumentPrecision);
+            }
             IExpr result;
-            if (Double.isNaN(opaquePrecision)) {
-              result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
-                  : functionEvaluator.evaluate(newAST, this);
-            } else {
-              fSignificanceSuspended++;
-              try {
+            try {
+              if (Double.isNaN(opaquePrecision)) {
                 result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
                     : functionEvaluator.evaluate(newAST, this);
-              } finally {
-                fSignificanceSuspended--;
+              } else {
+                fSignificanceSuspended++;
+                try {
+                  result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                      : functionEvaluator.evaluate(newAST, this);
+                } finally {
+                  fSignificanceSuspended--;
+                }
+                result = SignificanceArithmetic.withPrecision(result, opaquePrecision);
               }
-              result = SignificanceArithmetic.withPrecision(result, opaquePrecision);
+            } finally {
+              if (argumentPrecision > 0L) {
+                setNumericPrecision(oldPrecision);
+              }
             }
             if (result.isPresent()) {
               // the precision of the value from the precision of the arguments
@@ -4639,6 +4683,16 @@ public class EvalEngine implements Serializable {
       if (headID == ID.Blank || headID == ID.BlankSequence || headID == ID.BlankNullSequence
           || headID == ID.Pattern || headID == ID.Optional || headID == ID.OptionsPattern
           || headID == ID.Repeated || headID == ID.RepeatedNull) {
+        if (headID == ID.Optional && ast.size() == 3 && ast.arg1().isAST(S.Pattern, 3)) {
+          // x:p:v - the named pattern x:p is read as the expression Pattern[x, p]; the pattern
+          // object is made here
+          IExpr named =
+              evalSetAttributesRecursive((IAST) ast.arg1(), noEvaluation, evalNumericFunction,
+                  level + 1);
+          if (named.isPresent() && named != ast.arg1()) {
+            ast = ast.setAtCopy(1, named);
+          }
+        }
         // a pattern construct with a wrong number of arguments stays as it is
         return ((IBuiltInSymbol) ast.head()).getEvaluator().evaluate(ast, this).orElse(ast);
       }
@@ -5746,6 +5800,72 @@ public class EvalEngine implements Serializable {
       }
     }
     return Config.MAX_EXTRA_PRECISION;
+  }
+
+  /**
+   * The decimal precision of an arbitrary-precision arithmetic result within the bounds
+   * <code>$MinPrecision</code> and <code>$MaxPrecision</code> of this engine: <code>0</code> and
+   * <code>Infinity</code> if they have no value.
+   *
+   * @param precision the precision of the result by significance arithmetic
+   */
+  public double boundedPrecision(double precision) {
+    if (fDollarSymbolMap == null) {
+      return precision;
+    }
+    final IExpr min = fDollarSymbolMap.get(S.$MinPrecision);
+    if (min != null) {
+      final double lower = precisionBound(S.$MinPrecision, min);
+      if (precision < lower) {
+        precision = lower;
+      }
+    }
+    final IExpr max = fDollarSymbolMap.get(S.$MaxPrecision);
+    if (max != null) {
+      final double upper = precisionBound(S.$MaxPrecision, max);
+      if (precision > upper) {
+        precision = upper;
+      }
+    }
+    return precision;
+  }
+
+  /**
+   * The value of <code>$MinPrecision</code> (<code>lower == true</code>) or
+   * <code>$MaxPrecision</code> in this engine, or {@link F#NIL} if it has none or it is no
+   * non-negative number or <code>Infinity</code>.
+   */
+  public IExpr precisionBoundValue(boolean lower) {
+    if (fDollarSymbolMap == null) {
+      return F.NIL;
+    }
+    final IBuiltInSymbol symbol = lower ? S.$MinPrecision : S.$MaxPrecision;
+    final IExpr value = fDollarSymbolMap.get(symbol);
+    if (value == null || Double.isNaN(precisionBound(symbol, value))) {
+      return F.NIL;
+    }
+    return fDollarSymbolMap.get(symbol);
+  }
+
+  /**
+   * A bound of the precision: <code>NaN</code> if it is no non-negative number. A bound which is
+   * not yet a number, like <code>MachinePrecision</code>, is evaluated once and kept in its
+   * evaluated form for the rest of the <code>Block</code> which set it.
+   */
+  private double precisionBound(IBuiltInSymbol symbol, IExpr value) {
+    if (!value.isReal() && !value.isInfinity()) {
+      value = evaluate(value);
+      if (value.isReal() || value.isInfinity()) {
+        fDollarSymbolMap.put(symbol, value);
+      }
+    }
+    if (value.isInfinity()) {
+      return Double.POSITIVE_INFINITY;
+    }
+    if (value.isReal() && !value.isNegative()) {
+      return ((IReal) value).doubleValue();
+    }
+    return Double.NaN;
   }
 
   /** The first argument of the <code>meprec</code> message: <code>$MaxExtraPrecision = 50.</code> */
@@ -7356,11 +7476,10 @@ public class EvalEngine implements Serializable {
         final int argSize = association.argSize();
         if (refArgSize < 0) {
           refArgSize = argSize;
-        } else if (refArgSize != argSize) {
-          // tdlen: Objects of unequal length in `1` cannot be combined.
-          return invalidListable(ast, commandHead, messageShortcut, F.list(ast));
         }
         if (refAssociation != null) {
+          // associations with other keys are incompatible, whatever their lengths:
+          // <|a->1,b->2|>+<|a->3|>
           if (refAssociation.size() != association.size()) {
             // incmp: The arguments `1` and `2` in `3` are incompatible.
             return invalidListable(ast, S.Association, "incmp",

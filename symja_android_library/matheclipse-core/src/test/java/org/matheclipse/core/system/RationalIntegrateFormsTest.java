@@ -102,4 +102,31 @@ public class RationalIntegrateFormsTest extends ExprEvaluatorTestCase {
     check("Integrate(x/((x+1)*(x^3+2*x+1)),x)", //
         "Log(1+x)/2-RootSum(1+2*#1+#1^3&,(Log(x-#1)-Log(x-#1)*#1+Log(x-#1)*#1^2)/(2+3*#1^\n2)&)/2");
   }
+
+  @Test
+  public void testCommonFactorCancels() {
+    // the common factor 3 of numerator and denominator leaves no factor over the terms
+    check("Integrate((3*x)/(-6 + 3*x),x)", //
+        "x+2*Log(-2+x)");
+    check("Integrate((6*x)/(3*x^2 + 3*x - 9),x)", //
+        "2*(ArcTanh((1+2*x)/Sqrt(13))/Sqrt(13)+Log(3-x-x^2)/2)");
+    // a common polynomial factor; a negative constant left over goes into the denominator
+    check("Integrate((5*x)/(5*x - 15*x^2),x)", //
+        "-Log(1-3*x)/3");
+    check("Integrate((-5*x)/(5*x - 15*x^2),x)", //
+        "Log(-1+3*x)/3");
+  }
+
+  @Test
+  public void testReciprocalOfALinearDenominator() {
+    // the logarithm of the denominator as it is written
+    check("Integrate(1/(7 - 21*x),x)", //
+        "-Log(7-21*x)/21");
+    check("Integrate(-1/(7 - 21*x),x)", //
+        "Log(7-21*x)/21");
+    check("Integrate(-2/(1 + 4*x),x)", //
+        "-Log(1+4*x)/2");
+    check("Integrate(-5/(3 + x),x)", //
+        "-5*Log(3+x)");
+  }
 }

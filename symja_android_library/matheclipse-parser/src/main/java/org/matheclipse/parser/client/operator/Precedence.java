@@ -10,6 +10,11 @@ public class Precedence {
   public static final int ADDTO = 100;
   public static final int ALTERNATIVES = 160;
   /**
+   * <code>//=</code> binds looser than <code>&amp;</code>: <code>x //= f &amp;</code> applies the
+   * pure function <code>f &amp;</code> to <code>x</code>.
+   */
+  public static final int APPLYTO = 75;
+  /**
    * Mathics3/WMA value. Nothing sits between Symja's former 215 and this, so the change is not
    * observable today - it matters once an operator lands in the gap, Xor at 220.
    */
@@ -52,6 +57,15 @@ public class Precedence {
   public static final int CONDITIONED = 195;
 
   public static final int DECREMENT = 660;
+  /**
+   * The postfix <code>'</code> of a derivative, as it is parsed: between {@link #FACTORIAL} and
+   * {@link #STRINGJOIN}. Everything binding tighter is its operand - <code>++f'</code>,
+   * <code>g@f'</code>, <code>g /@ f'</code>, <code>a!'</code> and <code>x_?f'</code> are
+   * derivatives of the whole expression - while <code>-f'</code>, <code>f'^2</code>,
+   * <code>a^b'</code> and <code>a &lt;&gt; b'</code> keep the derivative as an operand.
+   * <code>Precedence(Derivative)</code> reports 670.
+   */
+  public static final int DERIVATIVE = 605;
   /**
    * WMA value, confirmed against Mathematica. Symja had 120 - the same as {@link #RULE} - which put
    * the edge arrows in the rule band rather than the relational one, so that everything from
@@ -114,7 +128,12 @@ public class Precedence {
   public static final int REPLACEREPEATED = 110;
   public static final int RULE = 120;
   public static final int RULEDELAYED = 120;
-  public static final int SAMEQ = 290;
+  /**
+   * <code>===</code> and <code>=!=</code> bind one step looser than the comparisons:
+   * <code>a === b == c</code> is <code>SameQ(a, b == c)</code>. <code>Precedence(SameQ)</code>
+   * still reports 290.
+   */
+  public static final int SAMEQ = 289;
   public static final int SET = 40;
   public static final int SETDELAYED = 40;
   public static final int SPAN = 305;
@@ -136,7 +155,8 @@ public class Precedence {
   /** WMA value, confirmed against Mathematica; see {@link #DIRECTEDEDGE}. */
   public static final int UNDIRECTEDEDGE = 295;
   public static final int UNEQUAL = 290;
-  public static final int UNSAMEQ = 290;
+  /** See {@link #SAMEQ}. */
+  public static final int UNSAMEQ = 289;
   public static final int UNSET = 670;
   public static final int UPSET = 40;
   public static final int UPSETDELAYED = 40;

@@ -911,6 +911,9 @@ public class PiecewiseFunctions {
       if (arg1.isAST(S.RealSign, 2)) {
         return arg1;
       }
+      if (arg1.isIndeterminate()) {
+        return S.Indeterminate;
+      }
       if (arg1.isNumericFunction(true)) {
         IExpr temp = engine.evalN(arg1);
         if (temp.isReal()) {

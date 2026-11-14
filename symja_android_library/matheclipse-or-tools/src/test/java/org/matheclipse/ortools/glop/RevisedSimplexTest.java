@@ -12,7 +12,8 @@
 // limitations under the License.
 //
 // Modified for the Symja matheclipse-or-tools module: tests ported from
-// ortools/glop/revised_simplex_test.cc (OR-Tools 10.0) to JUnit 5.
+// ortools/glop/revised_simplex_test.cc (OR-Tools 10.0) to JUnit 5; the primal ray and row
+// index tests use the module's own programs.
 
 package org.matheclipse.ortools.glop;
 
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.ortools.lpdata.LinearProgram;
+import org.matheclipse.ortools.lpdata.LpTypes;
 import org.matheclipse.ortools.lpdata.VariableStatus;
 import org.matheclipse.ortools.util.TimeLimit;
 
@@ -120,5 +122,240 @@ public class RevisedSimplexTest {
     assertEquals(1.5, simplex.getVariableValue(a), 1e-12);
     assertEquals(3.0, simplex.getVariableValue(b), 1e-12);
     assertEquals(5.0, simplex.getVariableValue(c), 1e-12);
+  }
+
+  /** x - y &lt;= 3, -x + y + z &lt;= 5, x, y &gt;= 0, 0 &lt;= z &lt;= 4: unbounded along (1, 1, 0). */
+  private static LinearProgram unboundedProgram(boolean maximize, boolean withSlacks) {
+    final double sign = maximize ? -1.0 : 1.0;
+    LinearProgram lp = new LinearProgram();
+    final int x = lp.createNewVariable();
+    final int y = lp.createNewVariable();
+    final int z = lp.createNewVariable();
+    lp.setVariableBounds(x, 0.0, Double.POSITIVE_INFINITY);
+    lp.setVariableBounds(y, 0.0, Double.POSITIVE_INFINITY);
+    lp.setVariableBounds(z, 0.0, 4.0);
+    lp.setMaximizationProblem(maximize);
+    lp.setObjectiveCoefficient(x, sign * UNBOUNDED_COSTS[0]);
+    lp.setObjectiveCoefficient(y, sign * UNBOUNDED_COSTS[1]);
+    lp.setObjectiveCoefficient(z, sign * UNBOUNDED_COSTS[2]);
+    for (int i = 0; i < UNBOUNDED_ROWS.length; i++) {
+      final int row = lp.createNewConstraint();
+      lp.setConstraintBounds(row, Double.NEGATIVE_INFINITY, UNBOUNDED_RHS[i]);
+      for (int j = 0; j < 3; j++) {
+        if (UNBOUNDED_ROWS[i][j] != 0.0) {
+          lp.setCoefficient(row, j, UNBOUNDED_ROWS[i][j]);
+        }
+      }
+    }
+    if (withSlacks) {
+      lp.addSlackVariablesWhereNecessary(false);
+    }
+    return lp;
+  }
+
+  private static final double[] UNBOUNDED_COSTS = {-2.0, -3.0, 1.0};
+  private static final double[][] UNBOUNDED_ROWS = {{1.0, -1.0, 0.0}, {-1.0, 1.0, 1.0}};
+  private static final double[] UNBOUNDED_RHS = {3.0, 5.0};
+
+  /**
+   * The ray r of an unbounded problem in equation form: A.r = 0 with the slack columns, an
+   * improving objective, and no move towards a finite bound.
+   */
+  private static void assertPrimalRay(LinearProgram lp, double[] ray) {
+    assertEquals(5, ray.length);
+    for (int i = 0; i < UNBOUNDED_ROWS.length; i++) {
+      double activity = ray[3 + i];
+      for (int j = 0; j < 3; j++) {
+        activity += UNBOUNDED_ROWS[i][j] * ray[j];
+      }
+      assertEquals(0.0, activity, 1e-12, "row " + i);
+    }
+    double cost = 0.0;
+    for (int j = 0; j < 3; j++) {
+      cost += UNBOUNDED_COSTS[j] * ray[j];
+    }
+    assertTrue(cost < -1e-6, "cost " + cost);
+    final double[] lower = lp.variableLowerBounds();
+    final double[] upper = lp.variableUpperBounds();
+    for (int j = 0; j < ray.length; j++) {
+      if (lower[j] != Double.NEGATIVE_INFINITY) {
+        assertTrue(ray[j] >= 0.0, "column " + j + " decreases: " + ray[j]);
+      }
+      if (upper[j] != Double.POSITIVE_INFINITY) {
+        assertTrue(ray[j] <= 0.0, "column " + j + " increases: " + ray[j]);
+      }
+    }
+  }
+
+  /** The primal simplex leaves a primal ray when its phase II finds the problem unbounded. */
+  @Test
+  public void testPrimalRayOfPrimalSimplex() {
+    for (boolean maximize : new boolean[] {false, true}) {
+      final LinearProgram lp = unboundedProgram(maximize, true);
+      RevisedSimplex simplex = new RevisedSimplex();
+      simplex.setParameters(new GlopParameters().setUseDualSimplex(false));
+      assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+      assertEquals(ProblemStatus.PRIMAL_UNBOUNDED, simplex.getProblemStatus());
+      assertPrimalRay(lp, simplex.getPrimalRay());
+    }
+  }
+
+  /**
+   * The dual simplex phase I ends DUAL_INFEASIBLE on an unbounded problem; it then leaves the
+   * primal ray built from the improvement direction of the dual infeasibilities.
+   */
+  @Test
+  public void testPrimalRayOfDualSimplexPhaseI() {
+    for (boolean maximize : new boolean[] {false, true}) {
+      final LinearProgram lp = unboundedProgram(maximize, true);
+      RevisedSimplex simplex = new RevisedSimplex();
+      simplex.setParameters(new GlopParameters().setUseDualSimplex(true));
+      assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+      assertEquals(ProblemStatus.DUAL_INFEASIBLE, simplex.getProblemStatus());
+      assertPrimalRay(lp, simplex.getPrimalRay());
+    }
+  }
+
+  /**
+   * A second solve of the same matrix and objective with another bound starts from the basis of
+   * the DUAL_INFEASIBLE answer; it must build its ray again.
+   */
+  @Test
+  public void testPrimalRayOfIncrementalDualSimplex() {
+    final LinearProgram lp = unboundedProgram(false, true);
+    RevisedSimplex simplex = new RevisedSimplex();
+    simplex.setParameters(new GlopParameters().setUseDualSimplex(true));
+    assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+    assertEquals(ProblemStatus.DUAL_INFEASIBLE, simplex.getProblemStatus());
+    for (double upper : new double[] {6.0, 2.5}) {
+      lp.setVariableBounds(2, 0.0, upper);
+      assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+      assertEquals(ProblemStatus.DUAL_INFEASIBLE, simplex.getProblemStatus());
+      assertPrimalRay(lp, simplex.getPrimalRay());
+    }
+  }
+
+  /**
+   * minimize -c*x with x - y &lt;= 3, x, y &gt;= 0 is unbounded along (1, 1) however small the
+   * cost c is, as long as it is a dual infeasibility.
+   */
+  @Test
+  public void testPrimalRayWithSmallCosts() {
+    for (double cost : new double[] {1e-7, 3e-5, 0.25}) {
+      for (boolean useDual : new boolean[] {false, true}) {
+        LinearProgram lp = new LinearProgram();
+        final int x = lp.createNewVariable();
+        final int y = lp.createNewVariable();
+        lp.setVariableBounds(x, 0.0, Double.POSITIVE_INFINITY);
+        lp.setVariableBounds(y, 0.0, Double.POSITIVE_INFINITY);
+        lp.setObjectiveCoefficient(x, -cost);
+        final int row = lp.createNewConstraint();
+        lp.setConstraintBounds(row, Double.NEGATIVE_INFINITY, 3.0);
+        lp.setCoefficient(row, x, 1.0);
+        lp.setCoefficient(row, y, -1.0);
+        lp.addSlackVariablesWhereNecessary(false);
+        RevisedSimplex simplex = new RevisedSimplex();
+        simplex.setParameters(new GlopParameters().setUseDualSimplex(useDual));
+        assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+        assertEquals(useDual ? ProblemStatus.DUAL_INFEASIBLE : ProblemStatus.PRIMAL_UNBOUNDED,
+            simplex.getProblemStatus(), "cost " + cost);
+        final double[] ray = simplex.getPrimalRay();
+        assertTrue(ray[x] > 0.0);
+        assertEquals(0.0, ray[x] - ray[y] + ray[2], 1e-12);
+      }
+    }
+  }
+
+  /** Without preprocessing and scaling the solver hands out the ray of a DUAL_INFEASIBLE solve. */
+  @Test
+  public void testLpSolverPrimalRayOfDualSimplex() {
+    final LinearProgram lp = unboundedProgram(false, false);
+    LPSolver solver = new LPSolver();
+    solver.setParameters(new GlopParameters().setUseDualSimplex(true).setUsePreprocessing(false)
+        .setUseScaling(false));
+    assertEquals(ProblemStatus.DUAL_INFEASIBLE, solver.solve(lp));
+    final double[] ray = solver.getPrimalRay();
+    assertEquals(3, ray.length);
+    assertTrue(UNBOUNDED_COSTS[0] * ray[0] + UNBOUNDED_COSTS[1] * ray[1]
+        + UNBOUNDED_COSTS[2] * ray[2] < -1e-6);
+    assertEquals(0.0, ray[2], 0.0);
+  }
+
+  /** a + b &gt;= 4, b + c &gt;= 3, a + c &gt;= 5 with the given order of the rows and an extra row. */
+  private static LinearProgram coverProgram(int[] rowOrder, double extraLowerBound) {
+    final double[][] rows = {{1.0, 1.0, 0.0}, {0.0, 1.0, 1.0}, {1.0, 0.0, 1.0}};
+    final double[] rhs = {4.0, 3.0, 5.0};
+    final double[] costs = {3.0, 2.0, 4.0};
+    LinearProgram lp = new LinearProgram();
+    for (int j = 0; j < 3; j++) {
+      final int col = lp.createNewVariable();
+      lp.setVariableBounds(col, 0.0, Double.POSITIVE_INFINITY);
+      lp.setObjectiveCoefficient(col, costs[j]);
+    }
+    for (int oldRow : rowOrder) {
+      final int row = lp.createNewConstraint();
+      if (oldRow < 0) {
+        // the new row: a + b + c >= extraLowerBound
+        lp.setConstraintBounds(row, extraLowerBound, Double.POSITIVE_INFINITY);
+        for (int j = 0; j < 3; j++) {
+          lp.setCoefficient(row, j, 1.0);
+        }
+      } else {
+        lp.setConstraintBounds(row, rhs[oldRow], Double.POSITIVE_INFINITY);
+        for (int j = 0; j < 3; j++) {
+          if (rows[oldRow][j] != 0.0) {
+            lp.setCoefficient(row, j, rows[oldRow][j]);
+          }
+        }
+      }
+    }
+    lp.addSlackVariablesWhereNecessary(false);
+    return lp;
+  }
+
+  /**
+   * Rows are reordered and one row is added between two solves; with the old row indices the dual
+   * edge norms of the previous basis are reused. The answer must be the one of a fresh solve, both
+   * when the new row is slack at the old optimum and when it cuts it off.
+   */
+  @Test
+  public void testOldRowIndicesForNextSolve() {
+    final GlopParameters parameters = new GlopParameters().setUseDualSimplex(true);
+    final int[] oldRowOfNewRow = {2, 0, LpTypes.INVALID_ROW, 1};
+    for (double extraLowerBound : new double[] {1.0, 7.5}) {
+      RevisedSimplex simplex = new RevisedSimplex();
+      simplex.setParameters(parameters);
+      assertTrue(simplex.solve(coverProgram(new int[] {0, 1, 2}, 0.0), TimeLimit.infinite()).ok());
+      assertEquals(ProblemStatus.OPTIMAL, simplex.getProblemStatus());
+      assertEquals(19.0, simplex.getObjectiveValue(), 1e-9);
+
+      final VariableStatus[] old = simplex.getState().statuses;
+      final VariableStatus[] statuses = new VariableStatus[3 + oldRowOfNewRow.length];
+      System.arraycopy(old, 0, statuses, 0, 3);
+      for (int row = 0; row < oldRowOfNewRow.length; row++) {
+        statuses[3 + row] = oldRowOfNewRow[row] == LpTypes.INVALID_ROW ? VariableStatus.BASIC
+            : old[3 + oldRowOfNewRow[row]];
+      }
+
+      final LinearProgram lp = coverProgram(oldRowOfNewRow, extraLowerBound);
+      simplex.loadStateForNextSolve(new BasisState(statuses));
+      simplex.setOldRowIndicesForNextSolve(oldRowOfNewRow);
+      assertTrue(simplex.solve(lp, TimeLimit.infinite()).ok());
+      assertEquals(ProblemStatus.OPTIMAL, simplex.getProblemStatus());
+      assertTrue(simplex.dualEdgeNormsWereTransferred());
+
+      RevisedSimplex fresh = new RevisedSimplex();
+      fresh.setParameters(parameters);
+      assertTrue(fresh.solve(lp, TimeLimit.infinite()).ok());
+      assertTrue(!fresh.dualEdgeNormsWereTransferred());
+      assertEquals(ProblemStatus.OPTIMAL, fresh.getProblemStatus());
+      assertEquals(fresh.getObjectiveValue(), simplex.getObjectiveValue(), 1e-9);
+      if (extraLowerBound == 1.0) {
+        assertEquals(19.0, simplex.getObjectiveValue(), 1e-9);
+        assertEquals(0, simplex.getNumberOfIterations());
+      } else {
+        assertTrue(simplex.getObjectiveValue() > 19.0 + 1e-6);
+      }
+    }
   }
 }

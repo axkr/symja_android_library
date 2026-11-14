@@ -1385,6 +1385,16 @@ public class ExpTrigsFunctions {
         }
       }
 
+      if (arg1.isAST(S.Cot, 2) && arg1.first().isNumericFunction()
+          && arg1.first().isRealResult()) {
+        // ArcTan(Cot(z)) == Pi/2-z shifted into (-Pi/2, Pi/2)
+        EvalEngine engine = EvalEngine.get();
+        IExpr y = F.Subtract(F.CPiHalf, arg1.first());
+        IExpr k = engine.evaluate(F.Round(F.Divide(y, S.Pi)));
+        if (k.isInteger()) {
+          return F.Subtract(y, F.Times(k, S.Pi));
+        }
+      }
       if (arg1.isInterval()) {
         return IntervalSym.arctan((IAST) arg1);
       }

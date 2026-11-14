@@ -1534,6 +1534,18 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return F.Plus(floorTerm, series);
   }
 
+  /**
+   * <code>true</code> for an unevaluated <code>Series(f, {x, x0, n})</code> or
+   * <code>Series(f, x -&gt; x0)</code> in the variable <code>x</code>.
+   */
+  private static boolean isUnevaluatedSeries(IExpr expr, IExpr x) {
+    if (expr.isAST(S.Series, 3)) {
+      IExpr iterator = expr.second();
+      return (iterator.isList3() || iterator.isRuleAST()) && iterator.first().equals(x);
+    }
+    return false;
+  }
+
   public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
       final int denominator, EvalEngine engine) {
     return simpleSeries(function, x, x0, n, denominator, 0, engine);
@@ -1541,6 +1553,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
       final int denominator, final int direction, EvalEngine engine) {
+    if (!function.isFree(S.Series)) {
+      // a series in x which stayed unevaluated is expanded as the function it is a series of;
+      // differentiating through its iterator would only pile up unevaluated derivatives
+      IExpr unwrapped =
+          F.subst(function, y -> isUnevaluatedSeries(y, x) ? y.first() : F.NIL);
+      if (!unwrapped.equals(function)) {
+        return denominator == 1 ? seriesDataRecursive(unwrapped, x, x0, n, direction, engine)
+            : simpleSeries(unwrapped, x, x0, n, denominator, direction, engine);
+      }
+    }
     VariablesSet varSet = new VariablesSet(function);
     varSet.add(x);
     varSet.addVarList(x0);

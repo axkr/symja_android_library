@@ -51,11 +51,13 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.TextEncoding;
 import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.operator.OperatorTable;
@@ -704,20 +706,26 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ByteArrayExpr) {
+        TextEncoding encoding = TextEncoding.utf8();
+        if (ast.isAST2()) {
+          encoding = ast.arg2().isString() ? TextEncoding.of(ast.arg2().toString()) : null;
+          if (encoding == null) {
+            // an encoding which is not known here
+            return F.NIL;
+          }
+        }
         byte[] bArray = (byte[]) ((IDataExpr) arg1).toData();
         if (bArray.length == 0) {
           return F.$str("");
         }
-
-        String str = new String(bArray, StandardCharsets.UTF_8);
-        return F.$str(str);
+        return F.$str(encoding.decode(bArray, invalidUTF8(engine)));
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1584,41 +1592,15 @@ public final class StringFunctions {
     }
   }
 
-  /** {@link #encodingLimit(String)} of the UTF-8 encoding, which maps a character to bytes. */
-  private static final int UTF8 = -1;
-
   /**
-   * {@link #encodingLimit(String)} of the printable ASCII encoding, which also leaves out the
-   * control characters below the space except the newline.
+   * Reports each byte sequence which is no UTF-8 character with the message
+   * <code>$CharacterEncoding::utf8</code>.
    */
-  private static final int PRINTABLE_ASCII = 0x7E;
-
-  /**
-   * The largest character code of an encoding name: <code>0x7F</code> for ASCII,
-   * {@link #PRINTABLE_ASCII}, <code>0xFF</code> for ISO Latin 1, {@link #UTF8} for UTF-8 and
-   * <code>Integer.MAX_VALUE</code> for Unicode and the names which are not known here.
-   */
-  private static int encodingLimit(String encoding) {
-    switch (encoding) {
-      case "UTF8":
-      case "UTF-8":
-        return UTF8;
-      case "ASCII":
-        return 0x7F;
-      case "PrintableASCII":
-        return PRINTABLE_ASCII;
-      case "ISOLatin1":
-      case "ISO8859-1":
-        return 0xFF;
-      default:
-        return Integer.MAX_VALUE;
-    }
-  }
-
-  /** <code>true</code> if the encoding with this {@link #encodingLimit(String)} lacks the code. */
-  private static boolean outsideEncoding(int code, int limit) {
-    return code > limit
-        || (limit == PRINTABLE_ASCII && code >= 0 && code < 0x20 && code != '\n');
+  private static java.util.function.Consumer<int[]> invalidUTF8(EvalEngine engine) {
+    // The byte sequence `1` could not be interpreted as a character in the UTF-8 character
+    // encoding.
+    return sequence -> Errors.printMessage(S.$CharacterEncoding, "utf8",
+        F.list(F.mapRange(0, sequence.length, i -> F.ZZ(sequence[i]))), engine);
   }
 
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
@@ -1645,75 +1627,38 @@ public final class StringFunctions {
     }
 
     /**
-     * The string of the UTF-8 <code>bytes</code>. A byte which starts no valid sequence is
-     * reported and taken as the ISO Latin 1 character of its code.
+     * The string of character codes in an encoding: the codes below 256 are bytes of the encoding,
+     * the larger ones are the characters they name.
      */
-    private static IExpr fromUTF8(final IAST bytes, EvalEngine engine) {
-      byte[] buffer = new byte[bytes.argSize()];
-      for (int i = 1; i < bytes.size(); i++) {
-        int b = bytes.get(i).toIntDefault();
-        if (b < 0 || b > 0xFF) {
+    private static IExpr fromEncoding(final IAST codeList, TextEncoding encoding,
+        EvalEngine engine) {
+      int[] codes = new int[codeList.argSize()];
+      for (int i = 1; i < codeList.size(); i++) {
+        int code = codeList.get(i).toIntDefault(-1);
+        if (code < 0 || code >= 1114112) {
           return F.NIL;
         }
-        buffer[i - 1] = (byte) b;
+        codes[i - 1] = code;
       }
-      java.nio.charset.CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
-          .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
-          .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT);
-      java.nio.ByteBuffer in = java.nio.ByteBuffer.wrap(buffer);
-      java.nio.CharBuffer out = java.nio.CharBuffer.allocate(buffer.length + 1);
-      IASTAppendable invalid = F.ListAlloc();
-      while (true) {
-        java.nio.charset.CoderResult result = decoder.decode(in, out, true);
-        if (result.isError()) {
-          for (int k = 0; k < result.length(); k++) {
-            int b = in.get() & 0xFF;
-            invalid.append(b);
-            out.put((char) b);
-          }
-          continue;
-        }
-        decoder.flush(out);
-        break;
-      }
-      if (invalid.argSize() > 0) {
-        // The byte sequence `1` could not be interpreted as a character in the UTF-8 character
-        // encoding.
-        Errors.printMessage(S.$CharacterEncoding, "utf8", F.list(invalid), engine);
-      }
-      out.flip();
-      return StringX.valueOf(out.toString());
+      return StringX.valueOf(encoding.decode(codes, invalidUTF8(engine)));
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST2() && ast.arg2().isString()
-          && encodingLimit(ast.arg2().toString()) == UTF8) {
-        // the numbers are the bytes of the UTF-8 encoding
+      // an encoding name which is not known here names the characters by their codes
+      final TextEncoding encoding =
+          ast.isAST2() && ast.arg2().isString() ? TextEncoding.of(ast.arg2().toString()) : null;
+      if (encoding != null) {
         if (arg1.isList()) {
           IAST list = (IAST) arg1;
           if (list.argSize() > 0 && list.arg1().isList()) {
+            // each list of codes with the encoding
             return list.mapThread(ast, 1);
           }
-          return list.forAll(x -> x.isInteger()) ? fromUTF8(list, engine) : F.NIL;
+          return list.forAll(x -> x.isInteger()) ? fromEncoding(list, encoding, engine) : F.NIL;
         }
-        return arg1.isInteger() ? fromUTF8(F.list(arg1), engine) : F.NIL;
-      }
-      // the other encodings name the characters by their codes, up to the largest code they have
-      final int limit = ast.isAST2() && ast.arg2().isString()
-          ? encodingLimit(ast.arg2().toString())
-          : Integer.MAX_VALUE;
-      if (limit < Integer.MAX_VALUE) {
-        if (arg1.isList() && arg1.argSize() > 0 && arg1.first().isList()) {
-          // each list of codes with the encoding
-          return arg1.mapThread(ast, 1);
-        }
-        if (arg1.isList()
-            ? ((IAST) arg1).exists(c -> c.isInteger() && outsideEncoding(c.toIntDefault(), limit))
-            : arg1.isInteger() && outsideEncoding(arg1.toIntDefault(), limit)) {
-          return F.NIL;
-        }
+        return arg1.isInteger() ? fromEncoding(F.list(arg1), encoding, engine) : F.NIL;
       }
       IAST codes = ast.isAST1() ? ast : F.unaryAST1(ast.head(), arg1);
 
@@ -2955,15 +2900,16 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (!n.isInteger()) {
+        if (n.isNumber()) {
+          // Integer expected at position `2` in `1`.
+          return Errors.printMessage(S.IntegerString, "int", F.list(ast, F.C1), engine);
+        }
         return F.NIL;
       }
       if (ast.isAST2() && ast.arg2().isString("Roman")) {
         // the digits of the absolute value, as for any base
-        int value = n.toIntDefault();
-        if (value != Integer.MIN_VALUE) {
-          value = Math.abs(value);
-        }
-        return value >= 0 && value < 5000 ? F.stringx(toRoman(value)) : F.NIL;
+        java.math.BigInteger value = ((IInteger) n).toBigNumerator().abs();
+        return F.stringx(romanString(value));
       }
       int base = 10;
       if (ast.argSize() >= 2) {
@@ -2993,11 +2939,76 @@ public final class StringFunctions {
     private static final String[] ROMAN_DIGITS =
         {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
 
-    /** The Roman numeral of <code>0 &lt;= n &lt; 5000</code>; 0 is <code>N</code>. */
-    private static String toRoman(int n) {
-      if (n == 0) {
+    private static final java.math.BigInteger THOUSAND = java.math.BigInteger.valueOf(1000);
+
+    /**
+     * The Roman numeral of <code>n &gt;= 0</code> as a string; 0 is <code>N</code>. Below 5000 it
+     * is plain text, with up to four <code>M</code>. Above it the thousands are written as a
+     * numeral under a bar, the box escape <code>\!\(\(\"IX\"\)\&amp;_\)</code> for 9000.
+     */
+    private static String romanString(java.math.BigInteger n) {
+      if (n.signum() == 0) {
         return "N";
       }
+      StringBuilder buf = new StringBuilder();
+      for (Object group : romanGroups(n)) {
+        if (group instanceof String) {
+          buf.append((String) group);
+        } else {
+          buf.append(Scanner.BOX_BANG).append(Scanner.BOX_OPEN);
+          appendBar(buf, (Object[]) group);
+          buf.append(Scanner.BOX_CLOSE);
+        }
+      }
+      return buf.toString();
+    }
+
+    /**
+     * The groups of the Roman numeral of <code>n &gt; 0</code>: a group is a string of plain
+     * numerals or an array <code>{group}</code>, which is that group under a bar - its value times
+     * 1000. The thousands digit stays plain if it is at most 4, so are the thousands above 5 of a
+     * digit from 5 to 8; the rest of the thousands is the numeral under the bar, and a bar over
+     * several groups is a bar over each of them.
+     */
+    private static java.util.List<Object> romanGroups(java.math.BigInteger n) {
+      java.math.BigInteger[] thousands = n.divideAndRemainder(THOUSAND);
+      int digit = thousands[0].mod(java.math.BigInteger.TEN).intValue();
+      int plainThousands = digit <= 4 ? digit : digit <= 8 ? digit - 5 : 0;
+      java.math.BigInteger barred =
+          thousands[0].subtract(java.math.BigInteger.valueOf(plainThousands));
+      java.util.List<Object> groups = new java.util.ArrayList<Object>();
+      if (barred.signum() > 0) {
+        for (Object group : romanGroups(barred)) {
+          groups.add(new Object[] {group});
+        }
+      }
+      String plain = toRoman(plainThousands * 1000 + thousands[1].intValue());
+      if (!plain.isEmpty()) {
+        groups.add(plain);
+      }
+      return groups;
+    }
+
+    /**
+     * Append the linear box syntax of a group under a bar: <code>\(\"IX\"\)\&amp;_</code>, and
+     * for a group which is under a bar itself the inner one in parentheses
+     * <code>\(\(...\)\)\&amp;_</code>.
+     */
+    private static void appendBar(StringBuilder buf, Object[] bar) {
+      Object group = bar[0];
+      buf.append(Scanner.BOX_OPEN);
+      if (group instanceof String) {
+        buf.append('"').append((String) group).append('"');
+      } else {
+        buf.append(Scanner.BOX_OPEN);
+        appendBar(buf, (Object[]) group);
+        buf.append(Scanner.BOX_CLOSE);
+      }
+      buf.append(Scanner.BOX_CLOSE).append("\\&_");
+    }
+
+    /** The plain Roman numeral of <code>0 &lt;= n &lt; 5000</code>, empty for 0. */
+    private static String toRoman(int n) {
       StringBuilder buf = new StringBuilder();
       for (int i = 0; i < ROMAN_VALUES.length; i++) {
         while (n >= ROMAN_VALUES[i]) {
@@ -4567,19 +4578,30 @@ public final class StringFunctions {
       if (!arg1.isString()) {
         return F.NIL;
       }
-      String str = ast.arg1().toString();
-      try {
-        byte[] bArray = str.getBytes(StandardCharsets.UTF_8);
-        return ByteArrayExpr.newInstance(bArray);
-      } catch (IllegalArgumentException iae) {
-        //
+      TextEncoding encoding = TextEncoding.utf8();
+      if (ast.isAST2()) {
+        encoding = ast.arg2().isString() ? TextEncoding.of(ast.arg2().toString()) : null;
+        if (encoding == null) {
+          // an encoding which is not known here
+          return F.NIL;
+        }
       }
-      return F.NIL;
+      final String text = arg1.toString();
+      final int missing = encoding.firstUnencodable(text);
+      if (missing >= 0) {
+        // The character '`1`' (code point `2`) cannot be represented in character encoding `3`.
+        Errors.printMessage(S.StringToByteArray, "notinenc",
+            F.list(F.stringx(new String(Character.toChars(missing))), F.ZZ(missing), ast.arg2()),
+            engine);
+        return F.NIL;
+      }
+      byte[] bArray = encoding.encode(text);
+      return bArray == null ? F.NIL : ByteArrayExpr.newInstance(bArray);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 
@@ -4670,12 +4692,16 @@ public final class StringFunctions {
 
     /**
      * Built-in heads whose reported precedence isn't the parser's: the logical operators share one
-     * level, <code>Sum</code> and <code>Limit</code> sit with the big operators, and some heads
-     * have a precedence without an operator row of their own.
+     * level, <code>Sum</code> and <code>Limit</code> sit with the big operators, <code>SameQ</code>
+     * and <code>UnsameQ</code> with the comparisons although they are read one step looser,
+     * <code>TagSet</code> reports the precedence of a function call, and some heads have a
+     * precedence without an operator row of their own.
      */
     private static final String[][] REPORTED = {{"And", "215"}, {"Nand", "215"},
         {"Xor", "215"}, {"Optional", "140"}, {"Postfix", "70"}, {"Prefix", "640"},
-        {"Blank", "730"}, {"Sum", "320"}, {"Limit", "320"}, {"D", "550"},
+        {"Infix", "630"}, {"Blank", "730"}, {"Slot", "740"}, {"SlotSequence", "740"},
+        {"Complex", "310"}, {"UpArrow", "580"}, {"SameQ", "290"}, {"UnsameQ", "290"},
+        {"TagSet", "670"}, {"Sum", "320"}, {"Limit", "320"}, {"D", "550"},
         {"TensorProduct", "495"}, {"RightComposition", "648"}, {"Composition", "650"}};
 
     private static void initPrecedences() {
@@ -5062,9 +5088,38 @@ public final class StringFunctions {
       } else if (expr.isAST() && expr.head().isSymbol()
           && (format.elided == null || format.elided.contains(expr.head()))) {
         buf.append(expr.head().toString()).append("[\u2026]");
+      } else if (expr.isReal() && expr.isMachineNumber() && (Math.abs(expr.evalf()) >= LARGE_REAL
+          || (expr.evalf() != 0.0 && Math.abs(expr.evalf()) < SMALL_REAL))) {
+        buf.append(largeReal(expr.evalf()));
       } else {
         buf.append(expr.toString());
       }
+    }
+
+    /** From this value on a machine real is written without a power of ten. */
+    private static final double LARGE_REAL = 1.0e5;
+
+    /** Below this value a nonzero machine real is written without a power of ten too. */
+    private static final double SMALL_REAL = 1.0e-5;
+
+    /** From this value on a machine real has no fraction digits. */
+    private static final double INTEGRAL_REAL = 1.0e16;
+
+    /**
+     * The text of a machine real <code>|x| &gt;= 10^5</code> or <code>0 &lt; |x| &lt; 10^-5</code>
+     * in decimal notation, never with a
+     * power of ten: its shortest decimal digits rounded half up to six significant digits, but all
+     * of its integer digits below <code>10^16</code>. From <code>10^16</code> on the six digits
+     * are padded with zeros - <code>9.87654321*^20</code> is <code>987654000000000000000.</code>.
+     */
+    private static String largeReal(double value) {
+      java.math.BigDecimal decimal = new java.math.BigDecimal(Double.toString(value));
+      int integerDigits = decimal.precision() - decimal.scale();
+      int digits = Math.abs(value) < INTEGRAL_REAL ? Math.max(6, integerDigits) : 6;
+      decimal = decimal.round(new java.math.MathContext(digits, java.math.RoundingMode.HALF_UP))
+          .stripTrailingZeros();
+      String plain = decimal.toPlainString();
+      return plain.indexOf('.') < 0 ? plain + "." : plain;
     }
 
     @Override
@@ -5175,22 +5230,20 @@ public final class StringFunctions {
         return F.NIL;
       }
       String text = ast.arg1().toString();
-      if (ast.isAST2() && ast.arg2().isString()) {
-        switch (encodingLimit(ast.arg2().toString())) {
-          case UTF8:
-            // the bytes of the UTF-8 encoding
-            byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-            return F.mapRange(0, bytes.length, i -> F.ZZ(bytes[i] & 0xFF));
-          case 0x7F:
-          case PRINTABLE_ASCII:
-          case 0xFF:
-            // a character the encoding does not have is None
-            final int limit = encodingLimit(ast.arg2().toString());
-            final int[] codePoints = text.codePoints().toArray();
-            return F.mapRange(0, codePoints.length,
-                i -> outsideEncoding(codePoints[i], limit) ? S.None : F.ZZ(codePoints[i]));
-          default:
+      final TextEncoding encoding =
+          ast.isAST2() && ast.arg2().isString() ? TextEncoding.of(ast.arg2().toString()) : null;
+      if (encoding != null) {
+        if (encoding.isUTF8()) {
+          // the bytes of the UTF-8 encoding
+          byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+          return F.mapRange(0, bytes.length, i -> F.ZZ(bytes[i] & 0xFF));
         }
+        // the byte of each character; a character the encoding does not have is None
+        final int[] codePoints = text.codePoints().toArray();
+        return F.mapRange(0, codePoints.length, i -> {
+          int b = encoding.toByte(codePoints[i]);
+          return b < 0 ? S.None : F.ZZ(b);
+        });
       }
       return toCharacterCode(text, StandardCharsets.UTF_8);
     }

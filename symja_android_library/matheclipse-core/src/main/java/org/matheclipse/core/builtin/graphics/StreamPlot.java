@@ -1,13 +1,12 @@
 package org.matheclipse.core.builtin.graphics;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -36,17 +35,8 @@ public class StreamPlot extends AbstractFunctionEvaluator {
   /** Seed points along each axis. */
   private static final int DEFAULT_SEEDS = 14;
 
-  /** Samples of the field along each axis. */
-  private static final int SAMPLES = 61;
-
   /** The longest line as a fraction of the plot's diagonal, for StreamScale -> Automatic. */
   private static final double DEFAULT_LENGTH = 0.15;
-
-  /** The integration step, in plot widths. */
-  private static final double STEP = 0.004;
-
-  /** At most this many points are kept along one line. */
-  private static final int MAX_POINTS = 30;
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -81,10 +71,9 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    int seeds = DEFAULT_SEEDS;
-    double length = DEFAULT_LENGTH;
-    boolean colored = true;
     RegionFunctionFilter region = null;
+    IExpr spec = S.Automatic;
+    IASTAppendable streamOptions = F.ListAlloc();
     IASTAppendable graphicsOptions = F.ListAlloc();
     for (int i = 4; i < ast.size(); i++) {
       IExpr option = ast.get(i);
@@ -93,106 +82,25 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       }
       IExpr key = option.first();
       if (key == S.StreamPoints) {
-        IExpr value = engine.evaluate(option.second());
-        IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
-        int n = first.toIntDefault();
-        if (n >= 2) {
-          seeds = n;
-        }
+        spec = engine.evaluate(option.second());
         continue;
       }
-      if (key == S.StreamScale) {
-        IExpr value = engine.evaluate(option.second());
-        IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
-        length = streamLength(first, length);
+      if (isStreamOption(key)) {
+        streamOptions.append(option);
         continue;
       }
       if (key == S.RegionFunction) {
         region = RegionFunctionFilter.of(engine.evaluate(option.second()), engine);
         continue;
       }
-      if (key == S.StreamColorFunction) {
-        colored = !engine.evaluate(option.second()).isNone();
-        continue;
-      }
       graphicsOptions.append(option);
     }
 
-    // the field, sampled once; u and v are the plot's coordinates scaled to 0..1
-    double[][] du = new double[SAMPLES][SAMPLES];
-    double[][] dv = new double[SAMPLES][SAMPLES];
-    double[][] speed = new double[SAMPLES][SAMPLES];
-    double fastest = 0.0;
-    for (int i = 0; i < SAMPLES; i++) {
-      for (int j = 0; j < SAMPLES; j++) {
-        double px = x0 + (x1 - x0) * i / (SAMPLES - 1);
-        double py = y0 + (y1 - y0) * j / (SAMPLES - 1);
-        double[] vector = fieldAt(field, x, y, px, py, engine);
-        if (vector == null || (region != null && !region.accepts(px, py, vector[0], vector[1],
-            Math.hypot(vector[0], vector[1])))) {
-          // no field here, or outside the region: no line starts at or runs through this sample
-          du[i][j] = Double.NaN;
-          dv[i][j] = Double.NaN;
-          speed[i][j] = Double.NaN;
-          continue;
-        }
-        du[i][j] = vector[0] / (x1 - x0);
-        dv[i][j] = vector[1] / (y1 - y0);
-        speed[i][j] = Math.hypot(vector[0], vector[1]);
-        fastest = Math.max(fastest, speed[i][j]);
-      }
+    IAST primitives =
+        streams(field, x, y, x0, x1, y0, y1, region, spec, streamOptions, false, engine);
+    if (primitives.isNIL()) {
+      primitives = F.CEmptyList;
     }
-
-    // a line stops where it enters a cell another line already went through
-    int cells = 2 * seeds;
-    int[][] owner = new int[cells][cells];
-    double limit = length * Math.sqrt(2.0) / 2;
-
-    IASTAppendable primitives = F.ListAlloc();
-    primitives.append(VectorPlot.arrowheads(0.04));
-    if (!colored) {
-      primitives.append(VectorPlot.plainColor());
-    }
-    int id = 0;
-    for (int i = 0; i < seeds; i++) {
-      for (int j = 0; j < seeds; j++) {
-        double u = (i + 0.5) / seeds;
-        double v = (j + 0.5) / seeds;
-        if (owner[cell(u, cells)][cell(v, cells)] != 0) {
-          continue;
-        }
-        double seedSpeed = interpolate(speed, u, v);
-        if (Double.isNaN(seedSpeed) || seedSpeed == 0.0) {
-          continue;
-        }
-        id++;
-        List<double[]> backward = trace(du, dv, u, v, -1.0, limit, owner, cells, id);
-        List<double[]> forward = trace(du, dv, u, v, 1.0, limit, owner, cells, id);
-        if (region != null) {
-          // the samples only say where a line may run; its own points are asked as well
-          if (!inRegion(region, du, dv, u, v, x0, x1, y0, y1)) {
-            continue;
-          }
-          backward = insideRegion(region, backward, du, dv, x0, x1, y0, y1);
-          forward = insideRegion(region, forward, du, dv, x0, x1, y0, y1);
-        }
-        Collections.reverse(backward);
-        List<double[]> line = new ArrayList<>(backward);
-        line.add(new double[] {u, v});
-        line.addAll(forward);
-        if (line.size() < 2) {
-          continue;
-        }
-        for (double[] p : line) {
-          owner[cell(p[0], cells)][cell(p[1], cells)] = id;
-        }
-        IAST arrow = F.Arrow(points(line, x0, x1, y0, y1));
-        primitives.append(colored && fastest > 0.0
-            ? F.list(VectorPlot.color(seedSpeed / fastest), arrow)
-            : arrow);
-      }
-    }
-
     IASTAppendable result = F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
     if (!VectorPlot.hasOption(graphicsOptions, S.PlotRange)) {
@@ -208,107 +116,193 @@ public class StreamPlot extends AbstractFunctionEvaluator {
     return result;
   }
 
+  /** The size of the head of an arrow, as a share of the plot's width. */
+  private static final double HEAD_SIZE = 0.02;
+
+  /** The length of each arrow a streamline is drawn as, in the plot scaled to the unit square. */
+  private static final double SEGMENT_LENGTH = 0.08;
+
+  /** The gap between two arrows of one streamline. */
+  private static final double SEGMENT_GAP = 0.002;
+
   /**
-   * Follows the field's direction from <code>(u, v)</code>, forwards for <code>sign = 1</code>
-   * and backwards for <code>sign = -1</code>, with midpoint steps; the seed itself is not part of
-   * the result.
+   * A line cut into consecutive pieces of {@link #SEGMENT_LENGTH}, a gap of {@link #SEGMENT_GAP}
+   * apart; the last piece is what is left. The cuts are placed on the line between its points.
    */
-  private static List<double[]> trace(double[][] du, double[][] dv, double u, double v,
-      double sign, double limit, int[][] owner, int cells, int id) {
-    List<double[]> path = new ArrayList<>();
-    double travelled = 0.0;
-    while (travelled < limit) {
-      double[] d1 = direction(du, dv, u, v, sign);
-      if (d1 == null) {
-        break;
-      }
-      double[] d2 = direction(du, dv, u + d1[0] * STEP / 2, v + d1[1] * STEP / 2, sign);
-      if (d2 == null) {
-        break;
-      }
-      double nu = u + d2[0] * STEP;
-      double nv = v + d2[1] * STEP;
-      if (nu < 0.0 || nu > 1.0 || nv < 0.0 || nv > 1.0) {
-        break;
-      }
-      int taken = owner[cell(nu, cells)][cell(nv, cells)];
-      if (taken != 0 && taken != id) {
-        break;
-      }
-      u = nu;
-      v = nv;
-      path.add(new double[] {u, v});
-      travelled += STEP;
-    }
-    return path;
-  }
-
-  /** Whether the point <code>(u, v)</code> of the unit square lies in the region. */
-  private static boolean inRegion(RegionFunctionFilter region, double[][] du, double[][] dv,
-      double u, double v, double x0, double x1, double y0, double y1) {
-    double vx = interpolate(du, u, v) * (x1 - x0);
-    double vy = interpolate(dv, u, v) * (y1 - y0);
-    return region.accepts(x0 + (x1 - x0) * u, y0 + (y1 - y0) * v, vx, vy, Math.hypot(vx, vy));
-  }
-
-  /** The points of a path, which leads away from its seed, up to the first one outside. */
-  private static List<double[]> insideRegion(RegionFunctionFilter region, List<double[]> path,
-      double[][] du, double[][] dv, double x0, double x1, double y0, double y1) {
-    for (int i = 0; i < path.size(); i++) {
-      double[] p = path.get(i);
-      if (!inRegion(region, du, dv, p[0], p[1], x0, x1, y0, y1)) {
-        return new ArrayList<>(path.subList(0, i));
+  private static List<List<double[]>> segments(List<double[]> points) {
+    List<List<double[]>> result = new java.util.ArrayList<>();
+    List<double[]> piece = new java.util.ArrayList<>();
+    piece.add(points.get(0));
+    // how far the current piece has run, and whether the line is in a gap
+    double run = 0.0;
+    boolean inGap = false;
+    for (int i = 1; i < points.size(); i++) {
+      double[] from = points.get(i - 1);
+      double[] to = points.get(i);
+      double step = Math.hypot(to[0] - from[0], to[1] - from[1]);
+      double done = 0.0;
+      while (step - done > 0.0) {
+        double limit = inGap ? SEGMENT_GAP : SEGMENT_LENGTH;
+        double take = Math.min(limit - run, step - done);
+        done += take;
+        run += take;
+        double t = done / step;
+        double[] at = {from[0] + t * (to[0] - from[0]), from[1] + t * (to[1] - from[1])};
+        if (run < limit) {
+          if (!inGap) {
+            piece.add(at);
+          }
+          break;
+        }
+        // the end of a piece or of a gap
+        run = 0.0;
+        if (inGap) {
+          piece = new java.util.ArrayList<>();
+          piece.add(at);
+        } else {
+          piece.add(at);
+          result.add(piece);
+          piece = null;
+        }
+        inGap = !inGap;
       }
     }
-    return path;
-  }
-
-  /** The unit direction of the field at <code>(u, v)</code>, or <code>null</code>. */
-  private static double[] direction(double[][] du, double[][] dv, double u, double v,
-      double sign) {
-    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0) {
-      return null;
-    }
-    double a = interpolate(du, u, v);
-    double b = interpolate(dv, u, v);
-    double norm = Math.hypot(a, b);
-    if (Double.isNaN(norm) || norm < 1.0e-12) {
-      return null;
-    }
-    return new double[] {sign * a / norm, sign * b / norm};
-  }
-
-  /** Bilinear interpolation in a grid of samples over 0..1 x 0..1. */
-  private static double interpolate(double[][] grid, double u, double v) {
-    double fi = u * (SAMPLES - 1);
-    double fj = v * (SAMPLES - 1);
-    int i = Math.min((int) fi, SAMPLES - 2);
-    int j = Math.min((int) fj, SAMPLES - 2);
-    double s = fi - i;
-    double t = fj - j;
-    return (1 - s) * (1 - t) * grid[i][j] + s * (1 - t) * grid[i + 1][j]
-        + (1 - s) * t * grid[i][j + 1] + s * t * grid[i + 1][j + 1];
-  }
-
-  private static int cell(double w, int cells) {
-    return Math.min(cells - 1, Math.max(0, (int) (w * cells)));
-  }
-
-  /** The line in plot coordinates, thinned to at most {@link #MAX_POINTS} points. */
-  private static IAST points(List<double[]> line, double x0, double x1, double y0, double y1) {
-    int stride = Math.max(1, (line.size() + MAX_POINTS - 1) / MAX_POINTS);
-    IASTAppendable result = F.ListAlloc(line.size() / stride + 2);
-    for (int k = 0; k < line.size(); k += stride) {
-      result.append(point(line.get(k), x0, x1, y0, y1));
-    }
-    if ((line.size() - 1) % stride != 0) {
-      result.append(point(line.get(line.size() - 1), x0, x1, y0, y1));
+    if (piece != null && piece.size() > 1) {
+      result.add(piece);
     }
     return result;
   }
 
-  private static IAST point(double[] p, double x0, double x1, double y0, double y1) {
-    return F.list(F.num(x0 + p[0] * (x1 - x0)), F.num(y0 + p[1] * (y1 - y0)));
+  /** The length of a line in the plot scaled to the unit square. */
+  private static double length(List<double[]> points) {
+    double sum = 0.0;
+    for (int i = 1; i < points.size(); i++) {
+      sum += Math.hypot(points.get(i)[0] - points.get(i - 1)[0],
+          points.get(i)[1] - points.get(i - 1)[1]);
+    }
+    return sum;
+  }
+
+  /** Whether an option is one of the streamlines'. */
+  static boolean isStreamOption(IExpr key) {
+    return key == S.StreamPoints || key == S.StreamScale || key == S.StreamStyle
+        || key == S.StreamColorFunction || key == S.StreamColorFunctionScaling;
+  }
+
+  /**
+   * The primitives of the streamlines of the field <code>{vx, vy}</code> over the rectangle from
+   * <code>(x0, y0)</code> to <code>(x1, y1)</code>.
+   *
+   * <p>
+   * <code>StreamScale -> None</code> draws each line whole and without a head, as a
+   * <code>Line</code>; otherwise a line is an <code>Arrow</code> as long as the scale allows. A
+   * line takes the colour of <code>StreamColorFunction</code>, which is handed the point, the
+   * vector and its length, each scaled to <code>0..1</code> unless
+   * <code>StreamColorFunctionScaling -> False</code>; without a function it is coloured by the
+   * field's speed, and with <code>None</code> it is drawn in the <code>StreamStyle</code>.
+   *
+   * @param spec the <code>StreamPoints</code> value
+   * @param options the other options of the streamlines
+   * @param overVectors whether the lines are drawn over the arrows of a vector plot, where they are
+   *        not coloured unless a function asks for it
+   * @return {@link F#NIL} if there are no lines to draw
+   */
+  static IAST streams(IExpr field, ISymbol x, ISymbol y, double x0, double x1, double y0,
+      double y1, RegionFunctionFilter region, IExpr spec, IAST options, boolean overVectors,
+      EvalEngine engine) {
+    double length = DEFAULT_LENGTH;
+    boolean whole = false;
+    IExpr style = F.NIL;
+    IExpr colorFunction = overVectors ? S.None : S.Automatic;
+    IExpr scaling = S.True;
+    for (IExpr option : options) {
+      IExpr key = option.first();
+      IExpr value = engine.evaluate(option.second());
+      if (key == S.StreamScale) {
+        IExpr first = value.isList() && value.argSize() > 0 ? value.first() : value;
+        whole = first.isNone();
+        length = streamLength(first, length);
+      } else if (key == S.StreamStyle) {
+        style = value;
+      } else if (key == S.StreamColorFunction) {
+        colorFunction = value;
+      } else if (key == S.StreamColorFunctionScaling) {
+        scaling = value;
+      }
+    }
+    StreamLines streams = new StreamLines(field, x, y, x0, x1, y0, y1, region, engine);
+    List<StreamLines.Line> lines = streams.fromSpec(spec, DEFAULT_SEEDS,
+        whole ? Double.MAX_VALUE : length * Math.sqrt(2.0) / 2, engine);
+    if (lines == null) {
+      return F.NIL;
+    }
+    PlotColorFunction colors = colorFunction.isAutomatic() || colorFunction.isNone() ? null
+        : streamColors(colorFunction, scaling, streams, lines, engine);
+    boolean bySpeed = colors == null && colorFunction.isAutomatic() && streams.fastest > 0.0;
+
+    IASTAppendable primitives = F.ListAlloc(lines.size() + 2);
+    // the style comes once, in front of all the lines, as a Directive of what was given
+    if (style.isPresent()) {
+      primitives.append(style.isAST(S.Directive) ? style
+          : style.isList() ? ((IAST) style).setAtCopy(0, S.Directive)
+              : F.unaryAST1(S.Directive, style));
+    } else if (colors == null && !bySpeed) {
+      primitives.append(VectorPlot.plainColor());
+    }
+    for (StreamLines.Line line : lines) {
+      // a whole line is drawn as one, any other is a run of arrows of SEGMENT_LENGTH
+      List<List<double[]>> pieces = whole ? java.util.Collections.singletonList(line.points)
+          : segments(line.points);
+      for (List<double[]> piece : pieces) {
+        IAST points = streams.points(piece);
+        IAST drawn = whole ? F.Line(points) : F.Arrow(points);
+        // a piece is coloured where it starts
+        double[] start = piece.get(0);
+        double[] vector = streams.vectorAt(start[0], start[1]);
+        double speed = Math.hypot(vector[0], vector[1]);
+        if (colors != null) {
+          drawn = F.list(colors.color(streams.x0 + start[0] * (streams.x1 - streams.x0),
+              streams.y0 + start[1] * (streams.y1 - streams.y0), vector[0], vector[1], speed),
+              drawn);
+        } else if (bySpeed) {
+          drawn = F.list(VectorPlot.color(streams.scaledSpeed(whole ? line.seedSpeed : speed)),
+              drawn);
+        }
+        if (!whole) {
+          // every arrow carries its own head, a quarter of its length and at most HEAD_SIZE
+          drawn = F.list(VectorPlot.arrowheads(Math.min(HEAD_SIZE, length(piece) / 4.0)), drawn);
+        }
+        primitives.append(drawn);
+      }
+    }
+    return primitives;
+  }
+
+  /**
+   * The <code>StreamColorFunction</code>, handed <code>x, y, vx, vy</code> and the speed, each
+   * scaled over the range it spans along the lines.
+   */
+  private static PlotColorFunction streamColors(IExpr colorFunction, IExpr scaling,
+      StreamLines streams, List<StreamLines.Line> lines, EvalEngine engine) {
+    double[] low = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
+    double[] high = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+    for (StreamLines.Line line : lines) {
+      for (double[] p : line.points) {
+        double[] vector = streams.vectorAt(p[0], p[1]);
+        double[] parts = {vector[0], vector[1], Math.hypot(vector[0], vector[1])};
+        for (int i = 0; i < 3; i++) {
+          if (Double.isFinite(parts[i])) {
+            low[i] = Math.min(low[i], parts[i]);
+            high[i] = Math.max(high[i], parts[i]);
+          }
+        }
+      }
+    }
+    return PlotColorFunction
+        .of(PlotColorFunction.Family.VECTOR_2D, colorFunction, scaling, S.StreamPlot, engine)
+        .ranges(streams.x0, streams.x1, streams.y0, streams.y1, low[0], high[0], low[1], high[1],
+            low[2], high[2])
+        .build();
   }
 
   /** The longest line as a fraction of the plot's diagonal. */
@@ -334,22 +328,6 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       }
     }
     return fallback;
-  }
-
-  /** The field's value at <code>(px, py)</code>, or <code>null</code> where it is not numeric. */
-  private static double[] fieldAt(IExpr field, ISymbol x, ISymbol y, double px, double py,
-      EvalEngine engine) {
-    IExpr value;
-    try {
-      value = engine.evalQuiet(F.N(F.Block(
-          F.list(F.Set(x, F.num(px)), F.Set(y, F.num(py))), field)));
-    } catch (RuntimeException rex) {
-      return null;
-    }
-    if (!value.isList2() || !value.first().isReal() || !value.second().isReal()) {
-      return null;
-    }
-    return new double[] {value.first().evalf(), value.second().evalf()};
   }
 
   @Override

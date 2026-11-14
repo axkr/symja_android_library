@@ -482,10 +482,8 @@ public class ListContourPlot extends ContourPlot {
 
         if (lineSegments.argSize() > 0) {
           IASTAppendable group = F.ListAlloc();
-          if (currentStyle.isList())
-            group.append(F.Directive(currentStyle));
-          else
-            group.append(currentStyle);
+          // the lines of a level are half transparent with butt ends, as in ContourPlot
+          group.append(ContourPlot.levelDirective(currentStyle));
 
           group.appendArgs(lineSegments);
           primitives.append(group);

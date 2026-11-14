@@ -789,6 +789,11 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             // Part `1` of `2` does not exist.
             return Errors.printMessage(head, "partw", F.list(listArg, arg1), engine);
           }
+          if (checkedPosition(arg1, indx) < 0) {
+            // the whole list of positions is reported, not the one which is missing
+            // Part `1` of `2` does not exist.
+            return Errors.printMessage(head, "partw", F.list(list, arg1), engine);
+          }
           IExpr ires = getIndex(arg1, indx, head, engine);
           if (ires.isPresent()) {
             if (p1 < ast.size()) {
@@ -1009,6 +1014,15 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
     IASTMutable evaledAST = F.NIL;
     IExpr arg1 = engine.evaluateNIL(ast.arg1());
+    IExpr target = arg1.orElse(ast.arg1());
+    if (target.isAST(S.QuantityArray, 3)) {
+      // indexed as the array of quantities it stands for; part 0 stays its head
+      IExpr quantityPart = org.matheclipse.core.builtin.QuantityFunctions
+          .quantityArrayPart((IAST) target, ast.setAtCopy(1, target), engine);
+      if (quantityPart.isPresent()) {
+        return quantityPart;
+      }
+    }
     // the expression which the part specifications are applied to; for a pattern object this is the
     // AST which mirrors its FullForm structure
     IAST arg1AST = F.NIL;

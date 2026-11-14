@@ -14,6 +14,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -23,6 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PolyhedronLayouts;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -3731,9 +3733,19 @@ public class ComputationalGeometryFunctions {
      * reports them. The switch below reads from this array, so the two cannot drift apart; a
      * property which is not here is not a question this function understands.
      */
-    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "EdgeIndices",
-        "Edges", "FaceCount", "FaceCountRules", "FaceIndices", "Faces", "Name", "StandardName",
-        "VertexCoordinates", "VertexCount", "Volume"};
+    private static final String[] PROPERTIES = {"Circumradius", "Dual", "EdgeCount",
+        "EdgeIndices", "Edges", "FaceCount", "FaceCountRules", "FaceIndices", "Faces", "Image",
+        "Name", "NetFaces", "NetImage", "SkeletonImage", "StandardName", "VertexCoordinates",
+        "VertexCount", "Volume"};
+
+    /**
+     * The dual of each named solid whose dual is known here, both ways round. The tetrahedron is
+     * its own dual.
+     */
+    private static final String[][] DUALS = {{"Cube", "Octahedron"},
+        {"Dodecahedron", "Icosahedron"}, {"Cuboctahedron", "RhombicDodecahedron"},
+        {"Icosidodecahedron", "RhombicTriacontahedron"},
+        {"TruncatedIcosahedron", "PentakisDodecahedron"}, {"Tetrahedron", "Tetrahedron"}};
 
     /** The largest <code>n</code> of the prisms and antiprisms <code>{"Prism", n}</code>, ... */
     private static final int MAX_PRISM_SIDES = 10;
@@ -3751,6 +3763,9 @@ public class ComputationalGeometryFunctions {
         return withFaceCount(ast.arg1().toIntDefault());
       }
       IExpr arg1 = Entities.nameOf(ast.arg1(), POLYHEDRON);
+      if (ast.argSize() == 3) {
+        return dualName(ast, arg1);
+      }
       if (arg1.isList2() && arg1.first().isString() && arg1.second().isInteger()) {
         return family(ast, arg1.first().toString(), arg1.second().toIntDefault(), engine);
       }
@@ -3812,6 +3827,8 @@ public class ComputationalGeometryFunctions {
           return F.stringx(displayName(name));
         case "StandardName":
           return F.stringx(name);
+        case "Image":
+          return graphics(name);
         default:
           break;
       }
@@ -3931,6 +3948,235 @@ public class ComputationalGeometryFunctions {
           return faceCountRules(faces);
         case "Faces":
           return facesComplex(exact, faces);
+        case "Image":
+          return F.Graphics3D(facesComplex(exact, faces));
+        case "Dual":
+          return dualGraphics(exact, vertices, faces);
+        case "SkeletonImage":
+          return skeletonImage(vertices, faces);
+        case "NetFaces":
+          return netFaces(vertices, faces);
+        case "NetImage": {
+          IExpr net = netFaces(vertices, faces);
+          if (!net.isAST(S.GraphicsComplex, 3)) {
+            return net;
+          }
+          // the faces filled, with their edges drawn
+          return F.Graphics(F.GraphicsComplex(net.first(),
+              F.List(F.EdgeForm(F.GrayLevel(F.C0)), F.RGBColor(1.0, 0.8, 0.5),
+                  net.second())));
+        }
+        default:
+          return F.Missing(S.NotAvailable);
+      }
+    }
+
+    /**
+     * <code>"SkeletonImage"</code>: the vertices and edges drawn flat, as the Schlegel diagram seen
+     * through the largest face.
+     */
+    private static IExpr skeletonImage(double[][] vertices, List<int[]> faces) {
+      double[][] points = PolyhedronLayouts.schlegel(vertices, faces);
+      IAST indices = F.mapRange(1, vertices.length + 1, i -> F.ZZ(i));
+      return F.Graphics(F.GraphicsComplex(points2D(points),
+          F.List(F.Line(edgeIndices(faces)), F.Point(indices))));
+    }
+
+    /**
+     * <code>"NetFaces"</code>: the surface unfolded into the plane, the faces in their usual order
+     * as polygons over the points of the unfolding; <code>Missing(NotAvailable)</code> when no
+     * unfolding without overlapping faces was found.
+     */
+    private static IExpr netFaces(double[][] vertices, List<int[]> faces) {
+      PolyhedronLayouts.Net net = PolyhedronLayouts.unfold(vertices, faces);
+      if (net == null) {
+        return F.Missing(S.NotAvailable);
+      }
+      return F.GraphicsComplex(points2D(net.points), F.Polygon(faceIndices(net.faces)));
+    }
+
+    /** The points as machine numbers, rounding-off noise next to 0 taken away. */
+    private static IAST points2D(double[][] points) {
+      return F.mapRange(0, points.length,
+          i -> F.List(F.num(chopped(points[i][0])), F.num(chopped(points[i][1]))));
+    }
+
+    private static double chopped(double value) {
+      return Math.abs(value) < 1.0e-12 ? 0.0 : value;
+    }
+
+    /**
+     * <code>PolyhedronData(solid, "Dual", "Name")</code>: the name of the dual solid, or
+     * <code>Missing(NotAvailable)</code> when it has no name here. Any other three-argument form
+     * stays unevaluated.
+     */
+    private static IExpr dualName(IAST ast, IExpr solid) {
+      IExpr propertySpec = Entities.propertyOf(ast.arg2(), POLYHEDRON);
+      if (!propertySpec.isString("Dual") || !ast.arg3().isString("Name")) {
+        return F.NIL;
+      }
+      if (solid.isList2() && solid.first().isString() && solid.second().isInteger()) {
+        String kind = solid.first().toString();
+        int n = solid.second().toIntDefault();
+        boolean cone = PYRAMID.equals(kind) || DIPYRAMID.equals(kind);
+        if (!(ANTIPRISM.equals(kind) || PRISM.equals(kind) || cone) || n < 3
+            || n > MAX_PRISM_SIDES || (cone && n > 5)) {
+          return F.NIL;
+        }
+        if (PRISM.equals(kind) && n == 4) {
+          return dual("Cube");
+        }
+        if (ANTIPRISM.equals(kind) && n == 3) {
+          return dual("Octahedron");
+        }
+        return familyDual(solid, kind, n);
+      }
+      if (!solid.isString() || !isKnown(solid.toString())) {
+        return F.NIL;
+      }
+      return "SquarePyramid".equals(solid.toString()) ? solid : dual(solid.toString());
+    }
+
+    /**
+     * <code>"Dual"</code>: the polar reciprocal of the solid in the sphere about the centre
+     * <code>c</code> of its vertices through the midpoints of its edges, so that the edges of the
+     * solid and of its dual touch that sphere at the same points. Where the edge midpoints are not
+     * all equally far from <code>c</code>, the mean of their squared distances <code>r^2</code>
+     * is used. The plane of a face, <code>N.(x - c) = D</code>, becomes the vertex
+     * <code>c + r^2 N/D</code> of the dual, so the coordinates stay exact; each vertex of the solid
+     * becomes a face of the dual, through the vertices of the faces around it.
+     *
+     * @param exact the exact vertex coordinates
+     * @param vertices the same coordinates as machine numbers
+     * @param faces the faces as 0-based vertex index cycles, counterclockwise seen from outside
+     */
+    /** The time, in milliseconds, the simplification of the vertices of a dual may take. */
+    private static final long DUAL_SIMPLIFY_MILLIS = 1500L;
+
+    private static IExpr dualGraphics(IExpr exact, double[][] vertices, List<int[]> faces) {
+      if (!exact.isList()) {
+        return F.Missing(S.NotAvailable);
+      }
+      EvalEngine engine = EvalEngine.get();
+      IAST points = (IAST) exact;
+      IExpr centre = engine.evaluate(F.Mean(points));
+      IASTAppendable dualExact = F.ListAlloc(faces.size());
+      double[][] dualVertices = new double[faces.size()][];
+      double[] numericCentre = new double[3];
+      for (double[] vertex : vertices) {
+        for (int c = 0; c < 3; c++) {
+          numericCentre[c] += vertex[c] / vertices.length;
+        }
+      }
+      IExpr radiusSquared = midsphereRadiusSquared(points, centre, vertices, numericCentre, faces);
+      double numericRadiusSquared = engine.evalDouble(radiusSquared);
+      // the simplification of the vertices shares one time budget; a vertex whose turn comes
+      // after the budget is spent keeps the exact form it was computed in
+      final long simplifyUntil = System.currentTimeMillis() + DUAL_SIMPLIFY_MILLIS;
+      for (int f = 0; f < faces.size(); f++) {
+        int[] face = faces.get(f);
+        IExpr p0 = F.Subtract(points.get(face[0] + 1), centre);
+        IExpr p1 = F.Subtract(points.get(face[1] + 1), centre);
+        IExpr p2 = F.Subtract(points.get(face[2] + 1), centre);
+        IExpr normal = F.Cross(F.Subtract(p1, p0), F.Subtract(p2, p0));
+        IExpr pole = F.Times(radiusSquared, F.Divide(normal, F.Dot(normal, p0)));
+        IExpr vertex = engine.evaluate(F.Plus(centre, pole));
+        final long left = simplifyUntil - System.currentTimeMillis();
+        if (left > 0L) {
+          // a share of what is left for each remaining vertex
+          final IExpr simplified =
+              TimeLimits.evaluateOrNil(F.Simplify(vertex), Math.max(1L, left / (faces.size() - f)));
+          if (simplified.isPresent()) {
+            vertex = simplified;
+          }
+        }
+        dualExact.append(vertex);
+        double[] p = subtract(vertices[face[0]], numericCentre);
+        double[] n = cross(subtract(vertices[face[1]], vertices[face[0]]),
+            subtract(vertices[face[2]], vertices[face[0]]));
+        double offset = dotProduct(n, p);
+        dualVertices[f] = new double[3];
+        for (int c = 0; c < 3; c++) {
+          dualVertices[f][c] = numericCentre[c] + numericRadiusSquared * n[c] / offset;
+        }
+      }
+      List<int[]> dualFaces = new ArrayList<int[]>(vertices.length);
+      for (int v = 0; v < vertices.length; v++) {
+        List<Integer> around = new ArrayList<Integer>();
+        for (int f = 0; f < faces.size(); f++) {
+          for (int index : faces.get(f)) {
+            if (index == v) {
+              around.add(Integer.valueOf(f));
+              break;
+            }
+          }
+        }
+        int[] face = new int[around.size()];
+        for (int k = 0; k < face.length; k++) {
+          face[k] = around.get(k).intValue();
+        }
+        dualFaces.add(sortAround(dualVertices, face, centroid(dualVertices, face),
+            subtract(vertices[v], numericCentre)));
+      }
+      return F.Graphics3D(facesComplex(dualExact, dualFaces));
+    }
+
+    /**
+     * The squared distance of the edge midpoints from <code>centre</code>, exactly: that of the
+     * first edge where all are equally far, otherwise the mean over the edges.
+     */
+    private static IExpr midsphereRadiusSquared(IAST points, IExpr centre, double[][] vertices,
+        double[] numericCentre, List<int[]> faces) {
+      IAST edges = edgeIndices(faces);
+      double smallest = Double.MAX_VALUE;
+      double largest = 0.0;
+      IASTAppendable squares = F.ListAlloc(edges.argSize());
+      for (IExpr edge : edges) {
+        int a = edge.first().toIntDefault();
+        int b = edge.second().toIntDefault();
+        double[] middle = along(vertices[a - 1], vertices[b - 1], 0.5);
+        double distance = squaredDistance(middle, numericCentre);
+        smallest = Math.min(smallest, distance);
+        largest = Math.max(largest, distance);
+        IExpr offset = F.Subtract(F.Times(F.C1D2, F.Plus(points.get(a), points.get(b))), centre);
+        squares.append(F.Dot(offset, offset));
+      }
+      EvalEngine engine = EvalEngine.get();
+      if (largest - smallest < TOLERANCE) {
+        return engine.evaluate(F.Simplify(squares.arg1()));
+      }
+      return engine.evaluate(F.Simplify(F.Mean(squares)));
+    }
+
+    /**
+     * The name of the dual of a named solid, or <code>Missing(NotAvailable)</code> when the dual
+     * has no name here.
+     */
+    private static IExpr dual(String name) {
+      for (String[] pair : DUALS) {
+        if (pair[0].equals(name)) {
+          return F.stringx(pair[1]);
+        }
+        if (pair[1].equals(name)) {
+          return F.stringx(pair[0]);
+        }
+      }
+      return F.Missing(S.NotAvailable);
+    }
+
+    /**
+     * The name of the dual of a member of a family: a pyramid is its own dual, the prisms and the
+     * dipyramids are dual to each other (the square dipyramid is the octahedron, whose dual is the
+     * cube), and the duals of the antiprisms, the trapezohedra, have no name here.
+     */
+    private static IExpr familyDual(IExpr spec, String kind, int n) {
+      switch (kind) {
+        case PYRAMID:
+          return spec;
+        case PRISM:
+          return F.list(F.stringx(DIPYRAMID), F.ZZ(n));
+        case DIPYRAMID:
+          return n == 4 ? F.stringx("Cube") : F.list(F.stringx(PRISM), F.ZZ(n));
         default:
           return F.Missing(S.NotAvailable);
       }
@@ -4756,7 +5002,7 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_2;
+      return ARGS_0_3;
     }
   }
 

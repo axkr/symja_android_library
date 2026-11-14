@@ -307,7 +307,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(a^i,{i,1,Infinity})", //
         "-a/(-1+a)");
     check("Sum(a^i,{i,3,Infinity})", //
-        "-a-a/(-1+a)-a^2");
+        "-a^3/(-1+a)");
 
     check("Sum(0,{i,-4,Infinity})", //
         "0");
@@ -688,7 +688,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "k!");
     // definite sum solved through the Gosper antidifference
     check("Sum(1/(i*(i+1)), {i, 1, n})", //
-        "1-1/(1+n)");
+        "n/(1+n)");
   }
 
   @Test
@@ -846,7 +846,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "-n/2+n^2/2+2*(-1+HarmonicNumber(1+n))");
     // a telescoping sum keeps its elementary closed form, Gosper runs before the partial fractions
     check("Sum(1/(i*(i+1)), {i,1,n})", //
-        "1-1/(1+n)");
+        "n/(1+n)");
   }
 
   @Test

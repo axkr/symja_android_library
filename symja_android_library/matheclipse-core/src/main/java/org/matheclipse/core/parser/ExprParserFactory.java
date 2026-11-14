@@ -336,15 +336,23 @@ public class ExprParserFactory implements IParserFactory {
     }
 
     /**
+     * The negated number literal <code>-number</code>. A zero has no sign: <code>b - 0.</code> is
+     * <code>b + 0.</code>, not a sum with a negative machine zero.
+     */
+    static IExpr negateNumber(final IExpr number) {
+      return number.isZero() ? number : number.negate();
+    }
+
+    /**
      * The term <code>-rhs</code> of <code>lhs - rhs</code>: a number is negated, a product gets a
      * negated or a <code>-1</code> leading factor, anything else is multiplied by <code>-1</code>.
      */
     static IExpr negateTerm(final IExpr rhs) {
       if (rhs.isNumber()) {
-        return rhs.negate();
+        return negateNumber(rhs);
       }
       if (rhs.isTimes() && rhs.first().isNumber()) {
-        return ((IAST) rhs).setAtCopy(1, rhs.first().negate());
+        return ((IAST) rhs).setAtCopy(1, negateNumber(rhs.first()));
       }
       if (rhs.isTimes()) {
         // -1 in front of the factors as they were written; F.Times() would sort them

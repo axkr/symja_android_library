@@ -1034,34 +1034,76 @@ public class ImageGeometryFunctions {
       }
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ImageExpr) {
+        // an image keeps its own size: ImageSize only says how a drawing is laid out
         return arg1;
       }
+      final IExpr imageSize = imageSizeOption(ast);
       // any other expression is drawn as a text
       IAST graphics = arg1.isAST() && (arg1.isGraphicsObject() || arg1.isAST(S.Graphics3D))
           ? (IAST) arg1
           : F.Graphics(F.Text(arg1));
+      boolean graphic = graphics == arg1;
+      if (imageSize.isPresent()) {
+        // the size given to Rasterize is the size the drawing is laid out in, so the renderer
+        // fits the picture into that box keeping its shape
+        graphics = withImageSize(graphics, imageSize);
+        graphic = true;
+      }
       ImageExpr image = ImageExpr.toImageExpr(graphics);
       if (image == null) {
         return F.NIL;
       }
       BufferedImage drawn = image.getBufferedImage();
-      int[] size = rasterSize(ast, drawn.getWidth(), drawn.getHeight(), graphics == arg1);
+      int[] size = rasterSize(ast, graphics, drawn.getWidth(), drawn.getHeight(), graphic);
       if (size == null) {
         return F.NIL;
       }
-      // an opaque RGB image: the transparent background is white
-      BufferedImage rgb = new BufferedImage(size[0], size[1], BufferedImage.TYPE_INT_RGB);
+      return new ImageExpr(onWhite(drawn, size[0], size[1]), null);
+    }
+
+    /**
+     * An opaque RGB copy of the picture scaled to the given size, the transparent background being
+     * white.
+     */
+    private static BufferedImage onWhite(BufferedImage drawn, int width, int height) {
+      BufferedImage rgb = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       java.awt.Graphics2D g = rgb.createGraphics();
       try {
         g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
             java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.setColor(java.awt.Color.WHITE);
-        g.fillRect(0, 0, size[0], size[1]);
-        g.drawImage(drawn, 0, 0, size[0], size[1], null);
+        g.fillRect(0, 0, width, height);
+        g.drawImage(drawn, 0, 0, width, height, null);
       } finally {
         g.dispose();
       }
-      return new ImageExpr(rgb, null);
+      return rgb;
+    }
+
+    /** The value of the {@code ImageSize} option of {@code Rasterize}, {@code F.NIL} if absent. */
+    private static IExpr imageSizeOption(IAST ast) {
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.ImageSize) {
+          // ImageSize -> Automatic is the default size
+          return option.second() == S.Automatic ? F.NIL : option.second();
+        }
+      }
+      return F.NIL;
+    }
+
+    /** The graphic with its own {@code ImageSize} option replaced by the given one. */
+    private static IAST withImageSize(IAST graphics, IExpr imageSize) {
+      IASTAppendable result = F.ast(graphics.head(), graphics.size() + 1);
+      for (int i = 1; i < graphics.size(); i++) {
+        IExpr arg = graphics.get(i);
+        if (i > 1 && arg.isRuleAST() && arg.first() == S.ImageSize) {
+          continue;
+        }
+        result.append(arg);
+      }
+      result.append(F.Rule(S.ImageSize, imageSize));
+      return result;
     }
 
     /** One element of the image of the first argument, the options being passed on. */
@@ -1104,7 +1146,8 @@ public class ImageGeometryFunctions {
      *        {@value #GRAPHICS_WIDTH} pixels unless it states its <code>ImageSize</code>
      * @return <code>null</code> for an invalid size
      */
-    private static int[] rasterSize(IAST ast, int width, int height, boolean graphic) {
+    private static int[] rasterSize(IAST ast, IAST graphics, int width, int height,
+        boolean graphic) {
       boolean automatic = false;
       for (int i = 2; i < ast.size(); i++) {
         IExpr option = ast.get(i);
@@ -1129,7 +1172,7 @@ public class ImageGeometryFunctions {
       }
       double w = width;
       double h = height;
-      if (graphic && !automatic && !hasImageSize((IAST) ast.arg1())) {
+      if (graphic && !automatic && !hasImageSize(graphics)) {
         w = GRAPHICS_WIDTH;
         h = Math.max(1, Math.round((double) GRAPHICS_WIDTH * height / width));
       }

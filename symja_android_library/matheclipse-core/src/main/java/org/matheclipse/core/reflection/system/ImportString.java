@@ -21,9 +21,9 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.Graph6Format;
 import org.matheclipse.core.io.TableFormatIO;
+import org.matheclipse.core.io.TextEncoding;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Import some data from a given string. */
 public class ImportString extends AbstractEvaluator {
@@ -48,7 +48,24 @@ public class ImportString extends AbstractEvaluator {
       format = spec.format;
       element = spec.element;
     }
+    if (ExportString.isByteText(format)) {
+      // a text format is read as the bytes of its file, a character for each: what ExportString
+      // gives
+      str1 = TextEncoding.fromByteCharacters(str1);
+    }
     return importString(str1, format, element, engine);
+  }
+
+  /**
+   * The first argument of <code>ImportString[data, format]</code> for a <code>text</code>: the
+   * text itself, or for a format which is read as bytes the bytes of its UTF-8 encoding, a
+   * character for each.
+   */
+  public static IStringX argument(String text, IExpr format) {
+    Extension.ImportSpec spec = Extension.importSpec(format);
+    return F.stringx(
+        spec != null && ExportString.isByteText(spec.format) ? TextEncoding.toByteCharacters(text)
+            : text);
   }
 
   /**
@@ -93,7 +110,8 @@ public class ImportString extends AbstractEvaluator {
         case RAWJSON:
           return JSONConvert.importJSON(str1, true);
         case STRING:
-          return ofString(str1, engine);
+          // the characters as they are
+          return F.stringx(str1);
         case TXT:
           return ofText(str1, engine);
         default:
@@ -118,20 +136,6 @@ public class ImportString extends AbstractEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
-  }
-
-  /**
-   * Get arbitrary data represented as a Symja expression string
-   *
-   * @param str
-   * @param engine
-   * @return
-   */
-  public static IExpr ofString(String str, EvalEngine engine) {
-    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final ASTNode node = parser.parse(str);
-    return ast2Expr.convert(node);
   }
 
   /**

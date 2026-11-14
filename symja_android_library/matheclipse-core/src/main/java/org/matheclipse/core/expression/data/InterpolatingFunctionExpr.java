@@ -120,6 +120,10 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       if (!numericArgumentsOnly) {
         return F.NIL;
       }
+      if (order == 0) {
+        // a step function of inexact data
+        return F.Function(F.CD0);
+      }
       EvalEngine engine = EvalEngine.get();
       ISymbol x = F.Dummy("x");
       IExpr pieces = engine.evaluate(F.unaryAST1(toData(), x));

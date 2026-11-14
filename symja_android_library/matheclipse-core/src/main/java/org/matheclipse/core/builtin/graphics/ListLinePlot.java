@@ -39,6 +39,8 @@ public class ListLinePlot extends ListPlot {
     graphicsOptions.readPassThroughOptions(originalAST);
     // GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
+    // the size the points of a joined list are marked with, where they are marked at all
+    graphicsOptions.setCurveStyleLead(F.list(F.PointSize(F.QQ(7, 360))));
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();

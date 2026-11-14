@@ -5335,7 +5335,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Csc(2/5*Pi)", //
         "Sqrt(2-2/Sqrt(5))");
     check("Csc(23/12*Pi)", //
-        "-2*Sqrt(2+Sqrt(3))");
+        "-Sqrt(2)*(1+Sqrt(3))");
     check("Csc(z+1/2*Pi)", //
         "Sec(z)");
     check("Csc(Pi)", //
@@ -11502,7 +11502,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{1.0+0.0*I,0.0+0.0*I}", //
         "{1.0,0.0}");
     check("TeXForm(1.0*^-20+2.0*I)", //
-        "1.*10^{-20} + 2.0\\,i ");
+        "1.\\times 10^{-20} + 2.0\\,i ");
     // the roots which a solver returns are cleaned of that residue
     check("NRoots(x^4-100==0)", //
         "{-3.16228,I*(-3.16228),I*3.16228,3.16228}");
@@ -15670,7 +15670,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FullForm({FromCharacterCode(946), FromCharacterCode(26085), FromCharacterCode(128513), "
             + "FromCharacterCode(252), FromCharacterCode(7)})", //
-        "List(\"\\[Beta]\", \"\\:65e5\", \"\\|01f601\", \"\\[UDoubleDot]\", \"\\.07\")");
+        "List(\"\\[Beta]\", \"\\:65e5\", \"\\|01f601\", \"\\[UDoubleDot]\", \"\\007\")");
     check("FullForm(Hold(\\[Gamma] + 5*^3))", //
         "Hold(Plus(\\[Gamma], 5000))");
   }
@@ -17658,15 +17658,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString(TraditionalForm(y^3))", //
         "\\!\\(\\*FormBox[SuperscriptBox[\"y\", \"3\"], TraditionalForm]\\)");
     check("ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))", //
-        "\\!\\(\\*FormBox[TagBox[InterpretationBox[\"3.142\", 3.14159265`], "
+        "\\!\\(\\*FormBox[TagBox[InterpretationBox[StyleBox[\"\\\"3.142\\\"\", "
+            + "Rule[ShowStringCharacters, False]], 3.14159265`, Rule[AutoDelete, True]], "
             + "Function[NumberForm[Slot[1], {5, 3}]]], TraditionalForm]\\)");
     // the box escape reads back as the wrapper
     check("FullForm(ToExpression(ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))))", //
         "NumberForm(3.14159265`, List(5, 3))");
     check("FullForm(ToExpression(ToString(NumberForm(4.5*^9, {3, 1}), StandardForm)))", //
         "NumberForm(4.5`*^9, List(3, 1))");
-    check("ToBoxes(NumberForm(4.5*^9, {3, 1}))[[1, 1]]", //
-        "RowBox({4.5,×,SuperscriptBox(10,9)})");
+    check("ToBoxes(NumberForm(4.5*^9, {3, 1}))[[1, 1, 1]]", //
+        "RowBox({\"4.5\",×,SuperscriptBox(10,\"9\")})");
   }
 
   @Test
@@ -23006,7 +23007,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ToString({3 (u < v <= w), u < v <= w}, InputForm)", //
         "{3*Inequality(u,Less,v,LessEqual,w),u<v<=w}");
     check("ToString({3 u_, 3 u__, 3 _, u_^2, f(u_), u_ + 1, 3 u_?EvenQ, u_ -> 1}, InputForm)", //
-        "{3*(u_),3*(u__),3*_,(u_)^2,f(u_),1 + u_,3*u_?EvenQ,u_->1}");
+        "{3*(u_),3*(u__),3*_,(u_)^2,f(u_),1 + (u_),3*(u_)?EvenQ,u_->1}");
   }
 
   @Test
@@ -23698,9 +23699,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "{ToCharacterCode(\"q\u00E9\u20AC\", \"ASCII\"), ToCharacterCode(\"q\u00E9\u20AC\", \"ISOLatin1\"), ToCharacterCode(\"k\tm|\nz\", \"PrintableASCII\")}", //
         "{{113,None,None},{113,233,None},{107,None,109,124,10,122}}");
+    // a code below 256 is a byte of the encoding; one without a character is 0xF200 + byte
     check(
-        "{FromCharacterCode({{107, 33}, {126}}, \"PrintableASCII\"), FromCharacterCode({107, 9}, \"PrintableASCII\")}", //
-        "{{k!,~},FromCharacterCode({107,9},PrintableASCII)}");
+        "{FromCharacterCode({{107, 33}, {126}}, \"PrintableASCII\"), ToCharacterCode(FromCharacterCode({107, 9}, \"PrintableASCII\"))}", //
+        "{{k!,~},{107,61961}}");
     check("FromCharacterCode({97,45,51})", //
         "a-3");
     // undefined negative codes
@@ -25561,8 +25563,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{3,4,6},{a,b,c}}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Text\") // InputForm", //
         "\"3,4,6\\na,b,c\"");
+    // "String" is the characters as they are
     check("ImportString(\"a+a+a\", \"String\")", //
-        "3*a");
+        "a+a+a");
   }
 
   @Test
@@ -28105,8 +28108,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("MantissaExponent(125.24)", //
         "{0.12524,3}");
+    // 0.9765625 is rounded half up
     check("MantissaExponent(125., 2)", //
-        "{0.976562,7}");
+        "{0.976563,7}");
     check("MantissaExponent(10, b)", //
         "MantissaExponent(10,b)");
     check("MantissaExponent(E, Pi)", //
@@ -29955,8 +29959,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.142857142857143");
     check("N(1/7,3)", //
         "0.143");
+    // the shortest digits of the double, 0.14285714285714285, rounded half up
     check("N(1/7,16)", //
-        "0.1428571428571428");
+        "0.1428571428571429");
     check("N(1/7,17)", //
         "0.14285714285714286");
     // issue #1161
@@ -31071,7 +31076,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "Normalize({0.9999999999999999, -0.12609662354252538+I*0.3870962681438435, 0.3692814336284687+I*0.0968290630091466})", //
-        "{0.87320809401366097,-0.1101085923051267+I*0.33801559450568668,0.32245953681334746+I*0.08455192155534558}");
+        "{0.87320809401366097,-0.110108592305127+I*0.3380155945056867,0.3224595368133475+I*0.0845519215553456}");
 
     check("Normalize({0})", //
         "{0}");
@@ -33744,9 +33749,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPossibleZeroQ() {
-    // same as in WMA but should be True
+    // zero at every sample point with 40 digits; a deliberate difference: WMA answers False
     check("PossibleZeroQ(Gamma(x+1)-x*Gamma(x))", //
-        "False");
+        "True");
 
     check("PossibleZeroQ(Gamma(x+1)-x*Gamma(x)+1)", //
         "False");
@@ -38681,7 +38686,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sec(2/5*Pi)", //
         "1+Sqrt(5)");
     check("Sec(23/12*Pi)", //
-        "-Sqrt(2)+Sqrt(6)");
+        "Sqrt(2)*(-1+Sqrt(3))");
     check("Sec(z+1/2*Pi)", //
         "-Csc(z)");
     check("Sec(Pi)", //
@@ -39965,7 +39970,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // only a positive factor may be taken out of the root: with two negative factors the root of a
     // positive number must not come out negative
     check("Sqrt(-5*(2-Sqrt(5)))", //
-        "Sqrt(-10+5*Sqrt(5))");
+        "Sqrt(5*(-2+Sqrt(5)))");
     check("N(Sqrt(-5*(2-Sqrt(5))))", //
         "1.08643");
     check("Sqrt(-4*(2-Sqrt(5)))", //
@@ -41797,8 +41802,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("((1+Infinity)*(2+Infinity))/Infinity^2", //
         "Indeterminate");
+    // the machine zero times a symbolic factor is the machine zero
     check("0.0*Sin(#)", //
-        "0");
+        "0.0");
     check("8.88178*10^-16 * Binomial(50.0, #)", //
         "8.88178*10^-16*Binomial(50.0,#1)");
     check("0.5^#1*(-0.5+1)^(50.0-#1)", //
@@ -43837,6 +43843,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Mathematica's pair: the quotient in the fundamental domain, on its edge Re(w3/w1) == 1/2 here
     check("Chop(WeierstrassHalfPeriods({1.0, 2.0 } ))", //
         "{1.30836,0.654182+I*1.22937}");
+    // real invariants: no part of rounding noise
+    check("WeierstrassHalfPeriods({1.0, 2.0})", //
+        "{1.30836,0.654182+I*1.22937}");
+    check("WeierstrassHalfPeriods({4.0, -1.0})", //
+        "{I*(-1.22569),1.49673}");
+    check("WeierstrassHalfPeriods({-3.0, 7.0})", //
+        "{0.58139+I*(-0.906154),0.58139+I*0.906154}");
     check("Table(WeierstrassHalfPeriods({1.0,x*I} ), {x,-2.0, 2.0, 1/4})", //
         "{{1.30139+I*0.299127,0.299127+I*1.30139},{1.32906+I*0.300747,0.300747+I*1.32906}," //
             + "{1.36146+I*0.301917,0.301917+I*1.36146},{1.40035+I*0.30217,0.30217+I*1.40035}," //
@@ -43849,7 +43862,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // g2==0 was evaluated to Indeterminate before
     check("WeierstrassHalfPeriods({0.0,4.0})", //
-        "{1.21433+I*(-2.85195*10^-16),0.607163+I*1.05164}");
+        "{1.21433,0.607163+I*1.05164}");
 
     check("WeierstrassHalfPeriods({1.0, 2.0*I} )", //
         "{1.30139+I*(-0.299127),-0.299127+I*1.30139}");
@@ -43885,6 +43898,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.03176+I*0.00111826");
     check("WeierstrassP(0.5+0.25*I, {2, 3})", //
         "1.9357+I*(-2.52494)");
+    // a complex number on the real axis, an exact argument and numeric constants
+    check("WeierstrassP(Complex(0.5,0.0), {2, 3})", //
+        "4.03176");
+    check("WeierstrassP(1/2, {2.0, 3.0})", //
+        "4.03176");
+    check("WeierstrassP(0.5, {2, Pi})", //
+        "4.03208");
+    check("N(WeierstrassP(1/2, {2, Pi}), 20)", //
+        "4.0320775344366049773");
+    // a negative discriminant
+    check("WeierstrassP(5.0, {-3, 7})", //
+        "8.20126");
+    // many periods from the origin: reduced with the periods to more digits
+    checkNumeric("WeierstrassP(200.0, {1, 3})", //
+        "1088.766786571086");
+    checkNumeric("WeierstrassP(20.0, {1, 3})", //
+        "16.81088326469807");
+    checkNumeric("WeierstrassPPrime(200.0, {1, 3})", //
+        "71850.90550923819");
+    checkNumeric("WeierstrassP(5000.5, {-3, 7})", //
+        "3.3427458476850687");
+    checkNumeric("WeierstrassP(300.0+7.0*I, {1, 2})", //
+        "0.06936241180082409+I*3.4404736725782903");
 
     // the equianharmonic invariants g2==0 were evaluated to Indeterminate before
     check("Chop(WeierstrassP(0.7,{0,4/27}))", //

@@ -56,6 +56,13 @@ public class RegionFunctionTest {
     return value;
   }
 
+  /** The least and the greatest squared distance from the origin of a point of a polygon. */
+  private static String shadedRadii(String plot) {
+    return "With({g = " + plot + "}, MinMax(Map(#.# &, "
+        + "First(Cases(g, GraphicsComplex(q_, ___) :> q, Infinity))"
+        + "[[Union(Flatten(Cases(g, Polygon(l_) :> l, Infinity)))]])))";
+  }
+
   /** How many separate polylines the graphic carries. */
   private static int lines(String plot) {
     return count("Length(Cases(" + plot + ",_Line,Infinity))");
@@ -134,8 +141,35 @@ public class RegionFunctionTest {
     assertEquals(1, lines(base + ")"), "a circle is one closed polyline");
     String upper = base + ",RegionFunction->Function({x,y,t},y>0))";
     assertEquals(2, lines(upper), "the two ends of the upper half arrive separately");
-    assertTrue(linePoints(upper) < linePoints(base + ")") / 2 + 5,
+    // the samples above the axis, and the point of the axis each of the three ends runs up to
+    assertTrue(linePoints(upper) < linePoints(base + ")") / 2 + 10,
         "about half the sweep is above the axis");
+  }
+
+  /**
+   * A curve does not stop at the last sample the region takes: it runs up to the edge of the
+   * region, which is located between that sample and the next one.
+   */
+  @Test
+  public void aParametricCurveRunsUpToTheEdgeOfTheRegion() {
+    // the parabola leaves the strip 1/4 < y < 2 at x = +-1/2 and x = +-Sqrt(2)
+    String ends = "Cases(ParametricPlot({t,t^2},{t,-2,2},PlotPoints->50,"
+        + "RegionFunction->Function({x,y},1/4<y<2)),Line(l_):>{First(l),Last(l)},Infinity)";
+    assertEquals("True", evaluator.eval("Max(Abs(Flatten(" + ends + ")-Flatten({"
+        + "{{-Sqrt(2),2},{-1/2,1/4}},{{1/2,1/4},{Sqrt(2),2}}})))<10^-9").toString());
+    // the parameter is the third argument of the region
+    String half = "Cases(ParametricPlot({3*Cos(t),Sin(t)},{t,0,6},PlotPoints->40,"
+        + "RegionFunction->Function({x,y,u},1<u<4)),Line(l_):>{First(l),Last(l)},Infinity)";
+    assertEquals("True", evaluator.eval("Max(Abs(Flatten(" + half + ")-Flatten({"
+        + "{{3*Cos(1),Sin(1)},{3*Cos(4),Sin(4)}}})))<10^-9").toString());
+    // a point the region takes never lies outside of it
+    assertEquals("True",
+        evaluator.eval("AllTrue(Flatten(Cases(ParametricPlot({t,t^2},{t,-2,2},PlotPoints->50,"
+            + "RegionFunction->Function({x,y},1/4<y<2)),Line(l_):>l,Infinity),2)[[2;;;;2]],"
+            + "1/4<#<2&)").toString());
+    // where the curve has no value there is no edge to look for
+    assertEquals(2, lines("ParametricPlot({t,1/t},{t,-1,1},PlotPoints->40,"
+        + "RegionFunction->Function({x,y},Abs(y)<50))"));
   }
 
   @Test
@@ -172,8 +206,14 @@ public class RegionFunctionTest {
   public void anAnnulusIsHollow() {
     String base = "ContourPlot(x^2-y^2,{x,-3,3},{y,-3,3},PlotPoints->20";
     String annulus = base + ",RegionFunction->Function({x,y,z},2<x^2+y^2<9))";
-    assertTrue(polygonPoints(annulus) < polygonPoints(base + ")"),
-        "the disc in the middle and the corners outside are not drawn");
+    // the squared radii of the shaded points: the whole square without the region, the annulus
+    // up to the clipping along its circles with it
+    IExpr square = evaluator.eval(shadedRadii(base + ")"));
+    IExpr ring = evaluator.eval(shadedRadii(annulus));
+    assertTrue(square.first().evalf() < 0.5 && square.second().evalf() > 17.0,
+        "without the region the corners and the middle are drawn, got " + square);
+    assertTrue(ring.first().evalf() > 1.9 && ring.second().evalf() < 9.1,
+        "the disc in the middle and the corners outside are not drawn, got " + ring);
     // a point in the hole is not covered by any polygon
     IExpr covered = evaluator.eval(
         "MemberQ(Cases(Normal(" + annulus

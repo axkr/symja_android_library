@@ -490,4 +490,55 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     check("Block({$MaxExtraPrecision = 20}, Accuracy(N(Sqrt(10^700 + 1) - 10^350, 8)) < -300)", //
         "True");
   }
+
+  @Test
+  public void testPrecisionBoundsOfArithmetic() {
+    check("{$MinPrecision, $MaxPrecision}", //
+        "{0,Infinity}");
+    // equal bounds fix the precision of every step of an iteration
+    check("Block({$MinPrecision = 25, $MaxPrecision = 25}, "
+        + "Precision /@ NestList(# - (#^2 - 7)/(2*#) &, SetPrecision(7, 25), 4))", //
+        "{25,25,25,25,25}");
+    // a sum which lost digits gets the lower bound
+    check("Block({$MinPrecision = 35}, Precision(N(E, 25) - 2))", //
+        "35");
+    check("Block({$MinPrecision = 35}, Precision(N(E, 25)^500))", //
+        "35");
+    // results above the lower bound keep their precision
+    check("Block({$MinPrecision = 10}, Precision(N(E, 25) - 2))", //
+        "24.422000397616795");
+    // N uses the bounds for the requested precision
+    check("Block({$MaxPrecision = 22}, Precision /@ {N(E, 25), N(E, 25) + 2, N(E, 25)^3})", //
+        "{22,22,21.522878745280337}");
+    check("Block({$MinPrecision = 35}, Precision(N(E, 25)))", //
+        "35");
+    // arithmetic results have at most the upper bound
+    check("Block({$MaxPrecision = 12}, Precision /@ {SetPrecision(E, 25) + 2, "
+        + "SetPrecision(E, 25)*3, SetPrecision(E, 25)^3})", //
+        "{12,12,12}");
+    // machine numbers are not arbitrary-precision numbers
+    check("Block({$MinPrecision = 35}, MachineNumberQ(2.5*1.25 + 0.5))", //
+        "True");
+    // the bounds hold inside the Block only
+    check("Block({$MinPrecision = 35}, 1); Precision(N(E, 25) - 2)", //
+        "24.422000397616795");
+  }
+
+  @Test
+  public void testComplexDigitsNotRaisedByOtherInput() {
+    // a complex number of 18 digits keeps them in a product and a power, also where a number of
+    // more digits elsewhere in the input raises the working precision
+    check("u = N(5 - 4*I, 26); v = N(5 - 4*I, 18); {Precision(v), Precision(v*v), Precision(v^3), "
+        + "Precision(v + v)}", //
+        "{18,18,18,18}");
+    check("{Precision(N(2 + 3*I, 18)^2), Precision(N(7 - I, 33)*N(1 + 2*I, 18))}", //
+        "{18,18}");
+  }
+
+  @Test
+  public void testPrecisionBoundGivenAsSymbol() {
+    // a bound given as a symbol is read like its value, also after it was evaluated once
+    check("Block({$MinPrecision = MachinePrecision}, {Precision(N(E, 22) + 2), Precision(N(E, 22) * 3)})", //
+        "{22.239489396335408,22}");
+  }
 }

@@ -185,4 +185,18 @@ public class DiscreteAsymptoticCalculusTest extends ExprEvaluatorTestCase {
     check("s = NDSolve({y'(t) == -2*y(t), y(0) == {1.0}, WhenEvent(First(y(t)) == 0.25, {tm = t, \"StopIntegration\"})}, y, {t, 0, 2}); Round(tm, 0.001)", //
         "0.693");
   }
+
+  @Test
+  public void testInterpolationOrderZeroIsAStepFunction() {
+    // between two points the value of the right one, at the first point the value of the second
+    check("f = Interpolation({{1, 3}, {2, 7}, {4, 5}}, InterpolationOrder -> 0); "
+        + "{f(1), f(3/2), f(2), f(3), f(2.5), f(4), f'(3/2), f(\"InterpolationOrder\")}", //
+        "{7,7,7,5,5,5,0,{0}}");
+    // the points are sorted by their abscissas; inexact abscissas give inexact values
+    check("g = Interpolation({{0.6, 1}, {0.1, 4}, {0.3, 2}}, InterpolationOrder -> 0); "
+        + "Append(Map(g, {0.2, 0.3, 0.5}), g'(0.2))", //
+        "{2.0,2.0,1.0,0.0}");
+    check("h = Interpolation({4, 1, 6}, InterpolationOrder -> 0); h(2.5)", //
+        "6");
+  }
 }

@@ -1,5 +1,7 @@
 package org.matheclipse.core.dsolve;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -7,6 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Back substitution of a candidate solution into the equation it claims to solve.
@@ -252,6 +255,9 @@ final class DSolveVerify {
         IExpr residual = substituteSolution(residuals.get(i), yFunctions, xVars, pinned, engine);
         if (residual.isNIL()) {
           return !strict;
+        }
+        if (xVars.argSize() > 1) {
+          residual = pinUnknownFunctions(residual, yFunctions, engine);
         }
         IExpr xVar = xVars.argSize() == 1 ? xVars.arg1() : F.NIL;
         if (strict //
@@ -569,6 +575,59 @@ final class DSolveVerify {
       }
     }
     return scale;
+  }
+
+  /**
+   * <code>expr</code> with each function which isn't known, like the data <code>f</code> of a
+   * condition <code>u(x, 0) == f(x)</code>, replaced by a function with numeric values, so that a
+   * residual has a value at a sample point.
+   *
+   * @param unknowns the applied unknowns of the equation, which are left alone
+   */
+  static IExpr pinUnknownFunctions(IExpr expr, IAST unknowns, EvalEngine engine) {
+    Map<IExpr, Integer> arities = new LinkedHashMap<IExpr, Integer>();
+    collectUnknownFunctions(expr, arities);
+    for (int i = 1; i <= unknowns.argSize(); i++) {
+      arities.remove(unknowns.get(i).head());
+    }
+    if (arities.isEmpty()) {
+      return expr;
+    }
+    IASTAppendable rules = F.ListAlloc(arities.size());
+    int k = 0;
+    for (Map.Entry<IExpr, Integer> entry : arities.entrySet()) {
+      k++;
+      int arity = entry.getValue();
+      IASTAppendable parameters = F.ListAlloc(arity);
+      IASTAppendable argument = F.PlusAlloc(arity + 1);
+      argument.append(F.QQ(k, 3));
+      for (int i = 1; i <= arity; i++) {
+        ISymbol parameter = F.Dummy("pin" + i);
+        parameters.append(parameter);
+        argument.append(F.Times(F.QQ(i + 1, 2), parameter));
+      }
+      rules.append(F.Rule(entry.getKey(),
+          F.Function(parameters, F.Plus(F.Cos(argument), F.QQ(2 * k + 3, 2)))));
+    }
+    return engine.evaluate(F.ReplaceAll(expr, rules));
+  }
+
+  /** The heads of the calls <code>f(...)</code> and <code>Derivative(...)[f](...)</code>. */
+  private static void collectUnknownFunctions(IExpr expr, Map<IExpr, Integer> arities) {
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    IExpr head = ast.head();
+    if (head.isAST1() && head.head().isAST(S.Derivative)) {
+      head = head.first();
+    }
+    if (head.isSymbol() && !head.isBuiltInSymbol() && ast.argSize() > 0) {
+      arities.putIfAbsent(head, ast.argSize());
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      collectUnknownFunctions(ast.get(i), arities);
+    }
   }
 
   private static void collectFreeSymbols(IExpr expr, IASTAppendable symbols) {

@@ -2473,4 +2473,44 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(Log(x^3)-3*Log(x)+x, {x,0,2}, Assumptions->x<0)", //
         "-I*2*Pi+x+O(x)^3");
   }
+
+  @Test
+  public void testSeriesOrderIsNoMachineInteger() {
+    // an order which is no machine-sized integer is reported, the series stays as it is
+    check("Check(Series(Sin(x), {x, 0, 3.5}), failed, Series::serlim)", //
+        "failed");
+    check("Check(Series(Tan(x), {x, 0, k}), failed, Series::serlim)", //
+        "failed");
+    check("Check(Series(E^x, {x, 0, 2}, {y, 0, -0.5}), failed, Series::serlim)", //
+        "failed");
+    check("Quiet(Series(Sin(x), {x, 0, 3.5}))", //
+        "Series(Sin(x),{x,0,3.5})");
+    check("Quiet(Series(Cosh(x), {x, 1, !4}))", //
+        "Series(Cosh(x),{x,1,!4})");
+    check("Check(Series(Sin(x), {x, 0, 3}), failed, Series::serlim)", //
+        "x-x^3/6+O(x)^4");
+  }
+
+  @Test
+  public void testNestedUnevaluatedSeries() {
+    // a series in x which stayed unevaluated is expanded as the function it is a series of
+    check("Quiet(Series(f(Series(Sin(x), {x, 0, k}), x), {x, 0, 1}))", //
+        "f(0,0)+(Derivative(0,1)[f][0,0]+Derivative(1,0)[f][0,0])*x+O(x)^2");
+    check("Quiet(Series(Exp(Series(Sin(x), {x, 0, k})), {x, 0, 3}))", //
+        "1+x+x^2/2+O(x)^4");
+    check("Quiet(Series(Series(Cos(2*x), {x, 0, k}), {x, 0, 2}))", //
+        "1-2*x^2+O(x)^3");
+    check("Quiet(Series(Cos(x), {x, 0, 2})*g(Series(E^x, {x, 0, k})))", //
+        "g(1)+g'(1)*x+(-g(1)/2+1/2*(g'(1)+g''(1)))*x^2+O(x)^3");
+    // a series in another variable is no function of x
+    check("Quiet(Series(Series(Cos(y), {y, 0, k})*Sin(x), {x, 0, 3}))", //
+        "Series(Cos(y),{y,0,k})*x-1/6*Series(Cos(y),{y,0,k})*x^3+O(x)^4");
+  }
+
+  @Test
+  public void testSeriesFractionalOrderMessage() {
+    // a fraction is no machine-sized integer order either
+    check("Check(Series(Cos(t), {t, 0, 5/2}), tag, Series::serlim)", //
+        "tag");
+  }
 }

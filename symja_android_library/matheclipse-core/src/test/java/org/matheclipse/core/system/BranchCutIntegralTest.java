@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
  */
 public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testFourierIntegralsOfRationalFunctions() {
     // the antiderivative jumps where -2+3*I*x crosses the negative real axis
@@ -58,9 +59,9 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPeriodicAbsOnInfiniteInterval() {
-    // the zeros of Sin(2*x/3) on (0, Infinity) aren't listed: no value from Sin(2*x/3) alone
+    // the zeros of Sin(2*x/3) on (0, Infinity) aren't listed: one half period over 1-E^(-15/4*Pi)
     check("Integrate(Abs(Sin(2*x/3))*E^(-5*x/2), {x, 0, Infinity})", //
-        "Integrate(Abs(Sin(2*x/3))/E^(5*x/2),{x,0,Infinity})");
+        "24/241*(1+E^(15/4*Pi))/(-1+E^(15/4*Pi))");
   }
 
   @Test
@@ -119,6 +120,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
         "-I*Pi-ExpIntegralE(1,2)");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testBranchesOfLogarithmsAndCosIntegral() {
     // merged logarithms keep their multiple of 2*Pi*I

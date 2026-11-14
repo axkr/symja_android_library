@@ -131,6 +131,8 @@ public class GraphTheoryInit {
     S.TreeGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraph());
     S.TreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraphQ());
     S.TreePlot.setEvaluator(new org.matheclipse.graphtheory.reflection.TreePlot());
+    S.LayeredGraphPlot
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.LayeredGraphPlot());
     S.CommunityGraphPlot
         .setEvaluator(new org.matheclipse.graphtheory.reflection.CommunityGraphPlot());
     S.VertexAdd.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexAdd());

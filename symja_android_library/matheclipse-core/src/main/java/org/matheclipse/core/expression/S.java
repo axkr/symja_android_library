@@ -8498,6 +8498,16 @@ public class S {
   public final static IBuiltInSymbol EdgeQ = S.initFinalSymbol("EdgeQ", ID.EdgeQ);
 
   /**
+   * EdgeRenderingFunction(x) - TODO describe `EdgeRenderingFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeRenderingFunction.md">EdgeRenderingFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeRenderingFunction =
+      S.initFinalSymbol("EdgeRenderingFunction", ID.EdgeRenderingFunction);
+
+  /**
    * EdgeRules(graph) - convert the `graph` into a list of rules. All edge types (undirected,
    * directed) are represented by a rule `lhs->rhs`.
    * 
@@ -15386,6 +15396,26 @@ public class S {
       S.initFinalSymbol("LaunchKernels", ID.LaunchKernels);
 
   /**
+   * LayeredGraphPlot(x) - TODO describe `LayeredGraphPlot`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LayeredGraphPlot.md">LayeredGraphPlot
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LayeredGraphPlot =
+      S.initFinalSymbol("LayeredGraphPlot", ID.LayeredGraphPlot);
+
+  /**
+   * LayerSizeFunction(x) - TODO describe `LayerSizeFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LayerSizeFunction.md">LayerSizeFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LayerSizeFunction =
+      S.initFinalSymbol("LayerSizeFunction", ID.LayerSizeFunction);
+
+  /**
    * LCHColor(x) - TODO describe `LCHColor`.
    * 
    * @see <a href=
@@ -17044,6 +17074,15 @@ public class S {
    */
   public final static IBuiltInSymbol Magnification =
       S.initFinalSymbol("Magnification", ID.Magnification);
+
+  /**
+   * Majority(x) - TODO describe `Majority`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Majority.md">Majority
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Majority = S.initFinalSymbol("Majority", ID.Majority);
 
   public final static IBuiltInSymbol MakeBoxes = S.initFinalSymbol("MakeBoxes", ID.MakeBoxes);
 
@@ -19871,6 +19910,15 @@ public class S {
   public final static IBuiltInSymbol Null = S.initFinalSymbol("Null", ID.Null);
 
   /**
+   * NullRecords(x) - TODO describe `NullRecords`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NullRecords.md">NullRecords
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NullRecords = S.initFinalSymbol("NullRecords", ID.NullRecords);
+
+  /**
    * NullSpace(matrix) - returns a list of vectors that span the nullspace of the `matrix`.
    * 
    * @see <a href=
@@ -19878,6 +19926,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NullSpace = S.initFinalSymbol("NullSpace", ID.NullSpace);
+
+  /**
+   * NullWords(x) - TODO describe `NullWords`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NullWords.md">NullWords
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NullWords = S.initFinalSymbol("NullWords", ID.NullWords);
 
   public final static IBuiltInSymbol Number = S.initFinalSymbol("Number", ID.Number);
 
@@ -26765,6 +26822,15 @@ public class S {
   public final static IBuiltInSymbol SubsetCount = S.initFinalSymbol("SubsetCount", ID.SubsetCount);
 
   public final static IBuiltInSymbol SubsetEqual = S.initFinalSymbol("SubsetEqual", ID.SubsetEqual);
+
+  /**
+   * SubsetMap(x) - TODO describe `SubsetMap`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubsetMap.md">SubsetMap
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SubsetMap = S.initFinalSymbol("SubsetMap", ID.SubsetMap);
 
   public final static IBuiltInSymbol SubsetPosition =
       S.initFinalSymbol("SubsetPosition", ID.SubsetPosition);

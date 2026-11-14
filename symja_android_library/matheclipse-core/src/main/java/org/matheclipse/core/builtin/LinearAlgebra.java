@@ -5385,6 +5385,10 @@ public final class LinearAlgebra {
         }
       }
       final int[] matrixDims = ast.arg1().isMatrix();
+      if (matrixDims == null && ast.arg1().isList()) {
+        // Argument `1` at position `2` is not a non-empty rectangular matrix.
+        return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
+      }
       if (matrixDims != null) {
         IInteger modulus = modulusOption(options[2]);
         if (modulus != null) {

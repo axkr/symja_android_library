@@ -483,6 +483,10 @@ public class Characters {
         final int numberOfDigits = escapeChar == '.' ? 2 : (escapeChar == ':' ? 4 : 6);
         replacement = hexCharacter(str, escapeStart + 2, numberOfDigits);
         escapeEnd = escapeStart + 2 + numberOfDigits;
+      } else if (escapeChar >= '0' && escapeChar <= '3') {
+        // \ooo, the character with the octal code ooo
+        replacement = octalCharacter(str, escapeStart + 1);
+        escapeEnd = escapeStart + 4;
       }
       if (replacement == null) {
         // keep an unknown name, an invalid code and an escaped character (also '\\') unchanged
@@ -501,6 +505,67 @@ public class Characters {
     }
     buf.append(str, copied, strLength);
     return buf.toString();
+  }
+
+  /**
+   * The character with the octal code of the three digits starting at
+   * <code>startPosition</code>.
+   *
+   * @return <code>null</code> if there are not three octal digits
+   */
+  private static String octalCharacter(String str, int startPosition) {
+    if (startPosition + 3 > str.length()) {
+      return null;
+    }
+    int code = 0;
+    for (int i = startPosition; i < startPosition + 3; i++) {
+      final int digit = Character.digit(str.charAt(i), 8);
+      if (digit < 0) {
+        return null;
+      }
+      code = (code << 3) | digit;
+    }
+    return String.valueOf((char) code);
+  }
+
+  /**
+   * Append the escape sequence with which a string literal writes the ASCII control character
+   * <code>ch</code> (<code>ch &lt; 0x20</code> or <code>ch == 0x7F</code>): <code>\b</code>,
+   * <code>\t</code>, <code>\n</code>, <code>\f</code> and <code>\r</code>,
+   * <code>\[RawEscape]</code> for the escape character and the three digit octal code
+   * <code>\ooo</code> for every other one.
+   */
+  public static void appendControlEscape(StringBuilder buf, char ch) {
+    switch (ch) {
+      case '\b':
+        buf.append("\\b");
+        return;
+      case '\t':
+        buf.append("\\t");
+        return;
+      case '\n':
+        buf.append("\\n");
+        return;
+      case '\f':
+        buf.append("\\f");
+        return;
+      case '\r':
+        buf.append("\\r");
+        return;
+      case '\u001B':
+        buf.append("\\[RawEscape]");
+        return;
+      default:
+        buf.append('\\');
+        buf.append((char) ('0' + ((ch >> 6) & 7)));
+        buf.append((char) ('0' + ((ch >> 3) & 7)));
+        buf.append((char) ('0' + (ch & 7)));
+    }
+  }
+
+  /** Whether <code>ch</code> is an ASCII control character, <code>ch &lt; 0x20</code> or DEL. */
+  public static boolean isControlCharacter(char ch) {
+    return ch < 0x20 || ch == 0x7F;
   }
 
   /**

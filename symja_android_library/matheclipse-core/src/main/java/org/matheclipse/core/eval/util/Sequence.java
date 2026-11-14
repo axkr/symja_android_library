@@ -94,6 +94,60 @@ public final class Sequence extends ListSizeSequence {
   }
 
   /**
+   * The positions which a sequence specification selects in an expression with
+   * <code>length</code> elements. A negative start or end counts from the end. With a positive
+   * step the range runs upwards from the start to the end, with a negative step downwards. A range
+   * whose end lies exactly one position before its start, seen in the direction of the step, is
+   * empty; every other range has to lie inside of <code>1..length</code>. A start
+   * <code>0</code> with a negative end and a positive step is the position after the last element,
+   * so <code>{0, -1}</code> is empty.
+   *
+   * @param sequ the sequence specification
+   * @param length the number of elements
+   * @return <code>{first, last, step}</code> with both positions inclusive, where
+   *         <code>last</code> lies one position before <code>first</code> for an empty range, or
+   *         <code>null</code> if the specification doesn't fit
+   */
+  public static int[] range(ISequence sequ, int length) {
+    final int step = sequ.getStep();
+    if (step == 0) {
+      return null;
+    }
+    final int startOffset = sequ.getStartOffset();
+    final int endOffset = sequ.getEndOffset();
+    // a start 0 in front of a negative end counts from the end too: it lies after the last element
+    final long first = startOffset < 0 || (startOffset == 0 && endOffset < 0 && step > 0)
+        ? (long) length + 1 + startOffset
+        : startOffset;
+    final long last = endOffset == Integer.MAX_VALUE ? length
+        : endOffset < 0 ? (long) length + 1 + endOffset : endOffset;
+    if (step > 0) {
+      if (first < 1 || last > length || last < first - 1) {
+        return null;
+      }
+    } else if (first > length || last < 1 || last > first + 1) {
+      return null;
+    }
+    return new int[] {(int) first, (int) last, step};
+  }
+
+  /**
+   * The number of positions in a range of {@link #range(ISequence, int)}.
+   */
+  public static int rangeCount(int[] range) {
+    final int distance = range[2] > 0 ? range[1] - range[0] : range[0] - range[1];
+    return distance < 0 ? 0 : distance / Math.abs(range[2]) + 1;
+  }
+
+  /**
+   * The end of a sequence specification as it is reported in a message: a specification without
+   * an end runs to the last element <code>-1</code>.
+   */
+  public static int reportedEnd(ISequence sequ) {
+    return sequ.getEndOffset() == Integer.MAX_VALUE ? -1 : sequ.getEndOffset();
+  }
+
+  /**
    * A real number with an integer value in a sequence specification stands for that integer:
    * <code>Take(list, 3.0)</code> is <code>Take(list, 3)</code> and <code>Take(list, {1.0, 5.0,
    * 2.0})</code> is <code>Take(list, {1, 5, 2})</code>. A real number which is not an integer, like

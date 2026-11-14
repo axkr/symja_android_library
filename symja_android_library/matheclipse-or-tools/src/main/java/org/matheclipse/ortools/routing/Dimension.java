@@ -159,6 +159,16 @@ public class Dimension {
     return fixedTransits[(int) index];
   }
 
+  /**
+   * The variable transit variable of an index. Variable transits (the <code>hasVariableTransits
+   * </code> argument of the <code>Model.addDimension</code> methods) are not supported by this
+   * implementation, so this is always <code>null</code>, as in OR-Tools for a dimension without
+   * variable transits.
+   */
+  public IntVar variableTransitVar(long index) {
+    return null;
+  }
+
   /** The slack variable of an index. */
   public IntVar slackVar(long index) {
     return slacks[(int) index];
@@ -172,6 +182,14 @@ public class Dimension {
   /** All transit variables. */
   public IntVar[] transits() {
     return transits.clone();
+  }
+
+  /**
+   * All variable transit variables: one <code>null</code> entry per index in this implementation,
+   * see {@link #variableTransitVar(long)}.
+   */
+  public IntVar[] variableTransits() {
+    return new IntVar[transits.length];
   }
 
   /** All slack variables. */

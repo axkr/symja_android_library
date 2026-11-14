@@ -499,6 +499,31 @@ public final class NumberTheory {
     }
 
     @Override
+    public IExpr binaryOperator(IAST ast, final IExpr n, final IExpr k, EvalEngine engine) {
+      if (k.isReal() && k.isNumIntValue() && k.isNegative() && isNoInteger(n)) {
+        // a negative integer k and an n which is no integer: the pole of Gamma(k+1) in the
+        // denominator gives the exact zero, also for inexact arguments
+        return F.C0;
+      }
+      return super.binaryOperator(ast, n, k, engine);
+    }
+
+    /** Whether <code>n</code> is a number or a numeric constant expression which is no integer. */
+    private static boolean isNoInteger(IExpr n) {
+      if (n.isNumber()) {
+        return !(n.isReal() && n.isNumIntValue());
+      }
+      if (n.isNumericFunction(true) && n.isRealResult()) {
+        // only a value clearly away from every integer: an exact integer like Log(8)/Log(2) has a
+        // machine value with a rounding error
+        double value = n.evalf();
+        return Double.isFinite(value)
+            && Math.abs(value - Math.rint(value)) > 1.0e-8 * Math.max(1.0, Math.abs(value));
+      }
+      return false;
+    }
+
+    @Override
     public IExpr e2IntArg(final IInteger n, final IInteger k) {
       return AbstractIntegerSym.binomial(n, k);
     }
@@ -509,10 +534,22 @@ public final class NumberTheory {
         // use e2IntArg() method
         return F.NIL;
       }
+      if (n.isNumber() && !n.isReal() && k.isNumber() && k.isNegative() && k.isNumIntValue()) {
+        // a non-real n and a negative integer k: the pole of Gamma(k+1) in the denominator gives
+        // the exact zero, for inexact arguments too
+        return F.C0;
+      }
       return binomialExpr(n, k).eval(EvalEngine.get());
     }
 
     private static IExpr binomialExpr(IExpr n, IExpr k) {
+      if (k.isZero()) {
+        // 1 for every n, as a real number of the precision of an inexact argument
+        if (k.isInexactNumber()) {
+          return ((INumber) k).one().re();
+        }
+        return n.isInexactNumber() ? ((INumber) n).one().re() : F.C1;
+      }
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
         int ki = k.toIntDefault();
@@ -520,13 +557,11 @@ public final class NumberTheory {
           return AbstractIntegerSym.binomial(F.ZZ(ni), F.ZZ(ki));
         }
       }
-      if (n.isZero() && k.isZero()) {
-        return F.C1;
-      }
       if (k.isOne()) {
         return n;
       }
-      if (k.isMinusOne()) {
+      if (k.isMinusOne() && n.isNumericFunction(false)) {
+        // not for a symbolic n, which can be a negative integer: Binomial(-1,-1) is 1
         return F.C0;
       }
       if (k.isInteger()) {
@@ -3758,6 +3793,9 @@ public final class NumberTheory {
           }
           return AbstractIntegerSym.fibonacci(n);
         }
+        if (ast.isAST1()) {
+          return indexOverflow(engine);
+        }
       } else if (arg1.isInexactNumber()) {
         final IInexactNumber n = (IInexactNumber) arg1;
         if (ast.isAST2() && ast.arg2().isInexactNumber()) {
@@ -3782,6 +3820,16 @@ public final class NumberTheory {
             F.Times(F.CN1, F.Power(S.GoldenRatio, F.Negate(n)), F.Cos(F.Times(S.Pi, n))))); // $$;
       }
       return F.NIL;
+    }
+
+    /**
+     * The result for an index beyond the machine integers: a number of more than a billion digits,
+     * which can't be represented.
+     */
+    static IExpr indexOverflow(EvalEngine engine) {
+      // Overflow occurred in computation.
+      Errors.printMessage(S.General, "ovfl", F.CEmptyList, engine);
+      return F.Overflow();
     }
 
     /**
@@ -4781,6 +4829,9 @@ public final class NumberTheory {
           }
 
           return lucalsL;
+        }
+        if (ast.isAST1()) {
+          return Fibonacci.indexOverflow(engine);
         }
       } else if (arg1.isInexactNumber()) {
         INumber n = ((INumber) arg1).evaluatePrecision(engine);

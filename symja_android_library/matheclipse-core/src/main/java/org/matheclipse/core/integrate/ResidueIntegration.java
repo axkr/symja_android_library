@@ -78,6 +78,13 @@ public final class ResidueIntegration {
     final List<IExpr> parameters = new ArrayList<IExpr>();
     /** substitution rules for the parameters which satisfy the assumptions */
     final List<IAST> samples = new ArrayList<IAST>();
+
+    /**
+     * The number of samples at the start of {@link #samples} at which a result is compared with the
+     * numerical integral; the samples after them only test the place of the poles and the sign of a
+     * frequency.
+     */
+    int numericSamples = Integer.MAX_VALUE;
     /** Whether {@link #samples} were chosen without assumptions. */
     boolean unconditional = false;
     /** the family has no reliable numerical reference: an oscillating integrand */
@@ -414,7 +421,8 @@ public final class ResidueIntegration {
     }
     // the numerical integral at p == 0, at the sample points of the other parameters
     int confirmed = 0;
-    for (int i = 0; i < ctx.samples.size() && confirmed < MAX_CHECKS; i++) {
+    final int checkedSamples = Math.min(ctx.samples.size(), ctx.numericSamples);
+    for (int i = 0; i < checkedSamples && confirmed < MAX_CHECKS; i++) {
       IAST sample = ctx.samples.get(i);
       Complex value = ctx.numeric(atZero, sample);
       Complex reference = ctx.numeric(F.NIntegrate(F.subst(integrand, sample),
@@ -520,25 +528,72 @@ public final class ResidueIntegration {
     if (!ctx.assumptions.isPresent() || size > MAX_PARAMETERS) {
       return false;
     }
-    final int base = SAMPLE_VALUES.length;
+    // the samples in other orders of the values come after the others
+    java.util.List<IAST> permutedSamples = new java.util.ArrayList<IAST>();
     for (int signs = 0; signs < (1 << size); signs++) {
       int found = 0;
-      for (int attempt = 0; attempt < SAMPLE_ATTEMPTS; attempt++) {
-        IASTAppendable rules = F.ListAlloc(size);
-        for (int i = 0; i < size; i++) {
-          IExpr value = SAMPLE_VALUES[(attempt * (i + 1) + 3 * i) % base];
-          rules.append(F.Rule(ctx.parameters.get(i),
-              (signs & (1 << i)) == 0 ? value : value.negate()));
+      for (int attempt = 0; attempt < SAMPLE_ATTEMPTS && found < SAMPLES_PER_SIGNS; attempt++) {
+        IAST rules = sampleRules(ctx, signs, attempt, null);
+        if (ctx.samples.contains(rules) || !ctx.eval(F.subst(ctx.assumptions, rules)).isTrue()) {
+          continue;
         }
-        if (!ctx.samples.contains(rules) && ctx.eval(F.subst(ctx.assumptions, rules)).isTrue()) {
-          ctx.samples.add(rules);
-          if (++found == SAMPLES_PER_SIGNS) {
-            break;
+        ctx.samples.add(rules);
+        if (found++ == 0) {
+          // the same values in the other orders: the order of two parameters, like a < b, must not
+          // be the same at every sample, or Sign(a-b) looks decided
+          for (int[] order : otherOrders(size)) {
+            IAST permuted = sampleRules(ctx, signs, attempt, order);
+            if (!permutedSamples.contains(permuted)
+                && ctx.eval(F.subst(ctx.assumptions, permuted)).isTrue()) {
+              permutedSamples.add(permuted);
+            }
           }
         }
       }
     }
+    // the numerical integral at values in other orders can be slow, like the one of a Bessel
+    // function of order 13/2: a result is compared with it at the first samples only
+    ctx.numericSamples = ctx.samples.size();
+    for (IAST permuted : permutedSamples) {
+      if (!ctx.samples.contains(permuted)) {
+        ctx.samples.add(permuted);
+      }
+    }
     return !ctx.samples.isEmpty();
+  }
+
+  /**
+   * The sample values <code>attempt</code> for the parameters with the given signs, the value of
+   * parameter <code>i</code> taken from position <code>order[i]</code> (or <code>i</code>).
+   */
+  private static IAST sampleRules(Context ctx, int signs, int attempt, int[] order) {
+    final int size = ctx.parameters.size();
+    IASTAppendable rules = F.ListAlloc(size);
+    for (int i = 0; i < size; i++) {
+      int position = order == null ? i : order[i];
+      IExpr value =
+          SAMPLE_VALUES[(attempt * (position + 1) + 3 * position) % SAMPLE_VALUES.length];
+      rules.append(
+          F.Rule(ctx.parameters.get(i), (signs & (1 << i)) == 0 ? value : value.negate()));
+    }
+    return rules;
+  }
+
+  /**
+   * Orders of the sample values other than the given one, in which every pair of parameters takes
+   * both orders: all of them for up to three parameters, three involutions for four.
+   */
+  private static int[][] otherOrders(int size) {
+    switch (size) {
+      case 2:
+        return new int[][] {{1, 0}};
+      case 3:
+        return new int[][] {{0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0}};
+      case 4:
+        return new int[][] {{1, 0, 3, 2}, {2, 3, 0, 1}, {3, 2, 1, 0}};
+      default:
+        return new int[0][];
+    }
   }
 
   /**
@@ -554,7 +609,10 @@ public final class ResidueIntegration {
     for (int attempt = 0; attempt < SAMPLES_PER_SIGNS; attempt++) {
       IASTAppendable rules = F.ListAlloc(size);
       for (int i = 0; i < size; i++) {
-        IExpr value = SAMPLE_VALUES[(attempt * (i + 1) + 3 * i) % SAMPLE_VALUES.length];
+        // every other sample in the mirrored order of the values, see samplePoints
+        int position = attempt % 2 == 0 ? i : size - 1 - i;
+        IExpr value =
+            SAMPLE_VALUES[(attempt * (position + 1) + 3 * position) % SAMPLE_VALUES.length];
         rules.append(F.Rule(ctx.parameters.get(i), (attempt + i) % 2 == 0 ? value : value.negate()));
       }
       ctx.samples.add(rules);
@@ -719,7 +777,8 @@ public final class ResidueIntegration {
    */
   static boolean check(Context ctx, IExpr result, IExpr lower, IExpr upper) {
     int confirmed = 0;
-    for (int i = 0; i < ctx.samples.size() && confirmed < MAX_CHECKS; i++) {
+    final int checkedSamples = Math.min(ctx.samples.size(), ctx.numericSamples);
+    for (int i = 0; i < checkedSamples && confirmed < MAX_CHECKS; i++) {
       IAST sample = ctx.samples.get(i);
       Complex value = ctx.numeric(result, sample);
       if (value == null) {

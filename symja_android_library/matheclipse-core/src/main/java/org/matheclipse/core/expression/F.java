@@ -6073,13 +6073,20 @@ public class F extends S {
    */
   private static void forEachIndex(final int from, final int to, final int step,
       final IntConsumer action) {
+    long count = 0;
     if (step > 0) {
       for (long i = from; i <= to; i += step) {
         action.accept((int) i);
+        if ((++count & 0x3FFL) == 0L) {
+          EvalEngine.get().checkTimeLimit();
+        }
       }
     } else if (step < 0) {
       for (long i = from; i >= to; i += step) {
         action.accept((int) i);
+        if ((++count & 0x3FFL) == 0L) {
+          EvalEngine.get().checkTimeLimit();
+        }
       }
     } else {
       throw new IllegalArgumentException("Iteration step 0");

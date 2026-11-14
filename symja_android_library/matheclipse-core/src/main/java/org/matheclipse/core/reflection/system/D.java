@@ -545,6 +545,9 @@ public class D extends AbstractFunctionOptionEvaluator {
         } else if (xList.isAST1() && xList.arg1().isList()) {
           IAST subList = (IAST) xList.arg1();
           return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.D(a, b)), fx);
+        } else if (xList.isAST1() && isDerivativeVariable(xList.arg1())) {
+          // D(f, {x}) is the first derivative D(f, {x, 1})
+          return engine.evaluateNIL(F.D(fx, xList.arg1()));
         } else if (xList.isAST2()) {
           IExpr xListN = xList.arg2();
           if (xList.arg1().isList()) {

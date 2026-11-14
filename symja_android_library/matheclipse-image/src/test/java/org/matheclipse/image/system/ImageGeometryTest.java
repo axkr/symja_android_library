@@ -136,6 +136,33 @@ public class ImageGeometryTest extends AbstractTestCase {
     check("Rasterize(Image({{0.5}}))", "Image(Dimensions: 1,1 Transparency: 1)");
   }
 
+  @Test
+  public void rasterizeImageSizeOption() {
+    // the ImageSize of Rasterize is the box the drawing is laid out in: a round disk in a tall
+    // box keeps its shape, centred with white above and below
+    check("pix = ImageData(Rasterize(Graphics({Black, Disk()}), ImageSize -> {30, 90})); "
+        + "{Dimensions(pix), pix[[4, 15]], pix[[45, 15]], pix[[45, 2]]}", //
+        "{{90,30,3},{1.0,1.0,1.0},{0.0,0.0,0.0},{1.0,1.0,1.0}}");
+    // it replaces an ImageSize of the graphic itself
+    check("ImageDimensions(Rasterize(Graphics(Circle(), ImageSize -> 200), ImageSize -> 64))", //
+        "{64,64}");
+    check("ImageDimensions(Rasterize(Graphics(Circle()), ImageSize -> 60, "
+        + "ImageResolution -> 108))", //
+        "{90,90}");
+    // a small graphic keeps its square shape
+    check("ImageDimensions(Rasterize(Graphics(Circle()), ImageSize -> 26))", //
+        "{26,26}");
+    // RasterSize still decides the pixels
+    check("ImageDimensions(Rasterize(Graphics(Circle()), ImageSize -> 60, RasterSize -> 12))", //
+        "{12,12}");
+    // an image keeps its own size: ImageSize only lays out a drawing
+    check("ImageDimensions(Rasterize(Image(ConstantArray(0.25, {60, 30})), ImageSize -> 12))", //
+        "{30,60}");
+    check("ImageDimensions(Rasterize(Image(ConstantArray(0.25, {60, 30})), "
+        + "ImageSize -> {90, 90}))", //
+        "{30,60}");
+  }
+
   /**
    * The function of <code>ImageTransformation</code> runs backwards - it says where each output
    * pixel reads from - so shifting the read position right moves the picture left. The image is

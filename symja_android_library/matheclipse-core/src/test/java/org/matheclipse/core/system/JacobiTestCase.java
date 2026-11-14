@@ -14,6 +14,11 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
         "0.200364+I*0.0999307");
     check("JacobiAmplitude(Pi/3, 0.2)", //
         "1.01656");
+    // real for a real argument and parameter, also for m>1
+    check("JacobiAmplitude(1.3, 1.7)", //
+        "0.859667");
+    check("JacobiAmplitude(5.0, 1.7)", //
+        "-0.750078");
     check(
         "{JacobiAmplitude(z,0), JacobiAmplitude(z,1),JacobiAmplitude(0,m), JacobiAmplitude(EllipticK(m),m)}", //
         "{z,Gudermannian(z),0,Pi/2}");

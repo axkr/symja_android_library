@@ -25,7 +25,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * A colour scheme named as a string is not a function of the whole tuple but of one argument of it
  * - the second for a curve, the third for a surface - which is why {@code ColorFunction ->
  * "Rainbow"} follows a curve's height rather than sweeping left to right. {@link Family} carries
- * that slot too.
+ * that slot too. So does a colour head named on its own, {@code Hue} or {@code GrayLevel}: it
+ * takes one number, and {@code Hue[x, y, z, u, v]} would be no colour at all.
  *
  * <p>
  * Construction decides whether there is anything to do at all: {@link Builder#build()} answers
@@ -70,6 +71,8 @@ public final class PlotColorFunction {
     REVOLUTION_3D(6, 3),
     /** {@code ContourPlot3D}: {@code x, y, z, f}. */
     CONTOUR_3D(4, 4),
+    /** {@code StreamPlot} and {@code VectorPlot}: {@code x, y, vx, vy} and the vector's length. */
+    VECTOR_2D(5, 5),
     /** {@code VectorPlot3D}: {@code x, y, z, vx, vy, vz} and the vector's length. */
     VECTOR_3D(7, 7);
 
@@ -105,6 +108,7 @@ public final class PlotColorFunction {
   private final Family family;
   private final IExpr function;
   private final boolean gradient;
+  private final boolean clamped;
   private final boolean scaled;
   private final Sink sink;
   private final double[] lo;
@@ -122,6 +126,7 @@ public final class PlotColorFunction {
     this.family = builder.family;
     this.function = builder.function;
     this.gradient = builder.gradient;
+    this.clamped = builder.clamped;
     this.scaled = builder.scaled;
     this.sink = builder.sink;
     this.lo = builder.lo;
@@ -157,6 +162,7 @@ public final class PlotColorFunction {
     private final DoubleUnaryOperator[] scalers;
     private IExpr function = F.NIL;
     private boolean gradient = false;
+    private boolean clamped = true;
     private Sink sink = Sink.DIRECTIVE;
     private DoubleFunction<IExpr> fallback = t -> F.NIL;
 
@@ -239,6 +245,12 @@ public final class PlotColorFunction {
         }
         function = resolved;
         gradient = true;
+      } else if (spec == S.Hue || spec == S.GrayLevel) {
+        // a colour head of one number colours by the argument a colour scheme is applied to; it is
+        // defined for every number, Hue going round its circle, so nothing is cut to 0..1
+        function = spec;
+        gradient = true;
+        clamped = false;
       } else if (spec.isAST(S.ColorDataFunction)) {
         // a ColorDataFunction only ever answers to one argument, so it is a gradient however it
         // was spelled
@@ -363,7 +375,10 @@ public final class PlotColorFunction {
       // was not scaled - or a value beyond the range the caller declared - takes the nearest end
       // of the scheme rather than costing the sample its colour
       double at = scale(family.gradientSlot, value(coordinates, family.gradientSlot));
-      call = F.unaryAST1(function, F.num(at < 0.0 ? 0.0 : at > 1.0 ? 1.0 : at));
+      if (clamped) {
+        at = at < 0.0 ? 0.0 : at > 1.0 ? 1.0 : at;
+      }
+      call = F.unaryAST1(function, F.num(at));
     } else {
       IExpr[] arguments = new IExpr[family.arity];
       for (int i = 0; i < family.arity; i++) {

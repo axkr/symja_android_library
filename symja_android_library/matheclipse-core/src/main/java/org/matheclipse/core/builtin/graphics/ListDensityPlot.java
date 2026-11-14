@@ -142,7 +142,7 @@ public class ListDensityPlot extends DensityPlot {
 
         double z = interpolationOrder == 0 //
             ? nearest(gridData.zGrid, gx, gy)
-            : bilinear(gridData.zGrid, gx, gy);
+            : triangular(gridData.zGrid, gx, gy);
         if (!Double.isFinite(z)) {
           // a cell without a value stays transparent rather than being painted in a colour that
           // the data never had
@@ -209,13 +209,16 @@ public class ListDensityPlot extends DensityPlot {
   }
 
   /**
-   * The value at a point of the grid, interpolated from the four nodes around it.
+   * The value at a point of the grid, interpolated linearly over one of the two triangles the
+   * cell around it is split into along the diagonal from its lower left to its upper right node.
+   * Values shared by the two ends of that diagonal therefore run straight along it, where a
+   * blend of all four nodes would round alternating values into saddles.
    *
    * @param gx position in node coordinates, from 0 to the last x index
    * @param gy position in node coordinates, from 0 to the last y index
    * @return {@code Double.NaN} if any of the four nodes has no value
    */
-  private static double bilinear(double[][] zGrid, double gx, double gy) {
+  private static double triangular(double[][] zGrid, double gx, double gy) {
     int lastX = zGrid.length - 1;
     int lastY = zGrid[0].length - 1;
     int x0 = clamp((int) Math.floor(gx), 0, lastX);
@@ -233,9 +236,12 @@ public class ListDensityPlot extends DensityPlot {
         || !Double.isFinite(v11)) {
       return Double.NaN;
     }
-    double bottom = v00 + (v10 - v00) * fx;
-    double top = v01 + (v11 - v01) * fx;
-    return bottom + (top - bottom) * fy;
+    if (fx >= fy) {
+      // the lower right triangle (0, 0), (1, 0), (1, 1)
+      return v00 + (v10 - v00) * fx + (v11 - v10) * fy;
+    }
+    // the upper left triangle (0, 0), (0, 1), (1, 1)
+    return v00 + (v01 - v00) * fy + (v11 - v01) * fx;
   }
 
   /** The value of the node nearest to a point of the grid, which draws the data as flat cells. */

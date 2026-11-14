@@ -126,6 +126,10 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
         method = option.toString();
       }
       int order = options.length > 1 && !options[1].isAutomatic() ? options[1].toIntDefault() : 3;
+      if (order == 0 && method.isEmpty()) {
+        IExpr steps = stepPieces((IAST) ast.arg1(), engine);
+        return argSize == 2 && steps.isPresent() ? F.unaryAST1(steps, ast.arg2()) : steps;
+      }
       if (order < 1) {
         return F.NIL;
       }
@@ -476,15 +480,12 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
    * polynomial through the <code>order+1</code> points around them.
    */
   private static IExpr polynomialPieces(IAST matrix, int rows, int order, EvalEngine engine) {
-    IASTAppendable abscissas = F.ListAlloc(rows);
-    for (int j = 1; j < matrix.size(); j++) {
-      abscissas.append(matrix.get(j).first());
-    }
-    double min = engine.evaluate(abscissas.apply(S.Min, 1)).evalfNaN();
-    double max = engine.evaluate(abscissas.apply(S.Max, 1)).evalfNaN();
-    if (Double.isNaN(min) || Double.isNaN(max)) {
+    final double[] range = abscissaRange(matrix, engine);
+    if (range == null) {
       return F.NIL;
     }
+    final double min = range[0];
+    final double max = range[1];
     // symbolic values are weighted linearly with machine number weights, as an interpolating
     // function evaluates numerically
     final boolean symbolicLinear =
@@ -513,6 +514,53 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
           : F.InterpolatingPolynomial(data, F.Slot1), condition));
     }
     return InterpolatingFunctionExpr.newInstance(F.Function(F.Piecewise(pieces)), min, max, order);
+  }
+
+  /**
+   * Interpolation of the order <code>0</code>, a step function: between two neighbouring points it
+   * has the value of the right one, <code>f(x) = y(i)</code> for <code>x(i-1) &lt; x &lt;= x(i)</code>,
+   * and at the first point the value of the second one. Its derivative is <code>0</code>.
+   *
+   * @param matrix the points <code>{x, y}</code> in ascending order of their abscissas
+   */
+  private static IExpr stepPieces(IAST matrix, EvalEngine engine) {
+    final int rows = matrix.argSize();
+    final double[] range = abscissaRange(matrix, engine);
+    if (range == null) {
+      return F.NIL;
+    }
+    // inexact abscissas give inexact values
+    final boolean inexact = matrix.exists(point -> point.first().isInexactNumber());
+    IASTAppendable pieces = F.ListAlloc(rows - 1);
+    for (int j = 2; j < rows; j++) {
+      pieces.append(F.list(stepValue(matrix.getPart(j, 2), inexact, engine),
+          F.LessEqual(F.Slot1, matrix.getPart(j, 1))));
+    }
+    IExpr last = stepValue(matrix.getPart(rows, 2), inexact, engine);
+    return InterpolatingFunctionExpr.newInstance(
+        F.Function(pieces.isEmpty() ? last : F.Piecewise(pieces, last)), range[0], range[1], 0);
+  }
+
+  private static IExpr stepValue(IExpr value, boolean inexact, EvalEngine engine) {
+    return inexact ? engine.evaluate(F.N(value)) : value;
+  }
+
+  /**
+   * The smallest and the largest abscissa of the points <code>{x, ...}</code>.
+   *
+   * @return <code>null</code> if they are no real numbers
+   */
+  private static double[] abscissaRange(IAST matrix, EvalEngine engine) {
+    IASTAppendable abscissas = F.ListAlloc(matrix.argSize());
+    for (int j = 1; j < matrix.size(); j++) {
+      abscissas.append(matrix.get(j).first());
+    }
+    double min = engine.evaluate(abscissas.apply(S.Min, 1)).evalfNaN();
+    double max = engine.evaluate(abscissas.apply(S.Max, 1)).evalfNaN();
+    if (Double.isNaN(min) || Double.isNaN(max)) {
+      return null;
+    }
+    return new double[] {min, max};
   }
 
   /**

@@ -425,7 +425,7 @@ public class BasicTeXTestCase {
     // gitlab #108
     IExpr expr = EvalEngine.get().evaluate("Solve({Log10(x)==21.69},{x})");
     check(expr, //
-        "\\{\\{x\\to 4.89779*10^{21}\\}\\}");
+        "\\{\\{x\\to 4.89779\\times 10^{21}\\}\\}");
   }
 
   @Test
@@ -450,7 +450,7 @@ public class BasicTeXTestCase {
   public void testTeX041() {
     IExpr expr = EvalEngine.get().evaluate("Interval({-3.21625*10^-16,5.66554*10^-16})");
     check(expr, //
-        "Interval(\\{-3.21625*10^{-16},5.66554*10^{-16}\\})");
+        "Interval(\\{-3.21625\\times 10^{-16},5.66554\\times 10^{-16}\\})");
   }
 
   @Test

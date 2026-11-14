@@ -61,7 +61,8 @@ public final class AxesFrameRenderer {
   private boolean isPlainValueList(IExpr spec) {
     IAST list = (IAST) spec;
     for (int i = 1; i <= list.argSize(); i++) {
-      if (list.get(i).isList() || list.get(i) == S.Automatic || list.get(i).isNone()) {
+      if (list.get(i).isList() || list.get(i) == S.Automatic || list.get(i) == S.Full
+          || list.get(i).isNone()) {
         return false;
       }
     }
@@ -73,7 +74,12 @@ public final class AxesFrameRenderer {
     if (spec == null || spec.isNone() || spec.isFalse()) {
       return out;
     }
-    if (spec == S.Automatic || spec.isTrue()) {
+    if (spec == S.Full && !(isX ? viewport.isLogX() : viewport.isLogY())) {
+      // a line at every major and minor tick
+      return isX ? TickGenerator.linearWithMinor(viewport.minX, viewport.maxX)
+          : TickGenerator.linearWithMinor(viewport.minY, viewport.maxY);
+    }
+    if (spec == S.Automatic || spec == S.Full || spec.isTrue()) {
       for (TickGenerator.Tick t : autoTicks(isX)) {
         out.add(t.value);
       }
@@ -127,7 +133,7 @@ public final class AxesFrameRenderer {
     if (options.ticks.isList() && ((IAST) options.ticks).argSize() == 2) {
       xTickSpec = ((IAST) options.ticks).arg1();
       yTickSpec = ((IAST) options.ticks).arg2();
-    } else if (options.ticks.isNone() || options.ticks.isFalse()) {
+    } else if (GraphicsOptions2D.ticksOff(options.ticks)) {
       xTickSpec = yTickSpec = S.None;
     }
 
@@ -251,8 +257,18 @@ public final class AxesFrameRenderer {
     return x.isList() && x.argSize() >= 2 && x.first().isReal() && !x.second().isReal();
   }
 
-  /** The tick specification for one frame edge, indexed left, right, bottom, top. */
+  /**
+   * The tick specification for one frame edge, indexed left, right, bottom, top. {@code True}
+   * stands for the automatic ticks on the bottom and left edge and for no ticks on the top and
+   * right edge, in every form the option is written in.
+   */
   private IExpr frameTickSpec(int edge) {
+    IExpr spec = writtenFrameTickSpec(edge);
+    return spec.isTrue() && (edge == 1 || edge == 3) ? S.None : spec;
+  }
+
+  /** The tick specification for one frame edge as it is written in the option. */
+  private IExpr writtenFrameTickSpec(int edge) {
     IExpr spec = options.frameTicks;
     if (spec.isList() && ((IAST) spec).argSize() == 2) {
       IAST outer = (IAST) spec;

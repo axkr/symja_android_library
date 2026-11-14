@@ -6,6 +6,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import org.apfloat.Apfloat;
 import org.matheclipse.external.apfloat.ApfloatRounding;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -247,8 +248,20 @@ public class NumberFormatter {
     // 2.67; otherwise the shortest decimal which gives back the double is formatted
     BigDecimal decimal =
         fractionDigits >= 0 ? new BigDecimal(value) : new BigDecimal(Double.toString(value));
-    return format(decimal, significantDigits(significantFigures, -1), true);
+    boolean point = true;
+    if ((kind == FormKind.ACCOUNTING || kind == FormKind.DECIMAL) && totalDigits <= 0
+        && Math.abs(value) >= MACHINE_INTEGER_LIMIT) {
+      // all integer digits are shown, more than a machine real has: the rest is padded with zeros,
+      // and DecimalForm doesn't show the point of a number which isn't exact to its last digit
+      Errors.printMessage(kind == FormKind.ACCOUNTING ? S.AccountingForm : S.DecimalForm,
+          "reqsigz", F.CEmptyList, EvalEngine.get());
+      point = kind == FormKind.ACCOUNTING;
+    }
+    return format(decimal, significantDigits(significantFigures, -1), true, point);
   }
+
+  /** <code>2^53</code>: from here on the integer digits of a machine real are not all exact. */
+  private static final double MACHINE_INTEGER_LIMIT = 9007199254740992.0;
 
   /**
    * The number of significant digits to print: the wrapper's own <code>n</code> wins, then
@@ -323,6 +336,14 @@ public class NumberFormatter {
   }
 
   private FormattedNumber format(BigDecimal value, int significantFigures, boolean approximate) {
+    return format(value, significantFigures, approximate, approximate);
+  }
+
+  /**
+   * @param point whether a number without fraction digits shows the decimal point
+   */
+  private FormattedNumber format(BigDecimal value, int significantFigures, boolean approximate,
+      boolean point) {
     boolean negative = value.signum() < 0;
     BigDecimal abs = value.abs();
 
@@ -368,8 +389,8 @@ public class NumberFormatter {
     if (fractionPart.length() > 0) {
       digits.append(numberPoint);
       digits.append(group(fractionPart, digitBlockRight, separatorRight, false));
-    } else if (approximate) {
-      // an approximate real always shows the decimal point: "2." not "2"
+    } else if (point) {
+      // an approximate real shows the decimal point: "2." not "2"
       digits.append(numberPoint);
     }
 

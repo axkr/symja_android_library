@@ -1149,6 +1149,25 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public long integerLength(IInteger radix) {
+    final int base = radix.toIntDefault();
+    if (bitLength() > 64 && base >= 2) {
+      // the bit length bounds the number of digits to two candidates: one comparison with a power
+      // of the radix instead of one division for every digit
+      final BigInteger magnitude = toBigNumerator().abs();
+      final int bitLength = magnitude.bitLength();
+      final double digitsPerBit = Math.log(2.0) / Math.log(base);
+      // radix^(d-1) <= |n| < radix^d and 2^(bitLength-1) <= |n| < 2^bitLength
+      long digits = (long) Math.floor(bitLength * digitsPerBit + 1.0e-6) + 1;
+      final long lowest = Math.max(1L, (long) Math.floor((bitLength - 1) * digitsPerBit - 1.0e-6));
+      if (digits <= Integer.MAX_VALUE) {
+        final BigInteger bigRadix = BigInteger.valueOf(base);
+        while (digits > lowest
+            && magnitude.compareTo(bigRadix.pow((int) (digits - 1))) < 0) {
+          digits--;
+        }
+        return digits;
+      }
+    }
     long length = 0L;
     IInteger ai = this;
     while (!ai.isZero()) {

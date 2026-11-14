@@ -30,6 +30,69 @@ public final class TickGenerator {
   }
 
   /**
+   * The positions of the major ticks of a linear axis and of the minor ticks between and beyond
+   * them, out to the ends of the range: a major step of <code>2*10^k</code> is divided into 4
+   * parts, a step of <code>10^k</code> or <code>5*10^k</code> into 5.
+   *
+   * @param min lower end of the visible range
+   * @param max upper end of the visible range
+   */
+  public static List<Double> linearWithMinor(double min, double max) {
+    List<Double> positions = new ArrayList<>();
+    if (!Double.isFinite(min) || !Double.isFinite(max) || max <= min) {
+      return positions;
+    }
+    double step = niceNumber((max - min) / 5.0, true);
+    if (!(step > 0) || !Double.isFinite(step)) {
+      return positions;
+    }
+    double mantissa = step / Math.pow(10, Math.floor(Math.log10(step) + 1e-9));
+    int parts = Math.abs(mantissa - 2.0) < 1e-6 ? 4 : 5;
+    double minor = step / parts;
+    long firstIndex = (long) Math.ceil(min / minor - 1e-9);
+    long lastIndex = (long) Math.floor(max / minor + 1e-9);
+    if (lastIndex - firstIndex > 5000) {
+      return positions;
+    }
+    for (long i = firstIndex; i <= lastIndex; i++) {
+      double value = i * minor;
+      if (value < min - 1e-12 || value > max + 1e-12) {
+        continue;
+      }
+      positions.add(Math.abs(value) < minor * 1e-9 ? 0.0 : value);
+    }
+    return positions;
+  }
+
+  /**
+   * About <code>count</code> round values strictly between <code>min</code> and <code>max</code>,
+   * the multiples of a step of <code>1</code>, <code>2</code> or <code>5</code> times a power of
+   * ten.
+   *
+   * @return an empty array if the range is empty or not finite
+   */
+  public static double[] interiorDivisions(double min, double max, int count) {
+    if (!Double.isFinite(min) || !Double.isFinite(max) || max <= min || count < 1) {
+      return new double[0];
+    }
+    double step = niceNumber((max - min) / count, true);
+    if (!(step > 0) || !Double.isFinite(step)) {
+      return new double[0];
+    }
+    long firstIndex = (long) Math.floor(min / step + 1e-9) + 1;
+    long lastIndex = (long) Math.ceil(max / step - 1e-9) - 1;
+    if (lastIndex < firstIndex || lastIndex - firstIndex > 1000) {
+      return new double[0];
+    }
+    double[] values = new double[(int) (lastIndex - firstIndex + 1)];
+    for (long i = firstIndex; i <= lastIndex; i++) {
+      double value = i * step;
+      values[(int) (i - firstIndex)] = Math.abs(value) < step * 1e-9 ? 0.0 : value;
+    }
+    return values;
+  }
+
+  /**
    * Ticks for a linear axis, chosen at "nice" round positions.
    *
    * @param min lower end of the visible range

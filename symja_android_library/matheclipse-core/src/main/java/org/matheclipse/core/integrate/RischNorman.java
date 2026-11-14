@@ -2,8 +2,10 @@ package org.matheclipse.core.integrate;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
@@ -14,6 +16,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -109,6 +113,23 @@ public class RischNorman {
     if (RADICAL_TOWER_OFF.get().booleanValue() || !RischNormanRadical.hasRoot(f, x)) {
       return false;
     }
+    return hasTowerKernel(f, x);
+  }
+
+  /**
+   * Is <code>f</code> a function of <code>Log</code>, <code>Exp</code> or <code>Tan</code> kernels
+   * without a root? A sum of such terms, like the derivative of
+   * <code>x*E^x/(1+E^x)</code>, is split by the rules into terms which are not elementary on their
+   * own; {@link #integrate(IExpr, IExpr, EvalEngine)} takes the integrand as a whole.
+   */
+  public static boolean isTranscendentalTower(IExpr f, IExpr x) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || RischNormanRadical.hasRoot(f, x)) {
+      return false;
+    }
+    return hasTowerKernel(f, x);
+  }
+
+  private static boolean hasTowerKernel(IExpr f, IExpr x) {
     return !f.isFree(e -> (e.isAST(S.Log, 2) || e.isAST(S.Tan, 2)
         || (e.isPower() && e.base().isE())) && !e.isFree(x, true), true);
   }
@@ -117,6 +138,8 @@ public class RischNorman {
       long deadline) {
     // 1. collect the transcendental kernels
     List<IExpr> kernels = collectKernels(integrand, x);
+    // exponentials with commensurable exponents are powers of one generator
+    Map<IExpr, IExpr[]> members = commonExponentials(kernels, engine);
     if (kernels.isEmpty() || kernels.size() > MAX_KERNELS) {
       return F.NIL;
     }
@@ -128,7 +151,9 @@ public class RischNorman {
     for (int i = 0; i < dummies.length; i++) {
       dummies[i] = F.Dummy("rn$" + i);
     }
-    IExpr substituted = replaceKernels(integrand, kernels, dummies);
+    // the kernels first: a member inside a kernel, E^(2*x) in Log(1+E^(2*x)), stays with it
+    IExpr substituted = replaceMembers(replaceKernels(integrand, kernels, dummies), members,
+        kernels, dummies);
     if (!isRationalIn(substituted, x, dummies)) {
       return F.NIL;
     }
@@ -136,7 +161,7 @@ public class RischNorman {
     IExpr[] derivatives = new IExpr[kernels.size()];
     for (int i = 0; i < kernels.size(); i++) {
       IExpr d = engine.evaluate(F.D(kernels.get(i), x));
-      d = replaceKernels(d, kernels, dummies);
+      d = replaceMembers(replaceKernels(d, kernels, dummies), members, kernels, dummies);
       if (!isRationalIn(d, x, dummies)) {
         return F.NIL;
       }
@@ -225,8 +250,11 @@ public class RischNorman {
     for (int i = 0; i < dummies.length; i++) {
       totalDerivative.append(F.Times(F.D(ansatz, dummies[i]), derivatives[i]));
     }
-    IExpr equation = engine.evaluate(F.Together(F.Subtract(totalDerivative, substituted)));
-    IExpr eqNumer = engine.evaluate(F.Expand(F.Numerator(equation)));
+    IExpr eqNumer = clearedNumerator(engine.evaluate(F.Subtract(totalDerivative, substituted)),
+        engine, deadline);
+    if (eqNumer.isNIL()) {
+      return F.NIL;
+    }
 
     if (System.currentTimeMillis() > deadline) {
       return F.NIL;
@@ -266,11 +294,97 @@ public class RischNorman {
     if (resolved.isZero() || !resolved.isFree(S.Solve)) {
       return F.NIL;
     }
+    // the rational part in its lowest terms: (t*x+t^2*x)/(1+t)^2 is x-x/(1+t)
+    resolved = cancelRationalPart(resolved, dummies, engine);
     // 8. back-substitute the kernels
     for (int i = dummies.length - 1; i >= 0; i--) {
       resolved = F.subst(resolved, dummies[i], kernels.get(i));
     }
     return engine.evaluate(resolved);
+  }
+
+  /**
+   * The terms of <code>expr</code> without a logarithm over one denominator with the common
+   * factors cancelled - the ansatz is written over the denominator of the integrand, which has
+   * factors the antiderivative doesn't need - and then as partial fractions in the first kernel
+   * of the denominator, as the rules write it: <code>x*t/(2*(2+t))</code> is
+   * <code>x/2-x/(2+t)</code>.
+   */
+  private static IExpr cancelRationalPart(IExpr expr, ISymbol[] dummies, EvalEngine engine) {
+    IASTAppendable rational = F.PlusAlloc(expr.isPlus() ? expr.argSize() : 1);
+    IASTAppendable rest = F.PlusAlloc(expr.isPlus() ? expr.argSize() + 1 : 2);
+    for (IExpr term : expr.isPlus() ? (IAST) expr : F.List(expr)) {
+      if (term.isFree(S.Log, true)) {
+        rational.append(term);
+      } else {
+        rest.append(term);
+      }
+    }
+    if (rational.argSize() == 0) {
+      return expr;
+    }
+    IExpr cancelled = engine.evaluate(F.Cancel(F.Together(rational.oneIdentity0())));
+    IExpr numerator = engine.evaluate(F.Numerator(cancelled));
+    IExpr denominator = engine.evaluate(F.Denominator(cancelled));
+    for (ISymbol dummy : dummies) {
+      if (!denominator.isFree(dummy)) {
+        // the polynomial part in the kernel and a proper fraction
+        IExpr quotientRemainder =
+            engine.evaluate(F.PolynomialQuotientRemainder(numerator, denominator, dummy));
+        if (quotientRemainder.isList2() && !quotientRemainder.first().isZero()) {
+          cancelled = engine.evaluate(F.Plus(quotientRemainder.first(),
+              F.Divide(quotientRemainder.second(), denominator)));
+        }
+        break;
+      }
+    }
+    rest.append(cancelled);
+    return engine.evaluate(rest.oneIdentity0());
+  }
+
+  /**
+   * The numerator of a sum of rational functions over a common multiple of the denominators of
+   * its terms, multiplied out. Each term is put over its own denominator, which is cheap for the
+   * small terms of the ansatz derivative; <code>Together</code> of the whole sum takes the gcd of
+   * polynomials in all the unknowns of the ansatz and needed seconds for 17 of them. The
+   * numerator over a multiple of the lowest denominator has the same zeros in the unknowns.
+   *
+   * @return {@link F#NIL} if the deadline passed
+   */
+  private static IExpr clearedNumerator(IExpr sum, EvalEngine engine, long deadline) {
+    IAST terms = sum.isPlus() ? (IAST) sum : F.List(sum);
+    List<IExpr> numerators = new ArrayList<>(terms.argSize());
+    List<IExpr> denominators = new ArrayList<>(terms.argSize());
+    // distinct denominators, the index of each term's one
+    List<IExpr> distinct = new ArrayList<>();
+    int[] index = new int[terms.argSize()];
+    for (int i = 1; i < terms.size(); i++) {
+      if (System.currentTimeMillis() > deadline) {
+        return F.NIL;
+      }
+      IExpr together = engine.evaluate(F.Together(terms.get(i)));
+      numerators.add(engine.evaluate(F.Numerator(together)));
+      IExpr denominator = engine.evaluate(F.Expand(F.Denominator(together)));
+      denominators.add(denominator);
+      int k = distinct.indexOf(denominator);
+      if (k < 0) {
+        k = distinct.size();
+        distinct.add(denominator);
+      }
+      index[i - 1] = k;
+    }
+    IASTAppendable result = F.PlusAlloc(numerators.size());
+    for (int i = 0; i < numerators.size(); i++) {
+      IASTAppendable product = F.TimesAlloc(distinct.size());
+      product.append(numerators.get(i));
+      for (int k = 0; k < distinct.size(); k++) {
+        if (k != index[i]) {
+          product.append(distinct.get(k));
+        }
+      }
+      result.append(product.oneIdentity1());
+    }
+    return engine.evaluate(F.Expand(result.oneIdentity0()));
   }
 
   /** Determine the polynomial degree of <code>expr</code> in <code>var</code>. */
@@ -304,6 +418,83 @@ public class RischNorman {
       buildMonomials(vars, bounds, exponents, index + 1, ansatzNumer, unknowns);
     }
     exponents[index] = 0;
+  }
+
+  /**
+   * Exponential kernels whose exponents have rational ratios, <code>E^x</code> and
+   * <code>E^(2*x)</code>, are algebraically dependent: an ansatz with a symbol for each of them
+   * cannot represent <code>E^(2*x) == (E^x)^2</code>. They are replaced in <code>kernels</code> by
+   * the one exponential <code>E^g</code> of which they are integer powers.
+   *
+   * @return the replaced kernels mapped to their generator and the integer power of it
+   */
+  private static Map<IExpr, IExpr[]> commonExponentials(List<IExpr> kernels,
+      EvalEngine engine) {
+    Map<IExpr, IExpr[]> members = new HashMap<>();
+    List<IExpr> exponentials = new ArrayList<>();
+    for (IExpr kernel : kernels) {
+      if (kernel.isPower() && kernel.base().isE()) {
+        exponentials.add(kernel);
+      }
+    }
+    boolean[] done = new boolean[exponentials.size()];
+    for (int i = 0; i < exponentials.size(); i++) {
+      if (done[i]) {
+        continue;
+      }
+      IExpr first = exponentials.get(i).exponent();
+      List<Integer> group = new ArrayList<>();
+      List<IRational> ratios = new ArrayList<>();
+      for (int j = i; j < exponentials.size(); j++) {
+        IExpr ratio =
+            engine.evaluate(F.Together(F.Divide(exponentials.get(j).exponent(), first)));
+        if (!done[j] && ratio.isRational()) {
+          group.add(j);
+          ratios.add((IRational) ratio);
+        }
+      }
+      if (group.size() < 2) {
+        continue;
+      }
+      // the generator exponent: first times the gcd of the ratios
+      IInteger numeratorGcd = F.C0;
+      IInteger denominatorLcm = F.C1;
+      for (IRational r : ratios) {
+        numeratorGcd = numeratorGcd.gcd(r.numerator());
+        denominatorLcm = denominatorLcm.lcm(r.denominator());
+      }
+      IRational unit = F.QQ(numeratorGcd, denominatorLcm);
+      IExpr generator = engine.evaluate(F.Exp(F.Times(first, unit)));
+      for (int k = 0; k < group.size(); k++) {
+        int j = group.get(k);
+        done[j] = true;
+        IExpr member = exponentials.get(j);
+        if (!member.equals(generator)) {
+          kernels.remove(member);
+          members.put(member, new IExpr[] {generator, ratios.get(k).divideBy(unit).normalize()});
+        }
+      }
+      if (!kernels.contains(generator)) {
+        kernels.add(generator);
+      }
+    }
+    return members;
+  }
+
+  /**
+   * Replace the exponentials which {@link #commonExponentials(List, EvalEngine)} took out of the
+   * kernels by the powers of the dummy symbol of their generator.
+   */
+  private static IExpr replaceMembers(IExpr expr, Map<IExpr, IExpr[]> members,
+      List<IExpr> kernels, ISymbol[] dummies) {
+    IExpr result = expr;
+    for (Map.Entry<IExpr, IExpr[]> entry : members.entrySet()) {
+      int index = kernels.indexOf(entry.getValue()[0]);
+      if (index >= 0) {
+        result = F.subst(result, entry.getKey(), F.Power(dummies[index], entry.getValue()[1]));
+      }
+    }
+    return result;
   }
 
   /** Replace each kernel (largest first) by its dummy symbol. */

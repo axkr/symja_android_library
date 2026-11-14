@@ -7,12 +7,12 @@ Sum(i_, {i_Symbol,a_Integer,n_Integer}) := If(a<=n, -1/2*(-1+a-n)*(a+n), 0),
 Sum(c_^(i_+a_.), {i_Symbol,1,Infinity}) := -(c^(1 + a)/(-1 + c)) 
   /; FreeQ({a,c},i) && (!NumericQ(c) || (c>(-1) && c<1)),
 Sum(i_^k_, {i_Symbol,1,Infinity}) := Zeta(-k)
-  /; FreeQ(k,i),
+  /; FreeQ(k,i) && (!NumericQ(k) || Re(k)<(-1)),
 Sum(1/(i_^k_), {i_Symbol,1,Infinity}) := Zeta(k)
-  /;  FreeQ(k,i), 
+  /;  FreeQ(k,i) && (!NumericQ(k) || Re(k)>1),
   
-Sum(k_^(a_.*i_), {i_Symbol,1,Infinity}) := -(k^a)/(-1+(k^a))
-  /; FreeQ(k,i) && a<0 && (k>1 || k<(-1)),
+Sum(k_^(a_.*i_), {i_Symbol,1,Infinity}) := 1/(-1+k^(-a))
+  /; FreeQ(k,i) && a<0 && (!NumericQ(k) || k>1 || k<(-1)),
 Sum(i_^k_*c_^(a_.*i_), {i_Symbol,1,Infinity}) := PolyLog(-k, c^a)
   /;  FreeQ({a,c,k},i) && (!NumericQ(c^a) || (c^a>(-1) && c^a<1)), 
 

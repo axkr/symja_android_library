@@ -260,7 +260,9 @@ public final class EnteringVariable {
           && Math.abs(rc[top.col]) > threshold) {
         improvement -= top.coeffMagnitude;
       }
-      if (improvement <= 0.0) {
+      // A tolerance is used here: improvement is the derivative of the function to maximize, which
+      // can have a flat spot at its peak and then be close to zero but not exactly zero.
+      if (improvement <= harrisTolerance) {
         break;
       }
       breakpoints.poll();

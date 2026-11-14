@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.AffineFlat;
 import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -52,6 +53,11 @@ public class RegionNearest extends AbstractFunctionEvaluator {
           case ID.Triangle:
           case ID.Polygon:
             return polygonNearest(reg, p, engine);
+          case ID.InfiniteLine:
+          case ID.InfinitePlane: {
+            AffineFlat flat = AffineFlat.parse(reg, engine);
+            return flat == null ? F.NIL : flat.nearest(p, engine);
+          }
         }
       }
     }

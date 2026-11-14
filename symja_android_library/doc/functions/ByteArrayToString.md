@@ -6,6 +6,12 @@ ByteArrayToString(byte-array)
 
 > decoding the specified `byte-array` using the default character set `UTF-8`. 
 
+```
+ByteArrayToString(byte-array, "encoding")
+```
+
+> decoding the specified `byte-array` using the character encoding `"UTF8"`, `"ASCII"`, `"PrintableASCII"`, `"ISOLatin1"`, `"WindowsANSI"` or `"MacintoshRoman"`. A byte without a character in the encoding gives the character with the code `0xF200 + byte`.
+
 See:    
 * [Wikipedia - Base64](https://en.wikipedia.org/wiki/Base64)
 

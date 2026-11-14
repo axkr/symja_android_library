@@ -1,5 +1,7 @@
 package org.matheclipse.core.graphics;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -20,6 +22,7 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -1233,8 +1236,22 @@ public class GraphicsOptions {
    * which a {@code PlotTheme} may have changed, with the stroke width.
    */
   public IAST curveStyle(int index) {
-    return F.Directive(paletteColor(plotPalette, index),
-        F.AbsoluteThickness(F.num(curveThickness)));
+    IASTAppendable style = F.ast(S.Directive, curveStyleLead.argSize() + 2);
+    style.appendArgs(curveStyleLead);
+    style.append(paletteColor(plotPalette, index));
+    // a whole number of points is kept exact, as the default width is written
+    style.append(F.AbsoluteThickness(curveThickness == Math.rint(curveThickness)
+        && Math.abs(curveThickness) < Integer.MAX_VALUE ? F.ZZ((int) curveThickness)
+            : F.num(curveThickness)));
+    return style;
+  }
+
+  /**
+   * The parts a kind of plot puts in front of the colour of each curve's default style, such as
+   * the <code>Opacity(1.0)</code> of a function plot.
+   */
+  public void setCurveStyleLead(IAST lead) {
+    this.curveStyleLead = lead;
   }
 
   /**
@@ -1263,54 +1280,104 @@ public class GraphicsOptions {
   }
 
   /**
-   * A curve's default style together with the {@code PlotStyle} entry given for it.
+   * A curve's default style together with the {@code PlotStyle} entry given for it, as one flat
+   * <code>Directive</code>.
    *
    * <p>
-   * An entry that names a colour replaces the colour of the cycle instead of being stacked on top
-   * of it, so the curve's style shows the colour as it was given. A colour with an alpha value is
-   * split into an <code>Opacity</code> and the plain colour. The parts of a
-   * <code>Directive</code> keep their order; the default stroke width is added after them unless
-   * they set a thickness of their own.
+   * The default parts the entry sets again are dropped - the colour when the entry names any
+   * colour, otherwise a part with the same head, so <code>AbsoluteThickness(5)</code> drops the
+   * default <code>AbsoluteThickness</code> while <code>Thickness(0.02)</code> does not - and the
+   * parts of the entry follow the remaining default parts in the order they were given, as they
+   * were given. Nested <code>Directive</code>s and lists in the entry are flattened, a colour with
+   * an alpha value is split into the plain colour and an <code>Opacity</code>, and of several parts
+   * of one kind in the entry only the last is kept.
    *
-   * @param defaultStyle <code>Directive[color, AbsoluteThickness[t]]</code>
+   * @param defaultStyle the default <code>Directive</code> of the curve
    * @param userStyle the entry of {@code PlotStyle} for this curve
    */
   public static IAST withUserStyle(IAST defaultStyle, IExpr userStyle) {
-    IAST parts;
-    if (isBasicColor(userStyle)) {
-      parts = F.list(userStyle);
-    } else if (userStyle.isAST(S.Directive)
-        && ((IAST) userStyle).exists(GraphicsOptions::isBasicColor)) {
-      parts = (IAST) userStyle;
-    } else {
-      return F.Directive(defaultStyle, userStyle);
+    List<IExpr> flat = new ArrayList<IExpr>();
+    flattenStyle(userStyle, flat);
+    if (flat.isEmpty()) {
+      return defaultStyle;
     }
-    IASTAppendable result = F.ast(S.Directive, parts.argSize() + 2);
-    parts.forEach(part -> appendColorParts(result, part));
-    if (!parts.exists(GraphicsOptions::isThickness)) {
-      for (int i = 1; i < defaultStyle.size(); i++) {
-        if (!isBasicColor(defaultStyle.get(i))) {
-          result.append(defaultStyle.get(i));
-        }
+    IASTAppendable split = F.ListAlloc(flat.size() + 1);
+    flat.forEach(part -> appendColorParts(split, part));
+    // a later part supersedes an earlier one of its kind: of several colours the last one is the
+    // colour of the curve, and so on for every head
+    IASTAppendable given = F.ListAlloc(split.argSize());
+    for (int i = 1; i < split.size(); i++) {
+      if (!supersededLater(split, i)) {
+        given.append(split.get(i));
       }
     }
+    boolean givenColor = given.exists(GraphicsOptions::isBasicColor);
+    IASTAppendable result = F.ast(S.Directive, defaultStyle.argSize() + given.argSize());
+    for (int i = 1; i < defaultStyle.size(); i++) {
+      IExpr defaultPart = defaultStyle.get(i);
+      boolean replaced = isBasicColor(defaultPart) ? givenColor
+          : given.exists(part -> sameStyleHead(part, defaultPart));
+      if (!replaced) {
+        result.append(defaultPart);
+      }
+    }
+    result.appendArgs(given);
     return result;
   }
 
-  /** A thickness directive, or one of the symbols <code>Thick</code> and <code>Thin</code>. */
-  private static boolean isThickness(IExpr part) {
-    return part.isAST(S.Thickness) || part.isAST(S.AbsoluteThickness) || part == S.Thick
-        || part == S.Thin;
+  /**
+   * The parts of a style: the arguments of a <code>Directive</code> or a list, flattened; nothing
+   * for <code>Automatic</code>.
+   */
+  private static void flattenStyle(IExpr style, List<IExpr> parts) {
+    if (style.isAST(S.Directive) || style.isList()) {
+      ((IAST) style).forEach(part -> flattenStyle(part, parts));
+    } else if (!style.isAutomatic()) {
+      parts.add(style);
+    }
   }
 
-  /** The colour, with an alpha component split off as <code>Opacity</code>. */
+  /** Whether a part of the same kind follows the part at <code>index</code>. */
+  private static boolean supersededLater(IAST parts, int index) {
+    IExpr part = parts.get(index);
+    boolean color = isBasicColor(part);
+    for (int i = index + 1; i < parts.size(); i++) {
+      IExpr later = parts.get(i);
+      if (color ? isBasicColor(later) : sameStyleHead(part, later)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The <code>PlotStyle</code> entry of curve number <code>index</code>, counted from zero, of
+   * <code>curveCount</code> curves. A list gives one entry per curve, read round and round - but
+   * for a single curve the whole list is its style.
+   */
+  public static IExpr curvePlotStyle(IExpr plotStyleOption, int index, int curveCount) {
+    if (curveCount == 1 && plotStyleOption.isList() && plotStyleOption.argSize() > 1) {
+      return plotStyleOption;
+    }
+    return getPlotStyle(plotStyleOption, index);
+  }
+
+  /** Whether two style parts are of the same kind: the same head, or the same symbol. */
+  private static boolean sameStyleHead(IExpr part, IExpr other) {
+    if (part.isAST() && other.isAST()) {
+      return part.head().equals(other.head());
+    }
+    return part.equals(other);
+  }
+
+  /** The colour, with an alpha component split off as an <code>Opacity</code> after it. */
   private static void appendColorParts(IASTAppendable result, IExpr color) {
     if (color.isAST(S.RGBColor, 5) || color.isAST(S.GrayLevel, 3) || color.isAST(S.Hue, 5)
         || color.isAST(S.CMYKColor, 6)) {
       // the alpha value is the last argument
       IAST withAlpha = (IAST) color;
-      result.append(F.Opacity(withAlpha.last()));
       result.append(withAlpha.removeAtCopy(withAlpha.argSize()));
+      result.append(F.Opacity(withAlpha.last()));
     } else {
       result.append(color);
     }
@@ -2662,6 +2729,7 @@ public class GraphicsOptions {
     // still paints the very same points
     graphicsOptions.pointParameters = this.pointParameters;
     graphicsOptions.curveThickness = this.curveThickness;
+    graphicsOptions.curveStyleLead = this.curveStyleLead;
     graphicsOptions.plotPalette = this.plotPalette;
     graphicsOptions.interpolationOrder = this.interpolationOrder;
     // read once from the call and never changed afterwards, so the copy may share them; Plot
@@ -2814,6 +2882,11 @@ public class GraphicsOptions {
       IExpr value = ((IAST) rule).arg2();
       if (key == S.$Scaling) {
         method.append(F.Rule(F.stringx(METHOD_SCALING), encodeScaling(value)));
+        continue;
+      }
+      if (key == S.Ticks && value.isFalse()) {
+        // no ticks on either axis, as empty tick lists
+        result.append(F.Rule(S.Ticks, F.list(F.CEmptyList, F.CEmptyList)));
         continue;
       }
       if (key == S.Ticks && value.isAutomatic()) {
@@ -3516,6 +3589,12 @@ public class GraphicsOptions {
 
   /** Stroke width of a plotted curve, which {@code PlotTheme} may change. */
   private double curveThickness = PLOT_THICKNESS;
+
+  /**
+   * The parts in front of the colour of a curve's default style, see
+   * {@link #setCurveStyleLead}.
+   */
+  private IAST curveStyleLead = F.CEmptyList;
 
   /** The colour cycle of the curves, which {@code PlotTheme} may change. */
   private double[][] plotPalette = PLOT_COLOR_VALUES;

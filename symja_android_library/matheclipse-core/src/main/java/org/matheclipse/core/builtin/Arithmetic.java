@@ -81,6 +81,7 @@ import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.NumberAccumulator;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -1369,8 +1370,7 @@ public final class Arithmetic {
             if (current.argSize() < 2) {
               return F.CEmptyList;
             }
-            // Use the standard {1, -1} kernel for a single difference step
-            current = engine.evaluate(F.ListConvolve(F.list(F.C1, F.CN1), current));
+            current = engine.evaluate(firstDifferences((IAST) current));
           }
           return current;
 
@@ -1381,6 +1381,22 @@ public final class Arithmetic {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * The successive differences {@code {a2 - a1, a3 - a2, ...}} of the elements at the first
+     * level. The elements may themselves be lists (a list of points gives the list of difference
+     * vectors), so the subtraction is left to {@code Subtract}, which threads over them.
+     *
+     * @param list a list with at least two elements
+     */
+    private static IAST firstDifferences(IAST list) {
+      final int n = list.argSize();
+      IASTAppendable result = F.ListAlloc(n - 1);
+      for (int i = 1; i < n; i++) {
+        result.append(F.Subtract(list.get(i + 1), list.get(i)));
+      }
+      return result;
     }
 
     @Override
@@ -2257,8 +2273,9 @@ public final class Arithmetic {
             }
             return F.QQ(HARMONIC_NUMERATOR[n - 1], HARMONIC_DENOMINATOR[n - 1]);
           }
+          // an iteration limit of n allows the n terms
           int iterationLimit = engine.getIterationLimit();
-          if ((iterationLimit >= 0 && iterationLimit <= n) || n > MAX_EXACT_HARMONIC_INDEX) {
+          if ((iterationLimit >= 0 && iterationLimit < n) || n > MAX_EXACT_HARMONIC_INDEX) {
             // too many terms for the exact sum, whose denominator has about 0.43 n digits;
             // unevaluated, so that N() can still get the value
             return F.NIL;
@@ -2328,8 +2345,12 @@ public final class Arithmetic {
             return C0;
           }
 
+          if (nInt > MAX_SYMBOLIC_ORDER_TERMS && !r.isNumericFunction(true)) {
+            // a symbolic order: only a few terms are written out
+            return F.NIL;
+          }
           int iterationLimit = EvalEngine.get().getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit <= nInt) {
+          if (iterationLimit >= 0 && iterationLimit < nInt) {
             // too many terms for the exact sum; unevaluated, so that N() can still get the value
             return F.NIL;
           }
@@ -2337,12 +2358,16 @@ public final class Arithmetic {
           if (F.isPresent(intArg2)) {
             final int exponent = Math.abs(intArg2);
             // added pairwise: the operands of each addition have about the same size
-            IRational result = F.sumRational(i -> {
+            NumberAccumulator accumulator = NumberAccumulator.sum(F.PlusAlloc(1), false);
+            for (int i = 1; i <= nInt; i++) {
+              if ((i & 255) == 0) {
+                engine.checkTimeLimit();
+              }
               final IInteger pow = F.ZZ(i).powerRational(exponent);
-              return intArg2 < 0 ? pow : pow.inverse();
-            }, 1, nInt);
-            result.checkBitLength();
-            return result;
+              accumulator.add(intArg2 < 0 ? pow : pow.inverse());
+            }
+            INumber result = accumulator.number();
+            return result == null ? F.C0 : result;
           }
 
           return F.sum(i -> Power(i, r.negate()), 1, nInt);
@@ -2350,6 +2375,9 @@ public final class Arithmetic {
         return F.NIL;
       }
     }
+
+    /** The largest index for which <code>HarmonicNumber(n, r)</code> of a symbolic r is written out. */
+    private static final int MAX_SYMBOLIC_ORDER_TERMS = 4;
 
     /** The largest index for which <code>HarmonicNumber(n, r, s)</code> is written out. */
     private static final int MAX_HARMONIC_TERMS = 1000;
@@ -2393,7 +2421,7 @@ public final class Arithmetic {
         return BigFraction.ZERO;
       else {
         int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= n) {
+        if (iterationLimit >= 0 && iterationLimit < n) {
           IterationLimitExceeded.throwIt(n, F.HarmonicNumber(F.ZZ(n)));
         }
         // Sum(1/i, {i, 1, n}) by binary splitting: the numerators and denominators of the halves
@@ -2765,6 +2793,10 @@ public final class Arithmetic {
               return F.C0;
             }
             return F.Times(F.Sign(im), F.CInfinity);
+          }
+          IExpr part = Arithmetic.Re.infinitePart(im, engine);
+          if (part.isPresent()) {
+            return part;
           }
         }
       }
@@ -3414,7 +3446,15 @@ public final class Arithmetic {
           }
         }
         if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity() || AroundFunctions.isAround(x)
-            || AroundFunctions.isVectorAround(x) || AlgebraicNumberField.isObject(x))) {
+            || AroundFunctions.isVectorAround(x) || AlgebraicNumberField.isObject(x)
+            || x.isAST(S.QuantityArray, 3))) {
+          if (ast.exists(x -> x.isAST(S.QuantityArray, 3))) {
+            // arrays of quantities add element-wise
+            IExpr quantityArrayResult = QuantityFunctions.quantityArrayArithmetic(ast, engine);
+            if (quantityArrayResult.isPresent()) {
+              return quantityArrayResult;
+            }
+          }
           if (ast.exists(AlgebraicNumberField::isObject)) {
             // objects of one number field add in that field
             IExpr algebraicResult = AlgebraicNumberField.plus(ast, engine);
@@ -3466,6 +3506,9 @@ public final class Arithmetic {
           return numResult;
         }
         if (ast.isUniform(UniformFlags.NUMBER)) {
+          if (ast.argSize() >= BALANCED_SUM_SIZE && ast.forAll(x -> x.isRational())) {
+            return balancedRationalSum(ast, engine);
+          }
           INumber numResult = (INumber) ast.arg1();
           for (int i = 2; i < ast.size(); i++) {
             final INumber summand = (INumber) ast.get(i);
@@ -3494,6 +3537,25 @@ public final class Arithmetic {
       // ast.builtinEvaled();
       // }
       return F.NIL;
+    }
+
+    /** The number of exact fractions from which {@link #balancedRationalSum} adds them. */
+    private static final int BALANCED_SUM_SIZE = 64;
+
+    /**
+     * The sum of the rational arguments of <code>ast</code>, added pairwise: one after the other,
+     * the denominators of the partial sums grow with each fraction, and n fractions cost n
+     * additions of the full size.
+     */
+    private static INumber balancedRationalSum(IAST ast, EvalEngine engine) {
+      NumberAccumulator accumulator = NumberAccumulator.sum(F.PlusAlloc(1), false);
+      for (int i = 1; i < ast.size(); i++) {
+        if ((i & 63) == 0) {
+          engine.checkTimeLimit();
+        }
+        accumulator.add(ast.get(i));
+      }
+      return accumulator.number();
     }
 
     protected IExpr evaluatePlusOp(IAST ast, EvalEngine engine) {
@@ -4761,6 +4823,15 @@ public final class Arithmetic {
       if (exponent.isMinusOne()) {
         return F.C0;
       }
+      if (exponent.isRational() && directedInfinity.isAST1()
+          && directedInfinity.arg1().isNumericFunction(false)) {
+        // (z*Infinity)^r for a rational r: zero for r<0, and for r>0 the infinity in the direction
+        // of z^r, because Arg(z*t) is Arg(z) for every t>0
+        if (exponent.isNegative()) {
+          return F.C0;
+        }
+        return F.DirectedInfinity(F.Power(directedInfinity.arg1(), exponent));
+      }
       return F.NIL;
     }
 
@@ -5484,6 +5555,10 @@ public final class Arithmetic {
      * @return
      */
     private static IExpr powerTimesFraction(IAST baseTimes, final IFraction exponent) {
+      IAST positive = signIntoNegativeSum(baseTimes);
+      if (positive.isPresent()) {
+        return F.Power(positive.oneIdentity1(), exponent);
+      }
       IASTAppendable result = F.TimesAlloc(baseTimes.argSize());
       IASTAppendable rest = F.TimesAlloc(baseTimes.argSize());
       boolean evaled = false;
@@ -5615,6 +5690,47 @@ public final class Arithmetic {
         return result;
       }
       return F.NIL;
+    }
+
+    /**
+     * A numeric product with a negative rational factor and a sum of negative value, or the
+     * reciprocal of one: the sign goes into the sum, <code>-5/(-4+Sqrt(3))</code> is
+     * <code>5/(4-Sqrt(3))</code>, a product of positive factors. A root of it keeps the product
+     * as it is, while the negative rational factor would be split off as <code>Sqrt(5)</code> next
+     * to <code>Sqrt(-1/(-4+Sqrt(3)))</code>.
+     *
+     * @return {@link F#NIL} if the product isn't of this kind
+     */
+    private static IAST signIntoNegativeSum(IAST baseTimes) {
+      if (!baseTimes.isNumericFunction(true)) {
+        return F.NIL;
+      }
+      int rationalIndex = -1;
+      int sumIndex = -1;
+      for (int i = 1; i < baseTimes.size(); i++) {
+        IExpr arg = baseTimes.get(i);
+        if (rationalIndex < 0 && arg.isRational() && arg.isNegative()) {
+          rationalIndex = i;
+        } else if (sumIndex < 0 && (arg.isPlus()
+            || (arg.isPower() && arg.base().isPlus() && arg.exponent().isInteger()
+                && ((IInteger) arg.exponent()).isOdd()))) {
+          IExpr sum = arg.isPlus() ? arg : arg.base();
+          double value = sum.evalfNaN();
+          if (value < 0.0) {
+            sumIndex = i;
+          }
+        }
+      }
+      if (rationalIndex < 0 || sumIndex < 0) {
+        return F.NIL;
+      }
+      EvalEngine engine = EvalEngine.get();
+      IASTMutable result = baseTimes.copy();
+      result.set(rationalIndex, ((IRational) baseTimes.get(rationalIndex)).negate());
+      IExpr sumFactor = baseTimes.get(sumIndex);
+      result.set(sumIndex, sumFactor.isPlus() ? engine.evaluate(F.Negate(sumFactor))
+          : F.Power(engine.evaluate(F.Negate(sumFactor.base())), sumFactor.exponent()));
+      return result;
     }
 
     /**
@@ -6314,6 +6430,29 @@ public final class Arithmetic {
       return (ast.argSize() == 1);
     }
 
+    /**
+     * The real or imaginary part of an infinity from that part of its direction, which is an exact
+     * real value like <code>1/Sqrt(2)</code>.
+     *
+     * @return <code>Infinity</code>, <code>-Infinity</code> or <code>0</code>; {@link F#NIL} if the
+     *         sign of the part isn't known
+     */
+    static IExpr infinitePart(IExpr directionPart, EvalEngine engine) {
+      if (directionPart.isRealResult() && directionPart.isNumericFunction(false)) {
+        final IExpr sign = engine.evaluate(F.Sign(directionPart));
+        if (sign.isZero()) {
+          return F.C0;
+        }
+        if (sign.isOne()) {
+          return F.CInfinity;
+        }
+        if (sign.isMinusOne()) {
+          return F.CNInfinity;
+        }
+      }
+      return F.NIL;
+    }
+
     public static IExpr evalRe(IExpr expr, EvalEngine engine) {
       if (expr.isDirectedInfinity()) {
         IAST directedInfininty = (IAST) expr;
@@ -6330,6 +6469,10 @@ public final class Arithmetic {
               return F.C0;
             }
             return F.Times(F.Sign(re), F.CInfinity);
+          }
+          IExpr part = infinitePart(engine.evaluate(re), engine);
+          if (part.isPresent()) {
+            return part;
           }
         }
       }
@@ -6886,6 +7029,12 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList() && ast.arg2().isList()
+          && ast.arg1().argSize() != ast.arg2().argSize()) {
+        // lists of different lengths, which threading could not pair: the difference stays as it
+        // is
+        return F.NIL;
+      }
       // arg1 + (-1)*arg2
       return F.Subtract(ast.arg1(), ast.arg2());
     }
@@ -7453,9 +7602,12 @@ public final class Arithmetic {
         }
         return S.Indeterminate;
       }
-      if (zeroArg.isExactNumber() //
-          || zeroArg.equals(F.CD0)) {
+      if (zeroArg.isExactNumber()) {
         return F.C0;
+      }
+      if (zeroArg.equals(F.CD0)) {
+        // the machine zero times a symbolic factor is the machine zero
+        return F.CD0;
       }
       return F.NIL;
     }
@@ -7980,6 +8132,14 @@ public final class Arithmetic {
         }
       }
 
+      if (arg1.isAST(S.QuantityArray, 3) || arg2.isAST(S.QuantityArray, 3)) {
+        // an array of quantities multiplies element-wise
+        IExpr quantityArrayResult =
+            QuantityFunctions.quantityArrayArithmetic(F.Times(arg1, arg2), EvalEngine.get());
+        if (quantityArrayResult.isPresent()) {
+          return quantityArrayResult;
+        }
+      }
       // Quantities: a non-quantity factor is absorbed into the magnitude
       if (arg1.isQuantity()) {
         if (arg2.isQuantity()) {

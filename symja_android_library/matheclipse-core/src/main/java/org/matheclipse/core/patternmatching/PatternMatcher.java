@@ -965,7 +965,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   protected boolean matchAST(IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine,
       StackMatcher stackMatcher) {
     if (!(lhsEvalExpr instanceof IAST)) {
-      return false;
+      // h_[___] matches 2/3 as Rational(2,3) and -I as Complex(0,-1)
+      IAST fullForm = numberAsFullForm(lhsPatternAST, lhsEvalExpr);
+      return fullForm.isPresent() && matchAST(lhsPatternAST, fullForm, engine, stackMatcher);
     }
 
     if (lhsPatternAST.isFreeOfPatterns() && lhsPatternAST.equals(lhsEvalExpr)) {
@@ -1372,6 +1374,30 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return matchExpr(patternHead, evaledAST.head(), engine);
   }
 
+  /**
+   * A fraction as <code>Rational(n, d)</code> and a complex number as <code>Complex(re, im)</code>,
+   * the forms they have to a pattern whose head is a pattern: <code>h_[___]</code> or
+   * <code>_[a_, b_]</code>. Integers and real numbers have no parts.
+   *
+   * @return {@link F#NIL} if <code>number</code> isn't such a number or the head of the pattern
+   *         isn't a pattern
+   */
+  private static IAST numberAsFullForm(IAST lhsPatternAST, IExpr number) {
+    IExpr head = lhsPatternAST.head();
+    if (!(head instanceof IPatternObject) && (!head.isAST() || head.isFreeOfPatterns())) {
+      return F.NIL;
+    }
+    if (number.isFraction()) {
+      IFraction fraction = (IFraction) number;
+      return F.binaryAST2(S.Rational, fraction.numerator(), fraction.denominator());
+    }
+    if ((number.isComplex() || number.isComplexNumeric()) && !((INumber) number).im().isZero()) {
+      INumber complex = (INumber) number;
+      return F.binaryAST2(S.Complex, complex.re(), complex.im());
+    }
+    return F.NIL;
+  }
+
   private boolean matchASTExpr(IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine,
       StackMatcher stackMatcher) {
     boolean matched = false;
@@ -1584,7 +1610,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           IExpr optionalValue =
               (optional.isAST2()) ? optional.arg2() : patternHead.getDefaultValue();
           if (optionalValue.isPresent()) {
-            if (matchSubExpr(temp.first(), optionalValue, engine)) {
+            if (matchOptionalDefault(temp.first(), optionalValue, engine)) {
               continue;
             }
           }
@@ -1937,6 +1963,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     patternValues = fPatternMap.copyPattern();
     try {
       if (lhsEvalExpr.isNumber()) {
+        if (!lhsEvalExpr.isComplex() && !lhsEvalExpr.isComplexNumeric()) {
+          // an integer, fraction or real number isn't of the form Complex(re, im)
+          return false;
+        }
         INumber number = (INumber) lhsEvalExpr;
         // both parts are bound before the rest of the stack is matched: a condition which
         // stands on it, Complex(a_, b_) /; b > 1, needs the two of them
@@ -2464,6 +2494,28 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return F.NIL;
   }
 
+  /**
+   * Match the default value of <code>Optional(pattern, value)</code>. A named pattern
+   * <code>x:p:v</code> takes its default <code>v</code> also where <code>p</code> doesn't match it.
+   */
+  private boolean matchOptionalDefault(IExpr pattern, IExpr value, EvalEngine engine) {
+    if (matchSubExpr(pattern, value, engine)) {
+      return true;
+    }
+    if (pattern instanceof PatternNested
+        && ((PatternNested) pattern).getPatternExpr().isFree(x -> x instanceof IPatternObject
+            && ((IPatternObject) x).getSymbol() != null, true)) {
+      // only where the pattern has no names of its own, which would stay without a value
+      IPatternObject named = (IPatternObject) pattern;
+      IExpr bound = fPatternMap.getValue(named);
+      if (bound != null) {
+        return bound.equals(value);
+      }
+      return fPatternMap.setValue(named, value);
+    }
+    return false;
+  }
+
   private boolean isOptionalOrDefaultPattern(IExpr temp, int i, ISymbol symbolWithDefaultValue,
       IASTAppendable cloned, boolean[] defaultValueMatched, EvalEngine engine) {
     if (temp.isPatternDefault()) {
@@ -2472,7 +2524,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         IExpr optionalValue =
             (optional.isAST2()) ? optional.arg2() : symbolWithDefaultValue.getDefaultValue();
         if (optionalValue.isPresent()) {
-          if (!(matchSubExpr(temp.first(), optionalValue, engine))) {
+          if (!matchOptionalDefault(temp.first(), optionalValue, engine)) {
             return true;
           }
           defaultValueMatched[0] = true;
@@ -2831,7 +2883,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           IExpr optionalValue =
               (optional.isAST2()) ? optional.arg2() : symbolWithDefaultValue.getDefaultValue();
           if (optionalValue.isPresent()) {
-            if (!(matchSubExpr(optional.arg1(), optionalValue, engine))) {
+            if (!matchOptionalDefault(optional.arg1(), optionalValue, engine)) {
               return F.NIL;
             }
             defaultValueMatched = true;

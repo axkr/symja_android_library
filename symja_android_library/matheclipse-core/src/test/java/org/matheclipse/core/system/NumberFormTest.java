@@ -105,6 +105,19 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDigitsBeyondMachinePrecisionArePadded() {
+    // from 2^53 on the digits are padded with zeros, which is reported; DecimalForm then drops the
+    // decimal point, AccountingForm keeps it
+    check("{Check(ToString(DecimalForm(4.5*^17)), m), Quiet(ToString(DecimalForm(4.5*^17)))}", //
+        "{m,450000000000000000}");
+    check("{Check(ToString(AccountingForm(-7.25*^19)), m), Quiet(ToString(AccountingForm(7.25*^19)))}", //
+        "{m,72500000000000000000.}");
+    // below 2^53 nothing changes
+    check("{Check(ToString(DecimalForm(8.5*^14)), m), Check(ToString(AccountingForm(8.5*^14)), m)}", //
+        "{850000000000000.,850000000000000.}");
+  }
+
+  @Test
   public void testPaddedForm() {
     // the field holds the requested digits and one position for the sign
     check("PaddedForm(12.3, {6, 2})", //

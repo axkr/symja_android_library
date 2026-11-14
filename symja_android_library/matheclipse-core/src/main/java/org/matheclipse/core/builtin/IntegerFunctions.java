@@ -2156,7 +2156,16 @@ public class IntegerFunctions {
             return Errors.printMessage(ast.topHead(), "divz", F.List(arg3, ast), engine);
           }
           if (arg3.isNegative()) {
-            // no residue system for a negative modulus
+            // no residue system for a negative modulus: only the empty product has a residue
+            if (arg2.isZero()) {
+              return F.C1.negate().mod(arg3.negate()).negate();
+            }
+            if (arg2.isFraction()) {
+              // The equation `1` has no integer solutions.
+              IExpr eqn = F.Equal(F.Power(S.x, ((IFraction) arg2).denominator()),
+                  F.Mod(arg1, arg3));
+              return Errors.printMessage(ast.topHead(), "root2", F.List(eqn), engine);
+            }
             return F.NIL;
           }
 
@@ -2169,7 +2178,8 @@ public class IntegerFunctions {
               IExpr result =
                   org.matheclipse.core.sympy.ntheory.ResidueNTheory.modInverse(arg1, arg3);
               return result.isPresent() ? result
-                  : Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+                  : Errors.printMessage(ast.topHead(), "ninv", F.List(arg1.mod(arg3), arg3),
+                      engine);
             }
             return arg1.modPow(iArg2, arg3);
           }
@@ -2205,7 +2215,9 @@ public class IntegerFunctions {
           }
         } catch (ArithmeticException ae) {
           if (ae.getMessage() != null && ae.getMessage().toLowerCase().contains("not invertible")) {
-            return Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+            // the message names the residue of the base
+            return Errors.printMessage(ast.topHead(), "ninv", F.List(arg1.mod(arg3), arg3),
+                engine);
           }
           return Errors.printMessage(S.PowerMod, ae, engine);
         }
@@ -2407,10 +2419,7 @@ public class IntegerFunctions {
           double zDouble = z.evalfNaN();
           double nDouble = n.evalfNaN();
           if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
-            Complex zComplex = z.evalfc();
-            Complex nComplex = n.evalfc();
-            Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
-            return F.complexNum(qr[0]).floorFraction();
+            return complexQuotient(z, n);
           } else {
             return F.num(zDouble / nDouble).floorFraction();
           }
@@ -2422,6 +2431,21 @@ public class IntegerFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The quotient of two numeric values of which at least one is not real. Two explicit numbers
+     * give the quotient with rounded real and imaginary part, which is the nearest Gaussian
+     * integer. A value like <code>Sqrt(2)</code> among them gives the floor of both parts, as
+     * <code>Floor(z/n)</code> does.
+     */
+    static IExpr complexQuotient(IExpr z, IExpr n) {
+      final Complex zComplex = z.evalfc();
+      final Complex nComplex = n.evalfc();
+      if (z.isNumber() && n.isNumber()) {
+        return F.complexNum(ComplexNum.quotientRemainder(zComplex, nComplex)[0]).floorFraction();
+      }
+      return F.complexNum(zComplex.divide(nComplex)).floorFraction();
     }
 
     private static IExpr quotient(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
@@ -2501,13 +2525,17 @@ public class IntegerFunctions {
       try {
         IExpr arg1 = ast.arg1().eval(engine);
         IExpr arg2 = ast.arg2().eval(engine);
+        if (arg2.isZero()) {
+          if (arg1.isNumericFunction(true)) {
+            // The argument `1` in `2` should be nonzero.
+            return Errors.printMessage(S.QuotientRemainder, "divz",
+                F.List(arg2, F.binaryAST2(S.QuotientRemainder, arg1, arg2)), engine);
+          }
+          return F.NIL;
+        }
         if (arg1.isInteger() && arg2.isInteger()) {
           final IInteger i0 = (IInteger) arg1;
           final IInteger i1 = (IInteger) arg2;
-          if (i1.isZero()) {
-            // Division by zero `1`.
-            return Errors.printMessage(S.QuotientRemainder, "zzdivzero", F.List(i1), engine);
-          }
           IASTMutable list = F.ListAlloc(S.Null, S.Null);
 
           list.set(1, i0.quotient(i1));
@@ -2547,10 +2575,13 @@ public class IntegerFunctions {
             double zDouble = arg1.evalfNaN();
             double nDouble = arg2.evalfNaN();
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
-              Complex zComplex = arg1.evalfc();
-              Complex nComplex = arg2.evalfc();
-              Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
-              return F.list(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
+              if (arg1.isNumber() && arg2.isNumber()) {
+                Complex[] qr = ComplexNum.quotientRemainder(arg1.evalfc(), arg2.evalfc());
+                return F.list(F.complexNum(qr[0]).floorFraction(), F.complexNum(qr[1]));
+              }
+              IExpr quotient = Quotient.complexQuotient(arg1, arg2);
+              IExpr remainder = S.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));
+              return F.list(quotient, remainder);
             } else {
               IInteger quotient = F.num(zDouble / nDouble).floorFraction();
               IExpr remainder = S.Plus.of(engine, arg1, F.Negate(F.Times(quotient, arg2)));

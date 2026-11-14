@@ -46,6 +46,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class LaplaceTransform extends AbstractFunctionEvaluator {
+
+  /** The time budget of the transform's integral under <code>s &gt; 0</code>. */
+  private static final long CONVERGENT_RETRY_MILLIS = 4_000L;
   public LaplaceTransform() {}
 
   @Override
@@ -180,6 +183,21 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         if (integral.isPresent() && !integral.has(S.Integrate)
             && !integral.has(S.LaplaceTransform)) {
           return integral;
+        }
+        if (s.isSymbol() && a1.isFree(
+            h -> h == S.UnitStep || h == S.HeavisideTheta || h == S.Piecewise, true)) {
+          // the transform where it converges: Abs(Cos(t))*E^(-s*t) needs Re(s) > 0. The steps
+          // have their own rules, which leave a step at a symbolic point alone
+          final IAST convergent =
+              F.Integrate(F.Times(a1, F.Exp(F.Times(F.CN1, s, t))), F.list(t, F.C0, F.CInfinity),
+                  F.Rule(S.Assumptions, F.Greater(s, F.C0)));
+          integral = org.matheclipse.core.integrate.IntegrateTimeBudget.runWithin(
+              () -> engine.evaluate(convergent),
+              org.matheclipse.core.basic.MachineProfile.millis(CONVERGENT_RETRY_MILLIS));
+          if (integral.isPresent() && !integral.has(S.Integrate)
+              && !integral.has(S.LaplaceTransform) && !integral.has(S.ConditionalExpression)) {
+            return integral;
+          }
         }
       }
     }

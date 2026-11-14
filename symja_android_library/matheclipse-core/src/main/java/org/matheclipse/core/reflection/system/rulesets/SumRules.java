@@ -17,15 +17,15 @@ matcher.caseOf(Sum(i_,list(i_Symbol,$p(a, Integer),$p(n, Integer))),
     // Sum(c_^(i_+a_.),{i_Symbol,1,Infinity}):=-c^(1+a)/(-1+c)/;FreeQ({a,c},i)&&(!NumericQ(c)||(c>-1&&c<1))
 matcher.caseOf(Sum(Power(c_,Plus(i_,a_DEFAULT)),list(i_Symbol,C1,oo)),
       Condition(Times(CN1,Power(Plus(CN1,c),CN1),Power(c,Plus(C1,a))),And(FreeQ(list(a,c),i),Or(Not(NumericQ(c)),And(Greater(c,CN1),Less(c,C1))))));
-    // Sum(i_^k_,{i_Symbol,1,Infinity}):=Zeta(-k)/;FreeQ(k,i)
+    // Sum(i_^k_,{i_Symbol,1,Infinity}):=Zeta(-k)/;FreeQ(k,i)&&(!NumericQ(k)||Re(k)<-1)
 matcher.caseOf(Sum(Power(i_,k_),list(i_Symbol,C1,oo)),
-      Condition(Zeta(Negate(k)),FreeQ(k,i)));
-    // Sum(1/i_^k_,{i_Symbol,1,Infinity}):=Zeta(k)/;FreeQ(k,i)
+      Condition(Zeta(Negate(k)),And(FreeQ(k,i),Or(Not(NumericQ(k)),Less(Re(k),CN1)))));
+    // Sum(1/i_^k_,{i_Symbol,1,Infinity}):=Zeta(k)/;FreeQ(k,i)&&(!NumericQ(k)||Re(k)>1)
 matcher.caseOf(Sum(Power(Power(i_,k_),CN1),list(i_Symbol,C1,oo)),
-      Condition(Zeta(k),FreeQ(k,i)));
+      Condition(Zeta(k),And(FreeQ(k,i),Or(Not(NumericQ(k)),Greater(Re(k),C1)))));
     // Sum(k_^(a_.*i_),{i_Symbol,1,Infinity}):=-k^a/(-1+k^a)/;FreeQ(k,i)&&a<0&&(k>1||k<-1)
 matcher.caseOf(Sum(Power(k_,Times(a_DEFAULT,i_)),list(i_Symbol,C1,oo)),
-      Condition(Times(CN1,Power(k,a),Power(Plus(CN1,Power(k,a)),CN1)),And(FreeQ(k,i),Less(a,C0),Or(Greater(k,C1),Less(k,CN1)))));
+      Condition(Power(Plus(CN1,Power(k,Negate(a))),CN1),And(FreeQ(k,i),Less(a,C0),Or(Not(NumericQ(k)),Greater(k,C1),Less(k,CN1)))));
     // Sum(i_^k_*c_^(a_.*i_),{i_Symbol,1,Infinity}):=PolyLog(-k,c^a)/;FreeQ({a,c,k},i)&&(!NumericQ(c^a)||(c^a>-1&&c^a<1))
 matcher.caseOf(Sum(Times(Power(i_,k_),Power(c_,Times(a_DEFAULT,i_))),list(i_Symbol,C1,oo)),
       Condition(PolyLog(Negate(k),Power(c,a)),And(FreeQ(list(a,c,k),i),Or(Not(NumericQ(Power(c,a))),And(Greater(Power(c,a),CN1),Less(Power(c,a),C1))))));

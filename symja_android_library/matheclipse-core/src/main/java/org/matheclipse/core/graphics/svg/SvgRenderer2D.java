@@ -259,11 +259,58 @@ public final class SvgRenderer2D {
       return;
     }
     ContainerTag<?> path = tag("path").attr("d", d.toString().trim());
-    if (!prim.holes.isEmpty()) {
+    // a polygon is filled by the even-odd rule: the holes stay open, and so do the regions a
+    // self-intersecting outline winds around twice, such as the centre of a pentagram. For a
+    // simple outline the two rules agree, so the attribute is only written where it matters.
+    if (!prim.holes.isEmpty() || prim.outer.size() > MAX_INTERSECTION_TEST_CORNERS
+        || selfIntersects(prim.outer)) {
       path.attr("fill-rule", "evenodd");
     }
     paintEdged(path, prim.style, prim.style.effectiveFill(), edgeStroke(prim.style));
     parent.with(path);
+  }
+
+  /** The most corners an outline may have for {@link #selfIntersects} to look at it. */
+  private static final int MAX_INTERSECTION_TEST_CORNERS = 512;
+
+  /**
+   * Whether two edges of the closed outline that do not share a corner cross each other. An
+   * outline with more than {@value #MAX_INTERSECTION_TEST_CORNERS} corners is not tested, as the
+   * test compares every pair of edges: such an outline is drawn with the even-odd rule anyway,
+   * which agrees with the default rule wherever the outline doesn't cross itself.
+   */
+  static boolean selfIntersects(List<double[]> outline) {
+    int n = outline.size();
+    if (n < 4 || n > MAX_INTERSECTION_TEST_CORNERS) {
+      return false;
+    }
+    for (int i = 0; i < n; i++) {
+      double[] a = outline.get(i);
+      double[] b = outline.get((i + 1) % n);
+      for (int j = i + 2; j < n; j++) {
+        if (i == 0 && j == n - 1) {
+          // the last edge and the first one share the first corner
+          continue;
+        }
+        if (segmentsCross(a, b, outline.get(j), outline.get((j + 1) % n))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /** Whether the segments {@code p1-p2} and {@code p3-p4} cross at a point inside both. */
+  private static boolean segmentsCross(double[] p1, double[] p2, double[] p3, double[] p4) {
+    double d1 = orientation(p3, p4, p1);
+    double d2 = orientation(p3, p4, p2);
+    double d3 = orientation(p1, p2, p3);
+    double d4 = orientation(p1, p2, p4);
+    return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+  }
+
+  private static double orientation(double[] a, double[] b, double[] c) {
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
   }
 
   // ------------------------------------------------------------- rectangle

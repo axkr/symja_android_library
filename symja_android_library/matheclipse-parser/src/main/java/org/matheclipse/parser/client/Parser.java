@@ -1392,6 +1392,11 @@ public class Parser extends Scanner {
         break;
       }
       if (fToken == TT_DERIVATIVE) {
+        if (Precedence.DERIVATIVE < min_precedence) {
+          // an operand of a tighter operator ends before the ': ++f', g@f' and g/@f' are the
+          // derivatives of ++f, g@f and g/@f
+          break;
+        }
         lhs = parseDerivative(lhs);
         // f'[x] may be followed by a juxtaposed factor (f'[x] g[x]), another operator or a span,
         // so the climb starts over; falling through to the operator test made f'[x] g[x] a syntax

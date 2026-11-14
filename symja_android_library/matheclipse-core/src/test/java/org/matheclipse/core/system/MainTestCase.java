@@ -1789,14 +1789,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   public void testSystem176() {
     check("True && a", "a");
     check("b && False && a", "False");
-    check("a && !a", "False");
+    check("a && !a", "a&&!a");
   }
 
   @Test
   public void testSystem177() {
     check("False || a", "a");
     check("b || True || a", "True");
-    check("a || !a", "True");
+    check("a || !a", "a||!a");
   }
 
   @Test

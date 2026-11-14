@@ -6,6 +6,12 @@ StringToByteArray(string)
  
 > encodes the `string` into a sequence of bytes using the default character set `UTF-8`, storing the result into into a `ByteArray`. 
 
+```
+StringToByteArray(string, "encoding")
+```
+
+> encodes the `string` using the character encoding `"UTF8"`, `"ASCII"`, `"PrintableASCII"`, `"ISOLatin1"`, `"WindowsANSI"` or `"MacintoshRoman"`. The call stays unevaluated if the encoding does not have one of the characters.
+
 See:    
 * [Wikipedia - Base64](https://en.wikipedia.org/wiki/Base64)
 

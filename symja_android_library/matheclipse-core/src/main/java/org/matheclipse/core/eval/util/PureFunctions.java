@@ -151,8 +151,9 @@ public final class PureFunctions {
    * Apply the slot form <code>Function(body)</code> to <code>application</code>.
    *
    * <p>
-   * A <code>Slot(n)</code> which names an argument that was not supplied is left as it stands and
-   * reported with the <code>Function::slotn</code> message, as in WMA. The value is the
+   * A <code>Slot(n)</code> or <code>SlotSequence(n)</code> which names an argument that was not
+   * supplied is left as it stands and reported with the <code>Function::slotn</code> or
+   * <code>Function::slots</code> message. The value is the
    * partially substituted body either way; only the diagnostic is added.
    *
    * @param function the <code>Function(body)</code>, already validated
@@ -187,11 +188,7 @@ public final class PureFunctions {
     }
     VisitorReplaceSlots visitor = new VisitorReplaceSlots(application);
     IExpr result = body.accept(visitor).orElse(body);
-    IExpr unfillable = visitor.getUnfillableSlot();
-    if (unfillable.isPresent()) {
-      // Slot number `1` in `2` cannot be filled from `3`.
-      Errors.printMessage(S.Function, "slotn", F.List(unfillable, function, application), engine);
-    }
+    reportUnfillableSlots(visitor.getUnfillableSlots(), function, application, engine);
     IExpr unfillableName = visitor.getUnfillableNamedSlot();
     if (unfillableName.isPresent()) {
       // Named slot `1` in `2` cannot be filled from `3`.
@@ -201,6 +198,37 @@ public final class PureFunctions {
           engine);
     }
     return result;
+  }
+
+  /** How many messages of one kind an application prints before it stops printing them. */
+  private static final int SLOT_MESSAGE_LIMIT = 3;
+
+  /**
+   * Report every slot of the body which the arguments cannot fill, in the order of the body:
+   * <code>Function::slotn</code> for <code>#n</code>, <code>Function::slots</code> for
+   * <code>##n</code>. A repeated slot gives the same message, which is printed once in an
+   * evaluation, so it is not counted again. After the third message of a kind, a
+   * <code>General::stop</code> line says that further ones are suppressed.
+   */
+  private static void reportUnfillableSlots(java.util.List<IAST> unfillable, IAST function,
+      IAST application, EvalEngine engine) {
+    int slotn = 0;
+    int slots = 0;
+    for (IAST slot : new java.util.LinkedHashSet<IAST>(unfillable)) {
+      boolean sequence = slot.isSlotSequence();
+      int count = sequence ? ++slots : ++slotn;
+      if (count > SLOT_MESSAGE_LIMIT) {
+        continue;
+      }
+      String tag = sequence ? "slots" : "slotn";
+      // Slot number `1` in `2` cannot be filled from `3`.
+      // SlotSequence[`1`] in `2` cannot be filled from `3`.
+      Errors.printMessage(S.Function, tag, F.List(slot.arg1(), function, application), engine);
+      if (count == SLOT_MESSAGE_LIMIT) {
+        // Further output of `1` will be suppressed during this calculation.
+        Errors.printMessage(S.General, "stop", F.List(F.stringx("Function::" + tag)), engine);
+      }
+    }
   }
 
   /**

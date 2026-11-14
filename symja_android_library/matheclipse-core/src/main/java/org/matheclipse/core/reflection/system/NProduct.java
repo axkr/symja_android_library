@@ -10,6 +10,8 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.series.dp.complex.EnsembleComplex;
@@ -17,6 +19,7 @@ import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex;
 import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex.SeriesSolutionComplex;
 import org.matheclipse.core.numerics.utils.Sequences;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.eval.TimeLimits;
 
 /**
  * <pre>
@@ -41,6 +44,9 @@ import org.matheclipse.parser.client.ParserConfig;
  */
 public class NProduct extends AbstractFunctionEvaluator {
 
+  /** The time budget of the closed form of the product. */
+  private static final long SYMBOLIC_MILLIS = 3000L;
+
   /** The maximum number of factors which are multiplied directly. */
   private static final long MAX_DIRECT_RANGE = 100000L;
 
@@ -48,11 +54,29 @@ public class NProduct extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (ast.argSize() >= 3 && !ast.arg3().isRuleAST()) {
+      return severalIterators(ast, engine);
+    }
     if (ast.isAST3()) {
       return workingPrecisionProduct(ast, engine);
     }
     IExpr function = ast.arg1();
-    IExpr limitList = engine.evaluate(ast.arg2());
+    IExpr limitList = ast.arg2();
+    if (limitList.isList() && limitList.argSize() >= 2 && limitList.first().isSymbol()) {
+      // the bounds are evaluated, the index keeps its name: a global value of it doesn't leak
+      IASTMutable bounds = ((IAST) limitList).copy();
+      for (int i = 2; i < bounds.size(); i++) {
+        bounds.set(i, engine.evaluate(bounds.get(i)));
+      }
+      limitList = bounds;
+    } else {
+      limitList = engine.evaluate(limitList);
+    }
+    if (limitList.isList1()) {
+      // a count is an iterator of Product, not of a numerical product
+      // Raw object `1` cannot be used as an iterator.
+      return Errors.printMessage(S.NProduct, "itraw", F.List(limitList.first()));
+    }
     if (!limitList.isList3() && !limitList.isList4()) {
       return F.NIL;
     }
@@ -85,7 +109,11 @@ public class NProduct extends AbstractFunctionEvaluator {
     }
 
     // try a symbolic evaluation
-    IExpr product = engine.evaluate(F.Product(function, limits));
+    // quietly: the search for a closed form compares the complex roots of the factor
+    // with a time budget, and an iteration or size limit of a Factorial of the bounds is no
+    // answer: the numerical product follows
+    IExpr product = TimeLimits.evaluateOrNil(F.Product(function, limits),
+        org.matheclipse.core.basic.MachineProfile.millis(SYMBOLIC_MILLIS));
     if (product.isFree(S.Product, true) && product.isNumericFunction(true)) {
       IExpr temp = engine.evalN(product);
       if (temp.isNumber()) {
@@ -96,7 +124,17 @@ public class NProduct extends AbstractFunctionEvaluator {
     if (!finite && step == 1L && F.isPresent(start) && upperLimit.isInfinity()) {
       // Product(f(k)) == Exp(Sum(Log(f(k))))
       try {
-        final IExpr logFunction = F.Log(function);
+        final IExpr logFunction = logOfFactor(function, variable, start, engine);
+        if (start > 1000L) {
+          // far out the terms of the sum of the logarithms are tiny, and an extrapolation of its
+          // partial sums sees too few of them: the numerical sum has the tail of 1/k^2 right
+          ISymbol j = F.Dummy("j");
+          IExpr logSum = engine.evalQuiet(F.NSum(F.subst(logFunction, variable, j),
+              F.List(j, F.ZZ(start), F.CInfinity)));
+          if (logSum.isNumber()) {
+            return engine.evalN(F.Exp(logSum));
+          }
+        }
         Function<Long, Complex> logTerms = k -> {
           try {
             final IExpr value = F.ZZ(k);
@@ -122,6 +160,66 @@ public class NProduct extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The logarithm of the factor <code>f == 1 + g</code> as <code>2*ArcTanh(g/(2 + g))</code>, with
+   * <code>g</code> formed symbolically: <code>Log(1.0 + g)</code> keeps only the digits of a small
+   * <code>g</code> which survive the addition, and is 0 from <code>g &lt; 10^-16</code> on, so the
+   * far terms of the sum of the logarithms, <code>1 + 1/k^2</code> at <code>k == 10^6</code>, are
+   * lost. A factor which is -1 at the start has no such form: <code>Log(f)</code> then.
+   */
+  private static IExpr logOfFactor(IExpr function, IExpr variable, long start,
+      EvalEngine engine) {
+    final IExpr log = F.Log(function);
+    try {
+      IExpr g = engine.evalBlock(() -> engine.evaluate(F.Together(F.Subtract(function, F.C1))),
+          F.list(variable));
+      if (g.isZero()) {
+        return log;
+      }
+      IExpr form = F.Times(F.C2, F.ArcTanh(F.Divide(g, F.Plus(F.C2, g))));
+      final IExpr first = F.ZZ(start);
+      Complex value = form.evalfc(x -> x.equals(variable) ? first : F.NIL);
+      if (value.isNaN() || value.isInfinite()) {
+        return log;
+      }
+      return form;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return log;
+    }
+  }
+
+  /**
+   * <code>NProduct(f, {i, ...}, {j, ...}, ...)</code>: the product over the first iterator of the
+   * products over the others.
+   *
+   * @return {@link F#NIL} if the product has no value
+   */
+  private static IExpr severalIterators(IAST ast, EvalEngine engine) {
+    int iterators = 1;
+    while (iterators + 2 <= ast.argSize() && !ast.get(iterators + 2).isRuleAST()) {
+      iterators++;
+    }
+    IExpr lastIterator = engine.evaluate(ast.get(iterators + 1));
+    if (lastIterator.isList1()) {
+      // Raw object `1` cannot be used as an iterator.
+      return Errors.printMessage(S.NProduct, "itraw", F.List(lastIterator.first()));
+    }
+    IASTAppendable inner = F.ast(S.NProduct);
+    inner.append(ast.arg1());
+    for (int i = 3; i <= ast.argSize(); i++) {
+      inner.append(ast.get(i));
+    }
+    IASTAppendable outer = F.ast(S.NProduct);
+    outer.append(inner);
+    outer.append(ast.arg2());
+    for (int i = iterators + 2; i <= ast.argSize(); i++) {
+      outer.append(ast.get(i));
+    }
+    IExpr result = engine.evaluate(outer);
+    return result.isAST(S.NProduct) ? F.NIL : result;
   }
 
   /**

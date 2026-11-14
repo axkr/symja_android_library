@@ -81,8 +81,10 @@ public final class Extract extends AbstractFunctionEvaluator {
         }
         // Part `1` of `2` does not exist.
         return Errors.printMessage(S.Extract, "partw", F.list(ast.arg2(), list), engine);
-      } else if (ast.arg2().isList()) {
-        IAST arg2 = (IAST) ast.arg2();
+      } else {
+        // a single position which is no list is the position list of that one element: a key of an
+        // association, a span or All
+        IAST arg2 = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
         if (arg2.isListOfLists()) {
           final int arg2Size = arg2.size();
           IASTAppendable result = F.ListAlloc(arg2Size);
@@ -119,7 +121,8 @@ public final class Extract extends AbstractFunctionEvaluator {
   private boolean checkPositions(IAST ast, IAST positions, EvalEngine engine) {
     for (int j = 1; j < positions.size(); j++) {
       IExpr arg = positions.get(j);
-      if (arg.isAST(S.Key)) {
+      if (arg.isAST(S.Key) || arg.isString()) {
+        // a string is the key of an association
         continue;
       }
       // Allow All, Span (;;), or list of indices

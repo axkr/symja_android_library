@@ -116,7 +116,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check("f(a_+b_,a_,b_) := {a,b}", //
         "");
     check("Definition(f)", //
-        "f(a_ + b_,a_,b_):={a,b}");
+        "f((a_) + (b_),a_,b_):={a,b}");
     check("f(5,3,2)", //
         "f(5,3,2)");
 
@@ -1483,4 +1483,56 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     }
   }
 
+
+  @Test
+  public void testNamedPatternBodyExtendsToTheColon() {
+    // name:body takes every operator which binds tighter than :, and keeps the written order
+    check("FullForm(Hold(q : _*3))", //
+        "Hold(Pattern(q, Times(Blank(), 3)))");
+    check("FullForm(Hold(q : _ + 7 -> w))", //
+        "Hold(Rule(Pattern(q, Plus(Blank(), 7)), w))");
+    check("FullForm(Hold(c + q : _^3))", //
+        "Hold(Plus(c, Pattern(q, Power(Blank(), 3))))");
+    check("FullForm(Hold((q : _) * 3))", //
+        "Hold(Times(Pattern(q, Blank()), 3))");
+    // a second : ends the body and gives the named pattern its default
+    check("FullForm(Hold(w : g | h : u))", //
+        "Hold(Optional(Pattern(w, Alternatives(g, h)), u))");
+    check("FullForm(Hold(w : g + _ : u))", //
+        "Hold(Optional(Pattern(w, Plus(g, Blank())), u))");
+    check("FullForm(Hold(w : g + k_ : u))", //
+        "Hold(Optional(Pattern(w, Plus(g, Pattern(k, Blank()))), u))");
+    // inside brackets the : belongs to the inner pattern again
+    check("FullForm(Hold(w : {g + _ : u}))", //
+        "Hold(Pattern(w, List(Plus(g, Optional(Blank(), u)))))");
+    check("FullForm(Hold(g | h : u))", //
+        "Hold(Alternatives(g, Pattern(h, u)))");
+  }
+
+  @Test
+  public void testNamedPatternWithDefaultMatches() {
+    check("$nd(w : _Integer | _Rational : 5) := {w}; {$nd(), $nd(2/3), $nd(z)}", //
+        "{{5},{2/3},$nd(z)}");
+    check("$ne(w : _ + 2) := {w}; {$ne(m + 2), $ne(m)}", //
+        "{{2+m},$ne(m)}");
+    check("{3 + r, s} /. (w : _ + 3) :> g(w)", //
+        "{g(3+r),s}");
+    // the default is taken also where the named pattern doesn't match it
+    check("$nf(w : p | q : r) := k(w); {$nf(), $nf(q), $nf(s)}", //
+        "{k(r),k(q),$nf(s)}");
+  }
+
+  @Test
+  public void testPatternOperandsInInputForm() {
+    // named patterns and patterns with a default are put in parentheses as operands
+    check("ToString(Hold(k_Real | k_Integer, _Real | _Integer, (k__) * (m_), w : _*3, k_?g * 2, _. * 2, Optional(_, 3) | 4, k_ != 3, !k_), InputForm)", //
+        "Hold((k_Real)|(k_Integer),_Real|_Integer,(k__)*(m_),w:_*3,(k_)?g*2,(_.)*2,(_:3)|4,(k_)!=3,!(k_))");
+  }
+
+  @Test
+  public void testNamedDefaultWithInnerPatternNames() {
+    // the default isn't taken without a match where the pattern has names of its own
+    check("$ng(w : (u_ + 1) : 7) := {w, u}; $ng()", //
+        "$ng()");
+  }
 }

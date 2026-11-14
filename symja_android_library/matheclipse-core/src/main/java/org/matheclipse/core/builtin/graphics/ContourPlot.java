@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.svg.TickGenerator;
 import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
@@ -90,7 +91,8 @@ public class ContourPlot extends ListPlot {
 
     int plotPoints = 25;
     int maxRecursion = -1;
-    int numberOfContours = 10;
+    // -1: Automatic, levels at round values
+    int numberOfContours = -1;
     IExpr contourStyle = S.Automatic;
     IExpr contourShading = S.Automatic;
 
@@ -111,8 +113,10 @@ public class ContourPlot extends ListPlot {
           switch (((IBuiltInSymbol) key).ordinal()) {
             case ID.Contours:
             // CPD-ON
-              if (val.isInteger())
-                numberOfContours = val.toIntDefault(10);
+              if (val.isInteger()) {
+                // a negative count draws no contours, like zero; -1 stands for Automatic
+                numberOfContours = Math.max(0, val.toIntDefault(10));
+              }
               break;
             case ID.ContourStyle:
               contourStyle = val;
@@ -177,12 +181,14 @@ public class ContourPlot extends ListPlot {
       functionArg = F.List(split.toArray(new IExpr[0]));
     }
 
+    boolean shaded = false;
     if (functionArg.isList()) {
       // Multiple functions/equations
       IAST list = (IAST) functionArg;
       int count = 0;
       for (int i = 1; i < list.size(); i++) {
         IExpr func = list.get(i);
+        shaded |= isShaded(func, contourShading);
 
         // Determine style for this specific curve
         IExpr style = contourStyle;
@@ -200,6 +206,7 @@ public class ContourPlot extends ListPlot {
       }
     } else {
       // Single function/equation
+      shaded = isShaded(functionArg, contourShading);
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, plotPoints,
           numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
           engine, false, contourLines, contourLabels, region, boundaryStyle);
@@ -212,7 +219,26 @@ public class ContourPlot extends ListPlot {
     IAST content = F.List(graphicsComplex(primitives, xRange, yRange),
         meshLines.isPresent() ? meshLines : F.CEmptyList);
 
-    return createGraphicsFunction(content, graphicsOptions, wrappedAST);
+    IExpr graphics = createGraphicsFunction(content, graphicsOptions, wrappedAST);
+    if (!shaded
+        && GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic).isAutomatic()) {
+      // only curves are drawn, which need not reach the edges of the box of x and y they were
+      // traced in; the box is still what the picture shows
+      graphics = withPlotRange(graphics, originalAST, F.List(F.num(xRange[0]), F.num(xRange[1])),
+          true, F.List(F.num(yRange[0]), F.num(yRange[1])), true);
+    }
+    return graphics;
+  }
+
+  /**
+   * Whether the bands between the contours of <code>function</code> are filled: an equation is
+   * not shaded unless <code>ContourShading</code> asks for it.
+   */
+  private static boolean isShaded(IExpr function, IExpr contourShading) {
+    if (function.isAST(S.Equal, 3) && contourShading == S.Automatic) {
+      return false;
+    }
+    return contourShading != S.None && !contourShading.isFalse();
   }
 
   /**
@@ -233,13 +259,29 @@ public class ContourPlot extends ListPlot {
   private static IExpr indexPrimitives(IExpr expr, double[] xRange, double[] yRange,
       IASTAppendable points, java.util.Map<Long, Integer> indexOf) {
     if (expr.isList()) {
-      return ((IAST) expr).map(x -> indexPrimitives(x, xRange, yRange, points, indexOf), 1);
+      IAST list = (IAST) expr;
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (IExpr x : list) {
+        IExpr indexed = indexPrimitives(x, xRange, yRange, points, indexOf);
+        if (indexed.isPresent()) {
+          result.append(indexed);
+        }
+      }
+      return result;
     }
     if ((expr.isAST(S.Line, 2) || expr.isAST(S.Polygon, 2) || expr.isAST(S.Tooltip))
         && expr.argSize() >= 1) {
       IExpr first = expr.isAST(S.Tooltip)
           ? indexPrimitives(expr.first(), xRange, yRange, points, indexOf)
           : indexPoints(expr.first(), xRange, yRange, points, indexOf);
+      if (!expr.isAST(S.Tooltip) && first.isList() && first.first().isInteger()) {
+        // points of a piece which became one point of the table: a line which shrank to a point,
+        // a polygon which shrank to a line, is left out
+        first = withoutRepeatedIndices((IAST) first, expr.isAST(S.Line) ? 2 : 3);
+        if (first.isNIL()) {
+          return F.NIL;
+        }
+      }
       return ((IAST) expr).setAtCopy(1, first);
     }
     if (expr.isAST(S.Text) && expr.argSize() >= 2) {
@@ -247,6 +289,26 @@ public class ContourPlot extends ListPlot {
           indexPoints(expr.second(), xRange, yRange, points, indexOf));
     }
     return expr;
+  }
+
+  /**
+   * The indices with repeated neighbours left out, or {@link F#NIL} if fewer than
+   * <code>least</code> distinct ones remain.
+   */
+  private static IExpr withoutRepeatedIndices(IAST indices, int least) {
+    IASTAppendable distinct = F.ListAlloc(indices.argSize());
+    for (IExpr i : indices) {
+      if (distinct.argSize() == 0 || !distinct.last().equals(i)) {
+        distinct.append(i);
+      }
+    }
+    if (least > 2) {
+      // a polygon is closed: its last point meets its first
+      while (distinct.argSize() > 1 && distinct.last().equals(distinct.arg1())) {
+        distinct.remove(distinct.argSize());
+      }
+    }
+    return distinct.argSize() >= least ? distinct : F.NIL;
   }
 
   /** A point, or a nested list of points, with every point replaced by its index. */
@@ -284,15 +346,12 @@ public class ContourPlot extends ListPlot {
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
       boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle) {
+    // an equation is not shaded unless the shading is specified
+    final boolean shaded = isShaded(function, contourShading);
     boolean isEquation = false;
     if (function.isAST(S.Equal, 3)) {
       isEquation = true;
       function = F.Subtract(function.first(), function.second());
-    }
-
-    // Default shading to None for equations unless specified
-    if (isEquation && contourShading == S.Automatic) {
-      contourShading = S.None;
     }
 
     // CPD-OFF contour and density plots sample their own grids
@@ -358,6 +417,9 @@ public class ContourPlot extends ListPlot {
     double[] levels;
     if (isEquation) {
       levels = new double[] {0.0};
+    } else if (numberOfContours < 0) {
+      // about ten levels at round values strictly between the least and the greatest value
+      levels = TickGenerator.interiorDivisions(minZ, maxZ, 10);
     } else {
       levels = new double[numberOfContours];
       double levelStep = (maxZ - minZ) / (numberOfContours + 1);
@@ -372,7 +434,7 @@ public class ContourPlot extends ListPlot {
         gridX, gridY);
 
     // 3. Shading (Polygons)
-    if (contourShading != S.None && !contourShading.isFalse()) {
+    if (shaded) {
       for (int k = -1; k < levels.length; k++) {
         double level = (k == -1) ? minZ - 1.0 : levels[k];
 
@@ -430,10 +492,9 @@ public class ContourPlot extends ListPlot {
 
         if (lineSegments.argSize() > 0) {
           IASTAppendable group = F.ListAlloc();
-          if (currentStyle.isList())
-            group.append(F.Directive(currentStyle));
-          else
-            group.append(currentStyle);
+          // the lines of a level are half transparent with butt ends, an equation's curve keeps
+          // its style as given
+          group.append(isEquation ? styleDirective(currentStyle) : levelDirective(currentStyle));
 
           for (IExpr line : lineSegments)
             group.append(line);
@@ -580,6 +641,43 @@ public class ContourPlot extends ListPlot {
     group.append(boundaryStyle);
     group.appendArgs(boundary);
     primitives.append(group);
+  }
+
+  /**
+   * The style of one contour as it stands in front of its lines: a list <code>{d1, {d2, d3},
+   * ...}</code> of directives becomes <code>Directive(d1, d2, d3, ...)</code>, any other style is
+   * kept.
+   */
+  static IExpr styleDirective(IExpr style) {
+    if (!style.isList()) {
+      return style;
+    }
+    IASTAppendable directive = F.ast(S.Directive);
+    appendDirectives(directive, style);
+    return directive;
+  }
+
+  /**
+   * The style of the lines of one contour level: <code>Directive(Opacity(0.5), CapForm("Butt"),
+   * d1, d2, ...)</code> with the directives <code>d1, d2, ...</code> of the style, a list or a
+   * <code>Directive</code> of them or a single one.
+   */
+  static IExpr levelDirective(IExpr style) {
+    IASTAppendable directive = F.ast(S.Directive);
+    directive.append(F.unaryAST1(S.Opacity, F.num(0.5)));
+    directive.append(F.unaryAST1(S.CapForm, F.stringx("Butt")));
+    appendDirectives(directive, style);
+    return directive;
+  }
+
+  private static void appendDirectives(IASTAppendable directive, IExpr style) {
+    if (style.isList() || style.isAST(S.Directive)) {
+      for (IExpr d : (IAST) style) {
+        appendDirectives(directive, d);
+      }
+    } else {
+      directive.append(style);
+    }
   }
 
   /**
@@ -794,30 +892,62 @@ public class ContourPlot extends ListPlot {
       add(t1, pts[3]);
       add(t1, x, y);
       add(t1, pts[0]);
-      out.append(F.Polygon(t1));
+      appendPolygon(out, t1, dx, dy);
       IASTAppendable t2 = F.ListAlloc();
       add(t2, pts[1]);
       add(t2, x + dx, y + dy);
       add(t2, pts[2]);
-      out.append(F.Polygon(t2));
+      appendPolygon(out, t2, dx, dy);
       return;
     } else if (index == 10) { // Saddle
       IASTAppendable t1 = F.ListAlloc();
       add(t1, pts[0]);
       add(t1, x + dx, y);
       add(t1, pts[1]);
-      out.append(F.Polygon(t1));
+      appendPolygon(out, t1, dx, dy);
       IASTAppendable t2 = F.ListAlloc();
       add(t2, pts[2]);
       add(t2, x, y + dy);
       add(t2, pts[3]);
-      out.append(F.Polygon(t2));
+      appendPolygon(out, t2, dx, dy);
       return;
     }
 
-    if (polyPts.argSize() > 0) {
-      out.append(F.Polygon(polyPts));
+    appendPolygon(out, polyPts, dx, dy);
+  }
+
+  /**
+   * Append the polygon through <code>points</code> with repeated points left out, or nothing if
+   * fewer than three distinct points remain: a corner exactly at the level is also where the
+   * crossings on its two edges lie, and the piece of the cell cut off there has no area.
+   */
+  private static void appendPolygon(IASTAppendable out, IAST points, double dx, double dy) {
+    IASTAppendable distinct = F.ListAlloc(points.argSize());
+    for (IExpr p : points) {
+      if (distinct.argSize() == 0 || !samePoint(distinct.last(), p, dx, dy)) {
+        distinct.append(p);
+      }
     }
+    while (distinct.argSize() > 1 && samePoint(distinct.last(), distinct.arg1(), dx, dy)) {
+      distinct.remove(distinct.argSize());
+    }
+    if (distinct.argSize() >= 3) {
+      out.append(F.Polygon(distinct));
+    }
+  }
+
+  private static boolean samePoint(IExpr p, IExpr q, double dx, double dy) {
+    return samePoint(p.first().evalf(), p.second().evalf(), q.first().evalf(),
+        q.second().evalf(), dx, dy);
+  }
+
+  /**
+   * Whether two points of a cell <code>dx</code> by <code>dy</code> large are the same up to the
+   * rounding of the interpolation along its edges.
+   */
+  private static boolean samePoint(double x1, double y1, double x2, double y2, double dx,
+      double dy) {
+    return Math.abs(x1 - x2) <= 1.0e-9 * Math.abs(dx) && Math.abs(y1 - y2) <= 1.0e-9 * Math.abs(dy);
   }
 
   static void add(IASTAppendable list, double[] p) {
@@ -844,6 +974,11 @@ public class ContourPlot extends ListPlot {
         break;
       double[] p1 = interp(x, y, dx, dy, e1, v0, v1, v2, v3, level);
       double[] p2 = interp(x, y, dx, dy, e2, v0, v1, v2, v3, level);
+      if (samePoint(p1[0], p1[1], p2[0], p2[1], dx, dy)) {
+        // a corner exactly at the level: both ends meet in it, and the neighbouring cell draws
+        // the contour through it
+        continue;
+      }
       out.append(
           F.Line(F.List(F.List(F.num(p1[0]), F.num(p1[1])), F.List(F.num(p2[0]), F.num(p2[1])))));
     }

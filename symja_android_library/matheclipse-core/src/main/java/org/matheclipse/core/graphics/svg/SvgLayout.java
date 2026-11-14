@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
@@ -789,9 +790,20 @@ final class SvgLayout {
     if (isLayout(content)) {
       return nestedLayout((IAST) content, seedWidth);
     }
+    Piece image = pieceImage(content);
+    if (image != null) {
+      return image;
+    }
     IExpr cell = content.isGraphicsObject() ? content : content.stripDisplayWrappers();
     if (cell != content && (isLayout(cell) || isAnimation(cell) || cell.isAST(S.Spacer, 2))) {
       return piece(cell, seedWidth);
+    }
+    if (cell != content) {
+      // an image inside a display wrapper is still drawn as the image
+      image = pieceImage(cell);
+      if (image != null) {
+        return image;
+      }
     }
     if (cell instanceof IAST) {
       IAST ast = (IAST) cell;
@@ -806,6 +818,25 @@ final class SvgLayout {
       }
     }
     return pieceText(content);
+  }
+
+  /**
+   * A raster image as a cell: the picture it holds, one unit per pixel, so that it keeps its
+   * natural size and a fixed box places it by its alignment like any other cell.
+   *
+   * @return <code>null</code> if <code>content</code> is not an image
+   */
+  private static Piece pieceImage(IExpr content) {
+    String base64Png = SVGGraphics.imagePngBase64(content);
+    if (base64Png == null) {
+      return null;
+    }
+    long[] size = SVGGraphics.pngSize(base64Png);
+    if (size == null) {
+      return null;
+    }
+    return new Piece(SVGGraphics.imageElement(base64Png, size[0], size[1]), size[0], size[1],
+        true);
   }
 
   /** The margin between a frame and what it holds, where <code>FrameMargins</code> is not set. */

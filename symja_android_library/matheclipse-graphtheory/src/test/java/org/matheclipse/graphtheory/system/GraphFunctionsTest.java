@@ -166,6 +166,89 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "3");
   }
 
+  /**
+   * The function of the legacy option EdgeRenderingFunction draws an edge from its points, its
+   * two vertices and its label; no default label is drawn.
+   */
+  @Test
+  public void testEdgeRenderingFunction() {
+    // the function draws the edge; the labels are drawn as without it
+    check("Cases(GraphPlot({{p -> q, \"u\"}, {q -> r, \"v\"}}, "
+        + "EdgeRenderingFunction -> (Line(#1) &)), Text(l_, ___) :> l, Infinity)", //
+        "{u,v}");
+    check("Cases(GraphPlot({{p -> q, \"u\"}, {q -> r, \"v\"}}, "
+        + "EdgeRenderingFunction -> (Line(#1) &)), _Arrow, Infinity)", //
+        "{}");
+    // #2 is the pair of vertices, #3 the edge; the edges of a list of rules are undirected
+    check("Cases(GraphPlot({{p -> q, \"u\"}, q -> r, {r -> s, \"w\"}}, "
+        + "EdgeRenderingFunction -> (edge(Length(#1), #2, #3) &)), _edge, Infinity)", //
+        "{edge(2,{p,q},p<->q),edge(2,{q,r},q<->r),edge(2,{r,s},r<->s)}");
+    check("Cases(GraphPlot({{p -> q, \"u\"}, {q -> r, \"v\"}}, "
+        + "EdgeRenderingFunction -> ({Line(#1), Text(#3, Mean(#1))} &)), Text(l_, _) :> l, Infinity)", //
+        "{p<->q,q<->r}");
+    // the edges of a graph are passed as they are
+    check("Cases(GraphPlot(Graph({p -> q}), EdgeRenderingFunction -> (edge(#3) &)), _edge, Infinity)", //
+        "{edge(p->q)}");
+    // the option is no option of the picture
+    check("FreeQ(GraphPlot({p -> q, q -> r}, EdgeRenderingFunction -> (Line(#1) &), "
+        + "PlotLabel -> \"t\"), EdgeRenderingFunction)", //
+        "True");
+    check("Cases(TreePlot({{p -> q, \"u\"}, {p -> r, \"v\"}}, "
+        + "EdgeRenderingFunction -> (edge(#2, #3) &)), _edge, Infinity)", //
+        "{edge({p,q},p->q),edge({p,r},p->r)}");
+    check("Cases(TreePlot({{p -> q, \"u\"}, {p -> r, \"v\"}}, "
+        + "EdgeRenderingFunction -> (edge(#2, #3) &)), Text(l_, ___) :> l, Infinity)", //
+        "{u,v}");
+    // the points of an edge are the positions of its two vertices
+    check("With({g = TreePlot({p -> q}, EdgeRenderingFunction -> (edge(#1) &))}, "
+        + "Cases(g, edge(l_) :> l, Infinity) == {Cases(g, Disk(c_, _) :> c, Infinity)})", //
+        "True");
+  }
+
+  @Test
+  public void testLabelledAndPlainEdges() {
+    check("Cases(GraphPlot({{p -> q, \"u\"}, q -> r, {r -> p, \"w\"}}), Text(l_, ___) :> l, Infinity)", //
+        "{u,w}");
+    check("Cases(TreePlot({p -> q, {q -> r, \"v\"}}), Text(l_, ___) :> l, Infinity)", //
+        "{v}");
+  }
+
+  /** TreePlot(g, Center) draws the root in the middle and every layer on a circle around it. */
+  @Test
+  public void testTreePlotCenter() {
+    // the three children at the same distance from the root, a third of the turn apart
+    check("With({c = Cases(TreePlot({p -> q, p -> r, p -> s}, Center), Disk(m_, _) :> m, Infinity)}, "
+        + "{First(c), Round(Map(Norm(# - First(c)) &, Rest(c)), 0.001), "
+        + "Round(Map(ArcTan @@ (# - First(c)) &, Rest(c))/Degree)})", //
+        "{{0.0,0.0},{1.5,1.5,1.5},{150,-90,30}}");
+    // the root is the vertex no edge points to, not the centre of the graph
+    check("With({c = Cases(TreePlot({p -> q, q -> r, q -> s, q -> t}, Center), Disk(m_, _) :> m, "
+        + "Infinity)}, {First(c), Round(c[[2]], 0.001)})", //
+        "{{0.0,0.0},{0.0,-0.839}}");
+    // a root of the call
+    check("First(Cases(TreePlot({p <-> q, q <-> r, q <-> s}, Center, s), Disk(m_, _) :> m, Infinity))"
+        + " == {0.0, 0.0}", //
+        "False");
+    check("Cases(TreePlot({p <-> q, q <-> r, q <-> s}, Center, s), Disk(m_, _) :> m, Infinity)[[4]]", //
+        "{0.0,0.0}");
+  }
+
+  /** The legacy option LayerSizeFunction gives the depth of every layer of the tree. */
+  @Test
+  public void testTreePlotLayerSizeFunction() {
+    check("Differences(Cases(TreePlot({p -> q, q -> r, r -> s}, Top, "
+        + "LayerSizeFunction -> (3^# &)), Disk({_, y_}, _) :> y, Infinity))", //
+        "{-0.230769,-0.692308,-2.07692}");
+    check("Differences(Cases(TreePlot({p -> q, q -> r, r -> s}, Left, "
+        + "LayerSizeFunction -> (3^# &)), Disk({x_, _}, _) :> x, Infinity))", //
+        "{0.230769,0.692308,2.07692}");
+    check("Round(Differences(Cases(TreePlot({p -> q, q -> r, r -> s}, Center, "
+        + "LayerSizeFunction -> (3^# &)), Disk({_, y_}, _) :> y, Infinity)), 0.001)", //
+        "{-0.115,-0.346,-1.038}");
+    check("FreeQ(TreePlot({p -> q, q -> r}, LayerSizeFunction -> (3^# &)), LayerSizeFunction)", //
+        "True");
+  }
+
   @Test
   public void testTreePlotRootAndPosition() {
     check("Head(TreePlot({1 -> 2, 2 -> 3}, 3))", //

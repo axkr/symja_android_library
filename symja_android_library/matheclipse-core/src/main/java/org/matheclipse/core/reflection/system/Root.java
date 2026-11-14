@@ -168,6 +168,11 @@ public class Root extends AbstractFunctionEvaluator {
         if (!body.equals(arg1.first()) && polynomialCoefficients(body) != null) {
           return ast.setAtCopy(1, F.Function(body));
         }
+        // (#-I)^2*(#+3): a power of a sum with a coefficient which isn't real
+        IExpr expanded = engine.evaluate(F.Expand(body));
+        if (!expanded.equals(arg1.first()) && polynomialCoefficients(expanded) != null) {
+          return ast.setAtCopy(1, F.Function(expanded));
+        }
       }
       if (!arg1.isFunction() && !arg1.isList()) {
         // Root[poly, k] with a plain polynomial expression instead of a pure function of Slot1:
@@ -505,8 +510,20 @@ public class Root extends AbstractFunctionEvaluator {
     for (int i = 0; i <= degree; i++) {
       IReal real = coefficients[i].evalReal();
       if (real == null) {
-        // symbolic or non-real coefficient
-        return null;
+        // a real coefficient which is no number object, Sqrt(2) or Pi, keeps the order of the
+        // roots of a real polynomial
+        double value = Double.NaN;
+        if (coefficients[i].isRealResult()) {
+          value = coefficients[i].evalfNaN();
+        }
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+          // a coefficient which isn't real, or a symbolic one
+          IExpr[] roots = nonRealPolynomialRoots(coefficients);
+          ROOTS_CACHE.put(key, roots == null ? NO_ROOTS : roots);
+          return roots;
+        }
+        doubleCoefficients[i] = value;
+        continue;
       }
       doubleCoefficients[i] = real.doubleValue();
     }
@@ -539,6 +556,205 @@ public class Root extends AbstractFunctionEvaluator {
     }
     ROOTS_CACHE.put(key, numericRoots);
     return numericRoots;
+  }
+
+  /**
+   * All roots of a polynomial with a coefficient which isn't real at machine precision, in the
+   * order of {@link ToRadicals#sortRootOrderNonReal(Integer[], double[], double[])}. The roots are
+   * found together by the Aberth iteration; roots which agree to six digits are one multiple
+   * root, and a real or imaginary part of the size of the rounding error is 0.
+   *
+   * @return {@code null} if a coefficient has no numeric value or the iteration fails
+   */
+  private static IExpr[] nonRealPolynomialRoots(IExpr[] coefficients) {
+    final int degree = coefficients.length - 1;
+    org.hipparchus.complex.Complex[] c = new org.hipparchus.complex.Complex[degree + 1];
+    try {
+      for (int i = 0; i <= degree; i++) {
+        c[i] = coefficients[i].evalfc();
+        if (c[i] == null || !c[i].isFinite()) {
+          return null;
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
+    org.hipparchus.complex.Complex[] z = aberthRoots(c);
+    if (z == null) {
+      return null;
+    }
+    // A multiple root is found as a cluster whose mean is accurate. Roots of a polynomial without
+    // a multiple root are left as they are, however close: I and I + 10^-7 are two roots.
+    final boolean multipleRoots = mayHaveMultipleRoot(coefficients);
+    boolean[] merged = new boolean[degree];
+    for (int i = 0; i < degree && multipleRoots; i++) {
+      if (merged[i]) {
+        continue;
+      }
+      org.hipparchus.complex.Complex sum = z[i];
+      int count = 1;
+      for (int j = i + 1; j < degree; j++) {
+        if (!merged[j] && z[i].subtract(z[j]).norm() < 1.0e-6 * (1.0 + z[i].norm())) {
+          sum = sum.add(z[j]);
+          merged[j] = true;
+          count++;
+        }
+      }
+      if (count > 1) {
+        org.hipparchus.complex.Complex mean = sum.divide(count);
+        for (int j = i; j < degree; j++) {
+          if (j == i || (merged[j] && z[i].subtract(z[j]).norm() < 1.0e-6 * (1.0 + z[i].norm()))) {
+            z[j] = mean;
+          }
+        }
+      }
+    }
+    double[] re = new double[degree];
+    double[] im = new double[degree];
+    Integer[] order = new Integer[degree];
+    for (int i = 0; i < degree; i++) {
+      re[i] = z[i].getReal();
+      im[i] = z[i].getImaginary();
+      final double noise = 1.0e-14 * Math.max(1.0e-300, z[i].norm());
+      if (Math.abs(re[i]) < noise) {
+        re[i] = 0.0;
+      }
+      if (Math.abs(im[i]) < noise) {
+        im[i] = 0.0;
+      }
+      order[i] = i;
+    }
+    ToRadicals.sortRootOrderNonReal(order, re, im);
+    IExpr[] roots = new IExpr[degree];
+    for (int i = 0; i < degree; i++) {
+      int index = order[i];
+      roots[i] = im[index] == 0.0 ? F.num(re[index]) : F.complexNum(re[index], im[index]);
+    }
+    return roots;
+  }
+
+  /** The highest degree for which {@link #mayHaveMultipleRoot} computes the resultant. */
+  private static final int MAX_RESULTANT_DEGREE = 12;
+
+  /**
+   * Whether the polynomial with these coefficients of <code>x^i</code> may have a multiple root:
+   * its resultant with its derivative, the determinant of their Sylvester matrix, is 0. Only for
+   * exact rational and Gaussian rational coefficients up to the degree
+   * {@link #MAX_RESULTANT_DEGREE}; for the others the answer is <code>true</code>.
+   */
+  private static boolean mayHaveMultipleRoot(IExpr[] coefficients) {
+    final int n = coefficients.length - 1;
+    if (n < 2) {
+      return false;
+    }
+    if (n > MAX_RESULTANT_DEGREE) {
+      return true;
+    }
+    for (IExpr coefficient : coefficients) {
+      if (!coefficient.isNumber() || coefficient.isInexactNumber()) {
+        return true;
+      }
+    }
+    try {
+      final int size = 2 * n - 1;
+      IASTAppendable matrix = F.ListAlloc(size);
+      for (int row = 0; row < size; row++) {
+        IASTAppendable entries = F.ListAlloc(size);
+        for (int column = 0; column < size; column++) {
+          IExpr entry = F.C0;
+          if (row < n - 1) {
+            // the polynomial, from its leading coefficient
+            int j = column - row;
+            if (j >= 0 && j <= n) {
+              entry = coefficients[n - j];
+            }
+          } else {
+            // its derivative
+            int j = column - (row - (n - 1));
+            if (j >= 0 && j <= n - 1) {
+              entry = F.Times(F.ZZ(n - j), coefficients[n - j]);
+            }
+          }
+          entries.append(entry);
+        }
+        matrix.append(entries);
+      }
+      IExpr resultant = EvalEngine.get().evalQuiet(F.Det(matrix));
+      return !resultant.isNumber() || resultant.isZero();
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return true;
+    }
+  }
+
+  /**
+   * The roots of the polynomial with the complex coefficients <code>c[i]</code> of
+   * <code>x^i</code> by the Aberth iteration, which moves all approximations at once: a Newton
+   * step of each, corrected by the repulsion of the others.
+   *
+   * @return {@code null} if the leading coefficient is 0 or the iteration doesn't settle
+   */
+  private static org.hipparchus.complex.Complex[] aberthRoots(org.hipparchus.complex.Complex[] c) {
+    final int n = c.length - 1;
+    final double lead = c[n].norm();
+    if (n < 1 || lead == 0.0) {
+      return null;
+    }
+    // every root lies within 2*Max(Abs(c[n-i]/c[n])^(1/i))
+    double radius = 0.0;
+    for (int i = 1; i <= n; i++) {
+      radius = Math.max(radius, Math.pow(c[n - i].norm() / lead, 1.0 / i));
+    }
+    radius = radius == 0.0 ? 1.0 : radius;
+    org.hipparchus.complex.Complex[] z = new org.hipparchus.complex.Complex[n];
+    for (int k = 0; k < n; k++) {
+      double angle = 2.0 * Math.PI * k / n + 0.7;
+      z[k] = new org.hipparchus.complex.Complex(radius * Math.cos(angle), radius * Math.sin(angle));
+    }
+    double change = Double.MAX_VALUE;
+    for (int iteration = 0; iteration < 2000; iteration++) {
+      change = 0.0;
+      for (int k = 0; k < n; k++) {
+        org.hipparchus.complex.Complex p = c[n];
+        org.hipparchus.complex.Complex dp = org.hipparchus.complex.Complex.ZERO;
+        for (int i = n - 1; i >= 0; i--) {
+          dp = dp.multiply(z[k]).add(p);
+          p = p.multiply(z[k]).add(c[i]);
+        }
+        if (p.norm() == 0.0) {
+          continue;
+        }
+        org.hipparchus.complex.Complex repulsion = org.hipparchus.complex.Complex.ZERO;
+        for (int j = 0; j < n; j++) {
+          if (j != k) {
+            org.hipparchus.complex.Complex difference = z[k].subtract(z[j]);
+            if (difference.norm() != 0.0) {
+              repulsion = repulsion.add(difference.reciprocal());
+            }
+          }
+        }
+        org.hipparchus.complex.Complex denominator = dp.subtract(p.multiply(repulsion));
+        if (denominator.norm() == 0.0) {
+          continue;
+        }
+        org.hipparchus.complex.Complex step = p.divide(denominator);
+        z[k] = z[k].subtract(step);
+        if (z[k].isNaN() || z[k].isInfinite()) {
+          return null;
+        }
+        change = Math.max(change, step.norm() / (1.0 + z[k].norm()));
+      }
+      if (change < 1.0e-15) {
+        return z;
+      }
+      if ((iteration & 0x3F) == 0x3F) {
+        EvalEngine.get().checkTimeLimit();
+      }
+    }
+    // A multiple root settles slowly: what the iteration has reached is clustered by the caller.
+    // Approximations which still move are no roots.
+    return change < 1.0e-6 ? z : null;
   }
 
   /**

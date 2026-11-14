@@ -197,8 +197,14 @@ public class JSONConvert {
         case '\t':
           buffer.append("\\t");
           break;
+        case '\b':
+          buffer.append("\\b");
+          break;
+        case '\f':
+          buffer.append("\\f");
+          break;
         default:
-          if (ch < 0x20) {
+          if (ch < 0x20 || ch == 0x7F) {
             buffer.append(String.format("\\u%04x", (int) ch));
           } else {
             buffer.append(ch);

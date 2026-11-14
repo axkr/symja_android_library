@@ -58,7 +58,7 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     check("{Check(N(1/7^450),m), Check(N(Pi^(-1000)),m), Check(7.^-450,m), Check(Exp(-1000.),m)}", //
         "{m,m,m,m}");
     check("{Check(Pi^(-1000)<1,m), Check(Pi^(-1000)==1/7^450,m), Check(2.^-10,m)}", //
-        "{True,False,0.000976562}");
+        "{True,False,0.000976563}");
     // a small normalized machine number is no underflow
     check("Check(N(1/7^300),m)=!=m", //
         "True");
@@ -562,5 +562,74 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     // more steps than a machine number can count
     check("Range(0.,1.,1.*^-320)", //
         "Range(0.0,1.0,0.0)");
+  }
+
+  /** An undecided comparison of two numeric values, of which one is not real, is reported. */
+  @Test
+  public void testComparisonWithNonRealValue() {
+    check("{3*I > 2, 4 >= 1-I, Sqrt(-5) < 1, ComplexInfinity > 0}", //
+        "{I*3>2,4>=1-I,I*Sqrt(5)<1,ComplexInfinity>0}");
+    assertEquals("Greater: Invalid comparison with I*3 attempted.\n", messagesOf("3*I > 2"));
+    assertEquals("GreaterEqual: Invalid comparison with 1-I attempted.\n",
+        messagesOf("4 >= 1-I"));
+    // a numeric expression with an imaginary part
+    assertEquals("Less: Invalid comparison with I*Sqrt(5) attempted.\n",
+        messagesOf("Sqrt(-5) < 1"));
+    assertEquals("LessEqual: Invalid comparison with I*Pi+Log(3) attempted.\n",
+        messagesOf("2 <= Log(-3)"));
+    assertEquals("Greater: Invalid comparison with ComplexInfinity attempted.\n",
+        messagesOf("ComplexInfinity > 0"));
+    // a symbolic operand compares nothing
+    check("{w > 3*I, 3*I < w < 5}", //
+        "{w>I*3,I*3<w<5}");
+    assertEquals("", messagesOf("w > 3*I"));
+    assertEquals("", messagesOf("3*I < w < 5"));
+    // a pair of real numbers which contradicts the chain decides it, after the report
+    check("3 < 2*I < 1", //
+        "False");
+    assertEquals("Less: Invalid comparison with I*2 attempted.\n", messagesOf("3 < 2*I < 1"));
+    check("2 < 5*I < 7", //
+        "2<I*5<7");
+    assertEquals("Less: Invalid comparison with I*5 attempted.\n", messagesOf("2 < 5*I < 7"));
+  }
+
+  /**
+   * Max and Min keep the arguments which have no order, name them in the message and still reduce
+   * the other arguments to their extreme.
+   */
+  @Test
+  public void testMaxMinWithNonRealArguments() {
+    check("{Max(3*I, 2*I, 4), Max(5, 3*I, 7), Max(w, 2*I, 5), Max(ComplexInfinity, 4, 9)}", //
+        "{Max(I*2,I*3,4),Max(I*3,7),Max(I*2,5,w),Max(9,ComplexInfinity)}");
+    // Max names the arguments in canonical order, Min in reverse order
+    assertEquals(
+        "Max: Invalid comparison with I*2 attempted.\n"
+            + "Max: Invalid comparison with I*3 attempted.\n",
+        messagesOf("Max(3*I, 2*I, 4)"));
+    assertEquals(
+        "Min: Invalid comparison with ComplexInfinity attempted.\n"
+            + "Min: Invalid comparison with I*3 attempted.\n",
+        messagesOf("Min(ComplexInfinity, 3*I, w)"));
+    check("{Min(Sqrt(-3), 4, 6), Max(I*Infinity, 2, 8)}", //
+        "{Min(4,I*Sqrt(3)),Max(8,I*Infinity)}");
+    // Min of real and non-real numbers names the call and reduces nothing
+    check("{Min(5, 2-I, w), Min(2-I, 5, 8, w)}", //
+        "{Min(2-I,5,w),Min(2-I,5,8,w)}");
+    assertEquals("Min: Invalid comparison with Min(2-I,5,w) attempted.\n",
+        messagesOf("Min(5, 2-I, w)"));
+    // a list with a non-real number among other elements is named as a whole and the call stays
+    check("{Max({2*I, 7}, {5}), Max({2*I, 7})}", //
+        "{Max({5},{I*2,7}),Max({I*2,7})}");
+    assertEquals("Max: Invalid comparison with {I*2,7} attempted.\n",
+        messagesOf("Max({2*I, 7}, {5})"));
+    // other lists are dissolved
+    check("{Max({g(w)}, 2*I), Max({2*I}, {5}), Max({4, 9}, {1, w})}", //
+        "{Max(I*2,g(w)),Max(I*2,5),Max(9,w)}");
+    // the neutral element is a value to compare with; equal arguments and a single one are not
+    check("{Max(3*I, -Infinity), Min(3*I, 3*I), Min(Infinity, 3*I), Max({3*I})}", //
+        "{Max(I*3,-Infinity),I*3,Min(I*3,Infinity),I*3}");
+    assertEquals("Max: Invalid comparison with I*3 attempted.\n",
+        messagesOf("Max(3*I, -Infinity)"));
+    assertEquals("", messagesOf("Min(3*I, 3*I)"));
   }
 }

@@ -245,7 +245,10 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             // values of the symbolic Re/Im mustn't reorder again - the same array for symbolic
             // roots, and null for roots which aren't stable
             boolean sorted = false;
-            if (maxDegree >= 4 && degree >= 3 && radicalRoots != null) {
+            // the roots of a polynomial with a coefficient which isn't real have an order of
+            // their own, the same which the numeric value of the Root object uses
+            final boolean nonReal = hasNonRealCoefficient(expr);
+            if (maxDegree >= 4 && degree >= 3 && radicalRoots != null && !nonReal) {
               IExpr[] unsorted = radicalRoots;
               radicalRoots = stablySorted(unsorted, engine);
               sorted = radicalRoots != null && radicalRoots != unsorted;
@@ -255,7 +258,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
               // zero for #^4-2, for instance - or name a root only up to rounding. Solve knows the
               // special cases (binomials among them), so fall back to it before giving up.
               radicalRoots = solveToRadicals(expr, degree, engine);
-              if (radicalRoots != null && degree >= 3) {
+              if (radicalRoots != null && degree >= 3 && !nonReal) {
                 IExpr[] unsorted = radicalRoots;
                 radicalRoots = stablySorted(unsorted, engine);
                 sorted = radicalRoots != null && radicalRoots != unsorted;
@@ -267,7 +270,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
 
             if (!sorted) {
               // Sort by (real-first, then Re asc, then abs(Im) asc, then Im) to match k-indexing.
-              radicalRoots = sortRootsByMmaOrder(radicalRoots);
+              radicalRoots = sortRootsByMmaOrder(radicalRoots, nonReal);
             }
 
             if (k < 1 || k > degree) {
@@ -284,7 +287,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
               return F.NIL;
             }
             // Sort by (real-first, then Re asc, then abs(Im) asc, then Im) to match k-indexing.
-            radicalRoots = sortRootsByMmaOrder(radicalRoots);
+            radicalRoots = sortRootsByMmaOrder(radicalRoots, hasNonRealCoefficient(expr));
             if (k < 1 || k > radicalRoots.length) {
               return F.NIL;
             }
@@ -574,7 +577,8 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       // the factors don't account for every root of the polynomial
       return F.NIL;
     }
-    IExpr[] allRoots = sortRootsByMmaOrder(roots.toArray(new IExpr[roots.size()]));
+    IExpr[] allRoots = sortRootsByMmaOrder(roots.toArray(new IExpr[roots.size()]),
+        hasNonRealCoefficient(body));
     return allRoots[k - 1];
   }
 
@@ -596,6 +600,61 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    * @return a new sorted array, or the original array if numeric sorting is not possible
    */
   static IExpr[] sortRootsByMmaOrder(IExpr[] roots) {
+    return sortRootsByMmaOrder(roots, false);
+  }
+
+  /**
+   * Whether the polynomial <code>body</code> in <code>Slot1</code> has a numeric coefficient which
+   * isn't real. Its roots don't come in conjugate pairs, and their index follows
+   * {@link #sortRootOrderNonReal(Integer[], double[], double[])}.
+   */
+  static boolean hasNonRealCoefficient(IExpr body) {
+    IExpr[] coefficients = Root.polynomialCoefficients(body);
+    if (coefficients == null) {
+      return false;
+    }
+    for (IExpr coefficient : coefficients) {
+      if (coefficient.isNumericFunction(true) && !coefficient.isRealResult()
+          && !EvalEngine.get().evaluate(F.Im(coefficient)).isZero()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The order of the roots of a polynomial with a coefficient which isn't real: by ascending real
+   * part, and among roots with the same real part those which aren't real by ascending imaginary
+   * part, before the real one.
+   *
+   * @param order the indices into <code>reVals</code> and <code>imVals</code>, sorted in place
+   */
+  static void sortRootOrderNonReal(Integer[] order, final double[] reVals, final double[] imVals) {
+    double scale = 1.0;
+    for (int i : order) {
+      scale = Math.max(scale, Math.hypot(reVals[i], imVals[i]));
+    }
+    final double tolerance = 1e-10 * scale;
+    final double[] realParts = clusterValues(reVals, order.clone(), tolerance);
+    java.util.Arrays.sort(order, (a, b) -> {
+      int c = Double.compare(realParts[a], realParts[b]);
+      if (c != 0) {
+        return c;
+      }
+      boolean realA = Math.abs(imVals[a]) <= tolerance;
+      boolean realB = Math.abs(imVals[b]) <= tolerance;
+      if (realA != realB) {
+        return realA ? 1 : -1;
+      }
+      return realA ? 0 : Double.compare(imVals[a], imVals[b]);
+    });
+  }
+
+  /**
+   * @param nonRealPolynomial the polynomial of the roots has a coefficient which isn't real, see
+   *        {@link #sortRootOrderNonReal(Integer[], double[], double[])}
+   */
+  static IExpr[] sortRootsByMmaOrder(IExpr[] roots, boolean nonRealPolynomial) {
     final int n = roots.length;
     final double[] reVals = new double[n];
     final double[] imVals = new double[n];
@@ -609,6 +668,18 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       } catch (RuntimeException ex) {
         return roots;
       }
+    }
+    if (nonRealPolynomial) {
+      Integer[] order = new Integer[n];
+      for (int i = 0; i < n; i++) {
+        order[i] = i;
+      }
+      sortRootOrderNonReal(order, reVals, imVals);
+      IExpr[] sorted = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        sorted[i] = roots[order[i]];
+      }
+      return sorted;
     }
     return sortByValues(roots, reVals, imVals);
   }

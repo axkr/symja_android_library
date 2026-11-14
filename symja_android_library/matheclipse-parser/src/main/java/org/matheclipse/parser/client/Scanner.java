@@ -1638,6 +1638,26 @@ public abstract class Scanner {
             case 't':
               ident.append('\t');
               break;
+            case 'b':
+              ident.append('\b');
+              break;
+            case 'f':
+              ident.append('\f');
+              break;
+            case '^':
+            case '_':
+            case '&':
+            case '%':
+            case '@':
+            case '/':
+            case '+':
+              if (boxDepth > 0) {
+                // an operator of the linear box syntax \(x\^2\) stays in the string as it is
+                // written, for the box reader
+                ident.append('\\');
+                ident.append(fCurrentChar);
+              }
+              break;
             case ' ':
               if (boxDepth > 0) {
                 // in a box escape \(my\ height\) the escaped space is a space of the text, which

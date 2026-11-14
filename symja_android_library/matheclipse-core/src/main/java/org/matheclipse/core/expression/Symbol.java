@@ -651,10 +651,7 @@ public class Symbol implements ISymbol, Serializable {
       // return -1;
       // }
       if (id >= ID.Not && id <= ID.Power) {
-        if (expr.isNot() && expr.first().isSymbol()) {
-          int cp = compareTo(expr.first());
-          return cp != 0 ? cp : -1;
-        } else if (expr.isPower()) {
+        if (expr.isPower()) {
           // O-4
           int baseCompare = this.compareTo(expr.base());
           if (baseCompare == 0) {

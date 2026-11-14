@@ -1736,6 +1736,10 @@ public class SimplifyUtil extends VisitorExpr {
     IASTAppendable newTimes = F.NIL;
     int i = 1;
     int lastIndex = -1;
+    int lastPosition = -1;
+    // the factors of timesAST which a pair has merged into one factor of newTimes: the factor
+    // i of timesAST is the factor i - removed of newTimes
+    int removed = 0;
     INumber numberFactors = F.C1;
     IExpr exprFactors = F.C1;
     while (i < timesAST.size()) {
@@ -1773,7 +1777,7 @@ public class SimplifyUtil extends VisitorExpr {
               }
               // replace the reciprocal Power in the timesAST[i] with the plusConjugate
               if (newTimes.isPresent()) {
-                newTimes.set(i, plusConjugate);
+                newTimes.set(i - removed, plusConjugate);
               } else {
                 newTimes = timesAST.setAtClone(i, plusConjugate);
               }
@@ -1796,15 +1800,15 @@ public class SimplifyUtil extends VisitorExpr {
               if (temp.isPresent()) {
                 IExpr powerSimplified = F.Power(temp, rhs.exponent());
                 if (newTimes.isPresent()) {
-                  newTimes.set(i, powerSimplified);
+                  newTimes.set(i - removed, powerSimplified);
                 } else {
                   newTimes = timesAST.setAtClone(i, powerSimplified);
                 }
-                if (++i < newTimes.size()) {
-                  // TODO if no check for size is implemented TrigFactor(Sin(x)^2 + Tan(x)^2) throws
-                  // IndexOutOfBoundsException
-                  newTimes.remove(i);
-                }
+                // the factor rhs is in the merged one: it is removed, and it isn't the first
+                // factor of the next pair - that would put it into the product a second time
+                newTimes.remove(i - removed + 1);
+                removed++;
+                i += 2;
                 continue; // while
               }
             } else {
@@ -1816,13 +1820,13 @@ public class SimplifyUtil extends VisitorExpr {
                 IExpr powerSimplified =
                     F.Power(F.Subtract(F.Sqr(rhs.base().first()), F.Sqr(lhsRest)), rhs.exponent());
                 if (newTimes.isPresent()) {
-                  newTimes.set(i, powerSimplified);
-                  newTimes.remove(i + 1);
+                  newTimes.set(i - removed, powerSimplified);
                 } else {
                   newTimes = timesAST.setAtClone(i, powerSimplified);
-                  newTimes.remove(i + 1);
                 }
-                i++;
+                newTimes.remove(i - removed + 1);
+                removed++;
+                i += 2;
                 continue; // while
               }
             }
@@ -1836,13 +1840,14 @@ public class SimplifyUtil extends VisitorExpr {
           // try avoiding negative expressions in the first arg of Plus()
           if (lastIndex < 0) {
             lastIndex = i;
+            lastPosition = i - removed;
           } else {
 
             if (newTimes.isNIL()) {
               newTimes = timesAST.copyAppendable();
             }
-            newTimes.set(lastIndex, timesAST.get(lastIndex).negate());
-            newTimes.set(i, timesArg.negate());
+            newTimes.set(lastPosition, timesAST.get(lastIndex).negate());
+            newTimes.set(i - removed, timesArg.negate());
             lastIndex = -1;
             i++;
             continue; // while
@@ -1867,7 +1872,8 @@ public class SimplifyUtil extends VisitorExpr {
             }
           }
         } else {
-          temp = F.Times(numberFactors, exprFactors, newTimes);
+          // the number factors follow after the expansion, once
+          temp = F.Times(exprFactors, newTimes);
         }
         temp = eval(F.Expand(temp));
         temp = numberFactors.times(temp);

@@ -1557,6 +1557,73 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   /**
+   * Report a rule whose position lies outside the given dimensions, or has another rank, with the
+   * message <code>posd</code>: <code>SparseArray({{3, 1} -> 1}, {2, 2})</code> is no array. A
+   * position may count from the end with negative entries, a pattern position is checked in its
+   * integer entries.
+   *
+   * @param arrayRulesList the rules
+   * @param dimension the given dimensions, or <code>null</code>
+   * @param defaultDimension the scalar dimension <code>n</code> for <code>{n, n, ...}</code> of
+   *        the rank of the first position, if it is positive
+   * @return <code>true</code> if a rule was reported
+   */
+  public static boolean reportMisplacedRule(IAST arrayRulesList, int[] dimension,
+      int defaultDimension, EvalEngine engine) {
+    if (!arrayRulesList.isNonEmptyList()) {
+      return false;
+    }
+    if (dimension == null) {
+      if (defaultDimension <= 0 || !arrayRulesList.arg1().isRuleAST()) {
+        return false;
+      }
+      final IExpr lhs1 = arrayRulesList.arg1().first();
+      final int depth = lhs1.isList() ? lhs1.argSize() : lhs1.isInteger() ? 1 : 0;
+      if (depth == 0 || (lhs1.isList() && !((IAST) lhs1).forAll(x -> !x.isList()))) {
+        return false;
+      }
+      dimension = new int[depth];
+      Arrays.fill(dimension, defaultDimension);
+    }
+    final int depth = dimension.length;
+    for (IExpr rule : arrayRulesList) {
+      if (!rule.isRuleAST()) {
+        continue;
+      }
+      final IExpr lhs = rule.first();
+      final IAST position;
+      if (lhs.isInteger()) {
+        position = F.list(lhs);
+      } else if (lhs.isList() && lhs.argSize() > 0 && ((IAST) lhs).forAll(x -> !x.isList())) {
+        position = (IAST) lhs;
+      } else {
+        continue;
+      }
+      boolean misplaced = position.argSize() != depth
+          && position.forAll(x -> x.isInteger());
+      for (int i = 1; !misplaced && i <= position.argSize() && position.argSize() == depth; i++) {
+        final IExpr entry = position.get(i);
+        if (entry.isInteger()) {
+          final int p = entry.toIntDefault();
+          misplaced = p == 0 || !F.isPresent(p) || p > dimension[i - 1] || p < -dimension[i - 1];
+        }
+      }
+      if (misplaced) {
+        // The left-hand side of `1` in `2` is not a position or a pattern that will match the
+        // position of an element in an array with dimensions `3`.
+        final IASTAppendable dimensions = F.ListAlloc(depth);
+        for (int d : dimension) {
+          dimensions.append(F.ZZ(d));
+        }
+        Errors.printMessage(S.SparseArray, "posd", F.list(rule, arrayRulesList, dimensions),
+            engine);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Create a sparse array from the array rules list.
    *
    * @param arrayRulesList

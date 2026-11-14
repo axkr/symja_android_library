@@ -1475,6 +1475,16 @@ public class SatParameters implements ProtoMessage {
   boolean hasMipScaleToMaxBound_;
   boolean mipScaleForPrecision_ = false;
   boolean hasMipScaleForPrecision_;
+  boolean useBooleanEquivalencesInLp_ = true;
+  boolean hasUseBooleanEquivalencesInLp_;
+  boolean useTightUpperImpliedBoundsInCuts_ = true;
+  boolean hasUseTightUpperImpliedBoundsInCuts_;
+  double sharedTreeWorkerMinDtimeBeforeSync_ = 2.0;
+  boolean hasSharedTreeWorkerMinDtimeBeforeSync_;
+  double lnsInitialPresolveDeterministicLimit_ = 0.5;
+  boolean hasLnsInitialPresolveDeterministicLimit_;
+  double lnsMaxPresolveDeterministicLimit_ = 10.0;
+  boolean hasLnsMaxPresolveDeterministicLimit_;
   boolean mipPresolveRestrictBounds_ = true;
   boolean hasMipPresolveRestrictBounds_;
   boolean onlySolveIp_ = false;
@@ -6493,6 +6503,81 @@ public class SatParameters implements ProtoMessage {
     return mipScaleForPrecision_;
   }
 
+  /** Returns true if {@code use_boolean_equivalences_in_lp} is set. */
+  public boolean hasUseBooleanEquivalencesInLp() {
+    return hasUseBooleanEquivalencesInLp_;
+  }
+
+  /**
+   * <pre>
+   * During the search, the SAT solver can detect that two Boolean variables
+   * are equivalent (see BinaryImplicationGraph::DetectEquivalences()). If
+   * true, we exploit this in the LP relaxation by substituting one of the two
+   * corresponding [0, 1] LP variables by the other (or by one minus the other)
+   * in all the LP constraints. This results in a smaller and tighter LP.
+   * </pre>
+   */
+  public boolean getUseBooleanEquivalencesInLp() {
+    return useBooleanEquivalencesInLp_;
+  }
+
+  /** Returns true if {@code use_tight_upper_implied_bounds_in_cuts} is set. */
+  public boolean hasUseTightUpperImpliedBoundsInCuts() {
+    return hasUseTightUpperImpliedBoundsInCuts_;
+  }
+
+  /**
+   * <pre>
+   * When generating knapsack cover, single-node flow, and integer rounding cuts
+   * with implied bounds, whether to expand tight implied upper bounds
+   * (X = d * B - S with LP slack S close to zero) before the cover/divisor
+   * selection heuristics and avoid scaling down the MIR/strengthening function
+   * when negative implied-bound slacks are present.
+   * </pre>
+   */
+  public boolean getUseTightUpperImpliedBoundsInCuts() {
+    return useTightUpperImpliedBoundsInCuts_;
+  }
+
+  /** Returns true if {@code shared_tree_worker_min_dtime_before_sync} is set. */
+  public boolean hasSharedTreeWorkerMinDtimeBeforeSync() {
+    return hasSharedTreeWorkerMinDtimeBeforeSync_;
+  }
+
+  /**
+   * <pre>
+   * Minimum deterministic time before a shared tree worker will sync with the
+   * shared tree.
+   * </pre>
+   */
+  public double getSharedTreeWorkerMinDtimeBeforeSync() {
+    return sharedTreeWorkerMinDtimeBeforeSync_;
+  }
+
+  /** Returns true if {@code lns_initial_presolve_deterministic_limit} is set. */
+  public boolean hasLnsInitialPresolveDeterministicLimit() {
+    return hasLnsInitialPresolveDeterministicLimit_;
+  }
+
+  /**
+   * <pre>
+   * Initial parameters for neighborhood generation.
+   * </pre>
+   */
+  public double getLnsInitialPresolveDeterministicLimit() {
+    return lnsInitialPresolveDeterministicLimit_;
+  }
+
+  /** Returns true if {@code lns_max_presolve_deterministic_limit} is set. */
+  public boolean hasLnsMaxPresolveDeterministicLimit() {
+    return hasLnsMaxPresolveDeterministicLimit_;
+  }
+
+  /** Returns {@code lns_max_presolve_deterministic_limit}. */
+  public double getLnsMaxPresolveDeterministicLimit() {
+    return lnsMaxPresolveDeterministicLimit_;
+  }
+
   /** Returns true if {@code mip_presolve_restrict_bounds} is set. */
   public boolean hasMipPresolveRestrictBounds() {
     return hasMipPresolveRestrictBounds_;
@@ -7362,6 +7447,16 @@ public class SatParameters implements ProtoMessage {
     hasMipScaleToMaxBound_ = src.hasMipScaleToMaxBound_;
     mipScaleForPrecision_ = src.mipScaleForPrecision_;
     hasMipScaleForPrecision_ = src.hasMipScaleForPrecision_;
+    useBooleanEquivalencesInLp_ = src.useBooleanEquivalencesInLp_;
+    hasUseBooleanEquivalencesInLp_ = src.hasUseBooleanEquivalencesInLp_;
+    useTightUpperImpliedBoundsInCuts_ = src.useTightUpperImpliedBoundsInCuts_;
+    hasUseTightUpperImpliedBoundsInCuts_ = src.hasUseTightUpperImpliedBoundsInCuts_;
+    sharedTreeWorkerMinDtimeBeforeSync_ = src.sharedTreeWorkerMinDtimeBeforeSync_;
+    hasSharedTreeWorkerMinDtimeBeforeSync_ = src.hasSharedTreeWorkerMinDtimeBeforeSync_;
+    lnsInitialPresolveDeterministicLimit_ = src.lnsInitialPresolveDeterministicLimit_;
+    hasLnsInitialPresolveDeterministicLimit_ = src.hasLnsInitialPresolveDeterministicLimit_;
+    lnsMaxPresolveDeterministicLimit_ = src.lnsMaxPresolveDeterministicLimit_;
+    hasLnsMaxPresolveDeterministicLimit_ = src.hasLnsMaxPresolveDeterministicLimit_;
     mipPresolveRestrictBounds_ = src.mipPresolveRestrictBounds_;
     hasMipPresolveRestrictBounds_ = src.hasMipPresolveRestrictBounds_;
     onlySolveIp_ = src.onlySolveIp_;
@@ -8388,6 +8483,21 @@ public class SatParameters implements ProtoMessage {
     if (hasMipScaleForPrecision_) {
       printer.printScalar("mip_scale_for_precision", mipScaleForPrecision_);
     }
+    if (hasUseBooleanEquivalencesInLp_) {
+      printer.printScalar("use_boolean_equivalences_in_lp", useBooleanEquivalencesInLp_);
+    }
+    if (hasUseTightUpperImpliedBoundsInCuts_) {
+      printer.printScalar("use_tight_upper_implied_bounds_in_cuts", useTightUpperImpliedBoundsInCuts_);
+    }
+    if (hasSharedTreeWorkerMinDtimeBeforeSync_) {
+      printer.printScalar("shared_tree_worker_min_dtime_before_sync", sharedTreeWorkerMinDtimeBeforeSync_);
+    }
+    if (hasLnsInitialPresolveDeterministicLimit_) {
+      printer.printScalar("lns_initial_presolve_deterministic_limit", lnsInitialPresolveDeterministicLimit_);
+    }
+    if (hasLnsMaxPresolveDeterministicLimit_) {
+      printer.printScalar("lns_max_presolve_deterministic_limit", lnsMaxPresolveDeterministicLimit_);
+    }
     if (hasFeasibilityJumpIgnoreRedundantConstraints_) {
       printer.printScalar("feasibility_jump_ignore_redundant_constraints", feasibilityJumpIgnoreRedundantConstraints_);
     }
@@ -9013,6 +9123,16 @@ public class SatParameters implements ProtoMessage {
         && hasMipAutomaticallyScaleVariables_ == other.hasMipAutomaticallyScaleVariables_
         && mipScaleToMaxBound_ == other.mipScaleToMaxBound_
         && hasMipScaleToMaxBound_ == other.hasMipScaleToMaxBound_
+        && useBooleanEquivalencesInLp_ == other.useBooleanEquivalencesInLp_
+        && hasUseBooleanEquivalencesInLp_ == other.hasUseBooleanEquivalencesInLp_
+        && useTightUpperImpliedBoundsInCuts_ == other.useTightUpperImpliedBoundsInCuts_
+        && hasUseTightUpperImpliedBoundsInCuts_ == other.hasUseTightUpperImpliedBoundsInCuts_
+        && Double.compare(sharedTreeWorkerMinDtimeBeforeSync_, other.sharedTreeWorkerMinDtimeBeforeSync_) == 0
+        && hasSharedTreeWorkerMinDtimeBeforeSync_ == other.hasSharedTreeWorkerMinDtimeBeforeSync_
+        && Double.compare(lnsInitialPresolveDeterministicLimit_, other.lnsInitialPresolveDeterministicLimit_) == 0
+        && hasLnsInitialPresolveDeterministicLimit_ == other.hasLnsInitialPresolveDeterministicLimit_
+        && Double.compare(lnsMaxPresolveDeterministicLimit_, other.lnsMaxPresolveDeterministicLimit_) == 0
+        && hasLnsMaxPresolveDeterministicLimit_ == other.hasLnsMaxPresolveDeterministicLimit_
         && mipScaleForPrecision_ == other.mipScaleForPrecision_
         && hasMipScaleForPrecision_ == other.hasMipScaleForPrecision_
         && mipPresolveRestrictBounds_ == other.mipPresolveRestrictBounds_
@@ -9353,6 +9473,11 @@ public class SatParameters implements ProtoMessage {
     h = 31 * h + Boolean.hashCode(mipAutomaticallyScaleVariables_);
     h = 31 * h + Boolean.hashCode(mipScaleToMaxBound_);
     h = 31 * h + Boolean.hashCode(mipScaleForPrecision_);
+    h = 31 * h + Boolean.hashCode(useBooleanEquivalencesInLp_);
+    h = 31 * h + Boolean.hashCode(useTightUpperImpliedBoundsInCuts_);
+    h = 31 * h + Double.hashCode(sharedTreeWorkerMinDtimeBeforeSync_);
+    h = 31 * h + Double.hashCode(lnsInitialPresolveDeterministicLimit_);
+    h = 31 * h + Double.hashCode(lnsMaxPresolveDeterministicLimit_);
     h = 31 * h + Boolean.hashCode(mipPresolveRestrictBounds_);
     h = 31 * h + Boolean.hashCode(onlySolveIp_);
     h = 31 * h + Double.hashCode(mipWantedPrecision_);
@@ -10336,6 +10461,21 @@ public class SatParameters implements ProtoMessage {
     }
     if (hasMipScaleForPrecision_) {
       w.bool(374, mipScaleForPrecision_);
+    }
+    if (hasUseBooleanEquivalencesInLp_) {
+      w.bool(375, useBooleanEquivalencesInLp_);
+    }
+    if (hasUseTightUpperImpliedBoundsInCuts_) {
+      w.bool(376, useTightUpperImpliedBoundsInCuts_);
+    }
+    if (hasSharedTreeWorkerMinDtimeBeforeSync_) {
+      w.dbl(377, sharedTreeWorkerMinDtimeBeforeSync_);
+    }
+    if (hasLnsInitialPresolveDeterministicLimit_) {
+      w.dbl(378, lnsInitialPresolveDeterministicLimit_);
+    }
+    if (hasLnsMaxPresolveDeterministicLimit_) {
+      w.dbl(379, lnsMaxPresolveDeterministicLimit_);
     }
     if (hasFeasibilityJumpIgnoreRedundantConstraints_) {
       w.bool(715, feasibilityJumpIgnoreRedundantConstraints_);
@@ -11338,6 +11478,21 @@ public class SatParameters implements ProtoMessage {
       }
       if (other.hasMipScaleForPrecision_) {
         setMipScaleForPrecision(other.mipScaleForPrecision_);
+      }
+      if (other.hasUseBooleanEquivalencesInLp_) {
+        setUseBooleanEquivalencesInLp(other.useBooleanEquivalencesInLp_);
+      }
+      if (other.hasUseTightUpperImpliedBoundsInCuts_) {
+        setUseTightUpperImpliedBoundsInCuts(other.useTightUpperImpliedBoundsInCuts_);
+      }
+      if (other.hasSharedTreeWorkerMinDtimeBeforeSync_) {
+        setSharedTreeWorkerMinDtimeBeforeSync(other.sharedTreeWorkerMinDtimeBeforeSync_);
+      }
+      if (other.hasLnsInitialPresolveDeterministicLimit_) {
+        setLnsInitialPresolveDeterministicLimit(other.lnsInitialPresolveDeterministicLimit_);
+      }
+      if (other.hasLnsMaxPresolveDeterministicLimit_) {
+        setLnsMaxPresolveDeterministicLimit(other.lnsMaxPresolveDeterministicLimit_);
       }
       if (other.hasMipPresolveRestrictBounds_) {
         setMipPresolveRestrictBounds(other.mipPresolveRestrictBounds_);
@@ -12400,6 +12555,24 @@ public class SatParameters implements ProtoMessage {
             break;
           case 2984:
             setMipProperRelaxation(r.varint() != 0);
+            break;
+          case 2992:
+            setMipScaleForPrecision(r.varint() != 0);
+            break;
+          case 3000:
+            setUseBooleanEquivalencesInLp(r.varint() != 0);
+            break;
+          case 3008:
+            setUseTightUpperImpliedBoundsInCuts(r.varint() != 0);
+            break;
+          case 3017:
+            setSharedTreeWorkerMinDtimeBeforeSync(r.dbl());
+            break;
+          case 3025:
+            setLnsInitialPresolveDeterministicLimit(r.dbl());
+            break;
+          case 3033:
+            setLnsMaxPresolveDeterministicLimit(r.dbl());
             break;
           case 5720:
             setFeasibilityJumpIgnoreRedundantConstraints(r.varint() != 0);
@@ -14885,6 +15058,46 @@ public class SatParameters implements ProtoMessage {
             }
             t.consume(":");
             setMipScaleForPrecision(t.bool());
+            break;
+          }
+          case "use_boolean_equivalences_in_lp": {
+            if (strict && hasUseBooleanEquivalencesInLp_) {
+              throw ProtoWire.duplicate(t, "use_boolean_equivalences_in_lp");
+            }
+            t.consume(":");
+            setUseBooleanEquivalencesInLp(t.bool());
+            break;
+          }
+          case "use_tight_upper_implied_bounds_in_cuts": {
+            if (strict && hasUseTightUpperImpliedBoundsInCuts_) {
+              throw ProtoWire.duplicate(t, "use_tight_upper_implied_bounds_in_cuts");
+            }
+            t.consume(":");
+            setUseTightUpperImpliedBoundsInCuts(t.bool());
+            break;
+          }
+          case "shared_tree_worker_min_dtime_before_sync": {
+            if (strict && hasSharedTreeWorkerMinDtimeBeforeSync_) {
+              throw ProtoWire.duplicate(t, "shared_tree_worker_min_dtime_before_sync");
+            }
+            t.consume(":");
+            setSharedTreeWorkerMinDtimeBeforeSync(t.floating());
+            break;
+          }
+          case "lns_initial_presolve_deterministic_limit": {
+            if (strict && hasLnsInitialPresolveDeterministicLimit_) {
+              throw ProtoWire.duplicate(t, "lns_initial_presolve_deterministic_limit");
+            }
+            t.consume(":");
+            setLnsInitialPresolveDeterministicLimit(t.floating());
+            break;
+          }
+          case "lns_max_presolve_deterministic_limit": {
+            if (strict && hasLnsMaxPresolveDeterministicLimit_) {
+              throw ProtoWire.duplicate(t, "lns_max_presolve_deterministic_limit");
+            }
+            t.consume(":");
+            setLnsMaxPresolveDeterministicLimit(t.floating());
             break;
           }
           case "mip_presolve_restrict_bounds": {
@@ -19584,6 +19797,76 @@ public class SatParameters implements ProtoMessage {
     public Builder clearMipScaleForPrecision() {
       mipScaleForPrecision_ = false;
       hasMipScaleForPrecision_ = false;
+      return this;
+    }
+
+    /** Sets {@code use_boolean_equivalences_in_lp}. */
+    public Builder setUseBooleanEquivalencesInLp(boolean value) {
+      useBooleanEquivalencesInLp_ = value;
+      hasUseBooleanEquivalencesInLp_ = true;
+      return this;
+    }
+
+    /** Resets {@code use_boolean_equivalences_in_lp} to its default value. */
+    public Builder clearUseBooleanEquivalencesInLp() {
+      useBooleanEquivalencesInLp_ = true;
+      hasUseBooleanEquivalencesInLp_ = false;
+      return this;
+    }
+
+    /** Sets {@code use_tight_upper_implied_bounds_in_cuts}. */
+    public Builder setUseTightUpperImpliedBoundsInCuts(boolean value) {
+      useTightUpperImpliedBoundsInCuts_ = value;
+      hasUseTightUpperImpliedBoundsInCuts_ = true;
+      return this;
+    }
+
+    /** Resets {@code use_tight_upper_implied_bounds_in_cuts} to its default value. */
+    public Builder clearUseTightUpperImpliedBoundsInCuts() {
+      useTightUpperImpliedBoundsInCuts_ = true;
+      hasUseTightUpperImpliedBoundsInCuts_ = false;
+      return this;
+    }
+
+    /** Sets {@code shared_tree_worker_min_dtime_before_sync}. */
+    public Builder setSharedTreeWorkerMinDtimeBeforeSync(double value) {
+      sharedTreeWorkerMinDtimeBeforeSync_ = value;
+      hasSharedTreeWorkerMinDtimeBeforeSync_ = true;
+      return this;
+    }
+
+    /** Resets {@code shared_tree_worker_min_dtime_before_sync} to its default value. */
+    public Builder clearSharedTreeWorkerMinDtimeBeforeSync() {
+      sharedTreeWorkerMinDtimeBeforeSync_ = 2.0;
+      hasSharedTreeWorkerMinDtimeBeforeSync_ = false;
+      return this;
+    }
+
+    /** Sets {@code lns_initial_presolve_deterministic_limit}. */
+    public Builder setLnsInitialPresolveDeterministicLimit(double value) {
+      lnsInitialPresolveDeterministicLimit_ = value;
+      hasLnsInitialPresolveDeterministicLimit_ = true;
+      return this;
+    }
+
+    /** Resets {@code lns_initial_presolve_deterministic_limit} to its default value. */
+    public Builder clearLnsInitialPresolveDeterministicLimit() {
+      lnsInitialPresolveDeterministicLimit_ = 0.5;
+      hasLnsInitialPresolveDeterministicLimit_ = false;
+      return this;
+    }
+
+    /** Sets {@code lns_max_presolve_deterministic_limit}. */
+    public Builder setLnsMaxPresolveDeterministicLimit(double value) {
+      lnsMaxPresolveDeterministicLimit_ = value;
+      hasLnsMaxPresolveDeterministicLimit_ = true;
+      return this;
+    }
+
+    /** Resets {@code lns_max_presolve_deterministic_limit} to its default value. */
+    public Builder clearLnsMaxPresolveDeterministicLimit() {
+      lnsMaxPresolveDeterministicLimit_ = 10.0;
+      hasLnsMaxPresolveDeterministicLimit_ = false;
       return this;
     }
 

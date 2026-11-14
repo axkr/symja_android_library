@@ -31,6 +31,8 @@ public class FloatObjectiveProto implements ProtoMessage {
   java.util.ArrayList<Double> coeffs_;
   double offset_ = 0.0;
   boolean maximize_ = false;
+  java.util.ArrayList<Long> domainMins_;
+  java.util.ArrayList<Long> domainMaxs_;
 
   private FloatObjectiveProto() {}
 
@@ -94,11 +96,61 @@ public class FloatObjectiveProto implements ProtoMessage {
     return maximize_;
   }
 
+  /**
+   * <pre>
+   * Internal fields used by the solver. Do not set.
+   * The two vectors are of the same size as vars and contains the min and max
+   * of the domain of the variables at the time the objective was scaled.
+   * </pre>
+   */
+  public java.util.List<Long> getDomainMinsList() {
+    return domainMins_ == null ? java.util.Collections.<Long>emptyList() : java.util.Collections.unmodifiableList(domainMins_);
+  }
+
+  /** Returns the number of elements of {@code domain_mins}. */
+  public int getDomainMinsCount() {
+    return domainMins_ == null ? 0 : domainMins_.size();
+  }
+
+  /** Returns the element {@code index} of {@code domain_mins}. */
+  public long getDomainMins(int index) {
+    if (domainMins_ == null) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+    }
+    return domainMins_.get(index);
+  }
+
+  /**
+   * <pre>
+   * Internal fields used by the solver. Do not set.
+   * The two vectors are of the same size as vars and contains the min and max
+   * of the domain of the variables at the time the objective was scaled.
+   * </pre>
+   */
+  public java.util.List<Long> getDomainMaxsList() {
+    return domainMaxs_ == null ? java.util.Collections.<Long>emptyList() : java.util.Collections.unmodifiableList(domainMaxs_);
+  }
+
+  /** Returns the number of elements of {@code domain_maxs}. */
+  public int getDomainMaxsCount() {
+    return domainMaxs_ == null ? 0 : domainMaxs_.size();
+  }
+
+  /** Returns the element {@code index} of {@code domain_maxs}. */
+  public long getDomainMaxs(int index) {
+    if (domainMaxs_ == null) {
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+    }
+    return domainMaxs_.get(index);
+  }
+
   void copyFieldsFrom(FloatObjectiveProto src) {
     vars_ = src.vars_ == null || src.vars_.isEmpty() ? null : new java.util.ArrayList<>(src.vars_);
     coeffs_ = src.coeffs_ == null || src.coeffs_.isEmpty() ? null : new java.util.ArrayList<>(src.coeffs_);
     offset_ = src.offset_;
     maximize_ = src.maximize_;
+    domainMins_ = src.domainMins_ == null || src.domainMins_.isEmpty() ? null : new java.util.ArrayList<>(src.domainMins_);
+    domainMaxs_ = src.domainMaxs_ == null || src.domainMaxs_.isEmpty() ? null : new java.util.ArrayList<>(src.domainMaxs_);
   }
 
   /** Returns this message if it is immutable, otherwise a built copy. */
@@ -129,6 +181,16 @@ public class FloatObjectiveProto implements ProtoMessage {
     if (maximize_) {
       printer.printScalar("maximize", maximize_);
     }
+    if (domainMins_ != null) {
+      for (Long v : domainMins_) {
+        printer.printScalar("domain_mins", v);
+      }
+    }
+    if (domainMaxs_ != null) {
+      for (Long v : domainMaxs_) {
+        printer.printScalar("domain_maxs", v);
+      }
+    }
   }
 
   /** Returns the message in protobuf text format. */
@@ -149,7 +211,9 @@ public class FloatObjectiveProto implements ProtoMessage {
     return getVarsList().equals(other.getVarsList())
         && getCoeffsList().equals(other.getCoeffsList())
         && Double.compare(offset_, other.offset_) == 0
-        && maximize_ == other.maximize_;
+        && maximize_ == other.maximize_
+        && getDomainMinsList().equals(other.getDomainMinsList())
+        && getDomainMaxsList().equals(other.getDomainMaxsList());
   }
 
   @Override
@@ -159,6 +223,8 @@ public class FloatObjectiveProto implements ProtoMessage {
     h = 31 * h + getCoeffsList().hashCode();
     h = 31 * h + Double.hashCode(offset_);
     h = 31 * h + Boolean.hashCode(maximize_);
+    h = 31 * h + getDomainMinsList().hashCode();
+    h = 31 * h + getDomainMaxsList().hashCode();
     return h;
   }
 
@@ -175,6 +241,12 @@ public class FloatObjectiveProto implements ProtoMessage {
     }
     if (maximize_) {
       w.bool(4, maximize_);
+    }
+    if (domainMins_ != null && !domainMins_.isEmpty()) {
+      w.packedInt64(5, domainMins_);
+    }
+    if (domainMaxs_ != null && !domainMaxs_.isEmpty()) {
+      w.packedInt64(6, domainMaxs_);
     }
   }
 
@@ -274,6 +346,12 @@ public class FloatObjectiveProto implements ProtoMessage {
       if (other.maximize_) {
         setMaximize(other.maximize_);
       }
+      if (other.domainMins_ != null) {
+        addAllDomainMins(other.domainMins_);
+      }
+      if (other.domainMaxs_ != null) {
+        addAllDomainMaxs(other.domainMaxs_);
+      }
       return this;
     }
 
@@ -308,6 +386,32 @@ public class FloatObjectiveProto implements ProtoMessage {
       return new ProtoWire.ListView<>(coeffs_, null);
     }
 
+    /**
+     * Returns a modifiable view of {@code domain_mins}: elements added or set through the list are
+     * stored in this builder (messages as immutable copies). The view is detached by
+     * {@code clearDomainMins()} and {@code clear()}.
+     */
+    @Override
+    public java.util.List<Long> getDomainMinsList() {
+      if (domainMins_ == null) {
+        domainMins_ = new java.util.ArrayList<>();
+      }
+      return new ProtoWire.ListView<>(domainMins_, null);
+    }
+
+    /**
+     * Returns a modifiable view of {@code domain_maxs}: elements added or set through the list are
+     * stored in this builder (messages as immutable copies). The view is detached by
+     * {@code clearDomainMaxs()} and {@code clear()}.
+     */
+    @Override
+    public java.util.List<Long> getDomainMaxsList() {
+      if (domainMaxs_ == null) {
+        domainMaxs_ = new java.util.ArrayList<>();
+      }
+      return new ProtoWire.ListView<>(domainMaxs_, null);
+    }
+
     void mergeWire(ProtoWire.Reader r) {
       while (!r.atEnd()) {
         int tag = r.tag();
@@ -337,6 +441,26 @@ public class FloatObjectiveProto implements ProtoMessage {
             break;
           case 32:
             setMaximize(r.varint() != 0);
+            break;
+          case 42: {
+            ProtoWire.Reader p = r.packed();
+            while (!p.atEnd()) {
+              addDomainMins(p.varint());
+            }
+            break;
+          }
+          case 40:
+            addDomainMins(r.varint());
+            break;
+          case 50: {
+            ProtoWire.Reader p = r.packed();
+            while (!p.atEnd()) {
+              addDomainMaxs(p.varint());
+            }
+            break;
+          }
+          case 48:
+            addDomainMaxs(r.varint());
             break;
           default:
             r.skip(tag);
@@ -388,6 +512,32 @@ public class FloatObjectiveProto implements ProtoMessage {
             }
             t.consume(":");
             setMaximize(t.bool());
+            break;
+          }
+          case "domain_mins": {
+            t.consume(":");
+            if (t.startList()) {
+              if (!t.emptyList()) {
+                do {
+                  addDomainMins(t.integer(Long.MIN_VALUE, Long.MAX_VALUE));
+                } while (t.nextInList());
+              }
+            } else {
+              addDomainMins(t.integer(Long.MIN_VALUE, Long.MAX_VALUE));
+            }
+            break;
+          }
+          case "domain_maxs": {
+            t.consume(":");
+            if (t.startList()) {
+              if (!t.emptyList()) {
+                do {
+                  addDomainMaxs(t.integer(Long.MIN_VALUE, Long.MAX_VALUE));
+                } while (t.nextInList());
+              }
+            } else {
+              addDomainMaxs(t.integer(Long.MIN_VALUE, Long.MAX_VALUE));
+            }
             break;
           }
           default:
@@ -519,6 +669,76 @@ public class FloatObjectiveProto implements ProtoMessage {
     /** Resets {@code maximize} to its default value. */
     public Builder clearMaximize() {
       maximize_ = false;
+      return this;
+    }
+
+    /** Replaces the element {@code index} of {@code domain_mins}. */
+    public Builder setDomainMins(int index, long value) {
+      if (domainMins_ == null) {
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+      }
+      domainMins_.set(index, value);
+      return this;
+    }
+
+    /** Appends a value to {@code domain_mins}. */
+    public Builder addDomainMins(long value) {
+      if (domainMins_ == null) {
+        domainMins_ = new java.util.ArrayList<>();
+      }
+      domainMins_.add(value);
+      return this;
+    }
+
+    /** Appends all values to {@code domain_mins}. */
+    public Builder addAllDomainMins(Iterable<? extends Long> values) {
+      if (domainMins_ == null) {
+        domainMins_ = new java.util.ArrayList<>();
+      }
+      for (Long v : values) {
+        domainMins_.add(v);
+      }
+      return this;
+    }
+
+    /** Removes all values of {@code domain_mins}. */
+    public Builder clearDomainMins() {
+      domainMins_ = null;
+      return this;
+    }
+
+    /** Replaces the element {@code index} of {@code domain_maxs}. */
+    public Builder setDomainMaxs(int index, long value) {
+      if (domainMaxs_ == null) {
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
+      }
+      domainMaxs_.set(index, value);
+      return this;
+    }
+
+    /** Appends a value to {@code domain_maxs}. */
+    public Builder addDomainMaxs(long value) {
+      if (domainMaxs_ == null) {
+        domainMaxs_ = new java.util.ArrayList<>();
+      }
+      domainMaxs_.add(value);
+      return this;
+    }
+
+    /** Appends all values to {@code domain_maxs}. */
+    public Builder addAllDomainMaxs(Iterable<? extends Long> values) {
+      if (domainMaxs_ == null) {
+        domainMaxs_ = new java.util.ArrayList<>();
+      }
+      for (Long v : values) {
+        domainMaxs_.add(v);
+      }
+      return this;
+    }
+
+    /** Removes all values of {@code domain_maxs}. */
+    public Builder clearDomainMaxs() {
+      domainMaxs_ = null;
       return this;
     }
 

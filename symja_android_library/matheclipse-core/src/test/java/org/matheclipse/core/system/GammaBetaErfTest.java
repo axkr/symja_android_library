@@ -200,8 +200,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0");
     check("Binomial(-100,-200)", //
         "45274257328051640582702088538742081937252294837706668420660");
+    // k may be a negative integer: Binomial(-1, -1) is 1
     check("Binomial(k, -1)", //
-        "0");
+        "Binomial(k,-1)");
     check("Binomial(3,3)", //
         "1");
     check("Binomial(0,0)", //
@@ -225,8 +226,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
             + "    1, 2, 3, 4}}))", //
         "{-2.0,-3.0,-6.0,6.0,3.0,2.0,1.5}");
 
+    // k may be a negative integer: Binomial(-1, -1) is 1
     check("Binomial(k, -1)", //
-        "0");
+        "Binomial(k,-1)");
     check("Binomial(k, -1.4)", //
         "Binomial(k,-1.4)");
     check("Binomial(k, 0)", //

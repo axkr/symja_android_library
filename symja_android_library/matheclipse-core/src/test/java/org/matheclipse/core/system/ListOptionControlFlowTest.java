@@ -363,4 +363,15 @@ public class ListOptionControlFlowTest extends ExprEvaluatorTestCase {
     check("RegionMeasure(Disk({0, 0}, 2), PerformanceGoal -> \"Quality\")", //
         "4*Pi");
   }
+
+  /** An undecided condition of If is kept in its evaluated form; the branches stay held. */
+  @Test
+  public void testIfKeepsEvaluatedCondition() {
+    check("v = {3, 4}; If(v == Infinity, 1 == 0, w == v[[1]])", //
+        "If({3,4}==Infinity,1==0,w==v[[1]])");
+    check("If(c + c > 0, 1, 2)", //
+        "If(c>0,1,2)");
+    check("j = 0; If((j++) > 5, p, q); j", //
+        "1");
+  }
 }

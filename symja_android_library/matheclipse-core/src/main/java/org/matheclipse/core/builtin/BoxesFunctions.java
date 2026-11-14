@@ -224,6 +224,10 @@ public class BoxesFunctions {
       if (expr.isAST(S.Skeleton, 2)) {
         return F.$str("<<" + expr.first().toString() + ">>");
       }
+      if (expr.isAST(S.RawBoxes, 2)) {
+        // already boxes: inserted as they are, in every form
+        return expr.first();
+      }
       if (expr.isAST(S.HoldForm, 2)) {
         // an invisible wrapper: TagBox keeps it for the way back, the front end shows the content
         return F.binaryAST2(S.TagBox, heldBoxes(expr.first(), precedence, form, engine),
@@ -299,6 +303,15 @@ public class BoxesFunctions {
             IExpr traditional = traditionalLogicBox(function, precedence, form, engine);
             if (traditional.isPresent()) {
               return traditional;
+            }
+            if (function.isAST(S.Mod, 3)) {
+              // the template of the notation m mod n, with a sum or a product as operand in
+              // parentheses
+              return F.binaryAST2(S.TemplateBox,
+                  F.list(
+                      standardFormRecursive(function.arg1(), Precedence.TIMES + 1, form, engine),
+                      standardFormRecursive(function.arg2(), Precedence.TIMES + 1, form, engine)),
+                  F.$str("Mod"));
             }
           }
           if (function.isNot() && function.argSize() == 1) {
@@ -741,9 +754,11 @@ public class BoxesFunctions {
 
     /**
      * A number in a number form wrapper as the number it is shown as: <code>NumberForm(2.71828, {4,
-     * 2})</code> is <code>TagBox(InterpretationBox("2.72", 2.71828), NumberForm(#1, {4, 2})&amp;)
-     * </code>, a number in scientific notation the row <code>7.08×10^7</code>. The
-     * <code>InterpretationBox</code> reads back as the number and the tag as the wrapper.
+     * 2})</code> is <code>TagBox(InterpretationBox(StyleBox("\"2.72\"", ShowStringCharacters -&gt;
+     * False), 2.71828, AutoDelete -&gt; True), NumberForm(#1, {4, 2})&amp;)</code>, a number in
+     * scientific notation the row <code>7.08×10^7</code>. Without a specification the tag is the
+     * bare form, <code>AccountingForm</code>. The <code>InterpretationBox</code> reads back as the
+     * number and the tag as the wrapper.
      *
      * @return {@link F#NIL} if the wrapper does not format an integer or a real number
      */
@@ -753,14 +768,24 @@ public class BoxesFunctions {
       if (formatted == null) {
         return F.NIL;
       }
-      IExpr shown = F.$str(formatted.mantissa);
+      // the digits are a string box, drawn without its quotation marks
+      IExpr shown = F.$str(quotedString(formatted.mantissa));
       if (formatted.scientific) {
         shown = F.RowBox(F.list(shown, F.$str(formatted.multiplier),
             F.binaryAST2(S.SuperscriptBox, F.$str("10"),
-                F.$str(Integer.toString(formatted.exponent)))));
+                F.$str(quotedString(Integer.toString(formatted.exponent))))));
       }
-      return F.binaryAST2(S.TagBox, F.binaryAST2(S.InterpretationBox, shown, formAST.arg1()),
-          F.Function(formAST.setAtCopy(1, F.Slot1)));
+      IExpr value = formAST.arg1();
+      // an integer can't be edited into another number; the digits of a real number are deleted
+      // as a whole
+      IExpr editing = value.isInteger() ? F.Rule(S.Editable, S.False)
+          : F.Rule(S.AutoDelete, S.True);
+      // the tag rebuilds the wrapper with its specification, or is the bare form without one
+      IExpr tag = formAST.argSize() >= 2 ? F.Function(formAST.setAtCopy(1, F.Slot1))
+          : formAST.head();
+      return F.binaryAST2(S.TagBox, F.ternaryAST3(S.InterpretationBox,
+          F.binaryAST2(S.StyleBox, shown, F.Rule(S.ShowStringCharacters, S.False)), value,
+          editing), tag);
     }
 
     /**
@@ -1182,6 +1207,18 @@ public class BoxesFunctions {
           return parenthesize(merged, Precedence.TIMES, precedence);
         }
       }
+      if (form == S.TraditionalForm && hasFractionInFrontOfSum(times)) {
+        IRational rational = (IRational) times.arg1();
+        IExpr fraction = F.FractionBox(F.$str(rational.numerator().abs().toString()),
+            F.$str(rational.denominator().toString()));
+        IASTAppendable factors = F.ListAlloc(times.size());
+        factors.append(rational.isNegative() ? F.RowBox(F.list(F.$str("-"), fraction)) : fraction);
+        for (int i = 2; i < times.size(); i++) {
+          factors.append(standardFormRecursive(times.get(i),
+              factorPrecedence(times.get(i), Precedence.TIMES), form, engine));
+        }
+        return parenthesize(riffle(factors, " "), Precedence.TIMES, precedence);
+      }
       IExpr positive = withoutMinus(times);
       if (positive.isPresent() && isProductWithoutFraction(times)) {
         // -x y is the product of -x and y: the minus goes with the first factor, and -2 x is
@@ -1251,6 +1288,40 @@ public class BoxesFunctions {
         belowBoxes.append(reciprocalBox((IAST) denominator.get(i), form, engine));
       }
       return F.FractionBox(above, riffle(belowBoxes, " "));
+    }
+
+    /**
+     * Whether the fraction in front of the product is written as a fraction of its own: the product
+     * is a fraction times factors among which is a sum or a power of a sum, with nothing in the
+     * denominator, and the fraction is negative or a sum factor shows a fraction itself.
+     * <code>6/5 (x^2 - 7/4 x)</code> and <code>-4/5 (y^2 - y)</code> have the fraction in front,
+     * while <code>3/7 (y + 2)</code> and <code>6/5 x^2</code> are one fraction - which avoids a
+     * fraction within the numerator of a fraction.
+     */
+    private static boolean hasFractionInFrontOfSum(IAST times) {
+      if (!times.arg1().isFraction()) {
+        return false;
+      }
+      boolean sum = false;
+      boolean fractionInSum = false;
+      for (int i = 2; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (isReciprocal(factor)) {
+          return false;
+        }
+        if (factor.isPlus() || (factor.isPower() && factor.base().isPlus())) {
+          sum = true;
+          if (!fractionInSum) {
+            fractionInSum = factor.has(x -> x.isFraction() || isReciprocal(x), false);
+          }
+        }
+      }
+      return sum && (fractionInSum || times.arg1().isNegative());
+    }
+
+    /** Whether the expression is a power with a negative number as exponent. */
+    private static boolean isReciprocal(IExpr expr) {
+      return expr.isPower() && expr.exponent().isNumber() && expr.exponent().isNegative();
     }
 
     /**

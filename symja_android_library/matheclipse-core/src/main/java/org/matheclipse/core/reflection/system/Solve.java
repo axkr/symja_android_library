@@ -3983,6 +3983,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     IAST result = ast;
     if (ast.argSize() == 2 && isDomain(ast.arg2())) {
       result = F.ternaryAST3(ast.head(), ast.arg1(), F.CEmptyList, ast.arg2());
+    } else if (ast.argSize() == 2) {
+      final IExpr domain = domainOfAllVariables(ast.arg1(), ast.arg2());
+      if (domain.isPresent()) {
+        result = F.ternaryAST3(ast.head(), ast.arg1(), ast.arg2(), domain);
+      }
     }
     if (result.argSize() != 3 || !isDomain(result.arg3())) {
       return result;
@@ -4003,6 +4008,50 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The domain which conditions <code>Element(x, dom)</code> among the equations give to every
+   * variable to be solved for: <code>Solve({x^2 == 4, Element(x, Integers)}, x)</code> is solved
+   * over the integers.
+   *
+   * @param system the equations, a list or a conjunction
+   * @param variablesExpr the variable or the list of variables
+   * @return {@link F#NIL} if the conditions don't name one domain for all variables
+   */
+  private static IExpr domainOfAllVariables(IExpr system, IExpr variablesExpr) {
+    if (!system.isList() && !system.isAnd()) {
+      return F.NIL;
+    }
+    final IAST variables = variablesExpr.isList() ? (IAST) variablesExpr : F.list(variablesExpr);
+    if (variables.isEmpty() || !variables.forAll(x -> x.isVariable())) {
+      return F.NIL;
+    }
+    IExpr domain = F.NIL;
+    final Set<IExpr> covered = new HashSet<IExpr>();
+    for (IExpr part : (IAST) system) {
+      if (!part.isAST(S.Element, 3)) {
+        continue;
+      }
+      final IExpr partDomain = part.second();
+      if (!isDomain(partDomain) || (domain.isPresent() && !domain.equals(partDomain))) {
+        return F.NIL;
+      }
+      domain = partDomain;
+      final IExpr first = part.first();
+      final IAST named = first.isList() || first.isAlternatives() ? (IAST) first : F.list(first);
+      for (IExpr variable : named) {
+        if (!variables.contains(variable)) {
+          // a condition on a parameter
+          return F.NIL;
+        }
+        covered.add(variable);
+      }
+    }
+    if (domain.isNIL() || !variables.forAll(x -> covered.contains(x))) {
+      return F.NIL;
+    }
+    return domain;
+  }
+
+  /**
    * @param expr a term of the system
    * @param booleanArgument <code>true</code> if <code>expr</code> is an argument of a logical
    *        operator, where a symbol is a boolean proposition - <code>Xor(a,b,c,d) &amp;&amp; (a ||
@@ -4012,8 +4061,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (booleanArgument && expr.isSymbol()) {
       return true;
     }
+    if (expr.isAST(S.Inequality)) {
+      // a chain whose relations are all comparisons
+      for (int i = 2; i < expr.size(); i += 2) {
+        final IExpr relation = ((IAST) expr).get(i);
+        if (relation != S.Less && relation != S.LessEqual && relation != S.Greater
+            && relation != S.GreaterEqual && relation != S.Equal && relation != S.Unequal) {
+          return false;
+        }
+      }
+      return true;
+    }
     if (expr.isTrue() || expr.isFalse() || expr.isRelationalBinary() || expr.isEqual()
-        || expr.isAST(S.Unequal) || expr.isAST(S.Inequality) || expr.isAST(S.Element)
+        || expr.isAST(S.Unequal) || expr.isAST(S.Element)
         || expr.isAST(S.Less) || expr.isAST(S.LessEqual) || expr.isAST(S.Greater)
         || expr.isAST(S.GreaterEqual)) {
       return true;

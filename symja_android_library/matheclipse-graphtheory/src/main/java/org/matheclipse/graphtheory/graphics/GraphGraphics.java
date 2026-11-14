@@ -17,6 +17,7 @@ import org.jgrapht.alg.drawing.model.LayoutModel2D;
 import org.jgrapht.alg.drawing.model.MapLayoutModel2D;
 import org.jgrapht.alg.drawing.model.Point2D;
 import org.jgrapht.graph.AsSubgraph;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -93,6 +94,15 @@ final public class GraphGraphics {
   private IExpr treeRoot = F.NIL;
   /** where the root of a tree layout sits: <code>Top</code>, <code>Bottom</code>, ... */
   private IExpr treeOrientation = S.Top;
+  /** the depth <code>f(k)</code> of the layer <code>k</code> of a tree layout, or {@link F#NIL} */
+  private IExpr layerSizeFunction = F.NIL;
+  /**
+   * the function <code>f(points, {source, target}, edge)</code> which draws an edge in the place
+   * of the default line or arrow, or {@link F#NIL}
+   */
+  private IExpr edgeRenderingFunction = F.NIL;
+  /** the edge passed to the {@link #edgeRenderingFunction} is an <code>UndirectedEdge</code> */
+  private boolean undirectedRenderedEdges = false;
   private final IAST options;
   // Configuration
   /** The options that describe the graph and mean nothing to <code>Graphics</code>. */
@@ -171,6 +181,80 @@ final public class GraphGraphics {
   public void setTreeRoot(IExpr root, IExpr orientation) {
     this.treeRoot = root;
     this.treeOrientation = orientation;
+  }
+
+  /**
+   * The layer <code>k</code> of a tree layout, the step from depth <code>k - 1</code> to depth
+   * <code>k</code>, is <code>function(k)</code> deep; {@link F#NIL} for layers one unit deep.
+   */
+  public void setLayerSizeFunction(IExpr function) {
+    this.layerSizeFunction = function;
+  }
+
+  /**
+   * Draw every edge as <code>function(points, {source, target}, edge)</code>: the points of the
+   * edge from its source to its target, the two vertices and the edge itself. The edge labels are
+   * drawn as without the function.
+   *
+   * @param function the function or {@link F#NIL} for the default edges
+   */
+  public void setEdgeRenderingFunction(IExpr function) {
+    this.edgeRenderingFunction = function;
+  }
+
+  /**
+   * Pass the edges to the function of {@link #setEdgeRenderingFunction(IExpr)} as
+   * <code>UndirectedEdge(source, target)</code>, as for a plot of a list of rules, instead of the
+   * edges of the graph.
+   */
+  public void setUndirectedRenderedEdges(boolean undirected) {
+    this.undirectedRenderedEdges = undirected;
+  }
+
+  /** The plot options which are neither options of the graph nor of the picture. */
+  private static final Set<IExpr> PLOT_DRAWING_OPTIONS =
+      new HashSet<>(java.util.Arrays.asList(S.EdgeRenderingFunction, S.LayerSizeFunction));
+
+  /** Whether <code>name</code> is the symbol of the given name, in any case of its letters. */
+  private static boolean isSymbolName(IExpr name, String symbolName) {
+    // the relaxed syntax lowercases the name of a symbol it does not know
+    return name.isSymbol() && symbolName.equalsIgnoreCase(((ISymbol) name).getSymbolName());
+  }
+
+  /**
+   * The value of the option <code>name -&gt; value</code> of a plot function such as
+   * <code>GraphPlot</code> or <code>TreePlot</code>.
+   *
+   * @param ast <code>plot(graph, ..., options...)</code>
+   * @param from the first position an option can stand at
+   * @return {@link F#NIL} if the option is not given
+   */
+  public static IExpr plotOption(IAST ast, int from, ISymbol name) {
+    for (int i = from; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (option.isRuleAST() && option.first() == name) {
+        return option.second();
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Read the options of a plot function which describe how the plot is drawn:
+   * <code>EdgeRenderingFunction</code> and <code>LayerSizeFunction</code>.
+   *
+   * @param ast <code>plot(graph, ..., options...)</code>
+   * @param from the first position an option can stand at
+   */
+  public void setPlotOptions(IAST ast, int from) {
+    IExpr rendering = plotOption(ast, from, S.EdgeRenderingFunction);
+    if (rendering.isPresent() && rendering != S.Automatic) {
+      setEdgeRenderingFunction(rendering);
+    }
+    IExpr layerSize = plotOption(ast, from, S.LayerSizeFunction);
+    if (layerSize.isPresent() && layerSize != S.Automatic) {
+      setLayerSizeFunction(layerSize);
+    }
   }
 
   private <E> void calculateLayout(Graph<IExpr, E> g) {
@@ -296,7 +380,8 @@ final public class GraphGraphics {
     }
   }
 
-  private void drawCurvedEdge(double[] p1, double[] p2, IASTAppendable primitives) {
+  /** The points of the bent edge from <code>p1</code> to <code>p2</code>. */
+  private static IAST curvedEdgePoints(double[] p1, double[] p2) {
     double x1 = p1[0];
     double y1 = p1[1];
     double x2 = p2[0];
@@ -319,11 +404,15 @@ final public class GraphGraphics {
       double py = u * u * y1 + 2 * u * t * cy + t * t * y2;
       points.append(F.List(F.num(px), F.num(py)));
     }
-    primitives.append(F.Arrow(points));
+    return points;
   }
 
   private <E> void drawEdges(Graph<IExpr, E> g, IASTAppendable primitives, double distance) {
+    EvalEngine engine = EvalEngine.get();
+    final IBuiltInSymbol edgeHead =
+        directed && !undirectedRenderedEdges ? S.DirectedEdge : S.UndirectedEdge;
     for (E e : g.edgeSet()) {
+      engine.checkTimeLimit();
       IExpr source = g.getEdgeSource(e);
       IExpr target = g.getEdgeTarget(e);
 
@@ -338,10 +427,22 @@ final public class GraphGraphics {
           sink = F.ListAlloc(2);
           sink.append(style);
         }
-        if (source.equals(target)) {
-          drawSelfLoop(p1, sink);
+        if (edgeRenderingFunction.isPresent()) {
+          IAST points;
+          if (source.equals(target)) {
+            points = selfLoopPoints(p1);
+          } else if (directed && g.containsEdge(target, source)) {
+            points = curvedEdgePoints(p1, p2);
+          } else {
+            points = F.List(point(p1[0], p1[1]), point(p2[0], p2[1]));
+          }
+          sink.append(engine.evaluate(F.ternaryAST3(edgeRenderingFunction, points,
+              F.List(source, target), F.binaryAST2(edgeHead, source, target))));
+        } else if (source.equals(target)) {
+          IAST points = selfLoopPoints(p1);
+          sink.append(directed ? F.Arrow(points) : F.Line(points));
         } else if (directed && g.containsEdge(target, source)) {
-          drawCurvedEdge(p1, p2, sink);
+          sink.append(F.Arrow(curvedEdgePoints(p1, p2)));
         } else {
           double[] end = p2;
           if (directed) {
@@ -372,8 +473,8 @@ final public class GraphGraphics {
   }
 
   /**
-   * The labels of <code>EdgeLabels -> {edge1 -> label1, ...}</code>, each drawn at the middle of its
-   * edge.
+   * The labels of <code>EdgeLabels -> {edge1 -> label1, ...}</code>, each drawn centred at the
+   * middle of its edge: <code>Text(label, point, {0, 0})</code>.
    */
   private <E> IASTAppendable edgeLabels(Graph<IExpr, E> g) {
     IASTAppendable labels = F.ListAlloc();
@@ -388,7 +489,9 @@ final public class GraphGraphics {
       double[] p1 = vertexCoords.get(source);
       double[] p2 = vertexCoords.get(target);
       if (label.isPresent() && !label.isNone() && p1 != null && p2 != null) {
-        labels.append(F.Text(label, point((p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0)));
+        // centred on the middle of the edge, like a label of a vertex drawn on the vertex
+        labels.append(F.Text(label, point((p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0),
+            F.List(F.C0, F.C0)));
       }
     }
     if (labels.argSize() > 0) {
@@ -397,7 +500,8 @@ final public class GraphGraphics {
     return labels;
   }
 
-  private void drawSelfLoop(double[] p, IASTAppendable primitives) {
+  /** The points of the loop at the vertex at <code>p</code>. */
+  private IAST selfLoopPoints(double[] p) {
     double x = p[0];
     double y = p[1];
     double r = Math.max(vertexSize * 6.5, 0.4);
@@ -416,12 +520,7 @@ final public class GraphGraphics {
       double py = u * u * u * y + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y;
       points.append(F.List(F.num(px), F.num(py)));
     }
-
-    if (directed) {
-      primitives.append(F.Arrow(points));
-    } else {
-      primitives.append(F.Line(points));
-    }
+    return points;
   }
 
   private IExpr getOption(ISymbol key) {
@@ -661,6 +760,11 @@ final public class GraphGraphics {
       return;
     }
 
+    if (treeOrientation == S.Center
+        && layoutComponentRadial(g, component, centerX, centerY, scale)) {
+      return;
+    }
+
     // 1. Determine Root
     // For directed, find node with in-degree 0.
     // For undirected (or cycle), picking the one with max degree or first available is acceptable
@@ -720,6 +824,11 @@ final public class GraphGraphics {
 
     // Shift root X to 0 so the tree centers nicely on (centerX, centerY)
     double rootX = root.x;
+    int deepest = 0;
+    for (LayoutNode n : nodeMap.values()) {
+      deepest = Math.max(deepest, n.depth);
+    }
+    double[] layerOffsets = GraphLayouts.layerOffsets(layerSizeFunction, deepest);
 
     // 4. Transform to global coordinates
     // Normalize to component bounds
@@ -735,8 +844,8 @@ final public class GraphGraphics {
       if (n.x > maxX)
         maxX = n.x;
 
-      // Y is -depth
-      double y = -n.depth;
+      // Y is the depth below the root
+      double y = -layerOffsets[n.depth];
       n.y = y;
       if (y < minY)
         minY = y;
@@ -773,6 +882,72 @@ final public class GraphGraphics {
 
       vertexCoords.put(n.id, new double[] {finalX, finalY});
     }
+  }
+
+  /**
+   * Layouts a single component with its root in the middle and every deeper layer on a circle
+   * around it. The root is the tree root if one is set, else the only vertex of the component no
+   * directed edge points to, else the centre of the component.
+   *
+   * @return <code>false</code> if the component has no radial drawing
+   */
+  private <E> boolean layoutComponentRadial(Graph<IExpr, E> g, Set<IExpr> component,
+      double centerX, double centerY, double scale) {
+    IExpr root = F.NIL;
+    if (treeRoot.isPresent() && component.contains(treeRoot)) {
+      root = treeRoot;
+    } else if (directed) {
+      for (IExpr v : component) {
+        if (g.inDegreeOf(v) == 0) {
+          if (root.isPresent()) {
+            root = F.NIL;
+            break;
+          }
+          root = v;
+        }
+      }
+    }
+    Graph<IExpr, E> subgraph = new AsSubgraph<>(g, component);
+    if (root.isNIL()) {
+      root = GraphLayouts.center(subgraph);
+    }
+    IASTAppendable layout = F.ListAlloc(3);
+    layout.append(F.stringx("RadialEmbedding"));
+    layout.append(F.Rule(F.stringx("RootVertex"), root));
+    if (layerSizeFunction.isPresent()) {
+      layout.append(F.Rule(F.stringx(GraphLayouts.LAYER_SIZE_FUNCTION), layerSizeFunction));
+    }
+    IAST points = GraphLayouts.coordinates(subgraph, layout);
+    if (points.isNIL() || points.argSize() != subgraph.vertexSet().size()) {
+      return false;
+    }
+    // the root goes to the middle of the cell, the farthest vertex to its border
+    double rootX = 0.0;
+    double rootY = 0.0;
+    int i = 1;
+    for (IExpr v : subgraph.vertexSet()) {
+      IExpr point = points.get(i++);
+      if (v.equals(root)) {
+        rootX = point.first().evalf();
+        rootY = point.second().evalf();
+      }
+    }
+    double reach = 0.0;
+    for (IExpr point : points) {
+      reach = Math.max(reach, Math.abs(point.first().evalf() - rootX));
+      reach = Math.max(reach, Math.abs(point.second().evalf() - rootY));
+    }
+    if (reach < 1e-9) {
+      reach = 0.5;
+    }
+    i = 1;
+    for (IExpr v : subgraph.vertexSet()) {
+      IExpr point = points.get(i++);
+      double normX = (point.first().evalf() - rootX) / (2.0 * reach);
+      double normY = (point.second().evalf() - rootY) / (2.0 * reach);
+      vertexCoords.put(v, new double[] {centerX + normX * scale, centerY + normY * scale});
+    }
+    return true;
   }
 
   /**
@@ -1013,8 +1188,15 @@ final public class GraphGraphics {
   }
 
   static boolean isVertexLabeling(IExpr name) {
-    // the relaxed syntax lowercases the name of a symbol it does not know
-    return name.isSymbol() && "VertexLabeling".equalsIgnoreCase(((ISymbol) name).getSymbolName());
+    return isSymbolName(name, "VertexLabeling");
+  }
+
+  /**
+   * Whether an option of a plot function says how the plot is drawn - one read by
+   * {@link #setPlotOptions(IAST, int)} - and so is not passed on to <code>Graphics</code>.
+   */
+  public static boolean isPlotDrawingOption(IExpr option) {
+    return option.isRuleAST() && PLOT_DRAWING_OPTIONS.contains(option.first());
   }
 
   /**

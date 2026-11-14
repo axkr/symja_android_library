@@ -1513,7 +1513,10 @@ public final class Programming {
       if (ast.size() == 5) {
         return engine.evaluate(ast.arg4());
       }
-
+      if (!temp.equals(ast.arg1())) {
+        // the undecided condition stays in its evaluated form, the branches stay held
+        return ast.setAtCopy(1, temp);
+      }
       return F.NIL;
     }
 

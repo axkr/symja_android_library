@@ -28,6 +28,21 @@ public class PrecedenceTest extends ExprEvaluatorTestCase {
     // heads with a precedence but without an operator row
     check("Precedence /@ {Optional, Blank, Postfix, Prefix, D, TensorProduct}", //
         "{140.0,730.0,70.0,640.0,550.0,495.0}");
+    check("Precedence /@ {Infix, Slot, SlotSequence, Complex, UpArrow, TagSet}", //
+        "{630.0,740.0,740.0,310.0,580.0,670.0}");
+    // read one step looser than Equal, reported at the same level
+    check("Precedence /@ {SameQ, UnsameQ, Equal}", //
+        "{290.0,290.0,290.0}");
+    // ' is parsed looser than @ and !, but reported at the level of a function call
+    check("Precedence(Derivative)", //
+        "670.0");
+  }
+
+  @Test
+  public void testApplyTo() {
+    // //= binds looser than & and tighter than //
+    check("{Precedence(ApplyTo), Precedence(Function), Precedence(AddTo)}", //
+        "{75.0,90.0,100.0}");
   }
 
   @Test

@@ -162,6 +162,7 @@ public final class BooleanFunctions {
       S.NoneTrue.setEvaluator(new NoneTrue());
       S.NonNegative.setEvaluator(new NonNegative());
       S.NonPositive.setEvaluator(new NonPositive());
+      S.Majority.setEvaluator(new Majority());
       S.Nor.setEvaluator(new Nor());
       S.Not.setEvaluator(new Not());
       S.Or.setEvaluator(new Or());
@@ -308,6 +309,237 @@ public final class BooleanFunctions {
       throw new ArgumentTypeException(str);
     }
 
+    /**
+     * Convert a formula in conjunctive or disjunctive normal form back to an expression in the
+     * given <code>form</code>. The clauses of the normal form are simplified first, see
+     * {@link #simplifyClauses(List, EvalEngine)}.
+     *
+     * <p>
+     * The forms <code>"CNF"</code> and <code>"DNF"</code> are the normal forms themselves. The
+     * other forms are written with one connective and negated literals:
+     * <code>"AND"</code> and <code>"NOR"</code> from the clauses of the conjunctive normal form,
+     * <code>"OR"</code> and <code>"NAND"</code> from the terms of the disjunctive normal form.
+     *
+     * @param formula a conjunction of disjunctions of literals if <code>conjunctive</code> is
+     *        <code>true</code>, otherwise a disjunction of conjunctions of literals
+     * @param form one of the names in {@link #CONJUNCTIVE_FORMS} or {@link #DISJUNCTIVE_FORMS}
+     * @param conjunctive whether the formula is in conjunctive normal form
+     */
+    public IExpr normalForm2Expr(final Formula formula, String form, boolean conjunctive,
+        EvalEngine engine) {
+      if (formula instanceof CTrue) {
+        return S.True;
+      }
+      if (formula instanceof CFalse) {
+        return S.False;
+      }
+      List<List<Literal>> clauses = normalFormClauses(formula, conjunctive);
+      if (clauses == null) {
+        return booleanFunction2Expr(formula);
+      }
+      final java.util.Comparator<Literal> literalOrder = (l1, l2) -> {
+        int cp = mapToSymbol(l1.variable()).compareTo(mapToSymbol(l2.variable()));
+        if (cp != 0 || l1.phase() == l2.phase()) {
+          return cp;
+        }
+        // a disjunctive form lists the literal before its negation, a conjunctive form after it
+        return l1.phase() == conjunctive ? 1 : -1;
+      };
+      final java.util.Comparator<List<Literal>> clauseOrder = (c1, c2) -> {
+        final int size = Math.min(c1.size(), c2.size());
+        for (int i = 0; i < size; i++) {
+          int cp = literalOrder.compare(c1.get(i), c2.get(i));
+          if (cp != 0) {
+            return cp;
+          }
+        }
+        return Integer.compare(c1.size(), c2.size());
+      };
+      for (List<Literal> clause : clauses) {
+        clause.sort(literalOrder);
+      }
+      clauses.sort(clauseOrder);
+      if (simplifyClauses(clauses, engine)) {
+        // an empty clause: a conjunction with a false part, a disjunction with a true part
+        return conjunctive ? S.False : S.True;
+      }
+      clauses.sort(clauseOrder);
+
+      final IASTAppendable result;
+      switch (form) {
+        case "AND":
+          result = F.ast(S.And, clauses.size());
+          break;
+        case "OR":
+          result = F.ast(S.Or, clauses.size());
+          break;
+        case "NAND":
+          result = F.ast(S.Nand, clauses.size());
+          break;
+        case "NOR":
+          result = F.ast(S.Nor, clauses.size());
+          break;
+        default:
+          result = F.ast(conjunctive ? S.And : S.Or, clauses.size());
+          break;
+      }
+      final boolean normalForm = form.equals("CNF") || form.equals("DNF");
+      // a normal form combines its literals with the dual connective; the other forms negate the
+      // literals of a clause and combine them with their own connective, which negates the result
+      // (Nand, Nor) or is negated (And, Or)
+      final boolean negatedOuter = result.head() == S.Nand || result.head() == S.Nor;
+      final ISymbol inner =
+          normalForm ? (conjunctive ? S.Or : S.And) : (ISymbol) result.head();
+      for (List<Literal> clause : clauses) {
+        if (normalForm) {
+          if (clause.size() == 1) {
+            result.append(literal2Expr(clause.get(0), false, engine));
+          } else {
+            IASTAppendable part = F.ast(inner, clause.size());
+            for (Literal literal : clause) {
+              part.append(literal2Expr(literal, false, engine));
+            }
+            result.append(part);
+          }
+        } else if (clause.size() == 1) {
+          result.append(literal2Expr(clause.get(0), negatedOuter, engine));
+        } else {
+          IASTAppendable part = F.ast(inner, clause.size());
+          for (Literal literal : clause) {
+            part.append(literal2Expr(literal, !negatedOuter, engine));
+          }
+          result.append(negatedOuter ? part : F.Not(part));
+        }
+      }
+      if (result.argSize() == 1 && (!negatedOuter || clauses.get(0).size() == 1)) {
+        // a single clause is the result itself; a single literal was negated for Nand and Nor
+        return negatedOuter ? literal2Expr(clauses.get(0).get(0), false, engine) : result.arg1();
+      }
+      return result;
+    }
+
+    /**
+     * The expression of a literal or, if <code>negate</code> is <code>true</code>, of its
+     * negation. The negation of an expression which is no variable is evaluated, which turns a
+     * negated comparison into its complement.
+     */
+    private IExpr literal2Expr(Literal literal, boolean negate, EvalEngine engine) {
+      final IExpr expr = mapToSymbol(literal.variable());
+      if (literal.phase() != negate) {
+        return expr;
+      }
+      return expr.isSymbol() || expr.isSlot() ? F.Not(expr) : engine.evaluate(F.Not(expr));
+    }
+
+    /**
+     * The clauses of a formula in conjunctive normal form, or the terms of a formula in
+     * disjunctive normal form, as lists of literals.
+     *
+     * @return <code>null</code> if the formula isn't in the normal form
+     */
+    private static List<List<Literal>> normalFormClauses(final Formula formula,
+        boolean conjunctive) {
+      final List<List<Literal>> clauses = new ArrayList<List<Literal>>();
+      final boolean isOuter = conjunctive ? formula instanceof org.logicng.formulas.And
+          : formula instanceof org.logicng.formulas.Or;
+      if (isOuter) {
+        for (Formula operand : formula) {
+          List<Literal> clause = normalFormClause(operand, conjunctive);
+          if (clause == null) {
+            return null;
+          }
+          clauses.add(clause);
+        }
+      } else {
+        List<Literal> clause = normalFormClause(formula, conjunctive);
+        if (clause == null) {
+          return null;
+        }
+        clauses.add(clause);
+      }
+      return clauses;
+    }
+
+    private static List<Literal> normalFormClause(final Formula formula, boolean conjunctive) {
+      final List<Literal> clause = new ArrayList<Literal>();
+      if (formula instanceof Literal) {
+        clause.add((Literal) formula);
+        return clause;
+      }
+      final boolean isInner = conjunctive ? formula instanceof org.logicng.formulas.Or
+          : formula instanceof org.logicng.formulas.And;
+      if (!isInner) {
+        return null;
+      }
+      for (Formula operand : formula) {
+        if (!(operand instanceof Literal)) {
+          return null;
+        }
+        if (!clause.contains(operand)) {
+          clause.add((Literal) operand);
+        }
+      }
+      return clause;
+    }
+
+    /**
+     * Simplify the clauses of a normal form with two rules, until neither applies any more:
+     * <ul>
+     * <li>a clause which contains all literals of another clause is removed;
+     * <li>if a clause <code>A</code> has exactly one literal <code>x</code> which is not in a
+     * clause <code>B</code>, and <code>B</code> contains the negation of <code>x</code>, the
+     * negation is removed from <code>B</code>.
+     * </ul>
+     * In a disjunctive normal form these are <code>a || (a &amp;&amp; b) = a</code> and
+     * <code>(a &amp;&amp; t) || (!a &amp;&amp; t &amp;&amp; s) = (a &amp;&amp; t) || (t &amp;&amp;
+     * s)</code>, which merges two terms which differ in the sign of one literal; in a conjunctive
+     * normal form the dual rules.
+     *
+     * @param clauses the clauses, which are changed
+     * @return <code>true</code> if a clause lost all of its literals
+     */
+    private static boolean simplifyClauses(List<List<Literal>> clauses, EvalEngine engine) {
+      boolean changed = true;
+      while (changed) {
+        changed = false;
+        for (int i = 0; i < clauses.size(); i++) {
+          engine.checkTimeLimit();
+          for (int j = 0; j < clauses.size(); j++) {
+            if (i == j) {
+              continue;
+            }
+            final List<Literal> a = clauses.get(i);
+            final List<Literal> b = clauses.get(j);
+            if (a.size() > b.size()) {
+              continue;
+            }
+            int missing = 0;
+            Literal single = null;
+            for (int k = 0; k < a.size() && missing < 2; k++) {
+              if (!b.contains(a.get(k))) {
+                missing++;
+                single = a.get(k);
+              }
+            }
+            if (missing == 0) {
+              clauses.remove(j);
+              if (j < i) {
+                i--;
+              }
+              j--;
+              changed = true;
+            } else if (missing == 1 && b.remove(single.negate())) {
+              if (b.isEmpty()) {
+                return true;
+              }
+              changed = true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
     public IExpr factorSimplifyCNF(final Formula formula) {
       final AdvancedSimplifier simplifier = new AdvancedSimplifier();
       final Formula simplified = formula.transform(simplifier);
@@ -380,6 +612,15 @@ public final class BooleanFunctions {
                   result[i - 1] = factory.not(expr2LogicNGFormula(x, substituteExpressions));
                 });
                 return factory.or(result);
+              }
+              break;
+            case ID.Majority:
+              if (ast.isSameHeadSizeGE(S.Majority, 2)) {
+                final Formula[] arguments = new Formula[ast.argSize()];
+                ast.forEach((x, i) -> {
+                  arguments[i - 1] = expr2LogicNGFormula(x, substituteExpressions);
+                });
+                return majorityFormula(arguments, factory, EvalEngine.get());
               }
               break;
             case ID.Nor:
@@ -642,32 +883,6 @@ public final class BooleanFunctions {
   }
 
   /**
-   * Test if the arguments of <code>args</code> contain a symbol <code>x</code> and its negation
-   * <code>!x</code>.
-   */
-  private static boolean hasComplementaryLiterals(IAST args) {
-    Set<IExpr> negatedSymbols = null;
-    for (int i = 1; i < args.size(); i++) {
-      IExpr arg = args.get(i);
-      if (arg.isNot() && arg.first().isSymbol()) {
-        if (negatedSymbols == null) {
-          negatedSymbols = new HashSet<IExpr>();
-        }
-        negatedSymbols.add(arg.first());
-      }
-    }
-    if (negatedSymbols != null) {
-      for (int i = 1; i < args.size(); i++) {
-        IExpr arg = args.get(i);
-        if (arg.isSymbol() && negatedSymbols.contains(arg)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
    * The value of a conjunction whose argument at <code>position</code> is <code>False</code>:
    * <code>Undefined</code> if a later argument is <code>Undefined</code>, otherwise
    * <code>False</code>.
@@ -758,10 +973,6 @@ public final class BooleanFunctions {
           temp = flattenedAST.get(i);
         }
         index++;
-      }
-      if (hasComplementaryLiterals(result)) {
-        // x && !x
-        return S.False;
       }
       if (result.isAST1()) {
         return result.arg1();
@@ -2201,6 +2412,60 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * A value which has no place in the order of the real numbers: a non-real number, a numeric
+   * expression with a non-zero imaginary part such as <code>I*Sqrt(2)</code>,
+   * <code>ComplexInfinity</code> or an infinity of a non-real direction. A symbolic expression
+   * isn't one: it may still become a real number.
+   */
+  static boolean isNonRealValue(IExpr x, EvalEngine engine) {
+    if (x.isNumber()) {
+      return !x.isReal();
+    }
+    if (!x.isAST()) {
+      return false;
+    }
+    if (x.isDirectedInfinity()) {
+      return x.isComplexInfinity() || (!x.isInfinity() && !x.isNegativeInfinity()
+          && isNonRealValue(x.first(), engine));
+    }
+    if (x.isRealResult() || !x.isNumericFunction(false)) {
+      return false;
+    }
+    try (MachineUnderflow.Quiet quiet = engine.machineUnderflow().quiet()) {
+      final IExpr numeric = engine.evalQuiet(F.N(x));
+      return numeric.isNumber() && !numeric.isReal() && !((INumber) numeric).im().isFuzzyZero();
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /** A number, a numeric expression or an infinity. */
+  private static boolean isNumericOrInfinity(IExpr x) {
+    return x.isNumber() || x.isDirectedInfinity() || (x.isAST() && x.isNumericFunction(false));
+  }
+
+  /**
+   * Print the message for an undecided comparison of two numeric values of which one is not a real
+   * number. A symbolic operand compares nothing and gets no message.
+   *
+   * @return <code>true</code> if the message was printed
+   */
+  private static boolean printInvalidComparison(ISymbol head, IExpr arg1, IExpr arg2,
+      EvalEngine engine) {
+    if (isNumericOrInfinity(arg1) && isNumericOrInfinity(arg2)) {
+      final IExpr nonReal =
+          isNonRealValue(arg1, engine) ? arg1 : isNonRealValue(arg2, engine) ? arg2 : F.NIL;
+      if (nonReal.isPresent()) {
+        // Invalid comparison with `1` attempted.
+        Errors.printMessage(head, "nord", F.list(nonReal), engine);
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static class Greater extends AbstractCoreFunctionEvaluator
       implements ITernaryComparator, IComparatorFunction {
     // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
@@ -2524,14 +2789,7 @@ public final class BooleanFunctions {
             return temp2;
           }
         }
-        if ((arg1.isNumber() || arg1.isComplexInfinity())
-            && (arg2.isNumber() || arg2.isComplexInfinity())) {
-          IExpr nonreal = !arg1.isReal() ? arg1 : !arg2.isReal() ? arg2 : F.NIL;
-          if (nonreal.isPresent()) {
-            // Invalid comparison with `1` attempted.
-            Errors.printMessage(ast.topHead(), "nord", F.list(nonreal), engine);
-          }
-        }
+        printInvalidComparison(ast.topHead(), arg1, arg2, engine);
         return F.NIL;
       }
       boolean evaled = false;
@@ -2539,6 +2797,7 @@ public final class BooleanFunctions {
       IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[astEvaled.size()];
       cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
       IReal lastReal = null;
+      boolean nonRealReported = false;
       for (int i = 1; i < astEvaled.argSize(); i++) {
         final IExpr arg = astEvaled.get(i);
         if (arg.isUndefined()) {
@@ -2547,6 +2806,11 @@ public final class BooleanFunctions {
         IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(arg, astEvaled.get(i + 1), engine);
         if (ternaryCompare == IExpr.COMPARE_TERNARY.FALSE) {
           return S.False;
+        }
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.UNDECIDABLE && !nonRealReported) {
+          // reported once, also if a pair of real numbers decides the chain later
+          nonRealReported =
+              printInvalidComparison(ast.topHead(), arg, astEvaled.get(i + 1), engine);
         }
         if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           evaled = true;
@@ -2904,6 +3168,38 @@ public final class BooleanFunctions {
       return UNKNOWN;
     }
 
+    /**
+     * Split a chain of at least two relations at every relation which is no comparison: each such
+     * relation keeps its own <code>Inequality(a, rel, b)</code>, and the runs of comparisons between
+     * them become chains of their own, which evaluate separately.
+     *
+     * @return the conjunction of the parts, or {@link F#NIL} if every relation is a comparison
+     */
+    private static IExpr splitAtUnknownRelations(final IAST ast) {
+      int i = 2;
+      while (i < ast.size() && getCompSign(ast.get(i)) != UNKNOWN) {
+        i += 2;
+      }
+      if (i >= ast.size()) {
+        return F.NIL;
+      }
+      final IASTAppendable parts = F.ast(S.And);
+      int start = 1;
+      for (i = 2; i < ast.size(); i += 2) {
+        if (getCompSign(ast.get(i)) == UNKNOWN) {
+          if (i - 1 > start) {
+            parts.append(ast.subList(start, i));
+          }
+          parts.append(F.ternaryAST3(S.Inequality, ast.get(i - 1), ast.get(i), ast.get(i + 1)));
+          start = i + 1;
+        }
+      }
+      if (start < ast.argSize()) {
+        parts.append(ast.subList(start, ast.size()));
+      }
+      return parts.argSize() == 1 ? F.NIL : parts;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
@@ -2925,16 +3221,14 @@ public final class BooleanFunctions {
       if ((ast.size()) % 2 != 0) {
         return F.NIL;
       }
-      int firstSign = getCompSign(ast.arg2());
-      if (firstSign == UNKNOWN) {
-        return F.NIL;
+      final IExpr split = splitAtUnknownRelations(ast);
+      if (split.isPresent()) {
+        return split;
       }
+      int firstSign = getCompSign(ast.arg2());
 
       for (int i = 4; i < ast.size(); i += 2) {
         final int thisSign = getCompSign(ast.get(i));
-        if (thisSign == UNKNOWN) {
-          return F.NIL;
-        }
         if (thisSign == -firstSign || thisSign == UNEQUAL || firstSign == UNEQUAL) {
           IASTAppendable firstIneq = F.ast(S.Inequality);
           IASTAppendable secondIneq = F.ast(S.Inequality);
@@ -3194,6 +3488,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
       boolean evaled = false;
@@ -3225,6 +3520,10 @@ public final class BooleanFunctions {
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
+        final IAST nonReal = nonRealArguments(result, engine);
+        if (nonReal.isPresent()) {
+          return unorderedArguments(original, ast, result, nonReal, engine);
+        }
         return maximum(result, evaled, engine);
       }
       return F.NIL;
@@ -3334,6 +3633,7 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
       boolean evaled = false;
@@ -3365,6 +3665,10 @@ public final class BooleanFunctions {
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Min, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
+        final IAST nonReal = nonRealArguments(result, engine);
+        if (nonReal.isPresent()) {
+          return unorderedArguments(original, ast, result, nonReal, engine);
+        }
         return minimum(result, evaled, engine);
       }
       return F.NIL;
@@ -3372,6 +3676,143 @@ public final class BooleanFunctions {
 
     protected ISymbol getDummySymbol() {
       return MIN_DUMMY_SYMBOL;
+    }
+
+    /**
+     * The arguments which have no place in the order of the real numbers, in canonical order.
+     *
+     * @param flattened the arguments with the lists dissolved
+     * @return {@link F#NIL} if there is no such argument or nothing to compare it with
+     */
+    protected static IAST nonRealArguments(IAST flattened, EvalEngine engine) {
+      if (flattened.argSize() < 2) {
+        return F.NIL;
+      }
+      IASTAppendable nonReal = F.NIL;
+      IExpr first = F.NIL;
+      boolean different = false;
+      for (int i = 1; i < flattened.size(); i++) {
+        final IExpr x = flattened.get(i);
+        // the neutral element -Infinity (Infinity for Min) is a value to compare with too
+        if (first.isNIL()) {
+          first = x;
+        } else if (!different && !first.equals(x)) {
+          different = true;
+        }
+        if (isNonRealValue(x, engine)) {
+          if (nonReal.isNIL()) {
+            nonReal = F.ListAlloc(flattened.argSize());
+          }
+          nonReal.append(x);
+        }
+      }
+      if (!different) {
+        // nothing to compare with
+        return F.NIL;
+      }
+      if (nonReal.isPresent()) {
+        EvalAttributes.sort(nonReal);
+      }
+      return nonReal;
+    }
+
+    /** <code>-Infinity</code> for <code>Max</code> and <code>Infinity</code> for <code>Min</code>. */
+    private static boolean isNeutralElement(IExpr x, boolean isMax) {
+      return isMax ? x.isNegativeInfinity() : x.isInfinity();
+    }
+
+    /**
+     * <code>Max</code> or <code>Min</code> of arguments of which some can't be ordered. The call
+     * stays, with a message for what could not be compared:
+     * <ul>
+     * <li>A list which holds a non-real value among other elements is compared within itself
+     * first. It is named as a whole and the call stays as it is; other lists are dissolved.
+     * <li><code>Max</code> names every non-real argument in canonical order, <code>Min</code> in
+     * reverse order. The arguments which can be ordered are still reduced to their extreme, and the
+     * shorter call is evaluated (and reported) again.
+     * <li><code>Min</code> of plain arguments which has real and non-real numbers names the whole
+     * call for these numbers and reduces nothing.
+     * </ul>
+     *
+     * @param original the call as it came in
+     * @param ast the call with evaluated, sorted arguments
+     * @param flattened the arguments of <code>ast</code> with the lists dissolved
+     * @param nonReal the arguments of <code>flattened</code> without an order, sorted
+     * @return {@link F#NIL} if the call is unchanged
+     */
+    protected static IExpr unorderedArguments(IAST original, IAST ast, IAST flattened,
+        IAST nonReal, EvalEngine engine) {
+      final ISymbol head = ast.topHead();
+      final boolean isMax = head == S.Max;
+      boolean listArgument = false;
+      boolean unorderedList = false;
+      for (int i = 1; i < ast.size(); i++) {
+        final IExpr arg = ast.get(i);
+        if (arg.isList()) {
+          listArgument = true;
+          final IAST elements = (IAST) F.Flatten.of(engine, arg);
+          if (elements.argSize() >= 2 && elements.exists(x -> isNonRealValue(x, engine))) {
+            // Invalid comparison with `1` attempted.
+            Errors.printMessage(head, "nord", F.list(arg), engine);
+            unorderedList = true;
+          }
+        }
+      }
+      if (unorderedList) {
+        return ast.equals(original) ? F.NIL : ast;
+      }
+
+      final boolean wholeCall = !isMax && !listArgument && flattened.exists(x -> x.isReal())
+          && nonReal.exists(x -> x.isNumber());
+      boolean complexInfinity = false;
+      for (int i = 1; i < nonReal.size(); i++) {
+        final IExpr x = nonReal.get(isMax ? i : nonReal.size() - i);
+        if (wholeCall && x.isNumber()) {
+          continue;
+        }
+        if (x.isComplexInfinity()) {
+          if (complexInfinity) {
+            continue;
+          }
+          complexInfinity = true;
+        }
+        Errors.printMessage(head, "nord", F.list(x), engine);
+      }
+      if (wholeCall) {
+        final IASTMutable call = flattened.copy();
+        EvalAttributes.sort(call);
+        Errors.printMessage(head, "nord", F.list(call), engine);
+        return call.equals(original) ? F.NIL : call;
+      }
+
+      final IASTAppendable ordered = flattened.copyHead();
+      for (int i = 1; i < flattened.size(); i++) {
+        final IExpr x = flattened.get(i);
+        if (!isNeutralElement(x, isMax) && !nonReal.contains(x)) {
+          ordered.append(x);
+        }
+      }
+      if (ordered.isEmpty()) {
+        // only the neutral element is left beside the non-real arguments: it stays
+        flattened.forEach(x -> {
+          if (isNeutralElement(x, isMax)) {
+            ordered.append(x);
+          }
+        });
+      }
+      final IExpr extreme = ordered.argSize() < 2 ? F.NIL
+          : isMax ? Max.maximum(ordered, false, engine) : minimum(ordered, false, engine);
+      final IASTAppendable result = F.ast(head, flattened.argSize());
+      result.appendArgs(nonReal);
+      if (extreme.isNIL()) {
+        result.appendArgs(ordered);
+      } else if (extreme.isAST(head)) {
+        result.appendArgs((IAST) extreme);
+      } else {
+        result.append(extreme);
+      }
+      EvalAttributes.sort(result);
+      return result.equals(original) ? F.NIL : result;
     }
 
     @Override
@@ -4057,10 +4498,6 @@ public final class BooleanFunctions {
         }
         index++;
       }
-      if (hasComplementaryLiterals(result)) {
-        // x || !x
-        return S.True;
-      }
       if (result.isAST1()) {
         return result.arg1();
       }
@@ -4534,6 +4971,107 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
+  /**
+   * <code>Majority(e1, e2, ...)</code> is <code>True</code> if more than half of its arguments are
+   * <code>True</code>.
+   */
+  private static class Majority extends AbstractFunctionEvaluator implements IBooleanFormula {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final int n = ast.argSize();
+      int trueCount = 0;
+      int falseCount = 0;
+      for (int i = 1; i <= n; i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isTrue()) {
+          trueCount++;
+        } else if (arg.isFalse()) {
+          falseCount++;
+        }
+      }
+      // more than half of the arguments are True, or they cannot be any more
+      if (2 * trueCount > n) {
+        return S.True;
+      }
+      if (2 * (n - falseCount) <= n) {
+        return S.False;
+      }
+      // a True and a False argument cancel each other: the rest has the same majority
+      final int pairs = Math.min(trueCount, falseCount);
+      IAST rest = ast;
+      if (pairs > 0) {
+        IASTAppendable reduced = F.ast(S.Majority, n - 2 * pairs);
+        int trueRemoved = 0;
+        int falseRemoved = 0;
+        for (int i = 1; i <= n; i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isTrue() && trueRemoved < pairs) {
+            trueRemoved++;
+          } else if (arg.isFalse() && falseRemoved < pairs) {
+            falseRemoved++;
+          } else {
+            reduced.append(arg);
+          }
+        }
+        rest = reduced;
+      }
+      if (rest.argSize() == 1) {
+        return rest.arg1();
+      }
+      if (rest.argSize() == 2) {
+        // both arguments are needed
+        return F.And(rest.arg1(), rest.arg2());
+      }
+      return rest == ast ? F.NIL : rest;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.ORDERLESS);
+    }
+  }
+
+  /**
+   * The disjunction of the conjunctions of all subsets with more than half of the
+   * <code>arguments</code>: the formula of <code>Majority(arguments)</code>.
+   */
+  private static Formula majorityFormula(Formula[] arguments, FormulaFactory factory,
+      EvalEngine engine) {
+    final int n = arguments.length;
+    if (n == 0) {
+      return factory.falsum();
+    }
+    final int k = n / 2 + 1;
+    final List<Formula> terms = new ArrayList<Formula>();
+    final int[] subset = new int[k];
+    for (int i = 0; i < k; i++) {
+      subset[i] = i;
+    }
+    while (true) {
+      engine.checkTimeLimit();
+      Formula[] term = new Formula[k];
+      for (int i = 0; i < k; i++) {
+        term[i] = arguments[subset[i]];
+      }
+      terms.add(factory.and(term));
+      if (terms.size() > Config.MAX_AST_SIZE) {
+        throw new ASTElementLimitExceeded(terms.size());
+      }
+      int i = k - 1;
+      while (i >= 0 && subset[i] == n - k + i) {
+        i--;
+      }
+      if (i < 0) {
+        break;
+      }
+      subset[i]++;
+      for (int j = i + 1; j < k; j++) {
+        subset[j] = subset[j - 1] + 1;
+      }
+    }
+    return factory.or(terms);
+  }
+
   private static class Xnor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4794,6 +5332,12 @@ public final class BooleanFunctions {
     return list;
   }
 
+  /** The forms which are written from the clauses of a conjunctive normal form. */
+  private static final Set<String> CONJUNCTIVE_FORMS = Set.of("CNF", "POS", "AND", "NOR");
+
+  /** The forms which are written from the terms of a disjunctive normal form. */
+  private static final Set<String> DISJUNCTIVE_FORMS = Set.of("DNF", "SOP", "OR", "NAND");
+
   private static FormulaTransformation transformation(final IAST ast, EvalEngine engine) {
     int size = ast.argSize();
     if (size > 1 && ast.get(size).isString()) {
@@ -4837,13 +5381,18 @@ public final class BooleanFunctions {
         return isFunction ? F.Function(bddExpr) : bddExpr;
       }
     }
-    FormulaTransformation transformation = transformation(ast, engine);
-    if (transformation != null) {
-      LogicFormula lf = new LogicFormula();
-      Formula formula = lf.expr2LogicNGFormula(arg1, true).transform(transformation);
-      return lf.booleanFunction2Expr(formula);
+    final String form =
+        ast.isAST2() && ast.arg2().isString() ? ast.arg2().toString() : "DNF";
+    final boolean conjunctive = CONJUNCTIVE_FORMS.contains(form);
+    if (!conjunctive && !DISJUNCTIVE_FORMS.contains(form)) {
+      Errors.printMessage(ast.topHead(), "unsupported", F.list(ast.arg2(), S.Method), engine);
+      return F.NIL;
     }
-    return F.NIL;
+    LogicFormula lf = new LogicFormula();
+    Formula formula = lf.expr2LogicNGFormula(arg1, true)
+        .transform(conjunctive ? new BDDCNFTransformation() : new DNFFactorization());
+    return lf.normalForm2Expr(formula, form.equals("POS") ? "CNF" : form.equals("SOP") ? "DNF" : form,
+        conjunctive, engine);
   }
 
   private static IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,

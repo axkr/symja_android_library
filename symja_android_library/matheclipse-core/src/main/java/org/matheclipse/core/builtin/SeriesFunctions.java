@@ -1699,7 +1699,8 @@ public class SeriesFunctions {
           n = list.arg3().toMachineInt();
           leadingTermMode = false;
           if (F.isNotPresent(n)) {
-            return F.NIL;
+            // Series order specification `1` is not a machine-sized integer.
+            return Errors.printMessage(S.Series, "serlim", F.List(list.arg3()), engine);
           }
         } else if (iterator.isRuleAST()) {
           IAST rule = (IAST) iterator;

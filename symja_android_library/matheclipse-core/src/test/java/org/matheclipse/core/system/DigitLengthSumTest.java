@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -65,6 +66,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testNOfUnevaluatedSum() {
     check("N(Sum(1/(k^4 + Sqrt(k)), {k, 1, Infinity})) - NSum(1/(k^4 + Sqrt(k)), {k, 1, Infinity})", //
@@ -85,6 +87,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
         "30");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testNIntegrateLargeAbscissa() {
     // Log(1 + 1/x^k) cancels about k Log10(x) digits at a large abscissa

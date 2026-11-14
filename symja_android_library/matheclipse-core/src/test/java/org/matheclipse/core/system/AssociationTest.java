@@ -1104,6 +1104,35 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAssociationAssignCurriedKeys() {
+    // r["p"]["s"] = v sets the same nested value as r["p", "s"] = v
+    check("r=<|\"p\"-><|\"q\"->1,\"s\"->2|>|>;r[\"p\"][\"s\"]=5;r", //
+        "<|p-><|q->1,s->5|>|>");
+    // the value of the assignment is the right-hand side, and a missing last key is added
+    check("r=<|\"p\"-><|\"q\"->1|>|>;{r[\"p\"][\"t\"]=6,r}", //
+        "{6,<|p-><|q->1,t->6|>|>}");
+    // three levels of symbol keys
+    check("w=<|u-><|v-><|z->1|>|>|>;w[u][v][z]=2;w[u][v][z]", //
+        "2");
+    // a missing intermediate key leaves the association as it was
+    check("w=<|u-><|v->1|>|>;w[k][v]=2;w", //
+        "<|u-><|v->1|>|>");
+    // a delayed value is evaluated when the key is read
+    check("cnt=0;r=<|\"p\"-><|\"q\"->1|>|>;r[\"p\"][\"q\"]:=cnt;cnt=3;r[\"p\"][\"q\"]", //
+        "3");
+    // the local copy of a Module variable changes, the global value does not
+    check("h0=<|k-><|1->0|>|>;tst[x_]:=Module({m=x},m[k][1]=5;m);{tst[h0],h0}", //
+        "{<|k-><|1->5|>|>,<|k-><|1->0|>|>}");
+    // the inner value is no association: the assignment is to 1[1], whose tag Integer is
+    // protected (Set::write), and the association stays as it was
+    check("w=<|u->1|>;w[u][1]=2;w", //
+        "<|u->1|>");
+    // a curried definition on a symbol without an association value stays a sub-value
+    check("sv[1][2]=3;{sv[1][2],sv[1][3]}", //
+        "{3,sv(1)[3]}");
+  }
+
+  @Test
   public void testAssociationApplication() {
     // an association applied to keys looks up the keys one after another
     check("assoc=<|\"outer\"-><|\"inner\"->8|>|>;assoc[[\"outer\",\"inner\"]]", //
@@ -1283,8 +1312,9 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     // <|2025->10,2026->11|>+<|2025->10,2027->20|> are incompatible.
     check("<|2025->10, 2026->11|> + <|2025->10, 2027->20 |>", //
         "<|2025->10,2026->11|>+<|2025->10,2027->20|>");
-    // message: Thread: Objects of unequal length in
-    // <|2025->10,2026->11|>+<|2025->10,2026->20,2027->2|> cannot be combined.
+    // other keys make the associations incompatible, also when their lengths differ
+    // message: Association: The arguments <|2025->10,2026->11|> and <|2025->10,2026->20,2027->2|>
+    // in <|2025->10,2026->11|>+<|2025->10,2026->20,2027->2|> are incompatible.
     check("<|2025->10, 2026->11|> + <|2025->10, 2026->20, 2027->2|>", //
         "<|2025->10,2026->11|>+<|2025->10,2026->20,2027->2|>");
 

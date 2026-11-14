@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -59,6 +60,7 @@ public class PDEFamiliesTest extends ExprEvaluatorTestCase {
         "{{u(x,t)->2*Sech(4*t-x)^2}}");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testDecayingShiftFamily() {
     // drift with diffusion of a periodic profile: E^(k*t)*u0(x - c*t)
@@ -108,6 +110,7 @@ public class PDEFamiliesTest extends ExprEvaluatorTestCase {
         "Sum(1/((-2)^(1-n)*n^n),{n,1,Infinity})");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testPolyLogOfExponentialAtInfinity() {
     check("Abs(N(Integrate(x/(2*Cosh(x) - 1), {x, 0, Infinity})) - 1.1719536193447295) < 10^-12", //

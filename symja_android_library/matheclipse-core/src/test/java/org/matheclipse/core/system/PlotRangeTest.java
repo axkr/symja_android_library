@@ -104,4 +104,33 @@ public class PlotRangeTest extends ExprEvaluatorTestCase {
     check("PlotRange(ListPlot({{1, 5}, {2, 7}}, DataRange -> All))", //
         "{{0.0,2.0},{0.0,7.0}}");
   }
+
+  @Test
+  public void testUnshadedContourPlotKeepsTheSampledBox() {
+    // the curve of an equation covers a part of the box of x and y only
+    check("PlotRange(ContourPlot(x^2 + 2*y^2 == 1, {x, -2, 3}, {y, -4, 5}))", //
+        "{{-2.0,3.0},{-4.0,5.0}}");
+    check("PlotRange(ContourPlot(x*y, {x, 0, 2}, {y, 1, 4}, ContourShading -> False))", //
+        "{{0.0,2.0},{1.0,4.0}}");
+    check("PlotRange(Show(ContourPlot(y == x^3, {x, -1, 2}, {y, -6, 7}), "
+        + "Graphics(Point({1/2, 1/2}))))", //
+        "{{-1.0,2.0},{-6.0,7.0}}");
+    // a range of the call is kept
+    check("PlotRange(ContourPlot(y == x^3, {x, -1, 2}, {y, -6, 7}, "
+        + "PlotRange -> {{0, 1}, {0, 2}}))", //
+        "{{0.0,1.0},{0.0,2.0}}");
+    check("PlotRangePadding /. Options(ContourPlot(y == x^3, {x, -1, 2}, {y, -6, 7}, "
+        + "PlotRangePadding -> None))", //
+        "None");
+  }
+
+  @Test
+  public void testOptionsInAList() {
+    check("PlotRange(Graphics(Point({3, 4}), {PlotRange -> {{1, 5}, {2, 6}}}))", //
+        "{{1.0,5.0},{2.0,6.0}}");
+    check("PlotRange(Graphics(Point({3, 4}), {{PlotRange -> {{1, 5}, {2, 6}}}, Axes -> True}))", //
+        "{{1.0,5.0},{2.0,6.0}}");
+    check("AbsoluteOptions(Graphics(Disk(), {PlotRange -> {{-3, 3}, {-2, 2}}}), PlotRange)", //
+        "{PlotRange->{{-3.0,3.0},{-2.0,2.0}}}");
+  }
 }

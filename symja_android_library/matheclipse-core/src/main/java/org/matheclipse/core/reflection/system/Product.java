@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
@@ -80,6 +81,22 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // F.expand() falls back to its argument and never returns NIL
       arg1 = F.expand(arg1, false, false, false);
     }
+    if (ast.isAST2() && ast.arg2().isList() && ast.arg2().argSize() == 3
+        && ast.arg2().first().isSymbol()) {
+      // a zero or pole of a factor on the range: not the products of the factors, each of which
+      // is 0 or a pole for every n
+      ISymbol k = (ISymbol) ast.arg2().first();
+      IExpr from = engine.evaluate(ast.arg2().second());
+      IExpr to = engine.evaluate(ast.arg2().last());
+      IExpr pochhammer = pochhammerProduct(arg1, k, from, to, engine);
+      if (pochhammer.isPresent()) {
+        return pochhammer;
+      }
+      IExpr telescoping = telescopingProduct(arg1, k, from, to, engine);
+      if (telescoping.isPresent()) {
+        return telescoping;
+      }
+    }
     // the products of the factors of an infinite product may diverge, while their product doesn't
     final boolean infiniteRange = ast.last().isList() && ast.last().argSize() >= 3
         && (ast.last().last().isInfinity() || ast.last().second().isNegativeInfinity());
@@ -116,6 +133,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
           }
           if (arg.isPower() && arg.equalsAt(1, variable)) {
             return productPowerFormula(arg, variable, F.C1, variable.dec());
+          }
+          if (arg.equals(variable)) {
+            // the indefinite product of n: n!/(n-1)! == n
+            return F.Factorial(F.Plus(F.CN1, variable));
           }
         }
       }
@@ -295,6 +316,160 @@ public class Product extends ListFunctions.Table implements ProductRules {
   }
 
   /**
+   * <code>Product(f, {k, a, n})</code> of a rational function <code>f</code> with linear factors,
+   * one of which has an integer zero or pole <code>r &gt;= a</code> on the range of a symbolic
+   * <code>n</code>: <code>Product(k-r, {k, a, n}) == Pochhammer(a-r, n-a+1)</code>, which is 0 (or
+   * the pole) only from <code>n == r</code> on. The Gamma form <code>Gamma(n+1-r)/Gamma(a-r)</code>
+   * has a pole in its denominator and gave 0 or ComplexInfinity for every <code>n</code>:
+   * <code>Product((k-3)/(k+1), {k, 1, n})</code> is -1 for <code>n == 1</code>.
+   *
+   * @return {@link F#NIL} if <code>f</code> isn't of this kind
+   */
+  private static IExpr pochhammerProduct(IExpr f, ISymbol k, IExpr from, IExpr to,
+      EvalEngine engine) {
+    if (!from.isInteger() || to.isInteger() || to.isInfinity() || !to.isFree(k, true)
+        || f.isFree(k, true)) {
+      return F.NIL;
+    }
+    IExpr together = engine.evaluate(F.Together(f));
+    IExpr count = engine.evaluate(F.Plus(F.Subtract(to, from), F.C1));
+    IASTAppendable result = F.TimesAlloc(8);
+    boolean[] integerRootOnRange = {false};
+    if (!pochhammerFactors(engine.evaluate(F.Numerator(together)), k, (IInteger) from, count,
+        F.C1, result, integerRootOnRange, engine)
+        || !pochhammerFactors(engine.evaluate(F.Denominator(together)), k, (IInteger) from,
+            count, F.CN1, result, integerRootOnRange, engine)
+        || !integerRootOnRange[0]) {
+      return F.NIL;
+    }
+    return engine.evaluate(result);
+  }
+
+  /**
+   * <code>Product(f, {k, a, n})</code> for a symbolic <code>n</code> if the factors cancel in
+   * pairs: <code>f(k) == g(k)/g(k+1)</code> gives <code>g(a)/g(n+1)</code>. Also
+   * <code>Product(k^(c*k), {k, 1, n}) == Hyperfactorial(n)^c</code>.
+   *
+   * @return {@link F#NIL} if <code>f</code> isn't of this kind
+   */
+  private static IExpr telescopingProduct(IExpr f, ISymbol k, IExpr from, IExpr to,
+      EvalEngine engine) {
+    if (!from.isInteger() || to.isNumber() || to.isInfinity() || !to.isFree(k, true)
+        || f.isFree(k, true)) {
+      return F.NIL;
+    }
+    if (from.isOne() && f.isPower() && f.base().equals(k)) {
+      IExpr c = engine.evaluate(F.Divide(f.exponent(), k));
+      if (c.isFree(k, true)) {
+        return engine.evaluate(F.Power(F.Hyperfactorial(to), c));
+      }
+    }
+    // f(k) == B(k)/B(k+1) for one of the candidates B
+    IExpr together = engine.evaluate(F.Together(f));
+    IASTAppendable candidates = F.ListAlloc(4);
+    candidates.append(engine.evaluate(F.Power(F.Denominator(together), F.CN1)));
+    candidates.append(engine.evaluate(F.Numerator(together)));
+    if (f.isTimes() && f.argSize() == 2) {
+      candidates.append(f.first());
+      candidates.append(f.second());
+    }
+    final IInteger start = (IInteger) from;
+    for (IExpr b : candidates) {
+      if (b.isFree(k, true) || hasZeroOrPoleFrom(b, k, start)) {
+        // a zero or pole of B on the range is a factor 0/0 or a pole which the quotient steps over
+        continue;
+      }
+      IExpr quotient = engine.evaluate(
+          F.Times(f, F.subst(b, k, F.Plus(k, F.C1)), F.Power(b, F.CN1)));
+      if (quotient.isOne() || engine.evaluate(F.Together(quotient)).isOne()) {
+        return engine.evaluate(
+            F.Divide(F.subst(b, k, from), F.subst(b, k, F.Plus(to, F.C1))));
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Whether a factor or a base of a power in <code>b</code> is <code>k</code> or a sum linear in
+   * <code>k</code> with an integer root <code>&gt;= from</code>; exponents aren't looked at.
+   */
+  private static boolean hasZeroOrPoleFrom(IExpr b, ISymbol k, IInteger from) {
+    if (b.isTimes()) {
+      return ((IAST) b).exists(x -> hasZeroOrPoleFrom(x, k, from));
+    }
+    if (b.isPower()) {
+      return hasZeroOrPoleFrom(b.base(), k, from);
+    }
+    return hasIntegerRootFrom(b, k, from);
+  }
+
+  /**
+   * Whether <code>x</code> is <code>k</code> or a sum linear in <code>k</code> with an integer root
+   * <code>&gt;= from</code>.
+   */
+  private static boolean hasIntegerRootFrom(IExpr x, ISymbol k, IInteger from) {
+    if (x.equals(k)) {
+      return !from.isPositive();
+    }
+    if (!x.isPlus()) {
+      return false;
+    }
+    IExpr[] linear = x.linear(k);
+    if (linear == null || linear[1].isZero() || !linear[0].isFree(k, true)
+        || !linear[1].isFree(k, true)) {
+      return false;
+    }
+    IExpr root = EvalEngine.get().evaluate(F.Negate(F.Divide(linear[0], linear[1])));
+    return root.isInteger() && !((IInteger) root).isLT(from);
+  }
+
+  /**
+   * Append the products of the factors of the polynomial <code>p</code> in <code>k</code> over
+   * <code>count</code> terms from <code>from</code> on, raised to <code>sign</code>.
+   *
+   * @return <code>false</code> if a factor isn't linear in <code>k</code>
+   */
+  private static boolean pochhammerFactors(IExpr p, ISymbol k, IInteger from, IExpr count,
+      IExpr sign, IASTAppendable result, boolean[] integerRootOnRange, EvalEngine engine) {
+    IExpr factors = engine.evaluate(F.FactorList(p));
+    if (!factors.isList()) {
+      return false;
+    }
+    for (IExpr pair : (IAST) factors) {
+      if (!pair.isList2()) {
+        return false;
+      }
+      IExpr factor = pair.first();
+      IExpr exponent = engine.evaluate(F.Times(sign, pair.second()));
+      if (!exponent.isFree(k, true)) {
+        // (k-3)^k: not a rational function
+        return false;
+      }
+      if (factor.isFree(k, true)) {
+        result.append(F.Power(factor, F.Times(count, exponent)));
+        continue;
+      }
+      IExpr[] linear = factor.linear(k);
+      if (linear == null || !linear[1].isFree(k, true) || !linear[0].isFree(k, true)) {
+        return false;
+      }
+      // c1*k + c0 == c1*(k - r)
+      IExpr root = engine.evaluate(F.Negate(F.Divide(linear[0], linear[1])));
+      if (root.isInteger() && !((IInteger) root).isLT(from)) {
+        integerRootOnRange[0] = true;
+      }
+      result.append(F.Power(linear[1], F.Times(count, exponent)));
+      IExpr start = engine.evaluate(F.Subtract(from, root));
+      // the first term is the zero or the pole: Pochhammer(0, n) is 0 for every n >= 1
+      IExpr pochhammer = start.isZero() ? F.C0
+          : start.isPositive() ? F.Divide(F.Gamma(F.Plus(start, count)), F.Gamma(start))
+              : F.Pochhammer(start, count);
+      result.append(F.Power(pochhammer, exponent));
+    }
+    return true;
+  }
+
+  /**
    * Hypergeometric Term Recognition (Pochhammer Mapping & Exponential Products) * @param pK the
    * product term with iterator k (e.g. k^2 + 3k + 2 or 2^k)
    * 
@@ -330,6 +505,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
       IExpr base = pK.base();
       IExpr exponent = pK.exponent();
       if (!exponent.isFree(k)) {
+        if (!base.isFree(k)) {
+          // k^k: a base of the index is no constant of the product of the powers
+          return F.NIL;
+        }
         // Exponential product: base^f(k) -> base^Sum(f(k))
         IExpr sum = engine.evaluate(F.Sum(exponent, F.List(k, lower, upper)));
         if (sum.isPresent() && !sum.isAST(S.Sum)) {

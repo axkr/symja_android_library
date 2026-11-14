@@ -830,6 +830,43 @@ class ParserTestCase {
   }
 
   /**
+   * A <code>'</code> binds looser than prefix <code>++</code>/<code>--</code>, <code>@</code>,
+   * <code>/@</code> and <code>!</code>, which it differentiates as a whole, and tighter than
+   * <code>^</code> and the arithmetic operators, which take the derivative as their operand.
+   */
+  @Test
+  void testDerivativeAfterPrefixIncrement() {
+    assertEquals("Derivative(1)[PreIncrement(g)]", PARSE_UNRELAXED.parse("++g'").toString());
+    assertEquals("Derivative(2)[PreDecrement(y)][t]",
+        PARSE_UNRELAXED.parse("--y''[t]").toString());
+    assertEquals("PreIncrement(Derivative(1)[g])", PARSE_UNRELAXED.parse("++(g')").toString());
+    assertEquals("Increment(Derivative(1)[g])", PARSE_UNRELAXED.parse("g'++").toString());
+    assertEquals("Times(-1, Derivative(1)[g])", PARSE_UNRELAXED.parse("-g'").toString());
+    assertEquals("Derivative(1)[h(g)]", PARSE_UNRELAXED.parse("h@g'").toString());
+    assertEquals("Derivative(1)[Map(h, g)]", PARSE_UNRELAXED.parse("h/@g'").toString());
+    assertEquals("Derivative(1)[Factorial(n)]", PARSE_UNRELAXED.parse("n!'").toString());
+    assertEquals("Power(u, Derivative(1)[v])", PARSE_UNRELAXED.parse("u^v'").toString());
+  }
+
+  /** <code>//=</code> binds looser than <code>&amp;</code> and tighter than <code>//</code>. */
+  @Test
+  void testApplyToPrecedence() {
+    assertEquals("ApplyTo(y, Function(g))", PARSE_UNRELAXED.parse("y //= g &").toString());
+    assertEquals("Function(ApplyTo(y, g))", PARSE_UNRELAXED.parse("(y //= g) &").toString());
+    assertEquals("ApplyTo(AddTo(u, v), g)", PARSE_UNRELAXED.parse("u += v //= g").toString());
+    assertEquals("h(ApplyTo(y, g))", PARSE_UNRELAXED.parse("y //= g // h").toString());
+  }
+
+  /** <code>===</code> and <code>=!=</code> bind looser than the comparisons. */
+  @Test
+  void testSameQLooserThanComparisons() {
+    assertEquals("SameQ(p, Equal(q, r))", PARSE_UNRELAXED.parse("p === q == r").toString());
+    assertEquals("SameQ(Equal(p, q), r)", PARSE_UNRELAXED.parse("p == q === r").toString());
+    assertEquals("UnsameQ(p, Less(q, r))", PARSE_UNRELAXED.parse("p =!= q < r").toString());
+    assertEquals("And(SameQ(p, q), r)", PARSE_UNRELAXED.parse("p === q && r").toString());
+  }
+
+  /**
    * A derivative followed by a juxtaposed factor: the climb over the operators used to stop after
    * the derivative, so f'[x] g'[x] was a syntax error and f'[x] == g'[x] h[x] the product
    * (f'[x] == g'[x])*h[x].
