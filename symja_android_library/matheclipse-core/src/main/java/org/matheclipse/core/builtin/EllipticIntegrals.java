@@ -1488,10 +1488,10 @@ public class EllipticIntegrals {
           if (Double.isNaN(nDouble) || Double.isNaN(mDouble)) {
             Complex nc = n.evalfc();
             Complex mc = m.evalfc();
-            return F.complexNum(EllipticIntegralsJS.ellipticPi(nc, new Complex(Math.PI / 2.0), mc));
+            return machineValue(EllipticIntegralsJS.ellipticPi(nc, new Complex(Math.PI / 2.0), mc));
           } else {
             return ellipticPiPrincipalValue(
-                F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble)), n,
+                machineValue(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble)), n,
                 F.num(Math.PI / 2.0), m, engine);
           }
         } catch (ValidateException ve) {

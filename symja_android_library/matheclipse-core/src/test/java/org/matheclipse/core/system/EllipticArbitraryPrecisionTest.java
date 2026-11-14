@@ -40,6 +40,18 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
         "Real");
     check("Head(EllipticPi(0.1, 0.29, 0.25))", //
         "Real");
+    check("Head(EllipticPi(0.29, 0.25))", //
+        "Real");
+    check("Head(EllipticPi(-2.0, -0.7))", //
+        "Real");
+    // a real value compares with a real number
+    check("EllipticPi(0.5, 0.2) < 3", //
+        "True");
+    check("Max(EllipticPi(0.5, 0.2), 2)", //
+        "2.36967");
+    // m > 1: the value is complex
+    check("Head(EllipticPi(0.5, 1.5))", //
+        "Complex");
   }
 
   @Test
