@@ -17,10 +17,8 @@ See
 0.019795
 ```
 
-
-
-
-
+### Related terms
+[KelvinKei](KelvinKei.md), [KelvinKer](KelvinKer.md)
 
 ### Implementation status
 
