@@ -507,6 +507,87 @@ public class DTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDSpecialFunctions() {
+    // f(n-1,z) - (n+1)/z*f(n,z) for all four spherical Bessel functions
+    check("D(SphericalBesselJ(n,x),x)", //
+        "SphericalBesselJ(-1+n,x)+(-(1+n)*SphericalBesselJ(n,x))/x");
+    check("D(SphericalBesselY(n,x),x)", //
+        "SphericalBesselY(-1+n,x)+(-(1+n)*SphericalBesselY(n,x))/x");
+    check("D(SphericalHankelH1(n,x),x)", //
+        "SphericalHankelH1(-1+n,x)+(-(1+n)*SphericalHankelH1(n,x))/x");
+    check("D(SphericalHankelH2(n,x),x)", //
+        "SphericalHankelH2(-1+n,x)+(-(1+n)*SphericalHankelH2(n,x))/x");
+    check("D(SphericalBesselJ(2,x),x)", //
+        "SphericalBesselJ(1,x)+(-3*SphericalBesselJ(2,x))/x");
+    check("D(SphericalBesselJ(n,x^2),x)", //
+        "2*x*(SphericalBesselJ(-1+n,x^2)+(-(1+n)*SphericalBesselJ(n,x^2))/x^2)");
+    // as for KelvinBer and KelvinBei of order 0
+    check("D(KelvinKer(x),x)", //
+        "(2*KelvinKei(1,x)+2*KelvinKer(1,x))/(2*Sqrt(2))");
+    check("D(KelvinKei(x),x)", //
+        "(2*KelvinKei(1,x)-2*KelvinKer(1,x))/(2*Sqrt(2))");
+    check("D(ParabolicCylinderD(n,x),x)", //
+        "1/2*x*ParabolicCylinderD(n,x)-ParabolicCylinderD(1+n,x)");
+    check("D(Hypergeometric0F1Regularized(a,x),x)", //
+        "Hypergeometric0F1Regularized(1+a,x)");
+    check("D(Hypergeometric1F1Regularized(a,b,x),x)", //
+        "a*Hypergeometric1F1Regularized(1+a,1+b,x)");
+    check("D(Hypergeometric0F1Regularized(a,x),{x,n})", //
+        "Hypergeometric0F1Regularized(a+n,x)");
+    check("D(Hypergeometric1F1Regularized(a,b,x),{x,n})", //
+        "Hypergeometric1F1Regularized(a+n,b+n,x)*Pochhammer(a,n)");
+    check("D(Hypergeometric1F1Regularized(a,b,x),{x,3})", //
+        "a*(1+a)*(2+a)*Hypergeometric1F1Regularized(3+a,3+b,x)");
+    check("D(EllipticTheta(3,x,q),x)", //
+        "EllipticThetaPrime(3,x,q)");
+    check("D(EllipticNomeQ(x),x)", //
+        "(Pi^2*EllipticNomeQ(x))/(4*(1-x)*x*EllipticK(x)^2)");
+    check("D(ModularLambda(x),x)", //
+        "I*Pi*EllipticTheta(3,0,E^(I*Pi*x))^4*(1-ModularLambda(x))*ModularLambda(x)");
+    // the first argument of JacobiZeta is the amplitude
+    check("D(JacobiZeta(x,m),x)", //
+        "-EllipticE(m)/(EllipticK(m)*Sqrt(1-m*Sin(x)^2))+Sqrt(1-m*Sin(x)^2)");
+    check("D(CarlsonRJ(x,y,z,p),x)", //
+        "(-CarlsonRD(y,z,x)+CarlsonRJ(x,y,z,p))/(2*(p-x))");
+    check("D(CarlsonRJ(x,y,z,p),y)", //
+        "(-CarlsonRD(x,z,y)+CarlsonRJ(x,y,z,p))/(2*(p-y))");
+    check("D(CarlsonRJ(x,y,z,p),z)", //
+        "(-CarlsonRD(x,y,z)+CarlsonRJ(x,y,z,p))/(2*(p-z))");
+    // from the homogeneity of degree -3/2: x*Dx+y*Dy+z*Dz+p*Dp == -3/2*CarlsonRJ
+    check("D(CarlsonRJ(x,y,z,p),p)", //
+        "((z*(CarlsonRD(x,y,z)-CarlsonRJ(x,y,z,p)))/(2*(p-z))+(y*(CarlsonRD(x,z,y)-CarlsonRJ(x,y,z,p)))/(\n"
+            + "2*(p-y))+(x*(CarlsonRD(y,z,x)-CarlsonRJ(x,y,z,p)))/(2*(p-x))-3/2*CarlsonRJ(x,y,z,p))/p");
+
+    // the derivatives in the other arguments stay unevaluated
+    check("D(EllipticTheta(3,z,x),x)", //
+        "Derivative(0,0,1)[EllipticTheta][3,z,x]");
+    check("D(JacobiZeta(p,x),x)", //
+        "Derivative(0,1)[JacobiZeta][p,x]");
+
+    // the values agree with numerical derivatives computed by mpmath
+    check("N(D(SphericalBesselJ(2,x),x) /. x->1.3)", //
+        "0.134334");
+    check("N(D(ParabolicCylinderD(-7/10,x),x) /. x->1.3)", //
+        "-0.447404");
+    check("N(D(Hypergeometric0F1Regularized(2/5,x),x) /. x->1.1)", //
+        "2.23886");
+    check("N(D(Hypergeometric1F1Regularized(3/10,-8/5,x),x) /. x->1.1)", //
+        "1.63178");
+    check("N(D(EllipticTheta(1,x,3/10+I/5),x) /. x->7/10+I/10)", //
+        "1.13437+I*0.430186");
+    check("N(D(EllipticNomeQ(x),x) /. x->3/10)", //
+        "0.0891087");
+    check("N(D(ModularLambda(x),x) /. x->3/10+4/5*I)", //
+        "0.160802+I*1.89918");
+    check("N(D(JacobiZeta(x,3/10),x) /. x->7/10)", //
+        "0.0343832");
+    check("N(D(CarlsonRJ(x,2,3,1/2),x) /. x->1)", //
+        "-0.234853");
+    check("N(D(CarlsonRJ(1,2,3,p),p) /. p->1/2)", //
+        "-0.749594");
+  }
+
+  @Test
   public void testDSymbolicOrder() {
     check("D(a^x,{x,n})", //
         "a^x*Log(a)^n");
