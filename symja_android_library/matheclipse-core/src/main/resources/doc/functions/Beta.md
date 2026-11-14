@@ -30,10 +30,8 @@ See
 1.0
 ```
 
-
-
-
-
+### Related terms
+[BetaRegularized](BetaRegularized.md), [InverseBetaRegularized](InverseBetaRegularized.md)
 
 ### Implementation status
 

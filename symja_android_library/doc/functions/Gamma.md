@@ -36,10 +36,8 @@ Sqrt(Pi)
 1.1018024908797128
 ```
 
-
-
-
-
+### Related terms
+[GammaRegularized](GammaRegularized.md), [InverseGammaRegularized](InverseGammaRegularized.md), [LogGamma](LogGamma.md)
 
 ### Implementation status
 
