@@ -1628,6 +1628,28 @@ public class EvalEngine implements Serializable {
             break;
           case 2:
             if (ast.head().isAST1()) {
+              if (!ast.isAST1()) {
+                // the operator form takes exactly one subject: Map(f)(1, 2) must not become the
+                // level specification form Map(f, 1, 2)
+                // `1` called with `2` arguments; 1 argument is expected.
+                Errors.printArgMessage(ast, IFunctionEvaluator.ARGS_1_1, this);
+                return null;
+              }
+              opres.result = F.operatorForm2Prepend(ast, expected, this);
+              if (opres.result.isNIL()) {
+                return null;
+              }
+            }
+            break;
+          case 3:
+            if (ast.head().isAST1()) {
+              // the operator form takes the remaining arguments of the direct form as subjects
+              final int minSubjects = Math.max(1, expected[0] - 1);
+              final int maxSubjects = expected[1] - 1;
+              if (argSize < minSubjects || argSize > maxSubjects) {
+                Errors.printArgMessage(ast, new int[] {minSubjects, maxSubjects}, this);
+                return null;
+              }
               opres.result = F.operatorForm2Prepend(ast, expected, this);
               if (opres.result.isNIL()) {
                 return null;

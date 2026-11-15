@@ -73,7 +73,14 @@ public final class PiecewiseIntegration {
    *         integrated
    */
   public static IExpr integrate(IExpr f, IExpr x, IExpr lower, IExpr upper, EvalEngine engine) {
-    if (!x.isSymbol() || !isPiecewiseIn(f, x)) {
+    if (!x.isSymbol()) {
+      return F.NIL;
+    }
+    if (f.has(e -> isIfIn(e, x), true)) {
+      // If(c, a, b) with a condition on x is the piecewise function Piecewise({{a, c}}, b)
+      f = engine.evaluate(ifToPiecewise(f, x));
+    }
+    if (!isPiecewiseIn(f, x)) {
       return F.NIL;
     }
     try {
@@ -252,24 +259,9 @@ public final class PiecewiseIntegration {
       List<IExpr> representatives, IAST parameterRules, EvalEngine engine) {
     IASTAppendable sum = F.PlusAlloc(nodes.size());
     for (int i = 1; i < nodes.size(); i++) {
-      IExpr piece = F.NIL;
-      for (IExpr sample : samples(representatives.get(i - 1), representatives.get(i), engine)) {
-        IASTAppendable rules = F.ListAlloc(parameterRules.argSize() + 1);
-        rules.append(F.Rule(x, sample));
-        rules.appendArgs(parameterRules);
-        IExpr branch = rewrite(f, x, rules, engine);
-        if (branch.isNIL()) {
-          return F.NIL;
-        }
-        if (piece.isNIL()) {
-          piece = branch;
-        } else if (!piece.equals(branch)) {
-          // the branch changes inside the sub-interval: a break point is missing
-          return F.NIL;
-        }
-      }
-      if (isPiecewiseIn(piece, x)) {
-        // nothing was decided for one of the functions; integrating the piece would come back here
+      IExpr piece = branchBetween(f, x, representatives.get(i - 1), representatives.get(i),
+          parameterRules, engine);
+      if (piece.isNIL()) {
         return F.NIL;
       }
       // a piece which diverges is left to the other methods, which report it
@@ -280,6 +272,193 @@ public final class PiecewiseIntegration {
       sum.append(integral);
     }
     return engine.evaluate(sum.oneIdentity0());
+  }
+
+  /**
+   * The expression <code>f</code> with its piecewise defined functions replaced by the branches
+   * which are active between the break points <code>a</code> and <code>b</code>.
+   *
+   * @param parameterRules the rule <code>{a -&gt; value}</code> for the parameter of a symbolic
+   *        break point, or the empty list
+   * @return {@link F#NIL} if a branch can't be decided or changes between <code>a</code> and
+   *         <code>b</code>
+   */
+  private static IExpr branchBetween(IExpr f, IExpr x, IExpr a, IExpr b, IAST parameterRules,
+      EvalEngine engine) {
+    IExpr piece = F.NIL;
+    for (IExpr sample : samples(a, b, engine)) {
+      IASTAppendable rules = F.ListAlloc(parameterRules.argSize() + 1);
+      rules.append(F.Rule(x, sample));
+      rules.appendArgs(parameterRules);
+      IExpr branch = rewrite(f, x, rules, engine);
+      if (branch.isNIL()) {
+        return F.NIL;
+      }
+      if (piece.isNIL()) {
+        piece = branch;
+      } else if (!piece.equals(branch)) {
+        // the branch changes inside the sub-interval: a break point is missing
+        return F.NIL;
+      }
+    }
+    if (isPiecewiseIn(piece, x)) {
+      // nothing was decided for one of the functions; integrating the piece would come back here
+      return F.NIL;
+    }
+    return piece;
+  }
+
+  /**
+   * The continuous antiderivative <code>Integrate(f, x)</code> of an integrand with
+   * <code>Piecewise</code> or <code>If(c, a, b)</code> functions whose conditions switch at
+   * numeric points <code>b1 &lt; b2 &lt; ... &lt; bk</code>. The antiderivative of the branch left
+   * of <code>b1</code> is taken as it is, the one of every other branch gets the constant which
+   * makes the result continuous at its left break point:
+   *
+   * <pre>
+   * Integrate(If(x &lt; 1, 2*x, 2), x) == Piecewise({{x^2, x &lt;= 1}}, -1 + 2*x)
+   * </pre>
+   *
+   * @return {@link F#NIL} if <code>f</code> has no such function, a break point isn't numeric or
+   *         a branch can't be integrated
+   */
+  public static IExpr antiderivative(IExpr f, IExpr x, EvalEngine engine) {
+    if (!x.isSymbol()) {
+      return F.NIL;
+    }
+    if (f.has(e -> isIfIn(e, x), true)) {
+      f = engine.evaluate(ifToPiecewise(f, x));
+    }
+    if (!f.has(e -> e.isAST(S.Piecewise) && !e.isFree(x), true)
+        || f.has(e -> e.isAST() && isPiecewiseHead(e.head()) && e.head() != S.Piecewise
+            && !e.isFree(x), true)
+        || f.has(e -> e.isAST(S.Piecewise) && !hasIntervalConditions((IAST) e, x), true)) {
+      // only Piecewise functions whose conditions are intervals of x; the others are integrated
+      // branch by branch
+      return F.NIL;
+    }
+    try {
+      TreeMap<Double, IExpr> points = new TreeMap<Double, IExpr>();
+      points.put(Double.NEGATIVE_INFINITY, F.CNInfinity);
+      points.put(Double.POSITIVE_INFINITY, F.CInfinity);
+      SymbolicPoint symbolic = new SymbolicPoint();
+      if (!collectBreakPoints(f, x, F.CNInfinity, F.CInfinity, Double.NEGATIVE_INFINITY,
+          Double.POSITIVE_INFINITY, points, symbolic, engine) || symbolic.point.isPresent()
+          || points.size() < 3) {
+        return F.NIL;
+      }
+      List<IExpr> nodes = new ArrayList<IExpr>(points.values());
+      IASTAppendable rows = F.ListAlloc(nodes.size());
+      IExpr previous = F.NIL;
+      IExpr leftBoundary = F.NIL;
+      for (int i = 1; i < nodes.size(); i++) {
+        engine.checkTimeLimit();
+        IExpr piece = branchBetween(f, x, nodes.get(i - 1), nodes.get(i), F.CEmptyList, engine);
+        if (piece.isNIL()) {
+          return F.NIL;
+        }
+        IExpr integral = engine.evalQuiet(F.Integrate(piece, x));
+        if (!integral.isFreeAST(S.Integrate) || !integral.isSpecialsFree()) {
+          return F.NIL;
+        }
+        if (previous.isPresent()) {
+          // the constant which joins the antiderivatives at the break point
+          IExpr b = nodes.get(i - 1);
+          IExpr left = valueAt(previous, x, b, true, engine);
+          IExpr right = valueAt(integral, x, b, false, engine);
+          if (left.isNIL() || right.isNIL()) {
+            return F.NIL;
+          }
+          integral = engine.evaluate(F.Plus(F.Subtract(left, right), integral));
+          if (integral.equals(previous)) {
+            // the same function on both sides of the break point
+            continue;
+          }
+          rows.append(F.list(previous, condition(x, leftBoundary, b)));
+          leftBoundary = b;
+        }
+        previous = integral;
+      }
+      if (rows.argSize() == 0) {
+        return previous;
+      }
+      return F.Piecewise(rows, previous);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /** <code>x &lt;= b</code>, or <code>a &lt; x &lt;= b</code> if there is a left boundary. */
+  private static IExpr condition(IExpr x, IExpr a, IExpr b) {
+    return a.isNIL() ? F.LessEqual(x, b) : F.Inequality(a, S.Less, x, S.LessEqual, b);
+  }
+
+  /**
+   * Are the conditions of <code>piecewise</code> intervals of <code>x</code>: comparisons of
+   * <code>x</code> with numbers, combined with <code>And</code>?
+   */
+  private static boolean hasIntervalConditions(IAST piecewise, IExpr x) {
+    if (piecewise.argSize() < 1 || !piecewise.arg1().isList()) {
+      return false;
+    }
+    for (IExpr row : (IAST) piecewise.arg1()) {
+      if (!row.isList2() || !isIntervalCondition(row.second(), x)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean isIntervalCondition(IExpr condition, IExpr x) {
+    if (condition.isTrue() || condition.isFalse()) {
+      return true;
+    }
+    if (condition.isAnd()) {
+      return ((IAST) condition).forAll(c -> isIntervalCondition(c, x));
+    }
+    if (condition.isAST(S.Inequality) && condition.argSize() >= 3
+        && condition.argSize() % 2 != 0) {
+      IAST inequality = (IAST) condition;
+      for (int i = 1; i <= inequality.argSize(); i += 2) {
+        if (!isIntervalBound(inequality.get(i), x)) {
+          return false;
+        }
+      }
+      for (int i = 2; i < inequality.argSize(); i += 2) {
+        IExpr relation = inequality.get(i);
+        if (relation != S.Less && relation != S.LessEqual && relation != S.Greater
+            && relation != S.GreaterEqual) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (condition.argSize() >= 2 && (condition.isAST(S.Less) || condition.isAST(S.LessEqual)
+        || condition.isAST(S.Greater) || condition.isAST(S.GreaterEqual))) {
+      return ((IAST) condition).forAll(arg -> isIntervalBound(arg, x));
+    }
+    return false;
+  }
+
+  /** <code>x</code> itself or a real number. */
+  private static boolean isIntervalBound(IExpr arg, IExpr x) {
+    return arg.equals(x) || (arg.isRealResult() && arg.isNumericFunction(true));
+  }
+
+  /**
+   * The value of the antiderivative <code>g</code> at the break point <code>b</code>, the limit
+   * from the side of its branch if it isn't defined there.
+   *
+   * @return {@link F#NIL} if the value isn't finite
+   */
+  private static IExpr valueAt(IExpr g, IExpr x, IExpr b, boolean fromBelow, EvalEngine engine) {
+    IExpr value = engine.evalQuiet(F.subst(g, x, b));
+    if (!value.isSpecialsFree() || !value.isFree(S.Indeterminate)) {
+      value = engine.evalQuiet(F.Limit(g, F.Rule(x, b),
+          F.Rule(S.Direction, fromBelow ? F.stringx("FromBelow") : F.stringx("FromAbove"))));
+    }
+    return value.isSpecialsFree() && value.isFreeAST(S.Limit) ? value : F.NIL;
   }
 
   /**
@@ -455,6 +634,28 @@ public final class PiecewiseIntegration {
     }
     return integratePieces(f, x, nodes, representatives, F.list(F.Rule(a, parameterValue)),
         engine);
+  }
+
+  /** Is <code>e</code> an <code>If(c, a, b)</code> whose condition <code>c</code> depends on x? */
+  private static boolean isIfIn(IExpr e, IExpr x) {
+    return e.isAST(S.If, 4) && !e.first().isFree(x);
+  }
+
+  /**
+   * Replace every <code>If(c, a, b)</code> whose condition depends on <code>x</code> by
+   * <code>Piecewise({{a, c}}, b)</code>, also inside the branches. A condition which isn't made of
+   * comparisons of real values makes the break point search fail later.
+   */
+  private static IExpr ifToPiecewise(IExpr f, IExpr x) {
+    if (isIfIn(f, x)) {
+      IAST ifAST = (IAST) f;
+      return F.Piecewise(F.list(F.list(ifToPiecewise(ifAST.arg2(), x), ifAST.arg1())),
+          ifToPiecewise(ifAST.arg3(), x));
+    }
+    if (f.isAST() && f.has(e -> isIfIn(e, x), true)) {
+      return ((IAST) f).map(arg -> ifToPiecewise(arg, x));
+    }
+    return f;
   }
 
   /** Does <code>f</code> contain one of the piecewise defined functions of <code>x</code>? */

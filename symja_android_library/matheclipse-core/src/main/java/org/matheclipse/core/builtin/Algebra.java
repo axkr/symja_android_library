@@ -3507,7 +3507,7 @@ public class Algebra {
         return false;
       }
       if (!ast.isAST2() || !(ast.arg2().isSymbol() || ast.arg2().isList())) {
-        return AlgebraUtil.hasNegativeLeadingTerm(sum, (IAST) generators, engine);
+        return hasNegativeAlgebraicLeadingTerm(sum, (IAST) generators, engine);
       }
       IASTAppendable variables = F.ListAlloc(generators.argSize() + 1);
       if (ast.arg2().isList()) {
@@ -3520,7 +3520,83 @@ public class Algebra {
           variables.append(generator);
         }
       }
-      return AlgebraUtil.hasNegativeLeadingTerm(sum, variables, engine);
+      return hasNegativeAlgebraicLeadingTerm(sum, variables, engine);
+    }
+
+    /**
+     * Whether the lexicographically first term of the sum, with the variables ranked in the given
+     * order, has a negative algebraic number as coefficient. Rational exponents count with their
+     * value, so <code>x</code> leads <code>Sqrt(x)</code>. A coefficient with a transcendental
+     * constant like <code>-E</code> is not pulled out: <code>1-E*x</code> keeps its sign, while
+     * <code>x-Sqrt(3)*x^2</code> is <code>-1*(-x+Sqrt(3)*x^2)</code>.
+     */
+    private static boolean hasNegativeAlgebraicLeadingTerm(IAST sum, IAST variables,
+        EvalEngine engine) {
+      IExpr leading = F.NIL;
+      IRational[] best = null;
+      for (int i = 1; i <= sum.argSize(); i++) {
+        IExpr term = sum.get(i);
+        IRational[] exponents = new IRational[variables.argSize()];
+        for (int k = 1; k <= variables.argSize(); k++) {
+          IExpr variable = variables.get(k);
+          IExpr e = term.isFree(variable) ? F.C0 : S.Exponent.of(engine, term, variable);
+          if (!e.isRational()) {
+            return false;
+          }
+          exponents[k - 1] = (IRational) e;
+        }
+        if (best == null || compareExponents(exponents, best) > 0) {
+          best = exponents;
+          leading = term;
+        }
+      }
+      if (leading.isNIL()) {
+        return false;
+      }
+      // the factors of the leading term which are free of the variables
+      IASTAppendable coefficient = F.TimesAlloc(2);
+      for (IExpr factor : leading.isTimes() ? (IAST) leading : F.list(leading)) {
+        if (factor.isFree(u -> variables.contains(u), true)) {
+          coefficient.append(factor);
+        }
+      }
+      IExpr c = coefficient.oneIdentity1();
+      if (c.isRational()) {
+        return c.isNegative();
+      }
+      if (!isAlgebraicNumber(c)) {
+        return false;
+      }
+      IExpr value = engine.evalN(c);
+      return value.isReal() && value.isNegative();
+    }
+
+    /**
+     * Is <code>c</code> a number built from rational numbers with sums, products and powers with
+     * rational exponents, like <code>-Sqrt(3)</code>? A transcendental constant like
+     * <code>Pi</code> or <code>E</code> isn't.
+     */
+    private static boolean isAlgebraicNumber(IExpr c) {
+      if (c.isRational()) {
+        return true;
+      }
+      if (c.isPower()) {
+        return c.exponent().isRational() && isAlgebraicNumber(c.base());
+      }
+      if (c.isPlus() || c.isTimes()) {
+        return ((IAST) c).forAll(Algebra.FactorTermsList::isAlgebraicNumber);
+      }
+      return false;
+    }
+
+    private static int compareExponents(IRational[] a, IRational[] b) {
+      for (int i = 0; i < a.length; i++) {
+        int c = a[i].compareTo(b[i]);
+        if (c != 0) {
+          return c;
+        }
+      }
+      return 0;
     }
 
     private static IExpr factorTermsList(final IAST ast, EvalEngine engine) {

@@ -5390,6 +5390,11 @@ public final class LinearAlgebra {
         // Argument `1` at position `2` is not a non-empty rectangular matrix.
         return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
       }
+      if (argSize == 2 && ast.arg2().isVector() < 0 && ast.arg2().isMatrix(false) == null) {
+        // a right-hand side which is no vector or matrix leaves nothing to solve: the call stays
+        // as it is, without decomposing (or densifying) the matrix first
+        return F.NIL;
+      }
       if (matrixDims != null) {
         IInteger modulus = modulusOption(options[2]);
         if (modulus != null) {

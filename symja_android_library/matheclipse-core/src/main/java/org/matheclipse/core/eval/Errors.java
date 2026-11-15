@@ -511,6 +511,7 @@ public class Errors {
       "noopmon",
       "The optimization was solved by an algorithm that does not provide monitoring information. Choose a specific iterative method if this information is necessary.", //
       "noprime", "There are no primes in the specified interval.", //
+      "noprop", "`1` is not a valid property.", //
       "notprop",
       "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
       "nrom", "String `1` does not represent a valid roman numeral.", //
