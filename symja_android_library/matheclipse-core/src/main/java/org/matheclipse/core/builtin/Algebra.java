@@ -4490,7 +4490,11 @@ public class Algebra {
           p2 = ring.create(expr);
           p1 = p1.gcd(p2);
         }
-        return p1.getExpr();
+        IExpr gcd = p1.getExpr();
+        // the coefficients of the gcd are products of the coefficients: with radicals and I they
+        // may expand to a number, like (I+I*Sqrt(3))*(-1/2+Sqrt(3)/2) to I
+        IExpr expanded = engine.evaluate(F.ExpandAll(gcd));
+        return expanded.leafCount() < gcd.leafCount() ? expanded : gcd;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
