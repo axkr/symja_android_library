@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintStream;
@@ -1569,7 +1570,7 @@ public class EvalEngine implements Serializable {
    * @param ast the abstract syntax tree representing the function call
    * @param functionEvaluator the function evaluator to check argument sizes
    */
-  public IAST checkBuiltinArgsSize(final IAST ast, final IFunctionEvaluator functionEvaluator) {
+  public @AllowNIL IAST checkBuiltinArgsSize(final IAST ast, final IFunctionEvaluator functionEvaluator) {
     int[] expected;
     final int argSize = ast.argSize();
     if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
@@ -2206,7 +2207,7 @@ public class EvalEngine implements Serializable {
     return precision;
   }
 
-  public final IAST evalArgsOrderlessN(IAST ast1) {
+  public final @AllowNIL IAST evalArgsOrderlessN(IAST ast1) {
     Flag numericFlag =
         isArbitraryMode() ? Flag.NUMERIC_ARBITRARY_EVALED : Flag.NUMERIC_DOUBLE_EVALED;
     if (ast1.hasFlag(numericFlag)) {
@@ -2600,7 +2601,7 @@ public class EvalEngine implements Serializable {
    *
    * @return {@link F#NIL} if no argument is such a sequence
    */
-  private static IAST spliceUnevaluatedSequences(IAST ast) {
+  private static @AllowNIL IAST spliceUnevaluatedSequences(IAST ast) {
     if (!ast.hasSpecialArg()) {
       return F.NIL;
     }
@@ -3405,7 +3406,7 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  public IAST evalFlatOrderlessAttrsRecursive(final IAST ast) {
+  public @AllowNIL IAST evalFlatOrderlessAttrsRecursive(final IAST ast) {
     if (ast.hasFlag(Flag.IS_FLAT_ORDERLESS_EVALED)) {
       return F.NIL;
     }
@@ -6653,7 +6654,7 @@ public class EvalEngine implements Serializable {
    *        arguments are evaluated completely - the summand of a symbolic sum is evaluated with the
    *        values of the other symbols
    */
-  public IAST preevalForwardBackwardAST(final IAST ast, int offset,
+  public @AllowNIL IAST preevalForwardBackwardAST(final IAST ast, int offset,
       boolean iteratorVariablesOnly) {
     IASTMutable preevaled = F.NIL;
     IASTAppendable iteratorVariables = null;
@@ -7533,7 +7534,7 @@ public class EvalEngine implements Serializable {
    * @return the call with converted arguments, which has to be evaluated again, or
    *         {@link F#NIL} if the arguments differ in length
    */
-  private static IAST sparseAndListArgs(final IAST ast) {
+  private static @AllowNIL IAST sparseAndListArgs(final IAST ast) {
     int[] dimensions = null;
     boolean sameDimensions = true;
     for (int i = 1; i < ast.size(); i++) {

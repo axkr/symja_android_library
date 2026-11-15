@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayDeque;
@@ -919,7 +920,7 @@ public class Errors {
    * @param symbol
    * @return
    */
-  public static IAST printExperimental(IBuiltInSymbol symbol) {
+  public static @AllowNIL IAST printExperimental(IBuiltInSymbol symbol) {
     EvalEngine engine = EvalEngine.get();
     if (!engine.containsExperimental(symbol)) {
       // Experimental implementation (search in Github issues for identifier `1`).
@@ -1006,7 +1007,7 @@ public class Errors {
    * @param engine
    * @return always {@link F#NIL}
    */
-  public static IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
+  public static @AllowNIL IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
     if (engine == null) {
       engine = EvalEngine.get();
@@ -1240,7 +1241,7 @@ public class Errors {
     }
   }
 
-  public static IAST printRuntimeException(ISymbol symbol, RuntimeException exception,
+  public static @AllowNIL IAST printRuntimeException(ISymbol symbol, RuntimeException exception,
       EvalEngine engine) {
     try (StringBuilderWriter writer = new StringBuilderWriter()) {
       String message = exception.getMessage();

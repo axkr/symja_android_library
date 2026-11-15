@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import edu.jas.arith.MachinePrime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -48,11 +48,12 @@ import org.matheclipse.core.polynomials.UnivariateModularGCD;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.LongMath;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.MachinePrime;
 import edu.jas.arith.Modular;
-import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.ExpVector;
@@ -63,6 +64,7 @@ import edu.jas.poly.PolyUtil;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.ps.UnivPowerSeries;
 import edu.jas.ps.UnivPowerSeriesRing;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorComplex;
@@ -71,7 +73,6 @@ import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
-import org.matheclipse.parser.client.ParserConfig;
 
 public class AlgebraUtil {
   private static class DistributeAlgorithm {
@@ -227,8 +228,8 @@ public class AlgebraUtil {
 
     private IExpr addExpanded(IExpr expr) {
       if (expr.isAST()) {
-        if (expandNegativePowers && evalParts && !distributePlus && !factorTerms
-            && matcher == null && !keepPolynomialDenominators) {
+        if (expandNegativePowers && evalParts && !distributePlus && !factorTerms && matcher == null
+            && !keepPolynomialDenominators) {
           ((IAST) expr).addFlag(Flag.IS_EXPANDED);
         } else {
           // Lazy initialization to save memory for nodes that don't require map caching
@@ -750,7 +751,10 @@ public class AlgebraUtil {
     return exponent < 0 ? q.inverse().powerRational(-exponent) : q.powerRational(exponent);
   }
 
-  /** Append every symbol with the <code>Constant</code> attribute in <code>expr</code>, such as <code>Pi</code>. */
+  /**
+   * Append every symbol with the <code>Constant</code> attribute in <code>expr</code>, such as
+   * <code>Pi</code>.
+   */
   private static void collectConstantSymbols(IExpr expr, IASTAppendable symbols) {
     if (expr.isSymbol()) {
       if (((ISymbol) expr).isConstantAttribute() && !symbols.contains(expr)) {
@@ -835,9 +839,8 @@ public class AlgebraUtil {
   }
 
   /**
-   * A factored power of a product as the product of the powers:
-   * <code>x^2*(5+5*x-x^2)^2</code> for <code>(x*(5+5*x-x^2))^2</code>, so that each factor can
-   * cancel.
+   * A factored power of a product as the product of the powers: <code>x^2*(5+5*x-x^2)^2</code> for
+   * <code>(x*(5+5*x-x^2))^2</code>, so that each factor can cancel.
    */
   private static IExpr powerOfProductFactors(IExpr factored) {
     IAST factors = factored.isTimes() ? (IAST) factored : F.Times(factored);
@@ -863,9 +866,8 @@ public class AlgebraUtil {
    * the GCD over the number field finds those.
    */
   private static boolean isRadicalFree(IExpr expr) {
-    return expr.isFree(
-        x -> x.isPower() && x.base().isRational() && x.exponent().isFraction(), false)
-        || new VariablesSet(expr).size() == 0;
+    return expr.isFree(x -> x.isPower() && x.base().isRational() && x.exponent().isFraction(),
+        false) || new VariablesSet(expr).size() == 0;
   }
 
   private static boolean isSumOrPowerOfSum(IExpr expr) {
@@ -909,8 +911,8 @@ public class AlgebraUtil {
 
     /** The numerator divided by the GCD, built only when it is used. */
     IExpr numerator() {
-      return EvalEngine.get().evaluate(
-          F.Times(content.numerator(), jas.rationalPoly2Expr(numeratorQuotient, false)));
+      return EvalEngine.get()
+          .evaluate(F.Times(content.numerator(), jas.rationalPoly2Expr(numeratorQuotient, false)));
     }
 
     /** The denominator divided by the GCD, built only when it is used. */
@@ -931,8 +933,8 @@ public class AlgebraUtil {
    * Numerator and denominator of a fraction of polynomials with rational coefficients divided by
    * their greatest common divisor, without a factorization.
    *
-   * @return <code>null</code> if they are no polynomials with rational coefficients, an empty
-   *         array if nothing cancels, otherwise the two quotients
+   * @return <code>null</code> if they are no polynomials with rational coefficients, an empty array
+   *         if nothing cancels, otherwise the two quotients
    */
   public static IExpr[] cancelByGCD(IExpr numerator, IExpr denominator) {
     RationalQuotients quotients = rationalQuotients(numerator, denominator);
@@ -960,8 +962,8 @@ public class AlgebraUtil {
       return null;
     }
     try {
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getVarList(),
-          BigRational.ZERO, TermOrderByName.INVLEX);
+      JASConvert<BigRational> jas =
+          new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
       GenPolynomial<BigRational> p1 = jas.expr2JAS(numerator, false);
       GenPolynomial<BigRational> p2 = p1 == null ? null : jas.expr2JAS(denominator, false);
       if (p2 == null || p1.isZERO() || p2.isZERO()) {
@@ -978,8 +980,7 @@ public class AlgebraUtil {
       java.math.BigInteger lcm1 = (java.math.BigInteger) terms1[1];
       java.math.BigInteger gcd2 = (java.math.BigInteger) terms2[0];
       java.math.BigInteger lcm2 = (java.math.BigInteger) terms2[1];
-      IRational content =
-          F.fraction(gcd1, lcm1).divideBy(F.fraction(gcd2, lcm2)).normalize();
+      IRational content = F.fraction(gcd1, lcm1).divideBy(F.fraction(gcd2, lcm2)).normalize();
       boolean large = p1.degree() >= CANCEL_FACTOR_DEGREE || p2.degree() >= CANCEL_FACTOR_DEGREE;
       GenPolynomial<BigInteger> gcd = UnivariateModularGCD.gcd(q1, q2, EvalEngine.get());
       if (gcd == null) {
@@ -1025,15 +1026,15 @@ public class AlgebraUtil {
   /**
    * Cancel the common factors of two products of polynomials with rational coefficients without a
    * factorization into irreducibles: a factor of one side which has a GCD with a factor of the
-   * other side is split into the GCD and the quotient, until the factors of the two sides are
-   * equal or coprime. A factor which shares nothing keeps its form:
+   * other side is split into the GCD and the quotient, until the factors of the two sides are equal
+   * or coprime. A factor which shares nothing keeps its form:
    * <code>(4*x^4+2*x^3)/((3*x-x^3+2*x^2)^2*(2*x+1)^2)</code> is
    * <code>(2*x)/((1+2*x)*(-3-2*x+x^2)^2)</code>.
    *
    * @return the pair <code>{numerator, denominator}</code>, {@link F#NIL} if nothing cancels, or
    *         <code>null</code> if a factor is no polynomial with rational coefficients
    */
-  private static IAST cancelOverCoprimeBasis(IExpr numerator, IExpr denominator) {
+  private static @AllowNIL IAST cancelOverCoprimeBasis(IExpr numerator, IExpr denominator) {
     VariablesSet eVar = new VariablesSet(numerator);
     eVar.addVarList(denominator);
     try {
@@ -1167,8 +1168,7 @@ public class AlgebraUtil {
         GenPolynomial<BigRational> g) {
       divisor = primitivePart(jas, g);
       rest = primitivePart(jas, b.divide(divisor));
-      content = b.leadingBaseCoefficient()
-          .divide(divisor.multiply(rest).leadingBaseCoefficient());
+      content = b.leadingBaseCoefficient().divide(divisor.multiply(rest).leadingBaseCoefficient());
     }
   }
 
@@ -1191,15 +1191,14 @@ public class AlgebraUtil {
    *         out or {@link F#NIL} if no cmmon factors were found
    */
   public static IAST cancelCommonFactors(IExpr numerator, IExpr denominator) {
-    return cancelCommonFactors(numerator, denominator,
-        candidateQuotients(numerator, denominator));
+    return cancelCommonFactors(numerator, denominator, candidateQuotients(numerator, denominator));
   }
 
   /**
-   * @param quotients the {@link #candidateQuotients(IExpr, IExpr)} of the two sides, computed
-   *        once by the caller
+   * @param quotients the {@link #candidateQuotients(IExpr, IExpr)} of the two sides, computed once
+   *        by the caller
    */
-  private static IAST cancelCommonFactors(IExpr numerator, IExpr denominator,
+  private static @AllowNIL IAST cancelCommonFactors(IExpr numerator, IExpr denominator,
       RationalQuotients quotients) {
     // one GCD tells whether anything cancels, before both sides are factored
     if (quotients != null) {
@@ -1741,8 +1740,7 @@ public class AlgebraUtil {
     }
     if (expr.isPower()) {
       int exponent = expr.exponent().toIntDefault();
-      if (exponent > 0 || (exponent < 0 && exponent != Integer.MIN_VALUE
-          && expr.base().isPlus())) {
+      if (exponent > 0 || (exponent < 0 && exponent != Integer.MIN_VALUE && expr.base().isPlus())) {
         // a denominator (x+1)^(-3) contributes negative multiplicities, which cancel against the
         // numerator in the refinement: (x^2-1)^2/(x+1)^3 is (-1+x)^2/(1+x)
         return collectSquareFreeFactors(expr.base(), multiplier * exponent, eVar, factorMap,
@@ -1899,9 +1897,9 @@ public class AlgebraUtil {
    *        is a product of powers of polynomials stays as it is
    * @return {@link F#NIL} if the expression couldn't be expanded.
    */
-  private static IExpr expand(final IAST ast, Predicate<IExpr> patt,
-      boolean expandNegativePowers, boolean distributePlus, boolean evalParts,
-      boolean factorTerms, boolean keepPolynomialDenominators) {
+  private static IExpr expand(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
+      boolean distributePlus, boolean evalParts, boolean factorTerms,
+      boolean keepPolynomialDenominators) {
     Expander expander = new Expander(patt, expandNegativePowers, distributePlus, evalParts,
         factorTerms, keepPolynomialDenominators);
     return expander.expandAST(ast);
@@ -2079,9 +2077,8 @@ public class AlgebraUtil {
   public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean trig, EvalEngine engine) throws JASConversionException {
     if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT && !isLargeRationalPolynomial(expr, eVar)) {
-      if (!squareFree && withHomogenization
-          && new PolynomialHomogenization(engine, true).replaceForward(expr)
-              .leafCount() <= Config.MAX_FACTOR_LEAFCOUNT) {
+      if (!squareFree && withHomogenization && new PolynomialHomogenization(engine, true)
+          .replaceForward(expr).leafCount() <= Config.MAX_FACTOR_LEAFCOUNT) {
         // large unknowns such as f(g(a), g(b)): the polynomial in them is small
         return factorWithPolynomialHomogenization(expr, eVar, trig, engine);
       }
@@ -2321,8 +2318,8 @@ public class AlgebraUtil {
     return expr;
   }
 
-  public static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree, IExpr option)
-      throws JASConversionException {
+  public static @AllowNIL IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
+      IExpr option) throws JASConversionException {
     if (!JASModular.isPrimeModulus(option)) {
       // only a prime gives a field, and the factorization isn't defined over anything else
       return F.NIL;
@@ -2342,6 +2339,7 @@ public class AlgebraUtil {
    * @param factorSquareFree
    * @return {@link F#NIL} if evaluation is impossible.
    */
+  @AllowNIL
   public static <C extends GcdRingElem<C> & Modular> IAST factorModulus(JASModular<C> jas,
       GenPolynomial<C> poly, boolean factorSquareFree) {
     if (poly.isZERO()) {
@@ -2377,8 +2375,8 @@ public class AlgebraUtil {
    * <p>
    * A factor in the merged variable is a factor of the polynomial, and it is irreducible: the
    * factors of a polynomial which depends on <code>b</code> and <code>c</code> through
-   * <code>b*c</code> only are of the same kind, up to monomials, which the merged factorization
-   * has as well and which are split into the single variables here.
+   * <code>b*c</code> only are of the same kind, up to monomials, which the merged factorization has
+   * as well and which are split into the single variables here.
    *
    * @return <code>null</code> if no two variables can be merged
    */
@@ -2399,8 +2397,7 @@ public class AlgebraUtil {
       representative[i] = i;
       if (occursIn(exponents, i)) {
         for (int j = 0; j < i; j++) {
-          if (representative[j] == j && occursIn(exponents, j)
-              && sameExponents(exponents, i, j)) {
+          if (representative[j] == j && occursIn(exponents, j) && sameExponents(exponents, i, j)) {
             representative[i] = j;
             break;
           }
@@ -2424,7 +2421,8 @@ public class AlgebraUtil {
       }
       small.doPutToMap(ExpVector.create(v), term.getValue());
     }
-    final SortedMap<GenPolynomial<C>, Long> result = new java.util.TreeMap<GenPolynomial<C>, Long>();
+    final SortedMap<GenPolynomial<C>, Long> result =
+        new java.util.TreeMap<GenPolynomial<C>, Long>();
     // the coefficients of the monomial factors, multiplied out
     C constant = ring.coFac.getONE();
     for (Map.Entry<GenPolynomial<C>, Long> factor : factorizer.apply(small).entrySet()) {
@@ -2560,12 +2558,13 @@ public class AlgebraUtil {
 
   /**
    * The square-free factors of an expression with their exponents, as
-   * <code>{{content, 1}, {f1, e1}, ...}</code> with the factors in the canonical order. The
-   * numeric content is always the first entry, also where it is <code>1</code>.
+   * <code>{{content, 1}, {f1, e1}, ...}</code> with the factors in the canonical order. The numeric
+   * content is always the first entry, also where it is <code>1</code>.
    *
    * @return {@link F#NIL} if nothing polynomial could be factored
    */
-  public static IAST factorSquareFreeList(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
+  public static @AllowNIL IAST factorSquareFreeList(IExpr arg1, VariablesSet eVar,
+      EvalEngine engine) {
     IRational[] content = new IRational[] {F.C1};
     Map<IExpr, Long> factorMap = squareFreeFactorMap(arg1, eVar, content, engine);
     if (factorMap == null) {
@@ -2585,8 +2584,8 @@ public class AlgebraUtil {
   }
 
   /**
-   * The square-free factors of an expression and their exponents. The factors of a product which
-   * is written out are kept apart, but a factor which two of them share is taken out of both:
+   * The square-free factors of an expression and their exponents. The factors of a product which is
+   * written out are kept apart, but a factor which two of them share is taken out of both:
    * <code>(x^2-1)*(x+1)</code> is <code>(x-1)*(x+1)^2</code>.
    *
    * @param content receives the numeric content and the sign at index 0
@@ -2719,8 +2718,8 @@ public class AlgebraUtil {
   }
 
   /**
-   * The factors of a factorization with the sign they are written with: in every factor which is
-   * a sum, the term which comes first in the lexicographic order of the generators - the first
+   * The factors of a factorization with the sign they are written with: in every factor which is a
+   * sum, the term which comes first in the lexicographic order of the generators - the first
    * generator in its highest power - has a positive coefficient. The signs which are taken out of
    * the factors are one factor <code>-1</code> in front: <code>(-a+b)^3</code> is
    * <code>-(a-b)^3</code>, <code>(-x+y)*(x+2*y)</code> is <code>-(x-y)*(x+2*y)</code>.
@@ -2866,8 +2865,7 @@ public class AlgebraUtil {
       // Sin(x)^2-Cos(x)^2 factors with Sin(x) and Cos(x) as two unknowns. The rewriting below
       // would turn it into -1+2*Sin(x)^2 first, which does not factor - so the factorization
       // over the functions as they stand is taken where there is one.
-      IExpr plain =
-          factorHomogenized(expr, new VariablesSet(expr), false, engine);
+      IExpr plain = factorHomogenized(expr, new VariablesSet(expr), false, engine);
       if ((plain.isTimes() && ((IAST) plain).count(x -> !x.isNumber()) >= 2)
           || (plain.isPower() && plain.base().isPlus() && plain.exponent().isInteger())) {
         return plain;
@@ -3401,8 +3399,7 @@ public class AlgebraUtil {
         }
       }
       if (a.equals(one) && b.equals(one) && c.equals(one)) {
-        if (expC == 0L && (p != 3L) && (expA == p * 2)
-            && MachinePrime.isPrime(p)) {
+        if (expC == 0L && (p != 3L) && (expA == p * 2) && MachinePrime.isPrime(p)) {
           // polynomials of the form x^(2*p) + x^p + 1 have exactly two factors for
           // all primes p != 3. One is x^2 + x + 1, and its cofactor is a polynomial whose
           // coefficients are all 1, 0, or −1.
@@ -3440,8 +3437,7 @@ public class AlgebraUtil {
     if (numerLinear != null) {
       IExpr[] denomLinear = numerDenom[1].linear(variable);
       if (denomLinear != null) {
-        IExpr temp =
-            EvalEngine.get().evaluate(numerLinear[1].subtract(denomLinear[1].times(rhs)));
+        IExpr temp = EvalEngine.get().evaluate(numerLinear[1].subtract(denomLinear[1].times(rhs)));
         if (!temp.isZero()) {
           return numerLinear[0].negate().plus(denomLinear[0].times(rhs)).times(temp.power(-1L));
         }
@@ -3635,8 +3631,8 @@ public class AlgebraUtil {
         for (Map.Entry<GenPolynomial<BigRational>, Long> entry : sfactors.entrySet()) {
           product = product.multiply(entry.getKey().power(entry.getValue()));
         }
-        numerator = numerator.divide(denominator.leadingBaseCoefficient()
-            .divide(product.leadingBaseCoefficient()));
+        numerator = numerator
+            .divide(denominator.leadingBaseCoefficient().divide(product.leadingBaseCoefficient()));
       }
 
       List<GenPolynomial<BigRational>> D =
@@ -3975,9 +3971,10 @@ public class AlgebraUtil {
   /**
    * Combine the terms of a partial fraction decomposition with the same part in the variable and
    * factor their coefficients: <code>(-b/(a^2*c^2)-2*d/(a*c^3))/x</code> is
-   * <code>(-b*c-2*a*d)/(a^2*c^3*x)</code> and <code>b^4/((a^2*b^2*c^2-2*a^3*b*c*d+a^4*d^2)*(a+b*x))</code>
-   * is <code>b^4/(a^2*(b*c-a*d)^2*(a+b*x))</code>. The quotients of the iterative decomposition,
-   * which cancel each other for a proper fraction, are dropped.
+   * <code>(-b*c-2*a*d)/(a^2*c^3*x)</code> and
+   * <code>b^4/((a^2*b^2*c^2-2*a^3*b*c*d+a^4*d^2)*(a+b*x))</code> is
+   * <code>b^4/(a^2*(b*c-a*d)^2*(a+b*x))</code>. The quotients of the iterative decomposition, which
+   * cancel each other for a proper fraction, are dropped.
    */
   private static IExpr collectPartialFractions(IExpr decomposition, IExpr variable,
       EvalEngine engine) {
@@ -4146,10 +4143,10 @@ public class AlgebraUtil {
 
   /**
    * The partial fractions of <code>numerator/d^k</code> for a denominator which is one factor
-   * <code>d</code> or a power of it, with coefficients which are symbols:
-   * <code>x^2/(a+b*x)</code> is <code>-a/b^2+x/b+a^2/(b^2*(a+b*x))</code>. The numerator is
-   * divided by <code>d</code> again and again; the remainders are the numerators of
-   * <code>1/d^k, 1/d^(k-1), ...</code> and the last quotient is the polynomial part.
+   * <code>d</code> or a power of it, with coefficients which are symbols: <code>x^2/(a+b*x)</code>
+   * is <code>-a/b^2+x/b+a^2/(b^2*(a+b*x))</code>. The numerator is divided by <code>d</code> again
+   * and again; the remainders are the numerators of <code>1/d^k, 1/d^(k-1), ...</code> and the last
+   * quotient is the polynomial part.
    *
    * @return {@link F#NIL} if the fraction is one such term already
    */
@@ -4170,8 +4167,7 @@ public class AlgebraUtil {
     final IExpr divisor = F.evalExpandAll(d, engine);
     IASTAppendable result = F.PlusAlloc(k + 1);
     for (int j = k; j >= 1 && !quotient.isZero(); j--) {
-      IExpr division =
-          engine.evalQuiet(F.PolynomialQuotientRemainder(quotient, divisor, variable));
+      IExpr division = engine.evalQuiet(F.PolynomialQuotientRemainder(quotient, divisor, variable));
       if (!division.isList2()) {
         return F.NIL;
       }
@@ -4255,7 +4251,8 @@ public class AlgebraUtil {
    */
   private static boolean isCommonDivisor(IExpr rationalGcd, IAST coefficients, EvalEngine engine) {
     long precision = coefficients.determinePrecision(false);
-    if (precision <= ParserConfig.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
+    if (precision <= ParserConfig.MACHINE_PRECISION || !rationalGcd.isNumber()
+        || rationalGcd.isZero()) {
       return true;
     }
     double tolerance = Math.pow(10.0, -Math.min(precision - 4, 300));
@@ -4596,7 +4593,7 @@ public class AlgebraUtil {
           (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
       FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
           FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-          // CPD-ON
+      // CPD-ON
       map = factorAbstract.squarefreeFactors(poly);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -4687,14 +4684,15 @@ public class AlgebraUtil {
    * <code>Together</code> of a product which is one fraction of two polynomial expressions already
    * - no fraction inside of its numerator or its denominator - and has nothing to cancel. The
    * factors of the denominator stay as they are: multiplying <code>b^4*(a+b*x)</code> out would
-   * only make the expression larger. Each factor which is a sum gets its numeric content taken
-   * out and the sign of its leading term made positive, <code>1/((-1-n)*n)</code> is
+   * only make the expression larger. Each factor which is a sum gets its numeric content taken out
+   * and the sign of its leading term made positive, <code>1/((-1-n)*n)</code> is
    * <code>-1/(n*(1+n))</code>; the sign goes to a factor of the numerator whose leading term is
    * negative, if there is one.
    *
    * <p>
-   * This is the form of the function <code>Together</code>. {@link #togetherExpr(IExpr, EvalEngine)},
-   * which the simplifier works with, multiplies the denominator out as before.
+   * This is the form of the function <code>Together</code>.
+   * {@link #togetherExpr(IExpr, EvalEngine)}, which the simplifier works with, multiplies the
+   * denominator out as before.
    *
    * @return {@link F#NIL} if the product is no such fraction
    */
@@ -4768,8 +4766,8 @@ public class AlgebraUtil {
   }
 
   /**
-   * Test if the multiplied out denominators of two fractions differ by a numeric factor only. For
-   * a fraction and its {@link #togetherExpr(IExpr, EvalEngine)} form this means that nothing was
+   * Test if the multiplied out denominators of two fractions differ by a numeric factor only. For a
+   * fraction and its {@link #togetherExpr(IExpr, EvalEngine)} form this means that nothing was
    * cancelled, without computing a greatest common divisor again.
    */
   public static boolean isSameDenominator(IExpr fraction1, IExpr fraction2, EvalEngine engine) {
@@ -4788,8 +4786,8 @@ public class AlgebraUtil {
 
   /**
    * <code>{c, q}</code> with <code>sum == c*q</code> for the numeric content <code>c</code>, with
-   * the sign of the leading term of <code>sum</code>: the term of the highest total degree, and
-   * of several of them the lexicographically greatest one.
+   * the sign of the leading term of <code>sum</code>: the term of the highest total degree, and of
+   * several of them the lexicographically greatest one.
    *
    * @return <code>null</code> if the content is not found
    */
@@ -5249,12 +5247,12 @@ public class AlgebraUtil {
   }
 
   /**
-   * Test if a denominator is a product of positive integer powers of polynomials in their
-   * variables (and numbers): the common denominator of such fractions is built from these factors,
-   * so the denominator is not multiplied out. A positive fractional power of a sum is such a factor
-   * too: <code>(1+x/r)^(5/2)</code> stays a power whose base <code>Together</code> handles on its
-   * own, where its expansion <code>Sqrt(1+x/r)*(1+x/r)^2</code> multiplied by the other factors
-   * grows into a large sum.
+   * Test if a denominator is a product of positive integer powers of polynomials in their variables
+   * (and numbers): the common denominator of such fractions is built from these factors, so the
+   * denominator is not multiplied out. A positive fractional power of a sum is such a factor too:
+   * <code>(1+x/r)^(5/2)</code> stays a power whose base <code>Together</code> handles on its own,
+   * where its expansion <code>Sqrt(1+x/r)*(1+x/r)^2</code> multiplied by the other factors grows
+   * into a large sum.
    */
   private static boolean isProductOfPolynomialPowers(IExpr denominator) {
     IAST factors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
@@ -5282,7 +5280,8 @@ public class AlgebraUtil {
 
   /**
    * The content <code>c</code> and the primitive polynomial <code>q</code> with
-   * <code>base == c*q</code>; for anything but a sum <code>c == 1</code> and <code>q == base</code>.
+   * <code>base == c*q</code>; for anything but a sum <code>c == 1</code> and
+   * <code>q == base</code>.
    *
    * @return <code>null</code> if the content of a sum is not found
    */
@@ -5319,10 +5318,10 @@ public class AlgebraUtil {
 
   /**
    * Bring the fractions <code>numerators(i)/denominators(i)</code> over their common denominator,
-   * which is the product of the distinct factors of the denominators with their largest
-   * exponents. The factors are recognized up to a numeric content, which goes into the numeric
-   * part of the denominator. The common denominator stays a product of powers; what the numerator
-   * and the denominator have in common is cancelled and taken out of these powers.
+   * which is the product of the distinct factors of the denominators with their largest exponents.
+   * The factors are recognized up to a numeric content, which goes into the numeric part of the
+   * denominator. The common denominator stays a product of powers; what the numerator and the
+   * denominator have in common is cancelled and taken out of these powers.
    *
    * @param numerators the numerators of the fractions, in the positions <code>1..n</code>
    * @param denominators the denominators of the fractions, <code>1</code> for a term which is no
@@ -5495,9 +5494,9 @@ public class AlgebraUtil {
 
   /**
    * Write the reduced denominator <code>reduced == denominator/g</code> as a product of the known
-   * factors: the cancelled polynomial <code>g</code> is divided by the factors as often as it
-   * goes, which lowers their exponents. A factor which does not divide what is left of
-   * <code>g</code> is factored once (it may be a power or a product itself).
+   * factors: the cancelled polynomial <code>g</code> is divided by the factors as often as it goes,
+   * which lowers their exponents. A factor which does not divide what is left of <code>g</code> is
+   * factored once (it may be a power or a product itself).
    *
    * @return {@link F#NIL} if something of <code>g</code> is left which is not a number
    */
@@ -5517,7 +5516,8 @@ public class AlgebraUtil {
     if (g.isNIL()) {
       return F.NIL;
     }
-    java.util.List<DenominatorFactor> remaining = new java.util.ArrayList<DenominatorFactor>(factors);
+    java.util.List<DenominatorFactor> remaining =
+        new java.util.ArrayList<DenominatorFactor>(factors);
     boolean factoredOnce = false;
     while (!g.isNumber()) {
       boolean divided = false;
