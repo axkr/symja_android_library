@@ -1013,9 +1013,10 @@ public class SpecialFunctions {
       if (ast.argSize() == 4) {
         IExpr b1 = ast.arg4();
         if (b.equals(b1)) {
-          return F.C0;
+          return zero(ast, engine);
         }
-        if (a.isZero() && !b.isNegativeResult() && !b1.isNegativeResult()) {
+        if (a.isZero() && !m.isNonPositiveResult() && !b.isNegativeResult()
+            && !b1.isNegativeResult()) {
           // GammaRegularized(m, b^2/2, b1^2/2)
           return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)), F.Times(F.C1D2, F.Sqr(b1)));
         }
@@ -1029,7 +1030,7 @@ public class SpecialFunctions {
         if (b.isZero() && m.isPositiveResult()) {
           return F.C1;
         }
-        if (a.isZero() && !b.isNegativeResult()) {
+        if (a.isZero() && !m.isNonPositiveResult() && !b.isNegativeResult()) {
           // GammaRegularized(m, b^2/2)
           return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)));
         }
@@ -1043,6 +1044,17 @@ public class SpecialFunctions {
         return ast.setAtCopy(2, negA);
       }
       return F.NIL;
+    }
+
+    /** The zero of the difference of equal limits: a machine zero for machine numbers. */
+    private static IExpr zero(IAST ast, EvalEngine engine) {
+      if (engine.isArbitraryMode()) {
+        return F.C0;
+      }
+      if (engine.isDoubleMode() || ast.exists(IExpr::isInexactNumber)) {
+        return F.CD0;
+      }
+      return F.C0;
     }
 
     @Override

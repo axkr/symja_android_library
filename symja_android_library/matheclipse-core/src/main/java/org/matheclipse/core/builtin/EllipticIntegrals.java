@@ -325,6 +325,19 @@ public class EllipticIntegrals {
         // the integral diverges at its lower limit
         return F.CComplexInfinity;
       }
+      if (x.equals(y) && y.equals(z)) {
+        // x^(-3/2)
+        return F.Power(x, F.CN3D2);
+      }
+      if (!engine.isNumericMode() && !(x.isNumber() && y.isNumber() && z.isNumber())) {
+        // RD is symmetric in its first two arguments
+        if (y.equals(z)) {
+          return carlsonRDEqualLast(x, z);
+        }
+        if (x.equals(z)) {
+          return carlsonRDEqualLast(y, z);
+        }
+      }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z);
         return args == null ? F.NIL
@@ -337,6 +350,16 @@ public class EllipticIntegrals {
             EllipticIntegralsJS::carlsonRD);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>CarlsonRD(x, z, z)</code> with <code>CarlsonRF(x, z, z) == CarlsonRC(x, z)</code>:
+     * <code>Piecewise({{z^(-3/2), x == z}}, 3*(Sqrt(x)/z - CarlsonRF(x, z, z))/(2*(x - z)))</code>.
+     */
+    private static IExpr carlsonRDEqualLast(IExpr x, IExpr z) {
+      return F.Piecewise(F.list(F.list(F.Power(z, F.CN3D2), F.Equal(x, z))),
+          F.Times(F.C3D2, F.Power(F.Subtract(x, z), F.CN1),
+              F.Subtract(F.Divide(F.Sqrt(x), z), F.CarlsonRF(x, z, z))));
     }
 
     @Override

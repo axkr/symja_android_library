@@ -24449,6 +24449,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "MarcumQ(1.0,2.0,-3.0)");
     check("MarcumQ(1, 2)", //
         "MarcumQ(1,2)");
+    // the order a == 0 does not move m into the domain
+    check("MarcumQ(-1, 0, 3.0)", //
+        "MarcumQ(-1.0,0.0,3.0)");
+    check("MarcumQ(0, 0, b)", //
+        "MarcumQ(0,0,b)");
+    check("MarcumQ(-1, 0, b0, b1)", //
+        "MarcumQ(-1,0,b0,b1)");
+    // equal limits of machine numbers give a machine zero
+    check("MarcumQ(1, 2.0, 3.0, 3.0)", //
+        "0.0");
+    check("N(MarcumQ(1, 2, 3, 3), 30)", //
+        "0");
 
     // the values were calculated with mpmath from the Poisson series of GammaRegularized
     checkNumeric("MarcumQ(1, 2.0, 3.0)", //
@@ -24473,6 +24485,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // too large for the series
     check("MarcumQ(1, 1.0*^15, 3.0)", //
         "MarcumQ(1.0,1.*10^15,3.0)");
+    // more than a million terms: given up before the series is summed
+    check("MarcumQ(1, 4.0*^5, 4.0*^5)", //
+        "MarcumQ(1.0,400000.0,400000.0)");
+    // b much larger than a: the rest of the series is bounded with the growth of
+    // GammaRegularized(m+k, b^2/2), so few terms are summed (values from mpmath)
+    checkNumeric("N(MarcumQ(1, 1, 3000), 30)", //
+        "2.29216637564568202707011715220*10^-1953025");
+    checkNumeric("N(MarcumQ(3/2, 5, 200), 30)", //
+        "7.74636532287715950083899145319*10^-8259");
 
     // the difference keeps the digits which cancel
     checkNumeric("MarcumQ(1, 2.0, 0, 3.0)", //

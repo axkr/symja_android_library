@@ -481,17 +481,26 @@ public class DTest extends ExprEvaluatorTestCase {
     check("D(LerchPhi(z,s,a),z)", //
         "(LerchPhi(z,-1+s,a)-a*LerchPhi(z,s,a))/z");
     check("D(CarlsonRD(x,y,z),x)", //
-        "(-CarlsonRD(x,y,z)+CarlsonRD(y,z,x))/(2*(x-z))");
+        "Piecewise({{(-CarlsonRD(x,y,z)+CarlsonRD(y,z,x))/(2*(x-z)),x!=z},{-3/(10*x^(5/2)),x==y}},\n"
+            + "3/16*(((5*x-2*y)*Sqrt(y))/x^2-3*CarlsonRF(y,x,x))/(x-y)^2)");
     check("D(CarlsonRD(x,y,z),y)", //
-        "(-CarlsonRD(x,y,z)+CarlsonRD(x,z,y))/(2*(y-z))");
+        "Piecewise({{(-CarlsonRD(x,y,z)+CarlsonRD(x,z,y))/(2*(y-z)),y!=z},{-3/(10*y^(5/2)),x==y}},\n"
+            + "3/16*((Sqrt(x)*(-2*x+5*y))/y^2-3*CarlsonRF(x,y,y))/(-x+y)^2)");
     check("D(CarlsonRD(x,y,z),z)", //
-        "-3/2*(Sqrt(x)*Sqrt(y))/(z^(3/2)*(-x+z)*(-y+z))-(1/(-x+z)+1/(-y+z))*CarlsonRD(x,y,z)+\n"
-            + "3/2*CarlsonRF(x,y,z)/((-x+z)*(-y+z))");
+        "Piecewise({{-3/2*(Sqrt(x)*Sqrt(y))/(z^(3/2)*(-x+z)*(-y+z))-(1/(-x+z)+1/(-y+z))*CarlsonRD(x,y,z)+\n"
+            + "3/2*CarlsonRF(x,y,z)/((-x+z)*(-y+z)),x!=z&&y!=z},{-9/(10*z^(5/2)),x==y},{9/16*((Sqrt(y)*(-\n"
+            + "2*y+5*z))/z^2-3*CarlsonRF(y,z,z))/(y-z)^2,x==z}},9/16*((Sqrt(x)*(-2*x+5*z))/z^2-\n"
+            + "3*CarlsonRF(x,z,z))/(x-z)^2)");
     // agrees with the central difference quotient
     check("N(D(CarlsonRD(1.0,2.0,z),z) /. z->3.0)", //
         "-0.0946051");
     check("D(FractionalPart(x),x)", //
         "Piecewise({{1,(Re(x)==0||Re(x)\u2209Integers)&&(Im(x)==0||Im(x)\u2209Integers)}},Indeterminate)");
+    // IntegerPart jumps at every nonzero integer, but not at 0
+    check("D(IntegerPart(x),x)", //
+        "Piecewise({{0,(Re(x)==0||Re(x)\u2209Integers)&&(Im(x)==0||Im(x)\u2209Integers)}},Indeterminate)");
+    check("{D(IntegerPart(x),x)/.x->3,D(IntegerPart(x),x)/.x->7/2,D(IntegerPart(x),x)/.x->0,D(IntegerPart(x),x)/.x->1/3-4*I}", //
+        "{Indeterminate,0,0,Indeterminate}");
 
     check("D(Log(x),{x,0})", //
         "Log(x)");
@@ -540,23 +549,32 @@ public class DTest extends ExprEvaluatorTestCase {
         "a*(1+a)*(2+a)*Hypergeometric1F1Regularized(3+a,3+b,x)");
     check("D(EllipticTheta(3,x,q),x)", //
         "EllipticThetaPrime(3,x,q)");
+    // at x == 0 EllipticNomeQ(x) == x/16+O(x^2)
     check("D(EllipticNomeQ(x),x)", //
-        "(Pi^2*EllipticNomeQ(x))/(4*(1-x)*x*EllipticK(x)^2)");
+        "Piecewise({{(Pi^2*EllipticNomeQ(x))/(4*(1-x)*x*EllipticK(x)^2),x!=0}},1/16)");
+    check("D(EllipticNomeQ(x),x) /. x->0", //
+        "1/16");
     check("D(ModularLambda(x),x)", //
         "I*Pi*EllipticTheta(3,0,E^(I*Pi*x))^4*(1-ModularLambda(x))*ModularLambda(x)");
     // the first argument of JacobiZeta is the amplitude
     check("D(JacobiZeta(x,m),x)", //
         "-EllipticE(m)/(EllipticK(m)*Sqrt(1-m*Sin(x)^2))+Sqrt(1-m*Sin(x)^2)");
+    // at p == x the partial derivative in x is 1/3 of the derivative of CarlsonRD(y,z,x) in x
     check("D(CarlsonRJ(x,y,z,p),x)", //
-        "(-CarlsonRD(y,z,x)+CarlsonRJ(x,y,z,p))/(2*(p-x))");
-    check("D(CarlsonRJ(x,y,z,p),y)", //
-        "(-CarlsonRD(x,z,y)+CarlsonRJ(x,y,z,p))/(2*(p-y))");
+        "Piecewise({{(-CarlsonRD(y,z,x)+CarlsonRJ(x,y,z,p))/(2*(p-x)),x!=p},{-3/(10*x^(5/\n"
+            + "2)),x==y&&x==z},{(3*(5*x-2*z)*Sqrt(z)-9*x^2*CarlsonRC(z,x))/(16*x^2*(x-z)^2),x==y},{(\n"
+            + "3*(5*x-2*y)*Sqrt(y)-9*x^2*CarlsonRC(y,x))/(16*x^2*(x-y)^2),x==z}},Piecewise({{-3/\n"
+            + "2*(Sqrt(y)*Sqrt(z))/(x^(3/2)*(x-y)*(x-z))-(1/(x-y)+1/(x-z))*CarlsonRD(y,z,x)+3/2*CarlsonRF(y,z,x)/((x-y)*(x-z)),y!=x&&z!=x},{-\n"
+            + "9/(10*x^(5/2)),y==z},{9/16*(((5*x-2*z)*Sqrt(z))/x^2-3*CarlsonRF(z,x,x))/(-x+z)^2,y==x}},\n"
+            + "9/16*(((5*x-2*y)*Sqrt(y))/x^2-3*CarlsonRF(y,x,x))/(-x+y)^2)/3)");
     check("D(CarlsonRJ(x,y,z,p),z)", //
-        "(-CarlsonRD(x,y,z)+CarlsonRJ(x,y,z,p))/(2*(p-z))");
-    // from the homogeneity of degree -3/2: x*Dx+y*Dy+z*Dz+p*Dp == -3/2*CarlsonRJ
-    check("D(CarlsonRJ(x,y,z,p),p)", //
-        "((z*(CarlsonRD(x,y,z)-CarlsonRJ(x,y,z,p)))/(2*(p-z))+(y*(CarlsonRD(x,z,y)-CarlsonRJ(x,y,z,p)))/(\n"
-            + "2*(p-y))+(x*(CarlsonRD(y,z,x)-CarlsonRJ(x,y,z,p)))/(2*(p-x))-3/2*CarlsonRJ(x,y,z,p))/p");
+        "Piecewise({{(-CarlsonRD(x,y,z)+CarlsonRJ(x,y,z,p))/(2*(p-z)),z!=p},{-3/(10*z^(5/\n"
+            + "2)),z==x&&z==y},{(3*Sqrt(y)*(-2*y+5*z)-9*z^2*CarlsonRC(y,z))/(16*z^2*(-y+z)^2),z==x},{(\n"
+            + "3*Sqrt(x)*(-2*x+5*z)-9*z^2*CarlsonRC(x,z))/(16*z^2*(-x+z)^2),z==y}},Piecewise({{-\n"
+            + "3/2*(Sqrt(x)*Sqrt(y))/(z^(3/2)*(-x+z)*(-y+z))-(1/(-x+z)+1/(-y+z))*CarlsonRD(x,y,z)+\n"
+            + "3/2*CarlsonRF(x,y,z)/((-x+z)*(-y+z)),x!=z&&y!=z},{-9/(10*z^(5/2)),x==y},{9/16*((Sqrt(y)*(-\n"
+            + "2*y+5*z))/z^2-3*CarlsonRF(y,z,z))/(y-z)^2,x==z}},9/16*((Sqrt(x)*(-2*x+5*z))/z^2-\n"
+            + "3*CarlsonRF(x,z,z))/(x-z)^2)/3)");
 
     // the derivatives in the other arguments stay unevaluated
     check("D(EllipticTheta(3,z,x),x)", //
@@ -585,6 +603,46 @@ public class DTest extends ExprEvaluatorTestCase {
         "-0.234853");
     check("N(D(CarlsonRJ(1,2,3,p),p) /. p->1/2)", //
         "-0.749594");
+    // the partial derivatives at p == x, from the integral by mpmath
+    check("N(D(CarlsonRJ(x,2,3,1/2),x) /. x->1/2)", //
+        "-0.477837");
+    check("N(D(CarlsonRJ(1,2,3,p),p) /. p->1)", //
+        "-0.30216");
+    // the sum of both is the derivative of CarlsonRJ(x,2,3,x) == CarlsonRD(2,3,x)
+    check("N(D(CarlsonRJ(x,2,3,x),x) /. x->1/2)", //
+        "-1.43351");
+    check("N(D(CarlsonRD(2,3,x),x) /. x->1/2)", //
+        "-1.43351");
+    // CarlsonRD where z is equal to x or y (values from mpmath)
+    check("N(D(CarlsonRD(x,2,3),x) /. x->3)", //
+        "-0.0221167");
+    check("N(D(CarlsonRD(2,y,3),y) /. y->3)", //
+        "-0.0221167");
+    check("N(D(CarlsonRD(1,2,z),z) /. z->1)", //
+        "-0.691823");
+    check("N(D(CarlsonRD(1,2,z),z) /. z->2)", //
+        "-0.200359");
+    check("D(CarlsonRD(x,y,z),z) /. {y->x,z->x}", //
+        "-9/(10*x^(5/2))");
+    check("D(CarlsonRD(x,y,z),x) /. {y->x,z->x}", //
+        "-3/(10*x^(5/2))");
+    check("N(D(CarlsonRJ(x,2,2,x),x) /. x->1)", //
+        "-0.534292");
+    // p equal to two or all of x, y, z
+    check("N(D(CarlsonRJ(x,1/2,3,1/2),x) /. x->1/2)", //
+        "-0.815375");
+    check("N(D(CarlsonRJ(x,3,1/2,1/2),x) /. x->1/2)", //
+        "-0.815375");
+    check("N(D(CarlsonRJ(1/2,2,z,1/2),z) /. z->1/2)", //
+        "-0.97593");
+    check("D(CarlsonRJ(x,y,z,p),x) /. {y->x,z->x,p->x}", //
+        "-3/(10*x^(5/2))");
+    check("N(D(CarlsonRJ(1/2,1/2,3,p),p) /. p->1/2)", //
+        "-1.63075");
+    check("N(D(CarlsonRJ(1/2,1/2,1/2,p),p) /. p->1/2)", //
+        "-3.39411");
+    check("N(D(CarlsonRJ(1.5,2.0,0.5,p),p) /. p->1.5)", //
+        "-0.276765");
   }
 
   @Test
@@ -593,6 +651,22 @@ public class DTest extends ExprEvaluatorTestCase {
         "a^x*Log(a)^n");
     check("D(Log(x),{x,n})", //
         "Piecewise({{(-1+n)!/((-1)^(1-n)*x^n),n>=1}},Log(x))");
+    check("D(HarmonicNumber(x),{x,n})", //
+        "Piecewise({{((-1)^n*n!)/x^(1+n)+EulerGamma*KroneckerDelta(n)+PolyGamma(n,x),n>=1}},HarmonicNumber(x))");
+    check("D(HarmonicNumber(x),{x,n}) /. n->0", //
+        "HarmonicNumber(x)");
+    check("N(D(HarmonicNumber(x),{x,n}) /. {n->3, x->2.3})", //
+        "0.0858497");
+    check("N(D(HarmonicNumber(x),{x,3}) /. x->2.3)", //
+        "0.0858497");
+    check("D(ArcTan(x),{x,n})", //
+        "(Sqrt(Pi)*x^(1-n)*HypergeometricPFQRegularized({1/2,1,1},{1-n/2,1/2*(3-n)},-x^2))/\n"
+            + "2^(1-n)");
+    // the closed form agrees with the integer-order rule
+    check("Table(N(D(ArcTan(x),{x,n}) /. {n->k, x->3/5}, 20),{k,0,4})", //
+        "{0.54041950027058415544,0.73529411764705882353,-0.64878892733564013841,0.063606757581925503766,2.6939332622933154536}");
+    check("Table(N(D(ArcTan(x),{x,k}) /. x->3/5, 20),{k,0,4})", //
+        "{0.54041950027058415544,0.73529411764705882353,-0.64878892733564013841,0.063606757581925503766,2.6939332622933154536}");
     // a head which doesn't depend on the variable
     check("D(f(x)[y],y)", //
         "f(x)'[y]");
