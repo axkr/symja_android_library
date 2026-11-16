@@ -1925,8 +1925,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
             org.matheclipse.core.basic.MachineProfile.millis(SYMBOLIC_BOUND_MILLIS));
       }
     }
-    // in quiet mode no Check sees the message, and the limits of the test would be wasted
-    if (!engine.isQuietMode() && isDivergentSeries(expr, var, engine)) {
+    // in quiet mode no Check sees the message, and in numeric mode (NSum, N(Expectation(...)))
+    // the symbolic limits of the test changed the precision of the numeric result
+    if (!engine.isQuietMode() && !engine.isNumericMode() && isDivergentSeries(expr, var, engine)) {
       // Sum does not converge.
       Errors.printMessage(S.Sum, "div", F.List(), engine);
     }

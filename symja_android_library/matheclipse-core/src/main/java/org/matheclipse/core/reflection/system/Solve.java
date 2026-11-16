@@ -3879,8 +3879,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    * @return the real member, {@link S#False} if the family has none, or <code>value</code> itself
    */
   private static IExpr realFamilyMember(IExpr value, EvalEngine engine) {
-    if (value.isConditionalExpression() && !isRealValue(value)) {
-      IExpr member = realMember(value, engine);
+    if (!value.isConditionalExpression()) {
+      return value;
+    }
+    // a machine number family has imaginary parts like 1.0E-17*I, which don't make it non-real
+    IExpr family =
+        value.isFree(IExpr::isInexactNumber, true) ? value : engine.evaluate(F.Chop(value));
+    if (!isRealValue(family)) {
+      IExpr member = realMember(family, engine);
       if (member.isPresent()) {
         return member;
       }

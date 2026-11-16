@@ -13,9 +13,9 @@ public class RootTest extends ExprEvaluatorTestCase {
     check("Root({2*#1-Tan(#1) & , 4.60421677720057651458449514482636628606`20.6008566975056})", //
         "Root({2*#1-Tan(#1)&,4.60421677720057651458})");
 
-    // Inexact c with no closed-form Solve result → numeric refinement via FindRoot.
+    // the real solution of Solve near c is the closed form
     check("Root({Exp(#) - 2 &, 0.6931471805599453})", //
-        "Root({E^#1-2&,0.693147})");
+        "Log(2)");
 
     check("Root({#^2 - 2 &, 1.4142135623730951})", //
         "Sqrt(2)");
