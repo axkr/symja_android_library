@@ -2366,7 +2366,8 @@ public class ExprParser extends Scanner {
     IAST deriv = F.$(DERIVATIVE, F.ZZ(derivativeCounter));
     expr = F.$(deriv, expr);
     expr = parseArguments(expr);
-    return expr;
+    // a part of the derivative: f'[[1]] and f[x]'[[1]]
+    return parseParts(expr);
   }
 
   /**

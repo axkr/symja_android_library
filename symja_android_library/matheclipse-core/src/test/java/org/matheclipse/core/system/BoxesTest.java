@@ -234,4 +234,25 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToBoxes[ScientificForm[0.000713, 2]][[1, 1, 1]] // FullForm", //
         "RowBox(List(\"\\\"7.1\\\"\", \"\\[Times]\", SuperscriptBox(\"10\", \"\\\"-4\\\"\")))");
   }
+
+  @Test
+  public void testGridIsATaggedGridBox() {
+    check("ToBoxes(Grid({{u, \"w\"}, {1, v}}))", //
+        "TagBox(GridBox({{u,\"w\"},{1,v}},AutoDelete->False,GridBoxItemSize->{Columns->{{Automatic}},Rows->{{Automatic}}}),Grid)");
+    check("InputForm(ToBoxes(Grid({{u, v}}, Frame -> All)))", //
+        "TagBox(GridBox({{\"u\",\"v\"}},AutoDelete->False,GridBoxFrame->{\"Columns\"->{{True}},\"Rows\"->{{True}}},GridBoxItemSize->{\"Columns\"->{{Automatic}},\"Rows\"->{{Automatic}}}),\"Grid\")");
+    check("ToExpression(ToBoxes(Grid({{u, 2}}, Frame -> All)))", //
+        "Grid({{u,2}},Frame->All)");
+    // other options of the grid go into the grid box and come back with the grid
+    check("InputForm(ToBoxes(Grid({{u, v}}, Alignment -> Left)))", //
+        "TagBox(GridBox({{\"u\",\"v\"}},AutoDelete->False,Alignment->Left,GridBoxItemSize->{\"Columns\"->{{Automatic}},\"Rows\"->{{Automatic}}}),\"Grid\")");
+    check("ToExpression(ToBoxes(Grid({{u, 2}}, Alignment -> Left, Frame -> All)))", //
+        "Grid({{u,2}},Alignment->Left,Frame->All)");
+    // the tag reads back as the Grid
+    check("ToExpression(ToBoxes(Grid({{u, 2}, {3, v}})))", //
+        "Grid({{u,2},{3,v}})");
+    // a table keeps its plain grid
+    check("ToBoxes(TableForm({{u, v}}))", //
+        "GridBox({{u,v}})");
+  }
 }

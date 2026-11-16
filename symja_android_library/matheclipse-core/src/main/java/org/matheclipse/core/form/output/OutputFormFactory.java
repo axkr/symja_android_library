@@ -2047,7 +2047,8 @@ public class OutputFormFactory {
               int n = ((IInteger) a1Head.arg1()).toInt();
               if (n == 1 || n == 2) {
                 IExpr symbolOrAST = headAST.arg1();
-                convert(buf, symbolOrAST, Integer.MIN_VALUE, false);
+                // (a+b)'[x]: the prime binds tighter than an operator of the base
+                convert(buf, symbolOrAST, Precedence.DERIVATIVE, false);
                 if (n == 1) {
                   append(buf, "'");
                 } else if (n == 2) {
@@ -2096,9 +2097,11 @@ public class OutputFormFactory {
                 if (Precedence.TWOWAYRULE < precedence) {
                   append(buf, "(");
                 }
-                convert(buf, list.arg1(), Integer.MIN_VALUE, false);
+                // the operator groups to the right: (a<->b)<->c and a<->(b->c) keep their
+                // parentheses, a<->b<->c needs none
+                convert(buf, list.arg1(), Precedence.TWOWAYRULE + 1, false);
                 buf.append("<->");
-                convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+                convert(buf, list.arg2(), Precedence.TWOWAYRULE, false);
                 if (Precedence.TWOWAYRULE < precedence) {
                   append(buf, ")");
                 }
@@ -2378,8 +2381,9 @@ public class OutputFormFactory {
               }
               break;
             case ID.Rational:
-              if (list.isAST2()) {
-                // used for visual comparison of steps
+              if (list.isAST2() && list.arg1().isInteger() && list.arg2().isInteger()) {
+                // used for visual comparison of steps; Rational(a, b*c) of other arguments is no
+                // number and is written as the call
                 IExpr numerator = list.arg1();
                 final boolean isNegative = numerator.isNegative();
                 final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;

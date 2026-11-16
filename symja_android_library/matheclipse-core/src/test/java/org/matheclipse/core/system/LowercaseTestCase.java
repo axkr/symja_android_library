@@ -24422,6 +24422,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMarcumQ() {
+    // exact arguments stay unevaluated
+    check("MarcumQ(1, 2, 3)", //
+        "MarcumQ(1,2,3)");
+    check("MarcumQ(2, a, 0)", //
+        "1");
+    check("MarcumQ(m, 0, b)", //
+        "GammaRegularized(m,b^2/2)");
+    check("MarcumQ(m, a, Infinity)", //
+        "0");
+    check("MarcumQ(m, -a, b)", //
+        "MarcumQ(m,a,b)");
+    check("MarcumQ(m, a, b, b)", //
+        "0");
+    check("MarcumQ(m, 0, b0, b1)", //
+        "GammaRegularized(m,b0^2/2,b1^2/2)");
+    check("MarcumQ(m, a, b0, Infinity)", //
+        "MarcumQ(m,a,b0)");
+    check("MarcumQ(m, a, Infinity, b1)", //
+        "-MarcumQ(m,a,b1)");
+    // outside the real domain m > 0, b >= 0
+    check("MarcumQ(-1, 2.0, 3.0)", //
+        "MarcumQ(-1.0,2.0,3.0)");
+    check("MarcumQ(1, 2.0, -3.0)", //
+        "MarcumQ(1.0,2.0,-3.0)");
+    check("MarcumQ(1, 2)", //
+        "MarcumQ(1,2)");
+
+    // the values were calculated with mpmath from the Poisson series of GammaRegularized
+    checkNumeric("MarcumQ(1, 2.0, 3.0)", //
+        "0.21436208816264946");
+    checkNumeric("MarcumQ(5/2, 3.0, 1)", //
+        "0.9992530756090704");
+    checkNumeric("MarcumQ(0.5, 7.0, 0.1)", //
+        "0.999999999998023657");
+    checkNumeric("MarcumQ(4, 100.0, 100)", //
+        "0.5139603620793072");
+    checkNumeric("MarcumQ({1, 2}, -2.0, 3.0)", //
+        "{0.21436208816264946,0.3526978960496345}");
+    checkNumeric("N(MarcumQ(1, 2, 3), 30)", //
+        "0.214362088162649456970629394723");
+    // the terms of the series are positive: also a value far below 1 keeps its digits
+    check("Abs(MarcumQ(1, 1.0, 30.0)/1.810571377840675*^-184-1) < 10^-12", //
+        "True");
+    check("MarcumQ(1, 1.0, 3000.0)", //
+        "0.0");
+    check("MarcumQ(1, 1.0, 3000.0, 4000.0)", //
+        "0.0");
+    // too large for the series
+    check("MarcumQ(1, 1.0*^15, 3.0)", //
+        "MarcumQ(1.0,1.*10^15,3.0)");
+
+    // the difference keeps the digits which cancel
+    checkNumeric("MarcumQ(1, 2.0, 0, 3.0)", //
+        "0.7856379118373505");
+    checkNumeric("MarcumQ(1, 2.0, 3.0, 0)", //
+        "-0.7856379118373505");
+    checkNumeric("N(MarcumQ(1, 1/2, 0, 1/1000000), 30)", //
+        "4.41248451292201178333725895425*10^-13");
+
+    // the CDFs of the distributions which are defined with MarcumQ
+    checkNumeric("CDF(RiceDistribution(1, 2), 3.0)", //
+        "0.6309310159937893");
+    checkNumeric("CDF(RiceDistribution(1, 2), 0.001)", //
+        "1.1031210679038098E-7");
+    checkNumeric("CDF(NoncentralChiSquareDistribution(2, 3), 4.0)", //
+        "0.4935624168931794");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testFunctionRange() {
     // the real domain of the numerator restricts the range, e.g. x>=0 for Sqrt(x)
@@ -38268,9 +38338,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
     check("Riffle({a, b, c}, {x, y, z, w})", //
         "{a,x,b,y,c}");
-    // the head of the first argument is preserved
+    // only a list is riffled (Riffle::listrp)
     check("Riffle(f(a, b), x)", //
-        "f(a,x,b)");
+        "Riffle(f(a,b),x)");
 
     check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", //
         "{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");

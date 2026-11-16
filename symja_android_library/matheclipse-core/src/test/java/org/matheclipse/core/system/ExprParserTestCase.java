@@ -268,6 +268,17 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
         "Hold(f'(x)^2+2*g'(x)-g(x)*h'(x))");
   }
 
+  /** A part may follow the primes of a derivative, and primes may follow a part. */
+  @Test
+  public void testPartOfADerivative() {
+    check("FullForm(Hold(g(u)'[[2]]))", //
+        "Hold(Part(Derivative(1)[g(u)], 2))");
+    check("FullForm(Hold(g'[[2]][v]))", //
+        "Hold(Part(Derivative(1)[g], 2)[v])");
+    check("FullForm(Hold(g(u)[[2]]''[v]))", //
+        "Hold(Derivative(2)[Part(g(u), 2)][v])");
+  }
+
   /**
    * <code>\!\( ... \)</code> is the expression which the boxes between the delimiters are the
    * typeset form of. A notebook copies a formula as such an escape into plain text.

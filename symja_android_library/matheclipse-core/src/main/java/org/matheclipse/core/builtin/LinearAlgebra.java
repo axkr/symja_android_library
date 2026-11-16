@@ -39,6 +39,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.hipparchus.linear.SchurTransformer;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
@@ -62,18 +63,14 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.FractionFreeElimination;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.eval.util.SymbolicDeterminant;
 import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.core.numerics.linalg.SparseLinearSolver;
-import org.matheclipse.parser.client.ParserConfig;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -82,11 +79,11 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.numerics.linalg.ApfloatMatrices;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -100,10 +97,13 @@ import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.interfaces.ITensorAccess;
+import org.matheclipse.core.numerics.linalg.ApfloatMatrices;
+import org.matheclipse.core.numerics.linalg.SparseLinearSolver;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.ints.IntList;
+import org.matheclipse.parser.client.ParserConfig;
 import com.google.common.math.LongMath;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.vector.GenMatrix;
@@ -284,14 +284,14 @@ public final class LinearAlgebra {
         sums[p] = sum;
       }
       IAST normalMatrix = F.matrix((i, j) -> sums[i + j], columns, columns);
-      IExpr solution = engine.evaluate(F.LinearSolve(normalMatrix,
-          F.mapRange(0, columns, i -> i == 0 ? F.C1 : F.C0)));
+      IExpr solution = engine
+          .evaluate(F.LinearSolve(normalMatrix, F.mapRange(0, columns, i -> i == 0 ? F.C1 : F.C0)));
       if (!solution.isList()) {
         return F.NIL;
       }
       final IAST x = (IAST) solution;
-      return engine.evaluate(F.mapRange(0, size, i -> F.mapRange(S.Plus, 0, columns,
-          p -> F.Times(x.get(p + 1), power(i - radius, p)))));
+      return engine.evaluate(F.mapRange(0, size,
+          i -> F.mapRange(S.Plus, 0, columns, p -> F.Times(x.get(p + 1), power(i - radius, p)))));
     }
 
     /** The power <code>base^exponent</code> with the value <code>1</code> for <code>0^0</code>. */
@@ -401,14 +401,12 @@ public final class LinearAlgebra {
       FieldDecompositionSolver<IExpr> solver = lu.getSolver();
       if (!solver.isNonSingular()) {
         // the expansion which grew past its budget isn't repeated
-        final FieldMatrix<IExpr> result =
-            cofactorsTried ? null : cofactorAdjugate(matrix, engine);
+        final FieldMatrix<IExpr> result = cofactorsTried ? null : cofactorAdjugate(matrix, engine);
         if (result != null) {
           return result;
         }
         // Matrix `1` is singular.
-        Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
-            engine);
+        Errors.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)), engine);
         return null;
       }
       FieldMatrix<IExpr> inverse = solver.getInverse();
@@ -893,8 +891,10 @@ public final class LinearAlgebra {
                       // Conjugate(1/Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11))))/
                       // Sqrt(a22 - (a12*Conjugate(a12/Sqrt(a11)))/Sqrt(a11)))}} $]
                       F.list(
-                          F.list(F.Sqrt(a11), F.Times(F.Power(a11, F.CN1D2), a12), F
-                              .Times(F.Power(a11, F.CN1D2), a13)),
+                          F.list(
+                              F.Sqrt(a11), F.Times(F.Power(a11,
+                                  F.CN1D2), a12),
+                              F.Times(F.Power(a11, F.CN1D2), a13)),
                           F.list(F.C0,
                               F.Sqrt(
                                   F.Plus(a22,
@@ -911,29 +911,27 @@ public final class LinearAlgebra {
                                           F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
                                               F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12)))),
                                       F.CN1D2))),
-                                      // CPD-ON
-                          F.list(F.C0, F.C0,
-                              F.Sqrt(F.Plus(a33,
-                                  F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
-                                      F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))),
-                                  F.Times(
-                                      // CPD-OFF generated closed-form formula
-                                      F.CN1, F
-                                          .Plus(a23,
-                                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
-                                                  F.Conjugate(
-                                                      F.Times(F.Power(a11, F.CN1D2), a12)))),
+                          // CPD-ON
+                          F.list(F.C0, F.C0, F.Sqrt(F.Plus(a33,
+                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
+                                  F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))),
+                              F.Times(
+                                  // CPD-OFF generated closed-form formula
+                                  F.CN1, F
+                                      .Plus(a23,
+                                          F.Times(F.CN1, F.Power(a11, F.CN1D2), a13,
+                                              F.Conjugate(F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                  F.Power(
+                                      F.Plus(a22,
+                                          F.Times(F.CN1, F.Power(a11, F.CN1D2), a12, F.Conjugate(
+                                              // CPD-ON
+                                              F.Times(F.Power(a11, F.CN1D2), a12)))),
+                                      F.CN1D2),
+                                  F.Plus(F.Times(F.CN1, F.Power(a11, F.CN1D2), a12, F
+                                      .Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))), F
+                                          .Conjugate(a23)),
+                                  F.Conjugate(
                                       F.Power(
-                                          F.Plus(a22,
-                                              F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
-                                                  F.Conjugate(
-                                                  // CPD-ON
-                                                      F.Times(F.Power(a11, F.CN1D2), a12)))),
-                                          F.CN1D2),
-                                      F.Plus(F.Times(F.CN1, F.Power(a11, F.CN1D2), a12, F
-                                          .Conjugate(F.Times(F.Power(a11, F.CN1D2), a13))), F
-                                              .Conjugate(a23)),
-                                      F.Conjugate(F.Power(
                                           F.Plus(a22,
                                               F.Times(F.CN1, F.Power(a11, F.CN1D2), a12,
                                                   F.Conjugate(
@@ -968,8 +966,8 @@ public final class LinearAlgebra {
 
     /**
      * A matrix whose entries are symmetric as expressions and have no non-real numeric entry, or
-     * Hermitian with a diagonal that equals its conjugate. <code>{{p,q},{Conjugate(q),r}}</code>
-     * is neither for a symbolic <code>p</code>, nor is <code>{{2,I},{I,2}}</code>.
+     * Hermitian with a diagonal that equals its conjugate. <code>{{p,q},{Conjugate(q),r}}</code> is
+     * neither for a symbolic <code>p</code>, nor is <code>{{2,I},{I,2}}</code>.
      */
     private static boolean isSymmetricOrHermitian(IAST matrix) {
       final int n = matrix.argSize();
@@ -2014,8 +2012,8 @@ public final class LinearAlgebra {
 
     /**
      * The eigenvalues <code>x</code> of <code>a.v == x*b.v</code> for a machine pencil with a
-     * singular <code>b</code>: the reciprocals of the eigenvalues of <code>Inverse(a).b</code>,
-     * and <code>Infinity</code> for its zero eigenvalues, by decreasing size.
+     * singular <code>b</code>: the reciprocals of the eigenvalues of <code>Inverse(a).b</code>, and
+     * <code>Infinity</code> for its zero eigenvalues, by decreasing size.
      */
     private IExpr singularPencil(IAST pencil, EvalEngine engine) {
       if (pencil.isFree(x -> x.isInexactNumber(), false)
@@ -2082,8 +2080,7 @@ public final class LinearAlgebra {
       IExpr det = engine.evaluate(F.Det(pencil.arg2()));
       if (isInvertibleNumber(det)) {
         IExpr product = engine.evaluate(F.Dot(F.Inverse(pencil.arg2()), pencil.arg1()));
-        return product.isMatrix(false) == null ? F.NIL
-            : engine.evaluate(ast.setAtCopy(1, product));
+        return product.isMatrix(false) == null ? F.NIL : engine.evaluate(ast.setAtCopy(1, product));
       }
       return singularPencil(pencil, engine);
     }
@@ -2119,7 +2116,9 @@ public final class LinearAlgebra {
       return super.numericEval(ast, engine);
     }
 
-    /** A list of rows with machine numbers and rational numbers, and at least one machine number. */
+    /**
+     * A list of rows with machine numbers and rational numbers, and at least one machine number.
+     */
     private static boolean isMachineMatrix(IExpr arg1) {
       if (!arg1.isListOfLists()) {
         return false;
@@ -2235,7 +2234,9 @@ public final class LinearAlgebra {
   /** The solution of <code>solver</code> is iterated in {@link #inverseIteration}. */
   private static final int INVERSE_ITERATIONS = 4;
 
-  /** The distance of an eigenvalue and the shift of the inverse iteration, relative to the scale. */
+  /**
+   * The distance of an eigenvalue and the shift of the inverse iteration, relative to the scale.
+   */
   private static final double INVERSE_ITERATION_SHIFT = 1.0e-10;
 
   /** Eigenvalues within this distance relative to the scale are treated as the same eigenvalue. */
@@ -2417,11 +2418,12 @@ public final class LinearAlgebra {
           if (temp.isPresent()) {
             return temp;
           }
+          return F.NIL;
         }
       }
       // switch to numeric calculation
       return numericEval(ast, engine);
-    // CPD-OFF eigen functions share the matrix preamble
+      // CPD-OFF eigen functions share the matrix preamble
     }
 
     @Override
@@ -2663,8 +2665,7 @@ public final class LinearAlgebra {
       IAST symmetric = ApfloatMatrices.symmetricEigenvalues(ast.arg1());
       if (symmetric.isPresent()) {
         // a real symmetric matrix of arbitrary-precision numbers keeps their precision
-        return numberOfEigenvalues.isPresent() ? takeEigenvalues(symmetric, maxValues)
-            : symmetric;
+        return numberOfEigenvalues.isPresent() ? takeEigenvalues(symmetric, maxValues) : symmetric;
       }
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
@@ -2704,7 +2705,7 @@ public final class LinearAlgebra {
         }
       }
       return true;
-    // CPD-OFF eigen functions share the matrix preamble
+      // CPD-OFF eigen functions share the matrix preamble
     }
 
     @Override
@@ -3066,12 +3067,12 @@ public final class LinearAlgebra {
 
   /**
    * The columns of a matrix of inexact numbers, each multiplied by a power of the radix of the
-   * numbers - 2 for machine numbers, 10 for numbers with more digits - so that its largest
-   * absolute entry is between <code>1/radix</code> and <code>1</code>. The tests for zero of the
-   * matrix functions have an absolute tolerance; for the scaled matrix it is a tolerance relative
-   * to each column. So <code>10^-20</code> times a matrix has the rank of the matrix, and the
-   * determinant, the inverse and the null space follow from the ones of the scaled matrix with the
-   * factors. A power of the radix changes no digit of a number.
+   * numbers - 2 for machine numbers, 10 for numbers with more digits - so that its largest absolute
+   * entry is between <code>1/radix</code> and <code>1</code>. The tests for zero of the matrix
+   * functions have an absolute tolerance; for the scaled matrix it is a tolerance relative to each
+   * column. So <code>10^-20</code> times a matrix has the rank of the matrix, and the determinant,
+   * the inverse and the null space follow from the ones of the scaled matrix with the factors. A
+   * power of the radix changes no digit of a number.
    */
   private static final class ColumnScaling {
     /** The factor of each column, <code>null</code> for a column which is not scaled. */
@@ -3230,7 +3231,10 @@ public final class LinearAlgebra {
       }
     }
 
-    /** <code>entry</code> times the factor of column <code>p</code> divided by the one of <code>k</code>. */
+    /**
+     * <code>entry</code> times the factor of column <code>p</code> divided by the one of
+     * <code>k</code>.
+     */
     private IExpr ratio(IExpr entry, int p, int k) {
       if (entry.isZero()) {
         return entry;
@@ -3960,8 +3964,8 @@ public final class LinearAlgebra {
   }
 
   /**
-   * Print the message that the evaluation point <code>ast.arg1()</code> is not a valid set of
-   * polar or hyperspherical coordinates.
+   * Print the message that the evaluation point <code>ast.arg1()</code> is not a valid set of polar
+   * or hyperspherical coordinates.
    *
    * @return <code>F.NIL</code>
    */
@@ -3972,8 +3976,7 @@ public final class LinearAlgebra {
 
   /**
    * Test if <code>{r, theta, phi}</code> is outside the range <code>r &gt; 0</code>,
-   * <code>0 &lt; theta &lt; Pi</code>, <code>-Pi &lt; phi &lt;= Pi</code> of spherical
-   * coordinates.
+   * <code>0 &lt; theta &lt; Pi</code>, <code>-Pi &lt; phi &lt;= Pi</code> of spherical coordinates.
    */
   private static boolean isBadSphericalPoint(IExpr r, IExpr theta, IExpr phi) {
     return r.lessEqualThan(F.C0).isTrue() //
@@ -4309,7 +4312,9 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
-    /** Whether a matrix without inexact entries is rejected with the <code>schurf</code> message. */
+    /**
+     * Whether a matrix without inexact entries is rejected with the <code>schurf</code> message.
+     */
     protected boolean rejectsExactMatrix() {
       return true;
     }
@@ -4749,8 +4754,8 @@ public final class LinearAlgebra {
       IExpr inverse = super.evaluate(ast, argSize, options, engine, originalAST);
       if (arg1.isSparseArray() && inverse.isList()) {
         // the inverse of a sparse matrix is sparse too
-        IExpr sparse = org.matheclipse.core.expression.data.SparseArrayExpr
-            .newDenseList((IAST) inverse, F.C0);
+        IExpr sparse =
+            org.matheclipse.core.expression.data.SparseArrayExpr.newDenseList((IAST) inverse, F.C0);
         if (sparse != null) {
           return sparse;
         }
@@ -5344,19 +5349,16 @@ public final class LinearAlgebra {
           F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h),
               F.Times(a, f, h), F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1);
       // (f*h*x-e*i*x-c*h*y+b*i*y+c*e*z-b*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      IExpr row = F.Times(inverseDeterminant,
-          F.Plus(F.Times(f, h, x), F.Times(F.CN1, e, i, x), F.Times(F.CN1, c, h, y),
-              F.Times(b, i, y), F.Times(c, e, z), F.Times(F.CN1, b, f, z)));
+      IExpr row = F.Times(inverseDeterminant, F.Plus(F.Times(f, h, x), F.Times(F.CN1, e, i, x),
+          F.Times(F.CN1, c, h, y), F.Times(b, i, y), F.Times(c, e, z), F.Times(F.CN1, b, f, z)));
       result.append(row);
       // ((-f)*g*x+d*i*x+c*g*y-a*i*y-c*d*z+a*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      row = F.Times(inverseDeterminant,
-          F.Plus(F.Times(F.CN1, f, g, x), F.Times(d, i, x), F.Times(c, g, y),
-              F.Times(F.CN1, a, i, y), F.Times(F.CN1, c, d, z), F.Times(a, f, z)));
+      row = F.Times(inverseDeterminant, F.Plus(F.Times(F.CN1, f, g, x), F.Times(d, i, x),
+          F.Times(c, g, y), F.Times(F.CN1, a, i, y), F.Times(F.CN1, c, d, z), F.Times(a, f, z)));
       result.append(row);
       // (e*g*x-d*h*x-b*g*y+a*h*y+b*d*z-a*e*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
-      row = F.Times(inverseDeterminant,
-          F.Plus(F.Times(e, g, x), F.Times(F.CN1, d, h, x), F.Times(F.CN1, b, g, y),
-              F.Times(a, h, y), F.Times(b, d, z), F.Times(F.CN1, a, e, z)));
+      row = F.Times(inverseDeterminant, F.Plus(F.Times(e, g, x), F.Times(F.CN1, d, h, x),
+          F.Times(F.CN1, b, g, y), F.Times(a, h, y), F.Times(b, d, z), F.Times(F.CN1, a, e, z)));
       result.append(row);
 
       return solutionOrNil(result, matrix.getColumnDimension(), engine);
@@ -5377,8 +5379,7 @@ public final class LinearAlgebra {
         if (sparse.isPresent()) {
           return sparse;
         }
-        if (declined[0]
-            && ((SparseArrayExpr) ast.arg1()).getDimension()[0] > MAX_DENSE_FALLBACK) {
+        if (declined[0] && ((SparseArrayExpr) ast.arg1()).getDimension()[0] > MAX_DENSE_FALLBACK) {
           // the dense path would build the whole matrix: no value rather than no answer at all
           return Errors.printMessage(ast.topHead(), "error",
               F.list(F.$str("The sparse system was not solved by the sparse solvers.")), engine);
@@ -5388,6 +5389,11 @@ public final class LinearAlgebra {
       if (matrixDims == null && ast.arg1().isList()) {
         // Argument `1` at position `2` is not a non-empty rectangular matrix.
         return Errors.printMessage(ast.topHead(), "matrix", F.list(ast.arg1(), F.C1), engine);
+      }
+      if (argSize == 2 && ast.arg2().isVector() < 0 && ast.arg2().isMatrix(false) == null) {
+        // a right-hand side which is no vector or matrix leaves nothing to solve: the call stays
+        // as it is, without decomposing (or densifying) the matrix first
+        return F.NIL;
       }
       if (matrixDims != null) {
         IInteger modulus = modulusOption(options[2]);
@@ -5526,9 +5532,9 @@ public final class LinearAlgebra {
           if (leastSquares.isPresent()) {
             return leastSquares;
           }
-          IExpr minimalNorm = engine.evalQuiet(F.Dot(
-              F.unaryAST1(S.PseudoInverse, Convert.matrix2List(matrix)),
-              Convert.vector2List(vector)));
+          IExpr minimalNorm =
+              engine.evalQuiet(F.Dot(F.unaryAST1(S.PseudoInverse, Convert.matrix2List(matrix)),
+                  Convert.vector2List(vector)));
           if (minimalNorm.isList() && minimalNorm.argSize() == solution.argSize()) {
             return minimalNorm;
           }
@@ -6000,8 +6006,7 @@ public final class LinearAlgebra {
      * non-integer exponent <code>p</code>: the power function <code>#^p&amp;</code> applied to the
      * square matrix <code>m</code> through its eigen or Jordan decomposition.
      */
-    private static IExpr matrixPowerFunction(final IAST ast, int[] dimensions,
-        EvalEngine engine) {
+    private static IExpr matrixPowerFunction(final IAST ast, int[] dimensions, EvalEngine engine) {
       final IExpr exponent = ast.arg2();
       if (dimensions[0] != dimensions[1] || exponent.isInteger() || exponent.isList()
           || exponent.isInterval() || exponent.isString()) {
@@ -6039,8 +6044,8 @@ public final class LinearAlgebra {
         return F.NIL;
       }
       if (p < 0) {
-        matrix = inverseMatrix(matrix,
-            x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
+        matrix =
+            inverseMatrix(matrix, x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
         if (matrix == null) {
           return F.NIL;
         }
@@ -6131,7 +6136,8 @@ public final class LinearAlgebra {
             return F.ZZ(pivotColumns.length);
           }
           // the zero test depends on the numbers of the evaluated matrix
-          Predicate<IExpr> zeroChecker = buildZeroChecker(ast.setAtCopy(1, normal), options, engine);
+          Predicate<IExpr> zeroChecker =
+              buildZeroChecker(ast.setAtCopy(1, normal), options, engine);
           IInteger rank = matrixRank(normal, zeroChecker);
           if (rank != null) {
             return rank;
@@ -6939,7 +6945,9 @@ public final class LinearAlgebra {
       });
     }
 
-    /** Reflect the elements starting at <code>offset</code> at the plane normal to <code>v</code>. */
+    /**
+     * Reflect the elements starting at <code>offset</code> at the plane normal to <code>v</code>.
+     */
     private static void reflect(double[] v, double[] vector, int offset) {
       double product = 0.0;
       double square = 0.0;
@@ -6956,8 +6964,7 @@ public final class LinearAlgebra {
     /**
      * Gram-Schmidt orthonormalization of the elements of <code>list</code> with the inner product
      * <code>f(u, v)</code>: <code>w_k = e_k - Sum(f(e_k, w_j) / f(w_j, w_j) * w_j)</code> is
-     * normalized to <code>w_k / Sqrt(f(w_k, w_k))</code>; a dependent element gives
-     * <code>0</code>.
+     * normalized to <code>w_k / Sqrt(f(w_k, w_k))</code>; a dependent element gives <code>0</code>.
      */
     private static IExpr gramSchmidt(IAST list, IExpr f, EvalEngine engine) {
       java.util.List<IExpr> orthogonal = new ArrayList<IExpr>();
@@ -7234,8 +7241,8 @@ public final class LinearAlgebra {
         IExpr w = matrix.get(i);
         for (int k = 0; k < basis.size(); k++) {
           IExpr b = basis.get(k);
-          w = engine.evaluate(F.Subtract(w,
-              F.Times(F.Divide(F.Dot(w, F.Conjugate(b)), norms.get(k)), b)));
+          w = engine.evaluate(
+              F.Subtract(w, F.Times(F.Divide(F.Dot(w, F.Conjugate(b)), norms.get(k)), b)));
         }
         IExpr norm = engine.evaluate(F.Together(F.Dot(w, F.Conjugate(w))));
         if (norm.isZero()) {
@@ -7469,8 +7476,8 @@ public final class LinearAlgebra {
               return gramSchmidt;
             }
           }
-          if (!engine.isArbitraryMode() && ((IAST) arg1)
-              .exists(row -> ((IAST) row).exists(x -> x.isInexactNumber()))) {
+          if (!engine.isArbitraryMode()
+              && ((IAST) arg1).exists(row -> ((IAST) row).exists(x -> x.isInexactNumber()))) {
             final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
             if (complexMatrix != null) {
               return householderQR(complexMatrix);
@@ -7569,8 +7576,8 @@ public final class LinearAlgebra {
      * The reduced decomposition of a machine number matrix by Householder reflections, in the
      * conventions of the LAPACK routines <code>zgeqr2</code> and <code>zung2r</code>: a column
      * which has only zeros below the diagonal (and a real diagonal entry) is not reflected. The
-     * rows of <code>q</code> are the conjugated first <code>Min(m, n)</code> columns of the
-     * unitary factor, <code>r</code> has <code>Min(m, n)</code> rows.
+     * rows of <code>q</code> are the conjugated first <code>Min(m, n)</code> columns of the unitary
+     * factor, <code>r</code> has <code>Min(m, n)</code> rows.
      */
     private static IAST householderQR(FieldMatrix<Complex> matrix) {
       final int m = matrix.getRowDimension();
@@ -7588,9 +7595,9 @@ public final class LinearAlgebra {
           tau[j] = Complex.ZERO;
           continue;
         }
-        double beta = -Math.copySign(
-            Math.hypot(Math.hypot(alpha.getReal(), alpha.getImaginary()), xnorm),
-            alpha.getReal());
+        double beta =
+            -Math.copySign(Math.hypot(Math.hypot(alpha.getReal(), alpha.getImaginary()), xnorm),
+                alpha.getReal());
         tau[j] = new Complex((beta - alpha.getReal()) / beta, -alpha.getImaginary() / beta);
         Complex scale = Complex.ONE.divide(alpha.subtract(beta));
         for (int i = j + 1; i < m; i++) {
@@ -7666,12 +7673,11 @@ public final class LinearAlgebra {
           v[i] = matrix.getPart(i + 1, column);
         }
         for (int b = 0; b < basis.size(); b++) {
-          IExpr coefficient =
-              engine.evaluate(F.Together(F.Times(conjugateDot(basis.get(b), v, engine),
-                  F.Power(norms.get(b), F.CN1))));
+          IExpr coefficient = engine.evaluate(F.Together(
+              F.Times(conjugateDot(basis.get(b), v, engine), F.Power(norms.get(b), F.CN1))));
           for (int i = 0; i < m; i++) {
-            v[i] = engine.evaluate(
-                F.Together(F.Subtract(v[i], F.Times(coefficient, basis.get(b)[i]))));
+            v[i] = engine
+                .evaluate(F.Together(F.Subtract(v[i], F.Times(coefficient, basis.get(b)[i]))));
           }
         }
         IExpr norm = engine.evaluate(F.Together(conjugateDot(v, v, engine)));
@@ -8264,8 +8270,8 @@ public final class LinearAlgebra {
         IAST normal = (IAST) m.normal(false);
         if (normal.forAll(row -> ((IAST) row).forAll(IExpr::isZero))) {
           // all the singular values of a zero matrix are kept
-          IExpr zero = normal.exists(row -> ((IAST) row).exists(IExpr::isInexactNumber)) ? F.CD0
-              : F.C0;
+          IExpr zero =
+              normal.exists(row -> ((IAST) row).exists(IExpr::isInexactNumber)) ? F.CD0 : F.C0;
           IAST zeros = F.constantArray(zero, Math.min(dim[0], dim[1]));
           return ast.isAST2() ? takeValues(ast, zeros, zeros.argSize(), zero, engine) : zeros;
         }
@@ -8295,12 +8301,12 @@ public final class LinearAlgebra {
         // to rounding
         IExpr singularValueList = Math.min(dim[0], dim[1]) > MAX_EXACT_EIGENVALUES ? F.NIL
             : engine.evaluate(F.Sqrt(F.Eigenvalues(F.Dot(F.ConjugateTranspose(m), m))));
-        if (singularValueList.isNIL() || !singularValueList.isFree(x -> x.isInexactNumber(), false)) {
+        if (singularValueList.isNIL()
+            || !singularValueList.isFree(x -> x.isInexactNumber(), false)) {
           IAST exact = rationalSingularValues((IAST) m.normal(false), engine);
           if (exact.isPresent()) {
             exact = dropSmallValues(exact, tolerance, engine);
-            return ast.isAST2()
-                ? takeValues(ast, exact, Math.min(dim[0], dim[1]), F.CD0, engine)
+            return ast.isAST2() ? takeValues(ast, exact, Math.min(dim[0], dim[1]), F.CD0, engine)
                 : exact;
           }
           if (singularValueList.isNIL()) {
@@ -8315,8 +8321,8 @@ public final class LinearAlgebra {
               engine);
           int n = singularValueList.argSize();
           // all values of a zero matrix are dropped
-          IExpr sorted = n == 0 ? F.CEmptyList
-              : S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
+          IExpr sorted =
+              n == 0 ? F.CEmptyList : S.TakeLargestBy.of(engine, singularValueList, S.Abs, F.ZZ(n));
           if (ast.isAST2()) {
             if (!sorted.isList()) {
               return F.NIL;
@@ -8463,7 +8469,8 @@ public final class LinearAlgebra {
           }
         }
       }
-      java.math.BigDecimal epsilon = java.math.BigDecimal.ONE.movePointLeft(context.getPrecision() / 2);
+      java.math.BigDecimal epsilon =
+          java.math.BigDecimal.ONE.movePointLeft(context.getPrecision() / 2);
       boolean rotated = true;
       for (int sweep = 0; rotated && sweep < 100; sweep++) {
         rotated = false;
@@ -8523,8 +8530,8 @@ public final class LinearAlgebra {
       if (zeta.signum() < 0) {
         t = t.negate();
       }
-      java.math.BigDecimal c = java.math.BigDecimal.ONE
-          .divide(java.math.BigDecimal.ONE.add(t.multiply(t, context), context).sqrt(context), context);
+      java.math.BigDecimal c = java.math.BigDecimal.ONE.divide(
+          java.math.BigDecimal.ONE.add(t.multiply(t, context), context).sqrt(context), context);
       java.math.BigDecimal s = c.multiply(t, context);
       for (int i = 0; i < u.length; i++) {
         java.math.BigDecimal x = u[i];
@@ -9289,7 +9296,7 @@ public final class LinearAlgebra {
     return F.list(values, vectors);
   }
 
-  public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
+  public static @AllowNIL IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
     // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
     GenMatrix<IExpr> genMatrix = JASConvert.list2GenMatrix(matrix, true);
     if (genMatrix != null //
@@ -9301,8 +9308,8 @@ public final class LinearAlgebra {
       if (charPolynomial.isZERO()) {
         // a characteristic polynomial has the leading term (-x)^n; zero is what the
         // Faddeev-LeVerrier recursion gives for the zero matrix, so the determinant is taken
-        return F.evalExpand(F.Det(
-            F.Subtract(matrix, F.Times(variable, F.IdentityMatrix(F.ZZ(n))))));
+        return F
+            .evalExpand(F.Det(F.Subtract(matrix, F.Times(variable, F.IdentityMatrix(F.ZZ(n))))));
       }
       return F.evalExpand(jas.exprPoly2Expr(charPolynomial));
     }
@@ -9703,8 +9710,8 @@ public final class LinearAlgebra {
    * simple eigenvalue: the signed minors of the first <code>n-1</code> rows span their null space,
    * and the vector is scaled to a last non-zero entry <code>1</code>.
    *
-   * @return {@link F#NIL} if the first <code>n-1</code> rows are dependent for every
-   *         <code>x</code> or the matrix is too large
+   * @return {@link F#NIL} if the first <code>n-1</code> rows are dependent for every <code>x</code>
+   *         or the matrix is too large
    */
   private static IAST genericEigenvector(IAST matrix, int n, ISymbol x, EvalEngine engine) {
     if (n < 2 || n > MAX_GENERIC_EIGENVECTOR_DIMENSION) {
@@ -9732,8 +9739,7 @@ public final class LinearAlgebra {
     final int pivotIndex = last;
     final IExpr pivot = vector.get(last);
     return F.mapRange(1, n + 1, j -> j == pivotIndex ? F.C1
-        : j > pivotIndex ? F.C0
-            : engine.evaluate(F.Together(F.Divide(vector.get(j), pivot))));
+        : j > pivotIndex ? F.C0 : engine.evaluate(F.Together(F.Divide(vector.get(j), pivot))));
   }
 
   /**
