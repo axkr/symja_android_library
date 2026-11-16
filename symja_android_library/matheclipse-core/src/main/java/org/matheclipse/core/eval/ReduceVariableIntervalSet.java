@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalDataSym;
@@ -227,7 +228,7 @@ public class ReduceVariableIntervalSet {
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return a pair of elements, the first element is the value for the given <code>variabl
    */
-  public static IAST reduce(IAST binaryRelation, IExpr variable, boolean multipleValues,
+  public static @AllowNIL IAST reduce(IAST binaryRelation, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
     if ((binaryRelation.arg1().equals(variable)//
         && binaryRelation.arg2().isFree(x -> x.equals(variable), false))//

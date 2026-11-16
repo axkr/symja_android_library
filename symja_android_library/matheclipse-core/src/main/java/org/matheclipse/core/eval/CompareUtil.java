@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -1644,7 +1645,7 @@ public class CompareUtil {
     return threadListLogicEquationOperators(expr, replacement, position);
   }
 
-  public static IAST threadListLogicEquationOperators(IExpr expr, IAST replacement, int position) {
+  public static @AllowNIL IAST threadListLogicEquationOperators(IExpr expr, IAST replacement, int position) {
     if (expr.size() > 1 && expr.isAST()) {
       IAST ast = (IAST) expr;
       if (CompareUtil.LIST_LOGIC_EQUATION_HEADS.contains(ast.head())) {
@@ -1668,7 +1669,7 @@ public class CompareUtil {
    * @param position
    * @return
    */
-  public static IAST threadLogicEquationOperators(IExpr expr, IAST replacement, int position) {
+  public static @AllowNIL IAST threadLogicEquationOperators(IExpr expr, IAST replacement, int position) {
     if (expr.size() > 1 && expr.isAST()) {
       IAST ast = (IAST) expr;
       if (CompareUtil.LOGIC_EQUATION_HEADS.contains(ast.head())) {
@@ -1692,7 +1693,7 @@ public class CompareUtil {
    * @param position
    * @return
    */
-  public static IAST threadPlusLogicEquationOperators(IExpr expr, IAST replacement, int position) {
+  public static @AllowNIL IAST threadPlusLogicEquationOperators(IExpr expr, IAST replacement, int position) {
     if (expr.size() > 1 && expr.isAST()) {
       IAST ast = (IAST) expr;
       if (CompareUtil.PLUS_LOGIC_EQUATION_HEADS.contains(ast.head())) {

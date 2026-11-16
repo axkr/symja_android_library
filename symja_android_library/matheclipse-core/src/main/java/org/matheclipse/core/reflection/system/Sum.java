@@ -1925,7 +1925,40 @@ public class Sum extends ListFunctions.Table implements SumRules {
             org.matheclipse.core.basic.MachineProfile.millis(SYMBOLIC_BOUND_MILLIS));
       }
     }
+    // in quiet mode no Check sees the message, and in numeric mode (NSum, N(Expectation(...)))
+    // the symbolic limits of the test changed the precision of the numeric result
+    if (!engine.isQuietMode() && !engine.isNumericMode() && isDivergentSeries(expr, var, engine)) {
+      // Sum does not converge.
+      Errors.printMessage(S.Sum, "div", F.List(), engine);
+    }
     return F.NIL;
+  }
+
+  /** The time budget of each limit of {@link #isDivergentSeries}. */
+  private static final long DIVERGENCE_TEST_MILLIS = 1_000L;
+
+  /**
+   * Whether the series of the summand <code>f</code> without parameters diverges by the term test
+   * (<code>f</code> doesn't tend to 0) or the ratio test (<code>Abs(f(k+1)/f(k))</code> tends to a
+   * number &gt; 1): <code>Sum(k!*3^k/k^k, {k, 1, Infinity})</code> with the ratio 3/E.
+   */
+  private static boolean isDivergentSeries(IExpr f, ISymbol k, EvalEngine engine) {
+    if (!new VariablesSet(f).getVarList().forAll(v -> v.equals(k))) {
+      return false;
+    }
+    final long millis = org.matheclipse.core.basic.MachineProfile.millis(DIVERGENCE_TEST_MILLIS);
+    IExpr term = TimeLimits.callOrNil(engine,
+        () -> engine.evalQuiet(F.Limit(f, F.Rule(k, F.CInfinity))), millis);
+    if (term.isPresent() && (term.isDirectedInfinity()
+        || (term.isNumericFunction() && !engine.evalQuiet(F.PossibleZeroQ(term)).isTrue()))) {
+      return true;
+    }
+    IExpr ratio = TimeLimits.callOrNil(engine,
+        () -> engine.evalQuiet(
+            F.Limit(F.Abs(F.Divide(F.subst(f, k, F.Plus(k, F.C1)), f)), F.Rule(k, F.CInfinity))),
+        millis);
+    return ratio.isPresent() && (ratio.isInfinity()
+        || (ratio.isRealResult() && engine.evalTrue(F.Greater(ratio, F.C1))));
   }
 
   /**

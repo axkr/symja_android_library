@@ -1616,7 +1616,8 @@ public class Parser extends Scanner {
     FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
     FunctionNode deriv = fFactory.unaryAST(head, expr);
     expr = parseArguments(deriv);
-    return expr;
+    // a part of the derivative: f'[[1]] and f[x]'[[1]]
+    return parseParts(expr);
   }
 
   /**

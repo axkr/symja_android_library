@@ -50,6 +50,7 @@
 		<!-- Deployed modules -->
 		<module>matheclipse-external</module>
 		<module>matheclipse-parser</module>
+		<module>matheclipse-errorprone</module>
 		<module>matheclipse-core</module>
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-image</module>
@@ -125,7 +126,7 @@
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
 		<guava.minimal.version>32.0</guava.minimal.version>
-		<cdk.version>2.14</cdk.version>
+		<cdk.version>2.14.1</cdk.version>
 
 		<!-- Test tiers. The default run is the "fast" tier: everything not
 		tagged.

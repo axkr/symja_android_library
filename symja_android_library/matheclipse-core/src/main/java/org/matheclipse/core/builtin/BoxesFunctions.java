@@ -436,6 +436,17 @@ public class BoxesFunctions {
           F.Rule(S.DeleteWithContents, S.True)}, S.TagBox);
     }
 
+    /** The names of the item size and frame options of a <code>GridBox</code>, no functions. */
+    private static final ISymbol GRID_BOX_ITEM_SIZE = S.initFinalHiddenSymbol("GridBoxItemSize");
+
+    private static final ISymbol GRID_BOX_FRAME = S.initFinalHiddenSymbol("GridBoxFrame");
+
+    /** <code>{"Columns" -> {{value}}, "Rows" -> {{value}}}</code> */
+    private static IAST columnsAndRows(IExpr value) {
+      return F.list(F.Rule(F.$str("Columns"), F.list(F.list(value))),
+          F.Rule(F.$str("Rows"), F.list(F.list(value))));
+    }
+
     /** The elementary functions <code>TraditionalForm</code> writes in lower case. */
     private static final Map<ISymbol, String> TRADITIONAL_NAMES = new IdentityHashMap<>();
 
@@ -1030,7 +1041,10 @@ public class BoxesFunctions {
         }
         return F.binaryAST2(S.TemplateBox, boxes, F.$str("RowDefault"));
       }
-      if (ast.isAST(S.TableForm, 2) || ast.isAST(S.Grid, 2)) {
+      // a Grid with options: the options go into the grid box
+      final boolean gridWithOptions =
+          ast.isAST(S.Grid) && ast.argSize() >= 2 && ast.forAll(x -> x.isRuleAST(), 2);
+      if (ast.isAST(S.TableForm, 2) || ast.isAST(S.Grid, 2) || gridWithOptions) {
         IExpr table = ast.arg1();
         if (table.isList() && ((IAST) table).argSize() > 0) {
           IAST rows = (IAST) table;
@@ -1051,6 +1065,24 @@ public class BoxesFunctions {
               gridRow.append(standardFormRecursive(row, 0, form, engine));
             }
             gridRows.append(gridRow);
+          }
+          if (ast.isAST(S.Grid)) {
+            // the tag keeps the Grid for the way back from the boxes
+            IASTAppendable gridBox = F.ast(S.GridBox, ast.argSize() + 3);
+            gridBox.append(gridRows);
+            gridBox.append(F.Rule(S.AutoDelete, S.False));
+            for (int i = 2; i < ast.size(); i++) {
+              IExpr option = ast.get(i);
+              if (option.first() == S.Frame && option.second() == S.All) {
+                // a frame around every cell
+                gridBox.append(F.Rule(GRID_BOX_FRAME, columnsAndRows(S.True)));
+              } else {
+                // any other option is kept as it is, and read back with the grid
+                gridBox.append(option);
+              }
+            }
+            gridBox.append(F.Rule(GRID_BOX_ITEM_SIZE, columnsAndRows(S.Automatic)));
+            return F.binaryAST2(S.TagBox, gridBox, F.$str("Grid"));
           }
           return F.unaryAST1(S.GridBox, gridRows);
         }

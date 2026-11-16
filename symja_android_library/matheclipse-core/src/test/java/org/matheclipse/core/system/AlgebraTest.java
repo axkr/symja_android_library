@@ -825,4 +825,33 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "(-6-2*Cos(y)+x*Cos(y))/(-2+x)");
   }
 
+
+  @Test
+  public void testFactorTermsListSign() {
+    // the sign of the lexicographically leading term, with rational exponents by their value
+    check("FactorTermsList(x^(1/3)-x^(1/2))", //
+        "{-1,-x^(1/3)+Sqrt(x)}");
+    check("FactorTermsList(2*Sqrt(y)-2*y)", //
+        "{-2,-Sqrt(y)+y}");
+    check("FactorTermsList(c*b-c*a)", //
+        "{-1,a*c-b*c}");
+    check("FactorTermsList(5-5*x^2)", //
+        "{-5,-1+x^2}");
+    check("FactorTermsList(2-Cos(y))", //
+        "{-1,-2+Cos(y)}");
+    // the sign of a negative algebraic coefficient is pulled out
+    check("FactorTermsList(z-Sqrt(5)*z^2)", //
+        "{-1,-z+Sqrt(5)*z^2}");
+    check("FactorTermsList(z-1/Sqrt(2)*z^3)", //
+        "{-1,-z+z^3/Sqrt(2)}");
+    check("FactorTermsList(z+(1-Sqrt(3))*z^3)", //
+        "{-1,-z-z^3+Sqrt(3)*z^3}");
+    check("FactorTermsList(-Sqrt(3)*z+z^2)", //
+        "{1,-Sqrt(3)*z+z^2}");
+    // not the sign of a coefficient with a transcendental constant
+    check("FactorTermsList(3-Pi*y)", //
+        "{1,3-Pi*y}");
+    check("FactorTermsList(6-6*E*y)", //
+        "{6,1-E*y}");
+  }
 }

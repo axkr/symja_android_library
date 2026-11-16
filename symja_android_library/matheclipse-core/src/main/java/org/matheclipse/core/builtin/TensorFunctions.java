@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
@@ -404,26 +405,60 @@ public class TensorFunctions {
         // TODO "native" implementation for SparseArray
         arg1 = arg1.normal(false);
       }
-
-      if (arg1.isList() && ast.arg2().isList()) {
-        IAST list = (IAST) arg1;
-        IAST dims = (IAST) ast.arg2();
-        if (dims.size() == 1) {
-          if (list.isEmpty()) {
-            return F.C0;
-          }
-          if (list.size() > 1) {
-            return list.arg1();
-          }
-        }
-        int[] dimension = Validate.checkListOfInts(ast, dims, 1, Integer.MAX_VALUE, engine);
-        if (dimension == null) {
-          return F.NIL;
-        }
-        final IExpr padding = ast.isAST3() ? ast.arg3() : F.C0;
-        return new Reshaper(list, dimension, padding).recursiveCall(0);
+      if (!arg1.isList()) {
+        // an unevaluated SparseArray(...) call whose rules were rejected is no array either
+        // List or SparseArray or structured array expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "listrp", F.list(F.C1, ast), engine);
       }
-      return F.NIL;
+      final int[] dimension = dimensions(ast.arg2());
+      if (dimension == null) {
+        // Single or list of non-negative machine-sized integers expected at position `1` of `2`.
+        // the message names the dimensions as the position
+        return Errors.printMessage(ast.topHead(), "ilsmn", F.list(ast.arg2(), ast), engine);
+      }
+      // the elements are taken in the order of a full flattening, also from a ragged list
+      final IAST list = EvalAttributes.flattenDeep(S.List, (IAST) arg1).orElse((IAST) arg1);
+      final IExpr padding = ast.isAST3() ? ast.arg3() : F.C0;
+      if (dimension.length == 0) {
+        // the scalar of rank 0 is the first element
+        return list.isEmpty() ? padding : list.arg1();
+      }
+      long size = 1;
+      for (int d : dimension) {
+        size *= d;
+        if (size > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(size);
+        }
+      }
+      return new Reshaper(list, dimension, padding).recursiveCall(0);
+    }
+
+    /**
+     * The dimensions of the reshaped array: a non-negative machine integer <code>n</code> is the
+     * same as <code>{n}</code>.
+     *
+     * @return <code>null</code> if <code>dims</code> isn't a non-negative machine integer or a
+     *         list of them
+     */
+    private static int[] dimensions(IExpr dims) {
+      if (dims.isInteger()) {
+        final int n = dims.toIntDefault();
+        return n >= 0 ? new int[] {n} : null;
+      }
+      if (!dims.isList()) {
+        return null;
+      }
+      final IAST list = (IAST) dims;
+      final int[] result = new int[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        final IExpr d = list.get(i);
+        final int n = d.isInteger() ? d.toIntDefault() : -1;
+        if (n < 0) {
+          return null;
+        }
+        result[i - 1] = n;
+      }
+      return result;
     }
 
     @Override
@@ -2636,7 +2671,212 @@ public class TensorFunctions {
         IAST points = (IAST) ast.arg1().normal(false);
         return points.map(point -> F.Take(F.Dot(m, F.Join(point, F.list(F.C1))), F.ZZ(dims[1])), 1);
       }
+      if (ast.arg1().isAST() && matrixDims != null && matrixDims[0] == matrixDims[1]
+          && matrixDims[0] > 1) {
+        return transformRegion((IAST) m.normal(false), (IAST) ast.arg1(), engine);
+      }
       return F.NIL;
+    }
+
+    /**
+     * The primitive mapped by the affine transformation <code>m</code>, if the image is a primitive
+     * of the same kind: the point lists of <code>Point, Line, Polygon,...</code> under every affine
+     * map, the round primitives <code>Sphere, Ball, Disk, Circle, Cylinder, Cone</code> of a
+     * positive numeric radius under a similarity (a rotation or reflection, a translation and a
+     * uniform scaling) and every one of them under a translation. A filled <code>Disk</code> or
+     * <code>Ball</code> becomes an <code>Ellipsoid</code> otherwise, a <code>Rectangle</code> a
+     * <code>Polygon</code> if the axes are not only scaled.
+     *
+     * @param m the <code>(n+1) x (n+1)</code> homogeneous matrix of the transformation
+     * @param region the primitive
+     * @return {@link F#NIL} if the image is not such a primitive
+     */
+    private static IExpr transformRegion(IAST m, IAST region, EvalEngine engine) {
+      final int n = m.argSize() - 1;
+      final IAST lastRow = (IAST) m.get(n + 1);
+      for (int j = 1; j <= n; j++) {
+        if (!lastRow.get(j).isZero()) {
+          // a projective transformation bends no straight line, but it doesn't keep proportions
+          return F.NIL;
+        }
+      }
+      if (!lastRow.get(n + 1).isOne()) {
+        return F.NIL;
+      }
+      final IExpr head = region.head();
+      if (head == S.Point || head == S.Line || head == S.Polygon || head == S.Triangle
+          || head == S.Simplex || head == S.Tetrahedron || head == S.Hexahedron
+          || head == S.Pyramid || head == S.Prism) {
+        if (!region.isAST1()) {
+          // options like VertexNormals don't follow the points
+          return F.NIL;
+        }
+        final IExpr points = transformPoints(m, n, region.arg1(), 3, engine);
+        return points.isPresent() ? F.unaryAST1(head, points) : F.NIL;
+      }
+      if (head == S.Rectangle) {
+        return n == 2 ? transformRectangle(m, region, engine) : F.NIL;
+      }
+      final boolean axisPrimitive = head == S.Cylinder || head == S.Cone;
+      final boolean filled = head == S.Disk || head == S.Ball;
+      if (!axisPrimitive && !filled && head != S.Sphere && head != S.Circle) {
+        return F.NIL;
+      }
+      if (region.argSize() < 1 || region.argSize() > 2) {
+        return F.NIL;
+      }
+      final IExpr radius = region.isAST2() ? region.arg2() : F.C1;
+      final IExpr points;
+      if (axisPrimitive) {
+        final int[] axisDims = region.arg1().isMatrix(false);
+        points = axisDims != null && axisDims[0] == 2
+            ? transformPoints(m, n, region.arg1(), 2, engine)
+            : F.NIL;
+      } else {
+        points = transformPoints(m, n, region.arg1(), 2, engine);
+      }
+      if (points.isNIL()) {
+        return F.NIL;
+      }
+      final IAST linear = linearPart(m, n);
+      if (linear.forAll((row, i) -> ((IAST) row).forAll((x, j) -> i == j ? x.isOne() : x.isZero()),
+          1)) {
+        // a translation moves the primitive as it is, also an ellipse given by its semi-axes
+        return F.binaryAST2(head, points, radius);
+      }
+      if (!radius.isList() && radius.isNumericFunction(true) && radius.isPositiveResult()) {
+        // a radius which is a positive number, also an exact one like Sqrt(2) or Pi
+        final IExpr square = similaritySquare(linear, n, engine);
+        if (square.isPresent()) {
+          // a rotation or reflection with a uniform scaling keeps the primitive round
+          return F.binaryAST2(head, points, engine.evaluate(F.Times(radius, F.Sqrt(square))));
+        }
+      }
+      if (filled && points.isVector() == n) {
+        // the image of a filled ellipse or ellipsoid with the semi-axes r is the ellipsoid of the
+        // matrix A.DiagonalMatrix(r^2).Transpose(A)
+        final IExpr squares = radius.isList() ? radius : F.constantArray(radius, n);
+        if (!squares.isList() || squares.argSize() != n || squares.exists(IExpr::isList)) {
+          return F.NIL;
+        }
+        final IExpr matrix = engine.evaluate(F.Dot(linear,
+            F.DiagonalMatrix(((IAST) squares).map(r -> F.Sqr(r), 1)), F.Transpose(linear)));
+        if (!matrix.isList()) {
+          return F.NIL;
+        }
+        final IAST simplifiedMatrix =
+            ((IAST) matrix).map(row -> ((IAST) row).map(x -> simplified(x, engine), 1), 1);
+        return F.binaryAST2(S.Ellipsoid, points, simplifiedMatrix);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The image of <code>Rectangle(p1, p2)</code>: a rectangle if the transformation scales the
+     * axes by numbers, otherwise the polygon of the mapped corners <code>{x1, y1}, {x1, y2}, {x2,
+     * y2}, {x2, y1}</code>.
+     */
+    private static IExpr transformRectangle(IAST m, IAST rectangle, EvalEngine engine) {
+      final IExpr p1;
+      final IExpr p2;
+      if (rectangle.argSize() == 0) {
+        p1 = F.List(F.C0, F.C0);
+        p2 = F.List(F.C1, F.C1);
+      } else if (rectangle.argSize() == 1) {
+        p1 = rectangle.arg1();
+        p2 = engine.evaluate(F.Plus(p1, F.List(F.C1, F.C1)));
+      } else if (rectangle.argSize() == 2) {
+        p1 = rectangle.arg1();
+        p2 = rectangle.arg2();
+      } else {
+        return F.NIL;
+      }
+      if (p1.isVector() != 2 || p2.isVector() != 2) {
+        return F.NIL;
+      }
+      final IExpr x1 = p1.first();
+      final IExpr y1 = p1.second();
+      final IExpr x2 = p2.first();
+      final IExpr y2 = p2.second();
+      final IAST linear = linearPart(m, 2);
+      final IExpr a = linear.getPart(1, 1);
+      final IExpr d = linear.getPart(2, 2);
+      if (linear.getPart(1, 2).isZero() && linear.getPart(2, 1).isZero() && a.isReal()
+          && d.isReal() && !a.isZero() && !d.isZero()) {
+        // the axes are scaled: a negative factor swaps the sides
+        final IExpr q1 = transformPoints(m, 2, F.List(a.isNegative() ? x2 : x1,
+            d.isNegative() ? y2 : y1), 1, engine);
+        final IExpr q2 = transformPoints(m, 2, F.List(a.isNegative() ? x1 : x2,
+            d.isNegative() ? y1 : y2), 1, engine);
+        return q1.isPresent() && q2.isPresent() ? F.binaryAST2(S.Rectangle, q1, q2) : F.NIL;
+      }
+      final IExpr corners = transformPoints(m, 2,
+          F.List(F.List(x1, y1), F.List(x1, y2), F.List(x2, y2), F.List(x2, y1)), 2, engine);
+      return corners.isPresent() ? F.unaryAST1(S.Polygon, corners) : F.NIL;
+    }
+
+    /**
+     * Map a point, or a list of points (nested at most <code>depth</code> levels), by the affine
+     * transformation <code>m</code>.
+     *
+     * @return {@link F#NIL} if <code>coordinates</code> are no such points of dimension
+     *         <code>n</code>
+     */
+    private static IExpr transformPoints(IAST m, int n, IExpr coordinates, int depth,
+        EvalEngine engine) {
+      final IExpr list = coordinates.normal(false);
+      if (!list.isList() || list.argSize() == 0 || depth <= 0) {
+        return F.NIL;
+      }
+      if (list.isVector() == n && ((IAST) list).forAll(x -> !x.isList())) {
+        return engine.evaluate(F.Take(F.Dot(m, F.Join(list, F.list(F.C1))), F.ZZ(n)));
+      }
+      final IASTAppendable result = F.ListAlloc(list.argSize());
+      for (IExpr element : (IAST) list) {
+        final IExpr image = transformPoints(m, n, element, depth - 1, engine);
+        if (image.isNIL()) {
+          return F.NIL;
+        }
+        result.append(image);
+      }
+      return result;
+    }
+
+    /** The <code>n x n</code> linear part of the homogeneous matrix <code>m</code>. */
+    private static IAST linearPart(IAST m, int n) {
+      return F.mapRange(1, n + 1, i -> F.mapRange(1, n + 1, j -> ((IAST) m.get(i)).get(j)));
+    }
+
+    /**
+     * The square <code>s^2</code> of the factor of a similarity, whose linear part <code>A</code>
+     * satisfies <code>Transpose(A).A == s^2 * IdentityMatrix(n)</code>.
+     *
+     * @return {@link F#NIL} if the linear part distorts angles or is singular
+     */
+    private static IExpr similaritySquare(IAST linear, int n, EvalEngine engine) {
+      final IExpr gram = engine.evaluate(F.Dot(F.Transpose(linear), linear));
+      if (gram.isMatrix(false) == null) {
+        return F.NIL;
+      }
+      final IExpr square = simplified(((IAST) gram).getPart(1, 1), engine);
+      if (square.isPossibleZero(true) || (square.isNumber() && !square.isPositiveResult())) {
+        return F.NIL;
+      }
+      for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+          final IExpr entry = ((IAST) gram).getPart(i, j);
+          final IExpr difference = simplified(i == j ? F.Subtract(entry, square) : entry, engine);
+          if (!difference.isPossibleZero(true)) {
+            return F.NIL;
+          }
+        }
+      }
+      return square;
+    }
+
+    private static IExpr simplified(IExpr expr, EvalEngine engine) {
+      final IExpr value = engine.evaluate(expr);
+      return value.isNumber() ? value : engine.evaluate(F.Simplify(value));
     }
 
     @Override

@@ -952,6 +952,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // not apply returns F.NIL, leaving the integral unevaluated.
           return integrateBySingleMethod(forcedMethod, fx, x, engine);
         }
+        if (!fx.isFree(h -> h == S.Piecewise || h == S.If, true)) {
+          // a continuous antiderivative of Piecewise and If functions with numeric break points
+          IExpr pieces = PiecewiseIntegration.antiderivative(fx, x, engine);
+          if (pieces.isPresent()) {
+            return pieces;
+          }
+        }
         int[] dim = fx.isPiecewise();
         if (dim != null) {
           return integratePiecewise(dim, fx, ast);

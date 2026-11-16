@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class CombinatoricUtil {
        * @return <code>null</code> if no further index array could be generated
        */
       @Override
-      public IAST next() {
+      public @AllowNIL IAST next() {
         int j[] = fIterable.next();
         if (j == null) {
           return null;
@@ -89,7 +90,7 @@ public class CombinatoricUtil {
    * @return the canonicalized expression or otherwise <code>F.NIL</code>, if the <code>cycles
    *     </code> is no valid <code>Cycles</code> expression.
    */
-  public static IAST canonicalizeCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
+  public static @AllowNIL IAST canonicalizeCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
     if (cycles.arg1().isList()) {
       IAST mainList = (IAST) cycles.arg1();
       if (mainList.isEmptyList()) {
@@ -196,7 +197,7 @@ public class CombinatoricUtil {
    * @return <code>F.NIL</code> if cycles is not a valid <code>Cycles({{...},{...},...})</code>
    *         expression
    */
-  public static IAST checkCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
+  public static @AllowNIL IAST checkCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
     if (cycles.isAST(S.Cycles, 2)) {
       return CombinatoricUtil.canonicalizeCycles(cycles, quiet, engine);
     }

@@ -1233,8 +1233,65 @@ public class SeriesFunctions {
           outerSeries.puiseuxDenominator());
     }
 
+    /**
+     * <code>Series(f, {g, g0, n})</code> for a function expression <code>g</code> like
+     * <code>Sin(x)</code>: <code>g</code> is replaced by a new variable <code>t</code> in
+     * <code>f</code>, the series of <code>f</code> in <code>t</code> is computed and <code>t</code>
+     * is replaced by <code>g</code> again. The remaining occurrences of the variables of
+     * <code>g</code> are constants for the expansion: <code>Series(Cos(x), {Sin(x), 0, 2})</code>
+     * is <code>Cos(x)</code>.
+     *
+     * @return {@link F#NIL} if every expansion variable of <code>ast</code> is a variable
+     */
+    private static IExpr seriesInSubexpression(final IAST ast, EvalEngine engine) {
+      for (int i = 2; i <= ast.argSize(); i++) {
+        IExpr iterator = ast.get(i);
+        if (!iterator.isList3() && !iterator.isRuleAST()) {
+          continue;
+        }
+        IExpr g = iterator.first();
+        if (!g.isAST() || g.isVariable() || !g.isVariable(true) || g.isNumericFunction(true)
+            || g.isList()) {
+          continue;
+        }
+        ISymbol t = F.Dummy();
+        IAST newIterator = ((IAST) iterator).setAtCopy(1, t);
+        IExpr f = F.subst(ast.arg1(), g, t);
+        IExpr series = engine.evaluate(ast.setAtCopy(1, f).setAtCopy(i, newIterator));
+        if (series.isFreeAST(S.Series) || !series.has(t, true)) {
+          return substituteBack(series, t, g);
+        }
+        return F.NIL;
+      }
+      return F.NIL;
+    }
+
+    /** Replace the variable <code>t</code> by the expression <code>g</code>. */
+    private static IExpr substituteBack(IExpr expr, ISymbol t, IExpr g) {
+      if (expr instanceof ASTSeriesData) {
+        ASTSeriesData series = (ASTSeriesData) expr;
+        IExpr x = series.expansionVariable();
+        IAST coefficients = series.arg3();
+        IASTAppendable newCoefficients = F.ListAlloc(coefficients.argSize());
+        for (IExpr c : coefficients) {
+          newCoefficients.append(substituteBack(c, t, g));
+        }
+        return new ASTSeriesData(x.equals(t) ? g : F.subst(x, t, g),
+            F.subst(series.expansionPoint(), t, g), newCoefficients, series.minExponent(),
+            series.truncateOrder(), series.puiseuxDenominator());
+      }
+      if (expr.isAST() && expr.has(e -> e instanceof ASTSeriesData, true)) {
+        return ((IAST) expr).map(arg -> substituteBack(arg, t, g));
+      }
+      return F.subst(expr, t, g);
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr inSubexpression = seriesInSubexpression(ast, engine);
+      if (inSubexpression.isPresent()) {
+        return inSubexpression;
+      }
       // Series(f, {x, x0, n}, Assumptions -> assum); without the option the value of $Assumptions
       // is used, as in Refine, Simplify and Limit
       IAST seriesAST = ast;
@@ -2507,6 +2564,29 @@ public class SeriesFunctions {
         }
         if (nextIndex == -1) {
           nextIndex = series.truncateOrder();
+        }
+      }
+      if (nextIndex == -1 && series.puiseuxDenominator() == 1) {
+        // the leading term of the expansion to the order max(1, leadIndex): the order term is the
+        // next non-vanishing term of that expansion, or the order of the expansion itself. Cos(z)
+        // is 1+O(z)^2, Exp(z) at 1 is E+O(z-1)^1.
+        final int order = Math.max(1, leadIndex);
+        ASTSeriesData known = series;
+        if (known.truncateOrder() <= order) {
+          // the coefficients up to the order must be known before the order term may lie beyond
+          ASTSeriesData longer = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0,
+              order + 1, direction, engine);
+          if (longer != null && !longer.isOrder()) {
+            known = longer;
+          }
+        }
+        // never beyond what was computed
+        nextIndex = Math.min(order + 1, known.truncateOrder());
+        for (int j = leadIndex + 1; j <= order && j < known.truncateOrder(); j++) {
+          if (!known.coefficient(j).isZero()) {
+            nextIndex = j;
+            break;
+          }
         }
       }
       if (nextIndex == -1) {

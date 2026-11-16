@@ -1609,7 +1609,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     IExpr member = engine.evaluate(F.subst(value, parameter, F.ZZ(rounded)));
-    return realOrFalse(member);
+    return realOrFalse(rationalMember(member, engine));
+  }
+
+  /**
+   * The rational number which a member like <code>(2*I*Pi+Log(9))/(I*Pi+Log(3))</code> of a family
+   * with a non-real period is equal to, or the member itself.
+   */
+  private static IExpr rationalMember(IExpr member, EvalEngine engine) {
+    IExpr rational = SolveUtils.exactRational(member, engine);
+    return rational.isPresent() ? rational : member;
   }
 
   /**
