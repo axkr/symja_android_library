@@ -73,6 +73,7 @@ import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.external.apfloat.ApcomplexMathieuMath;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
 import org.matheclipse.external.apfloat.ApcomplexStruveMath;
+import org.matheclipse.external.apfloat.ApfloatMarcumMath;
 import org.matheclipse.external.apfloat.ApfloatOwenMath;
 
 public class SpecialFunctions {
@@ -109,6 +110,7 @@ public class SpecialFunctions {
       S.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
+      S.MarcumQ.setEvaluator(new MarcumQ());
       S.OwenT.setEvaluator(new OwenT());
       S.MathieuC.setEvaluator(new Mathieu(MathieuKind.C));
       S.MathieuCharacteristicA.setEvaluator(new MathieuCharacteristicValue(false));
@@ -976,6 +978,138 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * The generalized Marcum Q-function
+   * <code>MarcumQ(m, a, b) = 1/a^(m-1)*Integrate(x^m*E^(-(x^2+a^2)/2)*BesselI(m-1,a*x), {x,b,Infinity})</code>
+   * and the difference <code>MarcumQ(m, a, b0, b1) = MarcumQ(m, a, b0) - MarcumQ(m, a, b1)</code>.
+   */
+  private static final class MarcumQ extends AbstractFunctionEvaluator {
+
+    /** The machine numbers below <code>E^LOG_ZERO_MACHINE_NUMBER</code> round to zero. */
+    private static final double LOG_ZERO_MACHINE_NUMBER =
+        Math.log(Double.MIN_VALUE) - Math.log(2.0);
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.arg1().isPositiveResult() && ast.arg2().isRealResult()
+          && ast.arg3().isNonNegativeResult()
+          && (ast.argSize() == 3 || ast.arg4().isNonNegativeResult());
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr m = ast.arg1();
+      IExpr a = ast.arg2();
+      IExpr b = ast.arg3();
+      if (ast.argSize() == 4) {
+        IExpr b1 = ast.arg4();
+        if (b.equals(b1)) {
+          return F.C0;
+        }
+        if (a.isZero() && !b.isNegativeResult() && !b1.isNegativeResult()) {
+          // GammaRegularized(m, b^2/2, b1^2/2)
+          return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)), F.Times(F.C1D2, F.Sqr(b1)));
+        }
+        if (b1.isInfinity()) {
+          return F.MarcumQ(m, a, b);
+        }
+        if (b.isInfinity()) {
+          return F.Negate(F.MarcumQ(m, a, b1));
+        }
+      } else {
+        if (b.isZero() && m.isPositiveResult()) {
+          return F.C1;
+        }
+        if (a.isZero() && !b.isNegativeResult()) {
+          // GammaRegularized(m, b^2/2)
+          return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)));
+        }
+        if (b.isInfinity()) {
+          return F.C0;
+        }
+      }
+      IExpr negA = AbstractFunctionEvaluator.getNormalizedNegativeExpression(a);
+      if (negA.isPresent()) {
+        // MarcumQ is even in a
+        return ast.setAtCopy(2, negA);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      // the real orders m > 0 and the real limits b >= 0
+      for (int i = 1; i < ast.size(); i++) {
+        if (!(ast.get(i) instanceof INum)) {
+          return F.NIL;
+        }
+      }
+      INum m = (INum) ast.arg1();
+      INum a = (INum) ast.arg2();
+      INum b = (INum) ast.arg3();
+      INum b1 = ast.argSize() == 4 ? (INum) ast.arg4() : null;
+      if (!m.isPositive() || b.isNegative() || (b1 != null && b1.isNegative())) {
+        return F.NIL;
+      }
+      boolean isApfloat = false;
+      long precision = Apfloat.INFINITE;
+      for (int i = 1; i < ast.size(); i++) {
+        if (ast.get(i) instanceof ApfloatNum) {
+          isApfloat = true;
+          precision = Math.min(precision, ((ApfloatNum) ast.get(i)).apfloatValue().precision());
+        }
+      }
+      try {
+        if (isApfloat) {
+          if (precision == Apfloat.INFINITE) {
+            precision = engine.getNumericPrecision();
+          }
+          return F.num(marcumQ(m.apfloatValue(), a.apfloatValue(), b.apfloatValue(),
+              b1 == null ? null : b1.apfloatValue(), precision));
+        }
+        if (isZeroMachineNumber(m, a, b) && (b1 == null || isZeroMachineNumber(m, a, b1))) {
+          // far below the smallest machine number, without summing the series
+          return F.CD0;
+        }
+        return F.num(marcumQ(new Apfloat(m.getRealPart()), new Apfloat(a.getRealPart()),
+            new Apfloat(b.getRealPart()), b1 == null ? null : new Apfloat(b1.getRealPart()), 20)
+                .doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
+    }
+
+    /** <code>MarcumQ(m, a, b)</code> rounds to the machine number zero. */
+    private static boolean isZeroMachineNumber(INum m, INum a, INum b) {
+      return ApfloatMarcumMath.logUpperBound(m.getRealPart(), a.getRealPart(),
+          b.getRealPart()) < LOG_ZERO_MACHINE_NUMBER;
+    }
+
+    private static Apfloat marcumQ(Apfloat m, Apfloat a, Apfloat b, Apfloat b1, long precision) {
+      if (b1 == null) {
+        return ApfloatMarcumMath.marcumQ(m, a, b, precision);
+      }
+      return ApfloatMarcumMath.marcumQ(m, a, b, b1, precision);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_4;
     }
 
     @Override

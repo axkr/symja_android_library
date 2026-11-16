@@ -32,6 +32,47 @@ import edu.jas.structure.GcdRingElem;
 public class SolveUtils {
 
   /**
+   * The rational number which the numeric value <code>value</code> is equal to, like
+   * <code>2</code> of <code>(2*I*Pi+Log(9))/(I*Pi+Log(3))</code> or <code>3/4</code> of
+   * <code>Log(8)/Log(16)</code>. A candidate with a small denominator is found at machine precision
+   * and confirmed at 50 digits.
+   *
+   * @return the rational number or {@link F#NIL} if the value isn't a rational number with a small
+   *         denominator
+   */
+  public static IExpr exactRational(IExpr value, EvalEngine engine) {
+    if (value.isRational()) {
+      return value;
+    }
+    if (!value.isNumericFunction(true)) {
+      return F.NIL;
+    }
+    try {
+      org.hipparchus.complex.Complex c = value.evalfc();
+      if (c == null || Math.abs(c.getImaginary()) > 1.0e-10 || Math.abs(c.getReal()) > 1.0e6) {
+        return F.NIL;
+      }
+      IExpr rational = engine.evalQuiet(F.Rationalize(F.num(c.getReal()), F.num(1.0e-10)));
+      if (!rational.isRational()
+          || ((org.matheclipse.core.interfaces.IRational) rational).denominator()
+              .bitLength() >= 20) {
+        return F.NIL;
+      }
+      IExpr difference = engine.evalQuiet(F.N(F.Subtract(value, rational), F.ZZ(50)));
+      if (difference.isZero()) {
+        return rational;
+      }
+      org.hipparchus.complex.Complex d = difference.evalfc();
+      if (d != null && Math.hypot(d.getReal(), d.getImaginary()) < 1.0e-40) {
+        return rational;
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Solve or reduce with the built-in symbols named in the variable list - <code>C</code>,
    * <code>D</code>, ... - renamed to fresh symbols, because it takes any symbol listed there as a
    * variable: <code>Reduce({X*C==1}, {X, C})</code> is <code>X != 0 &amp;&amp; C == 1/X</code>.

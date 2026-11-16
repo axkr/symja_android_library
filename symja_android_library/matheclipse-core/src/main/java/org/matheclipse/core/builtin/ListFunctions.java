@@ -3900,7 +3900,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_2;
+      return ARGS_2_3_3;
     }
 
     @Override
@@ -3982,7 +3982,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_2;
+      return ARGS_2_3_3;
     }
 
     @Override
@@ -4976,6 +4976,13 @@ public final class ListFunctions {
         IExpr arg = ast.get(i);
         if (arg.isSparseArray()) {
           isSparseArray = true;
+          if (head != null && head != S.List) {
+            // a sparse array joins with lists only, not with f(...) or a failed SparseArray(...)
+            // construction
+            // Heads `1` and `2` are expected to be the same.
+            return Errors.printMessage(ast.topHead(), "heads", F.list(head, S.SparseArray),
+                engine);
+          }
           if (head == S.List || useNormal) {
             useNormal = true;
             continue;
@@ -4990,13 +4997,18 @@ public final class ListFunctions {
         useNormal = true;
         temp = (IAST) arg;
         size += temp.argSize();
+        if (isSparseArray && !temp.isList()) {
+          // Heads `1` and `2` are expected to be the same.
+          return Errors.printMessage(ast.topHead(), "heads", F.list(S.SparseArray, temp.head()),
+              engine);
+        }
         if (head == null) {
           head = temp.head();
           isAssociation = temp.isAssociation();
         } else {
           if (!head.equals(temp.head())) {
-            // incompatible elements in `1` cannot be joined.
-            return Errors.printMessage(ast.topHead(), "incpt", F.list(ast), engine);
+            // Heads `1` and `2` are expected to be the same.
+            return Errors.printMessage(ast.topHead(), "heads", F.list(head, temp.head()), engine);
           }
           if (temp.isAssociation() != isAssociation) {
             // incompatible elements in `1` cannot be joined.
@@ -5020,17 +5032,18 @@ public final class ListFunctions {
         ISparseArray result = (ISparseArray) ast.arg1();
         int[] dim1 = result.getDimension();
         IExpr defaultValue1 = result.getDefaultValue();
-        if (dim1.length != 2) {
-          return F.NIL;
-        }
         for (int i = 2; i < ast.size(); i++) {
           ISparseArray arg = (ISparseArray) ast.get(i);
           int[] dim = arg.getDimension();
           if (dim.length != dim1.length) {
             return F.NIL;
           }
-          if (dim[dim.length - 1] != dim1[dim.length - 1]) {
-            return F.NIL;
+          // the arrays are joined along their first dimension: vectors of any length, matrices
+          // with rows of the same length
+          for (int j = 1; j < dim.length; j++) {
+            if (dim[j] != dim1[j]) {
+              return F.NIL;
+            }
           }
           if (!defaultValue1.equals(arg.getDefaultValue())) {
             return F.NIL;
@@ -7616,6 +7629,13 @@ public final class ListFunctions {
         return Errors.printMessage(ast.topHead(), "list", F.list(F.C1, ast), engine);
       }
       IExpr arg2 = engine.evaluate(ast.arg2());
+      if (!arg1.isList()) {
+        // the elements of f(a, b) or of a SparseArray(...) call which didn't evaluate to an array
+        // are not riffled
+        // List or SparseArray or structured array expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "listrp",
+            F.list(F.C1, ast.setAtCopy(1, arg1).setAtCopy(2, arg2)), engine);
+      }
 
       IAST list = (IAST) arg1;
       if (arg2.isASTOrAssociation()) {

@@ -3466,6 +3466,10 @@ public final class NumberTheory {
           if (arg1.isRational()) {
             return ((IRational) arg1).factorInteger();
           }
+          if (arg1.isComplex()) {
+            // a Gaussian rational which isn't real is factored over the Gaussian integers
+            return gaussianFactors(arg1);
+          }
           return F.NIL;
         }
         if (!ast.arg2().isRuleAST()) {
@@ -3500,27 +3504,35 @@ public final class NumberTheory {
         if (ast.size() == 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.GaussianIntegers);
-          if (option.isTrue()) {
-            BigInteger re = BigInteger.ONE;
+          if (arg1.isComplex()) {
+            // a number which isn't real is factored over the Gaussian integers, whatever the
+            // option says
+            return gaussianFactors(arg1);
+          }
+          if (option.isTrue() && arg1.isRational() && !arg1.isZero()) {
             if (arg1.isInteger()) {
-              re = ((IInteger) arg1).toBigNumerator();
-              return GaussianInteger.factorize((IInteger) arg1, re, BigInteger.ZERO);
-            } else if (arg1.isComplex()) {
-              IComplex c = (IComplex) arg1;
-              IRational real = c.getRealPart();
-              IRational imaginary = c.getImaginaryPart();
-              if (real.isInteger() && imaginary.isInteger()) {
-                re = ((IInteger) real).toBigNumerator();
-                BigInteger im = ((IInteger) imaginary).toBigNumerator();
-                return GaussianInteger.factorize((IComplex) arg1, re, im);
-              }
+              return GaussianInteger.factorize((IInteger) arg1,
+                  ((IInteger) arg1).toBigNumerator(), BigInteger.ZERO);
             }
+            return GaussianInteger.factorizeRational((IRational) arg1, F.C0);
           }
         }
       }
       return F.NIL;
     }
 
+
+    /** The factors of a Gaussian rational number over the Gaussian integers. */
+    private static IExpr gaussianFactors(IExpr arg1) {
+      IComplex c = (IComplex) arg1;
+      IRational real = c.getRealPart();
+      IRational imaginary = c.getImaginaryPart();
+      if (real.isInteger() && imaginary.isInteger()) {
+        return GaussianInteger.factorize(c, ((IInteger) real).toBigNumerator(),
+            ((IInteger) imaginary).toBigNumerator());
+      }
+      return GaussianInteger.factorizeRational(real, imaginary);
+    }
 
     /** Primes below this bound are found by trial division; the rest form the cofactor. */
     private static final BigInteger TRIAL_BOUND = BigInteger.valueOf(65536);

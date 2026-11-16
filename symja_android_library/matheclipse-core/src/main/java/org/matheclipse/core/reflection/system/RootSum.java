@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
@@ -86,6 +87,17 @@ public class RootSum extends AbstractFunctionEvaluator {
         IExpr expanded = expandOverRoots(ast, false, engine);
         if (expanded.isPresent()) {
           return expanded;
+        }
+      }
+      Predicate<IExpr> parameter =
+          x -> x.isSymbol() && !x.equals(r) && !((ISymbol) x).isConstantAttribute();
+      if (!px.isFree(x -> x.isInexactNumber(), false) && px.isFree(parameter, false)
+          && qx.isFree(parameter, false)) {
+        // the roots of a polynomial with machine coefficients are machine numbers: the sum of
+        // Exp(#)& over them is one
+        IExpr numeric = numericEval(ast, engine);
+        if (numeric.isPresent() && numeric.isNumber()) {
+          return numeric;
         }
       }
       // A non-rational summand such as Log(x + #) cannot be reduced to a rational function of the

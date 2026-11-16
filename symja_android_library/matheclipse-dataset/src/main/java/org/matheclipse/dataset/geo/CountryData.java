@@ -34,10 +34,21 @@ import org.matheclipse.dataset.geo.CountryTable.Series;
  *
  * <p>
  * The yearly properties are <code>"Population"</code> in people, <code>"GDP"</code> in US
- * dollars per year, <code>"Area"</code> and <code>"LandArea"</code> in square kilometres; without
- * a year they give the latest value known. The other properties are <code>"Name"</code>,
- * <code>"FullName"</code>, <code>"CountryCode"</code> and <code>"UNCode"</code> (the two and three
- * letter ISO codes), <code>"Continent"</code>, <code>"BorderingCountries"</code> and
+ * dollars per year, <code>"Area"</code> and <code>"LandArea"</code> in square kilometres, the
+ * demographic properties <code>"BirthRateFraction"</code> and <code>"DeathRateFraction"</code> per
+ * year, <code>"LifeExpectancy"</code> in years, <code>"FemalePopulation"</code>,
+ * <code>"MalePopulation"</code>, <code>"FemaleChildPopulation"</code> (ages 0-14),
+ * <code>"FemaleAdultPopulation"</code> (15-64) and <code>"FemaleElderlyPopulation"</code> (65 and
+ * older) in people, <code>"AnnualBirths"</code> and
+ * <code>"AnnualDeaths"</code> in people per year, the economic properties
+ * <code>"GDPAtParity"</code> in US dollars per year, <code>"GDPPerCapita"</code> in US dollars
+ * per person and year, and the
+ * plain fractions <code>"PovertyFraction"</code>, <code>"UnemploymentFraction"</code>,
+ * <code>"InfantMortalityFraction"</code>, <code>"GiniIndex"</code> and
+ * <code>"LiteracyFraction"</code>; without a year they give the latest value known. The other
+ * properties are <code>"Name"</code>, <code>"FullName"</code>, <code>"CountryCode"</code> and
+ * <code>"UNCode"</code> (the two and three letter ISO codes), <code>"Continent"</code>,
+ * <code>"BorderingCountries"</code>, <code>"FlagDescription"</code>, a text, and
  * <code>"Shape"</code>, a graphics of the outer rings of the country. A property which has no
  * value for the country is a <code>Missing</code> value; a property which is not known leaves the
  * call unevaluated with a message.
@@ -51,8 +62,13 @@ public class CountryData extends AbstractFunctionEvaluator {
   public static final String COUNTRY = "Country";
 
   /** The properties, in the order <code>CountryData("Properties")</code> gives them. */
-  private static final String[] PROPERTIES = {"Area", "BorderingCountries", "Continent",
-      "CountryCode", "FullName", "GDP", "LandArea", "Name", "Population", "Shape", "UNCode"};
+  private static final String[] PROPERTIES = {"AnnualBirths", "AnnualDeaths", "Area",
+      "BirthRateFraction", "BorderingCountries", "Continent", "CountryCode", "DeathRateFraction",
+      "FemaleAdultPopulation", "FemaleChildPopulation", "FemaleElderlyPopulation",
+      "FemalePopulation", "FlagDescription", "FullName", "GDP", "GDPAtParity", "GDPPerCapita",
+      "GiniIndex", "InfantMortalityFraction", "LandArea", "LifeExpectancy", "LiteracyFraction",
+      "MalePopulation", "Name", "Population", "PovertyFraction", "Shape", "UNCode",
+      "UnemploymentFraction"};
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -239,6 +255,9 @@ public class CountryData extends AbstractFunctionEvaluator {
             n -> Entities.entity(COUNTRY, F.stringx(n)));
       case "Shape":
         return shape(country);
+      case CountryTable.FLAG_DESCRIPTION:
+        return country.flagDescription.isEmpty() ? F.Missing(S.NotAvailable)
+            : F.stringx(country.flagDescription);
       default:
         Series series = country.series(property);
         if (series == null) {
@@ -278,9 +297,33 @@ public class CountryData extends AbstractFunctionEvaluator {
     }
     switch (property) {
       case "Population":
+      case "FemalePopulation":
+      case "MalePopulation":
+      case "FemaleChildPopulation":
+      case "FemaleAdultPopulation":
+      case "FemaleElderlyPopulation":
         return F.Quantity(F.ZZ(Math.round(value)), F.stringx("People"));
       case "GDP":
+      case "GDPAtParity":
         return F.Quantity(F.num(value), F.Divide(F.stringx("USDollars"), F.stringx("Years")));
+      case "GDPPerCapita":
+        return F.Quantity(F.num(value), F.Divide(F.stringx("USDollars"),
+            F.Times(F.stringx("People"), F.stringx("Years"))));
+      case "BirthRateFraction":
+      case "DeathRateFraction":
+        return F.Quantity(F.num(value), F.Power(F.stringx("Years"), F.CN1));
+      case "AnnualBirths":
+      case "AnnualDeaths":
+        // a rate times a population: whole people
+        return F.Quantity(F.num(Math.rint(value)), F.Divide(F.stringx("People"), F.stringx("Years")));
+      case "LifeExpectancy":
+        return F.Quantity(F.num(value), F.stringx("Years"));
+      case "PovertyFraction":
+      case "UnemploymentFraction":
+      case "InfantMortalityFraction":
+      case "GiniIndex":
+      case "LiteracyFraction":
+        return F.num(value);
       default:
         return F.Quantity(F.num(value), F.Power(F.stringx("Kilometers"), F.C2));
     }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.3.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>matheclipse-errorprone</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Error Prone checks for the Symja code base (build-time only, not shipped).</description>
+	<properties>
+		<errorprone.version>2.52.0</errorprone.version>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<!-- javac internals are not available with the release option -->
+					<release combine.self="override"/>
+					<source>21</source>
+					<target>21</target>
+					<annotationProcessorPaths combine.self="override"/>
+					<annotationProcessors combine.self="override"/>
+					<compilerArgs combine.self="override">
+						<arg>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+						<arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+						<arg>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.errorprone</groupId>
+			<artifactId>error_prone_check_api</artifactId>
+			<version>${errorprone.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>

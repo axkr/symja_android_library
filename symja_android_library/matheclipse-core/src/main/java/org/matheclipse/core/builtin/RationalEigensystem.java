@@ -16,14 +16,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * The exact eigenvalues and eigenvectors of a square matrix of rational numbers.
  *
  * <p>
- * The characteristic polynomial is factored over the rationals. The roots of a factor of degree
- * one or two are written with radicals, the roots of a factor of a higher degree are
- * <code>Root</code> objects (the real roots of a binomial are radicals), which keeps nested
- * radicals out of the result. The eigenvector of an irrational eigenvalue <code>t</code> with
- * minimal polynomial <code>p</code> is computed by an exact elimination in the field
- * <code>Q(t) = Q[t]/p(t)</code>; each of its entries, a polynomial in <code>t</code>, is then
- * written as a rational number, a radical or a <code>Root</code> object of its own minimal
- * polynomial.
+ * The characteristic polynomial is factored over the rationals. The roots of a factor of degree one
+ * or two are written with radicals, the roots of a factor of a higher degree are <code>Root</code>
+ * objects (the real roots of a binomial are radicals), which keeps nested radicals out of the
+ * result. The eigenvector of an irrational eigenvalue <code>t</code> with minimal polynomial
+ * <code>p</code> is computed by an exact elimination in the field <code>Q(t) = Q[t]/p(t)</code>;
+ * each of its entries, a polynomial in <code>t</code>, is then written as a rational number, a
+ * radical or a <code>Root</code> object of its own minimal polynomial.
  *
  * <p>
  * The eigenvalues are sorted by decreasing absolute value. Of eigenvalues with the same absolute
@@ -74,8 +73,8 @@ final class RationalEigensystem {
   /**
    * @param maxValues the number of eigenvalues asked for, or a negative number for all
    * @param onlyEigenvalues <code>true</code> for <code>{eigenvalues}</code> only
-   * @return <code>{eigenvalues, eigenvectors}</code>, <code>{eigenvalues}</code>, or
-   *         {@link F#NIL} if the characteristic polynomial can't be split
+   * @return <code>{eigenvalues, eigenvectors}</code>, <code>{eigenvalues}</code>, or {@link F#NIL}
+   *         if the characteristic polynomial can't be split
    */
   IAST eigensystem(int maxValues, boolean onlyEigenvalues) {
     List<Eigenvalue> eigenvalues = eigenvalues();
@@ -150,8 +149,11 @@ final class RationalEigensystem {
   /** The distinct eigenvalues, or <code>null</code> if a factor has no roots. */
   private List<Eigenvalue> eigenvalues() {
     ISymbol x = F.Dummy("x");
-    IExpr characteristicPolynomial =
-        engine.evaluate(F.Expand(LinearAlgebra.characteristicPolynomial(n, matrix, x)));
+    IExpr characteristicPolynomial = LinearAlgebra.characteristicPolynomial(n, matrix, x);
+    if (characteristicPolynomial.isNIL()) {
+      return null;
+    }
+    characteristicPolynomial = engine.evaluate(F.Expand(characteristicPolynomial));
     if (!characteristicPolynomial.isPolynomial(x)) {
       return null;
     }
@@ -192,8 +194,8 @@ final class RationalEigensystem {
   }
 
   /**
-   * The roots of an irreducible factor with rational coefficients: radicals for a degree up to
-   * two, <code>Root</code> objects for a higher degree, except for the real roots of a binomial
+   * The roots of an irreducible factor with rational coefficients: radicals for a degree up to two,
+   * <code>Root</code> objects for a higher degree, except for the real roots of a binomial
    * <code>c*x^d + a</code>, which are radicals.
    */
   private IAST rootsOfFactor(IExpr factor, ISymbol x, IRational[] coefficients) {
@@ -260,16 +262,15 @@ final class RationalEigensystem {
 
   /** <code>NullSpace(m - lambda*IdentityMatrix(n))</code> for a rational eigenvalue. */
   private IAST rationalNullSpace(IExpr lambda) {
-    IExpr shifted =
-        engine.evaluate(F.Subtract(matrix, F.Times(lambda, F.IdentityMatrix(n))));
+    IExpr shifted = engine.evaluate(F.Subtract(matrix, F.Times(lambda, F.IdentityMatrix(n))));
     IExpr nullSpace = engine.evaluate(F.NullSpace(shifted));
     return nullSpace.isListOfLists() ? (IAST) nullSpace : F.NIL;
   }
 
   /**
-   * The null space of <code>m - t*IdentityMatrix(n)</code> by Gauss-Jordan elimination in the
-   * field <code>Q(t)</code>. A free variable of the reduced row echelon form is set to one, the
-   * last free variable gives the first basis vector.
+   * The null space of <code>m - t*IdentityMatrix(n)</code> by Gauss-Jordan elimination in the field
+   * <code>Q(t)</code>. A free variable of the reduced row echelon form is set to one, the last free
+   * variable gives the first basis vector.
    */
   private IAST algebraicNullSpace(Eigenvalue eigenvalue) {
     AlgebraicField field = new AlgebraicField(eigenvalue.minimalPolynomial);

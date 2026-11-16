@@ -760,6 +760,33 @@ public final class BoxNotation {
     return expr.isSymbol() && ((ISymbol) expr).getSymbolName().equalsIgnoreCase(name);
   }
 
+  /**
+   * The options of the grid a grid box was made from, each preceded by a comma:
+   * <code>GridBoxFrame -&gt; {"Columns" -&gt; {{True}}, "Rows" -&gt; {{True}}}</code> is
+   * <code>Frame -&gt; All</code>, an option which isn't one of the grid box itself is the grid's
+   * option.
+   */
+  private String gridOptions(IExpr gridBox) {
+    if (!gridBox.isAST()) {
+      return "";
+    }
+    StringBuilder buf = new StringBuilder();
+    for (IExpr option : (IAST) gridBox) {
+      if (!option.isRuleAST()) {
+        continue;
+      }
+      IExpr name = option.first();
+      if (isSymbol(name, "GridBoxFrame")) {
+        if (option.second().has(x -> x.isTrue() || isSymbol(x, "True"), false)) {
+          buf.append(", Frame -> All");
+        }
+      } else if (!isSymbol(name, "AutoDelete") && !isSymbol(name, "GridBoxItemSize")) {
+        buf.append(", ").append(slot(option));
+      }
+    }
+    return buf.toString();
+  }
+
   /** The arguments without the options, which say how a box is drawn. */
   private static List<IExpr> positional(IAST box) {
     List<IExpr> arguments = new ArrayList<IExpr>(box.argSize());
@@ -942,6 +969,10 @@ public final class BoxNotation {
         if (size >= 2 && org.matheclipse.core.form.NumberFormatter.formKind(args.get(1)) != null) {
           // a number form name as the tag: TagBox[InterpretationBox[...], NumberForm]
           return slot(args.get(1)) + "[" + source(args.get(0)) + "]";
+        }
+        if (size >= 2 && (isSymbol(args.get(1), "Grid") || args.get(1).isString("Grid"))) {
+          // TagBox[GridBox[rows, ...], "Grid"]; a frame around every cell is Frame -> All
+          return "Grid[" + source(args.get(0)) + gridOptions(args.get(0)) + "]";
         }
         if (size >= 1) {
           return source(args.get(0));

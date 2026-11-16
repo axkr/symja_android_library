@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -229,6 +230,106 @@ public class DateTimeFunctions {
           dateTime, 0, expr.isInexactNumber());
     }
     return null;
+  }
+
+  /** The days of 400 years of the Gregorian calendar, a whole number of weeks. */
+  private static final BigInteger DAYS_OF_400_YEARS = BigInteger.valueOf(146097L);
+
+  private static final BigInteger FOUR_HUNDRED = BigInteger.valueOf(400L);
+
+  /**
+   * A date given by a date list <code>{y, m, d, h, mi, s}</code> whose year is beyond the range of
+   * {@link LocalDate}: the Gregorian calendar repeats after 400 years, weekdays included, so the
+   * date is computed in a year of the same place in the 400 year cycle and the cycles are added to
+   * its year again.
+   */
+  static final class FarDate {
+    /** The date in a year of the cycle which starts with the year 2000. */
+    final LocalDateTime date;
+
+    /** The 400 year cycles to add to the year of {@link #date}. */
+    final BigInteger cycles;
+
+    private FarDate(LocalDateTime date, BigInteger cycles) {
+      this.date = date;
+      this.cycles = cycles;
+    }
+
+    /** The year as it is written in a date list, which has no year zero. */
+    IExpr displayYear() {
+      BigInteger year = cycles.multiply(FOUR_HUNDRED).add(BigInteger.valueOf(date.getYear()));
+      return F.ZZ(year.signum() <= 0 ? year.subtract(BigInteger.ONE) : year);
+    }
+
+    IAST dateList() {
+      return F.List(displayYear(), F.ZZ(date.getMonthValue()), F.ZZ(date.getDayOfMonth()),
+          F.ZZ(date.getHour()), F.ZZ(date.getMinute()),
+          F.num(date.getSecond() + date.getNano() / 1.0e9));
+    }
+  }
+
+  /**
+   * The date of a date list with an integer year beyond the range of {@link LocalDate}, an integer
+   * month and an integer day of any size: the months beyond 12 and the days beyond the month are
+   * carried over in closed form.
+   *
+   * @return <code>null</code> if <code>expr</code> isn't such a date list
+   */
+  static FarDate farDate(IExpr expr) {
+    if (!expr.isList()) {
+      return null;
+    }
+    IAST list = (IAST) expr;
+    int argSize = list.argSize();
+    if (argSize < 1 || argSize > 6 || !list.arg1().isInteger()
+        || (argSize >= 2 && !list.arg2().isInteger())
+        || (argSize >= 3 && !list.arg3().isInteger())) {
+      return null;
+    }
+    BigInteger year = ((IInteger) list.arg1()).toBigNumerator();
+    if (year.abs().compareTo(BigInteger.valueOf(100_000_000L)) < 0) {
+      // in the range of LocalDate
+      return null;
+    }
+    if (year.signum() < 0) {
+      // there is no year zero: -1 is the astronomical year 0
+      year = year.add(BigInteger.ONE);
+    }
+    BigInteger month =
+        argSize >= 2 ? ((IInteger) list.arg2()).toBigNumerator() : BigInteger.ONE;
+    BigInteger day = argSize >= 3 ? ((IInteger) list.arg3()).toBigNumerator() : BigInteger.ONE;
+    // the year of the month, then whole 400 year cycles of the days
+    BigInteger[] yearMonth =
+        year.multiply(BigInteger.valueOf(12L)).add(month.subtract(BigInteger.ONE))
+            .divideAndRemainder(BigInteger.valueOf(12L));
+    if (yearMonth[1].signum() < 0) {
+      yearMonth[0] = yearMonth[0].subtract(BigInteger.ONE);
+      yearMonth[1] = yearMonth[1].add(BigInteger.valueOf(12L));
+    }
+    BigInteger[] dayCycles = day.subtract(BigInteger.ONE).divideAndRemainder(DAYS_OF_400_YEARS);
+    if (dayCycles[1].signum() < 0) {
+      dayCycles[0] = dayCycles[0].subtract(BigInteger.ONE);
+      dayCycles[1] = dayCycles[1].add(DAYS_OF_400_YEARS);
+    }
+    BigInteger[] yearCycles = yearMonth[0].divideAndRemainder(FOUR_HUNDRED);
+    if (yearCycles[1].signum() < 0) {
+      yearCycles[0] = yearCycles[0].subtract(BigInteger.ONE);
+      yearCycles[1] = yearCycles[1].add(FOUR_HUNDRED);
+    }
+    double[] time = new double[] {0.0, 0.0, 0.0};
+    for (int i = 4; i <= argSize; i++) {
+      double value = list.get(i).toDoubleDefault(Double.NaN);
+      if (Double.isNaN(value)) {
+        return null;
+      }
+      time[i - 4] = value;
+    }
+    LocalDateTime date = dateTimeOf(2000 + yearCycles[1].intValue(), yearMonth[1].intValue() + 1,
+        dayCycles[1].intValue() + 1.0, time[0], time[1], time[2]);
+    if (date == null) {
+      return null;
+    }
+    return new FarDate(date, yearCycles[0].add(dayCycles[0]).subtract(BigInteger.valueOf(5L)));
   }
 
   /** Convenience wrapper which only returns the {@link DateObjectExpr}. */
@@ -1587,7 +1688,8 @@ public class DateTimeFunctions {
       }
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {
-        return F.NIL;
+        FarDate far = farDate(ast.arg1());
+        return far == null ? F.NIL : far.dateList();
       }
       return dateListOf(spec.instant);
     }
@@ -2017,7 +2119,8 @@ public class DateTimeFunctions {
       }
       DateSpec spec = dateSpec(arg1);
       if (spec == null) {
-        return F.NIL;
+        FarDate far = farDate(arg1);
+        return far == null ? F.NIL : DateObjectExpr.weekdaySymbol(far.date.getDayOfWeek());
       }
       return DateObjectExpr.weekdaySymbol(spec.instant.getDayOfWeek());
     }

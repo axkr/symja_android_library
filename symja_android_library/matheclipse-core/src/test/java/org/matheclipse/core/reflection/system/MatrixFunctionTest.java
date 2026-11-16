@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-import org.junit.jupiter.api.Tag;
 import org.matheclipse.core.system.TestTags;
 
 public class MatrixFunctionTest extends ExprEvaluatorTestCase {
@@ -57,6 +57,10 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixFunction001() {
+    check("MatrixFunction(Expand[(2 + #1)^3]&,{{-1}})", //
+        "{{1}}");
+    check("MatrixFunction(x, {{-1}})", //
+        "{{x(-1)}}");
     check("MatrixFunction({-3/2}, {{0,0}, {0,0}})", //
         "MatrixFunction({-3/2},{{0,0},{0,0}})");
     check("MatrixFunction(x |-> x^5 + 2 x^2 + 1, {{a, 0}, {1, b}})", //
