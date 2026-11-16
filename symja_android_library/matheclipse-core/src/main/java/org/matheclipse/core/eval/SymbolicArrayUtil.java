@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -132,7 +133,7 @@ public class SymbolicArrayUtil {
     return tensorDimensions(expr, engine, 0);
   }
 
-  private static IAST tensorDimensions(IExpr expr, EvalEngine engine, int depth) {
+  private static @AllowNIL IAST tensorDimensions(IExpr expr, EvalEngine engine, int depth) {
     if (depth >= MAX_DEPTH) {
       return F.NIL;
     }
@@ -167,7 +168,7 @@ public class SymbolicArrayUtil {
   }
 
   /** The dimensions of an expression whose head is a built-in array operation. */
-  private static IAST astDimensions(IAST ast, EvalEngine engine, int depth) {
+  private static @AllowNIL IAST astDimensions(IAST ast, EvalEngine engine, int depth) {
     IExpr head = ast.head();
     if (!head.isBuiltInSymbol()) {
       return F.NIL;
@@ -271,7 +272,7 @@ public class SymbolicArrayUtil {
    * <code>{...,d}</code> with an array of dimensions <code>{d,...}</code> drops the two contracted
    * slots.
    */
-  private static IAST dotDimensions(IAST dot, EvalEngine engine, int depth) {
+  private static @AllowNIL IAST dotDimensions(IAST dot, EvalEngine engine, int depth) {
     if (dot.isAST0()) {
       // Dot() has no factor to take the shape from
       return F.NIL;
@@ -320,7 +321,7 @@ public class SymbolicArrayUtil {
   }
 
   /** The dimensions of {@link S#Transpose} or {@link S#ConjugateTranspose}. */
-  private static IAST transposeDimensions(IAST transpose, EvalEngine engine, int depth) {
+  private static @AllowNIL IAST transposeDimensions(IAST transpose, EvalEngine engine, int depth) {
     if (!transpose.isAST1() && !transpose.isAST2()) {
       // Transpose() or Transpose(a, p, x) is left unevaluated with an argument count message and
       // has no shape
@@ -371,7 +372,7 @@ public class SymbolicArrayUtil {
   }
 
   /** The dimensions of <code>ArrayDot(a, b, k)</code>, which contracts the last k slots of a. */
-  private static IAST arrayDotDimensions(IAST arrayDot, EvalEngine engine, int depth) {
+  private static @AllowNIL IAST arrayDotDimensions(IAST arrayDot, EvalEngine engine, int depth) {
     if (!arrayDot.isAST3() || !arrayDot.arg3().isInteger()) {
       return F.NIL;
     }
@@ -396,7 +397,7 @@ public class SymbolicArrayUtil {
    *         or {@link F#NIL} if one of the dimensions is {@link F#NIL}, shorter than <code>k
    *         </code> or the contracted slots differ
    */
-  public static IAST contractedDimensions(IAST dimensions1, IAST dimensions2, int k) {
+  public static @AllowNIL IAST contractedDimensions(IAST dimensions1, IAST dimensions2, int k) {
     if (dimensions1.isNIL() || dimensions2.isNIL()) {
       return F.NIL;
     }
@@ -418,7 +419,7 @@ public class SymbolicArrayUtil {
    * The dimensions a symbol was given through an <code>Element(x, Vectors(...) | Matrices(...) |
    * Arrays(...))</code> assumption.
    */
-  private static IAST assumedDimensions(IExpr symbol, EvalEngine engine) {
+  private static @AllowNIL IAST assumedDimensions(IExpr symbol, EvalEngine engine) {
     IAssumptions assumptions = engine.getAssumptions();
     if (assumptions == null) {
       return F.NIL;
@@ -597,7 +598,7 @@ public class SymbolicArrayUtil {
    *
    * @return {@link F#NIL} if one of the arguments is {@link F#NIL}
    */
-  public static IAST joinDimensions(IAST dimensions1, IAST dimensions2) {
+  public static @AllowNIL IAST joinDimensions(IAST dimensions1, IAST dimensions2) {
     if (dimensions1.isNIL() || dimensions2.isNIL()) {
       return F.NIL;
     }

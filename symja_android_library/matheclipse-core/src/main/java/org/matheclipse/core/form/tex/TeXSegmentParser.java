@@ -946,7 +946,9 @@ class TeXSegmentParser {
     if (list.getLength() == 2) {
       IExpr base = toExprList(list.item(0));
       IExpr expDenominator = toExprList(list.item(1));
-      return F.Power(base, F.Rational(F.C1, expDenominator));
+      // Rational(1, n) is a number for an integer n only
+      return F.Power(base, expDenominator.isInteger() ? F.Rational(F.C1, expDenominator)
+          : F.Power(expDenominator, F.CN1));
     }
     return F.NIL;
   }

@@ -215,6 +215,17 @@ class ParserTestCase {
   }
 
   @Test
+  void testPartOfADerivative() {
+    // a part may follow the primes, and primes may follow a part
+    ASTNode obj = PARSE_UNRELAXED.parse("g[u]'[[2]]");
+    assertEquals("Part(Derivative(1)[g(u)], 2)", obj.toString());
+    obj = PARSE_UNRELAXED.parse("g'[[2]][v]");
+    assertEquals("Part(Derivative(1)[g], 2)[v]", obj.toString());
+    obj = PARSE_UNRELAXED.parse("g[u][[2]]''[v]");
+    assertEquals("Derivative(2)[Part(g(u), 2)][v]", obj.toString());
+  }
+
+  @Test
   void testParser25() {
     ASTNode obj = PARSE_UNRELAXED.parse("Int[f_'[x_]*g_[x_] + f_[x_]*g_'[x_],x_Symbol]");
     assertEquals(

@@ -484,6 +484,16 @@ public class CurveFitterFunctions {
         double[] initialGuess = new double[listOfSymbols.argSize()];
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
+          if (data.isEmpty()) {
+            if (ast.isAST(S.FindFit)) {
+              // no data: every parameter fits as 0
+              final IAST zeros = F.mapList(listOfSymbols, (IExpr symbol) -> F.Rule(symbol, F.C0));
+              return renamed.argSize() > 0 ? F.subst(zeros, F.mapList(renamed,
+                  (IExpr rule) -> F.Rule(rule.second(), rule.first()))) : zeros;
+            }
+            // a model of no data stays unevaluated
+            return F.NIL;
+          }
           try {
             final IAST symbols = listOfSymbols;
             final IExpr model = function;
@@ -632,38 +642,109 @@ public class CurveFitterFunctions {
         return F.NIL;
       }
 
-      final IAST variables = argSize == 3 ? fitVariables(ast.arg3()) : F.NIL;
+      final IAST variables = argSize >= 3 ? fitVariables(ast.arg3()) : F.NIL;
       if (variables.isPresent() && ast.arg1().isList()) {
         IAST termList = ast.arg2().makeList();
         IAST data = (IAST) ast.arg1();
-
-        // exact (Infinity) or Apfloat (n digits) arbitrary precision linear least squares
-        if (precision != DOUBLE_PRECISION) {
-          return symbolicFit(data, termList, variables, precision, engine);
+        if (data.isEmpty()) {
+          // no data: the fit and its properties are 0
+          return F.C0;
         }
-
-        IAST dataMatrix = buildDataMatrix(data, variables.argSize());
-        final double[][] points = dataMatrix.isPresent() ? dataMatrix.toDoubleMatrix(false) : null;
-        if (points != null) {
-          try {
-            double[] coefficients =
-                linearLeastSquares(dataMatrix, points, termList, variables, engine);
-            return F.mapRange(S.Plus, 0, coefficients.length, i -> {
-              if (coefficients[i] != 0.0) {
-                return F.Times(F.num(coefficients[i]), termList.get(i + 1));
-              }
-              return F.NIL;
-            });
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.Fit, rex, engine);
+        final IAST coefficients = fitCoefficients(data, termList, variables, precision, engine);
+        if (coefficients.isNIL()) {
+          return F.NIL;
+        }
+        final IExpr bestFit = engine.evaluate(F.mapRange(S.Plus, 1, termList.size(), j -> {
+          final IExpr coefficient = coefficients.get(j);
+          // a machine zero drops its basis function; an exact zero vanishes in the sum anyway and
+          // an arbitrary precision zero keeps its precision
+          return coefficient.isZero() && coefficient.isMachineNumber() ? F.NIL
+              : F.Times(coefficient, termList.get(j));
+        }));
+        if (argSize == 4) {
+          final IExpr property = ast.arg4();
+          if (property.isList()) {
+            return ((IAST) property).map(p -> fitProperty(p, data, termList, variables,
+                coefficients, bestFit, engine));
           }
+          return fitProperty(property, data, termList, variables, coefficients, bestFit, engine);
         }
-        if (dataMatrix.isPresent() && dataMatrix.forAll(row -> isResponse(row.last()))) {
-          return symbolicResponseFit(dataMatrix, termList, variables, engine);
-        }
+        return bestFit;
       }
       return F.NIL;
+    }
+
+    /**
+     * The coefficients of the basis functions in the least squares fit.
+     *
+     * @param data the list of data points (a matrix of <code>{x, ..., f}</code> rows or a vector of
+     *        f-values)
+     * @param termList the basis functions in the given <code>variables</code>
+     * @param variables the model variables
+     * @param precision {@link #DOUBLE_PRECISION}, {@link #EXACT_PRECISION} or the number of
+     *        <code>Apfloat</code> digits
+     * @return a list with one coefficient for each basis function or {@link F#NIL}
+     */
+    private static IAST fitCoefficients(IAST data, IAST termList, IAST variables, int precision,
+        EvalEngine engine) {
+      // exact (Infinity) or Apfloat (n digits) arbitrary precision linear least squares
+      if (precision != DOUBLE_PRECISION) {
+        return symbolicFit(data, termList, variables, precision, engine);
+      }
+      IAST dataMatrix = buildDataMatrix(data, variables.argSize());
+      final double[][] points = dataMatrix.isPresent() ? dataMatrix.toDoubleMatrix(false) : null;
+      if (points != null) {
+        try {
+          final double[] coefficients =
+              linearLeastSquares(dataMatrix, points, termList, variables, engine);
+          return F.mapRange(0, coefficients.length, i -> F.num(coefficients[i]));
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          return Errors.printMessage(S.Fit, rex, engine);
+        }
+      }
+      if (dataMatrix.isPresent() && dataMatrix.forAll(row -> isResponse(row.last()))) {
+        return symbolicResponseFit(dataMatrix, termList, variables, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * A property of the fit: <code>"BestFit"</code>, <code>"BestFitParameters"</code>,
+     * <code>"BasisFunctions"</code>, <code>"FitResiduals"</code> or <code>"Function"</code>.
+     *
+     * @return <code>Missing("NotApplicable")</code> for an unknown property
+     */
+    private static IExpr fitProperty(IExpr property, IAST data, IAST termList, IAST variables,
+        IAST coefficients, IExpr bestFit, EvalEngine engine) {
+      if (property.isString()) {
+        switch (property.toString()) {
+          case "BestFit":
+            return bestFit;
+          case "BestFitParameters":
+            return coefficients;
+          case "BasisFunctions":
+            return termList;
+          case "FitResiduals":
+            final IAST dataMatrix = buildDataMatrix(data, variables.argSize());
+            if (dataMatrix.isPresent()) {
+              // the value of the fit minus the data value at each point
+              return engine.evaluate(F.mapRange(1, dataMatrix.size(), i -> {
+                final IAST row = (IAST) dataMatrix.get(i);
+                return F.Subtract(F.subst(bestFit, pointRules(variables, row)), row.last());
+              }));
+            }
+            return F.NIL;
+          case "Function":
+            // the variables become the slots #1, #2, ... in their order
+            return F.Function(F.subst(bestFit,
+                F.mapRange(1, variables.size(), k -> F.Rule(variables.get(k), F.Slot(k)))));
+          default:
+        }
+      }
+      // `1` is not a valid property.
+      Errors.printMessage(S.Fit, "noprop", F.list(property), engine);
+      return F.Missing("NotApplicable");
     }
 
     /** Whether a value of the data can be a term of a linear combination of the responses. */
@@ -679,9 +760,10 @@ public class CurveFitterFunctions {
      * the column <code>j</code>.
      *
      * @param dataMatrix the data as <code>{x, y, ..., f}</code> rows with numeric coordinates
-     * @return the fit or {@link F#NIL} if a coordinate or a basis function value is not a number
+     * @return the coefficients of the basis functions or {@link F#NIL} if a coordinate or a basis
+     *         function value is not a number
      */
-    private static IExpr symbolicResponseFit(IAST dataMatrix, IAST termList, IAST variables,
+    private static IAST symbolicResponseFit(IAST dataMatrix, IAST termList, IAST variables,
         EvalEngine engine) {
       final int rows = dataMatrix.argSize();
       final int columns = termList.argSize();
@@ -708,16 +790,18 @@ public class CurveFitterFunctions {
       }
       final double[][] inverse = LinearAlgebra
           .machinePseudoInverse(MatrixUtils.createRealMatrix(design)).getData();
-      IASTAppendable fit = F.PlusAlloc(columns);
+      IASTAppendable coefficients = F.ListAlloc(columns);
       for (int j = 0; j < columns; j++) {
         if (length[j] > 0.0) {
           final double[] row = inverse[j];
           IExpr combination = F.mapRange(S.Plus, 0, rows,
               k -> F.Times(F.num(row[k]), ((IAST) dataMatrix.get(k + 1)).last()));
-          fit.append(F.Times(F.num(1.0 / length[j]), combination, termList.get(j + 1)));
+          coefficients.append(engine.evaluate(F.Times(F.num(1.0 / length[j]), combination)));
+        } else {
+          coefficients.append(F.CD0);
         }
       }
-      return engine.evaluate(fit);
+      return coefficients;
     }
 
     /**
@@ -869,9 +953,9 @@ public class CurveFitterFunctions {
      * @param precision {@link #EXACT_PRECISION} for exact arithmetic or the number of
      *        <code>Apfloat</code> digits
      * @param engine the evaluation engine
-     * @return the best fit expression or {@link F#NIL}
+     * @return the coefficients of the basis functions or {@link F#NIL}
      */
-    private static IExpr symbolicFit(IAST data, IAST termList, IAST variables, int precision,
+    private static IAST symbolicFit(IAST data, IAST termList, IAST variables, int precision,
         EvalEngine engine) {
       try {
         IAST dataMatrix = buildDataMatrix(data, variables.argSize());
@@ -903,14 +987,11 @@ public class CurveFitterFunctions {
           IExpr xty = S.Dot.of(engine, transposed, responseVector);
           IExpr coefficients = S.LinearSolve.of(engine, xtx, xty);
           if (coefficients.isList() && coefficients.argSize() == numberOfTerms) {
-            final IAST coeffs = (IAST) coefficients;
-            IExpr fit = F.mapRange(S.Plus, 1, numberOfTerms + 1,
-                j -> F.Times(coeffs.get(j), termList.get(j)));
-            return engine.evaluate(fit);
+            return (IAST) coefficients;
           }
         }
       } catch (ValidateException ve) {
-        return Errors.printMessage(S.Fit, ve, engine);
+        Errors.printMessage(S.Fit, ve, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Fit, rex, engine);
@@ -989,7 +1070,7 @@ public class CurveFitterFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
 
     /** The variables of a linear fit are not localized. */

@@ -2513,4 +2513,40 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Check(Series(Cos(t), {t, 0, 5/2}), tag, Series::serlim)", //
         "tag");
   }
+
+  @Test
+  public void testSeriesInSubexpression() {
+    // the function expression Cos(y) is the expansion variable
+    check("Series(Exp(Cos(y)), {Cos(y), 0, 3})", //
+        "1+Cos(y)+Cos(y)^2/2+Cos(y)^3/6+O(Cos(y))^4");
+    check("Normal(Series(1/(1-Cos(y)), {Cos(y), 0, 2}))", //
+        "1+Cos(y)+Cos(y)^2");
+    // the other functions of y are constants
+    check("Series(Sin(y), {Cos(y), 0, 2})", //
+        "Sin(y)");
+    check("Normal(Series(Sin(y)+1/(1+Cos(y)), {Cos(y), 0, 2}))", //
+        "1-Cos(y)+Cos(y)^2+Sin(y)");
+    // a number is no variable
+    check("Check(Series(y^2, {3, 0, 2}), tag, Series::ivar)", //
+        "tag");
+    check("Check(Series(y^2, {Sqrt(2), 0, 2}), tag, Series::ivar)", //
+        "tag");
+  }
+
+  @Test
+  public void testSeriesLeadingTermOrder() {
+    // x -> x0 is the leading term of the expansion to the order 1 (or to the leading term)
+    check("FullForm(Series(Cos(2*z), z -> 0))", //
+        "SeriesData(z,0,List(1),0,2,1)");
+    check("FullForm(Series(1+z^2+z^3, z -> 0))", //
+        "SeriesData(z,0,List(1),0,2,1)");
+    check("FullForm(Series(1+z+z^2, z -> 0))", //
+        "SeriesData(z,0,List(1),0,1,1)");
+    check("FullForm(Series(Cosh(z-2), z -> 2))", //
+        "SeriesData(z,2,List(1),0,2,1)");
+    check("FullForm(Series(z^3+z^5, z -> 0))", //
+        "SeriesData(z,0,List(1),3,4,1)");
+    check("FullForm(Series(Cos(2*z), {z, 0, 1}))", //
+        "SeriesData(z,0,List(1),0,2,1)");
+  }
 }

@@ -38268,9 +38268,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
     check("Riffle({a, b, c}, {x, y, z, w})", //
         "{a,x,b,y,c}");
-    // the head of the first argument is preserved
+    // only a list is riffled (Riffle::listrp)
     check("Riffle(f(a, b), x)", //
-        "f(a,x,b)");
+        "Riffle(f(a,b),x)");
 
     check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", //
         "{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");
