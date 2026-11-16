@@ -597,7 +597,7 @@
 				<plugin>
 					<groupId>biz.aQute.bnd</groupId>
 					<artifactId>bnd-maven-plugin</artifactId>
-					<version>7.3.0</version>
+					<version>7.5.0</version>
 				</plugin>
 				<plugin>
 					<!-- Shared SpotBugs settings. The rank limit and the confidence match the "Scary"
