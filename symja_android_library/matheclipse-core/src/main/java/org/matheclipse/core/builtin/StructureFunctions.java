@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -189,7 +190,7 @@ public class StructureFunctions {
       return applyInternal(ast, argSize, option, engine);
     }
 
-    public static IExpr applyInternal(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
+    public static @AllowNIL IExpr applyInternal(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
       if (argSize == 1) {
         // the operator form Apply[f] stays as it is until it is given its argument
         return F.NIL;
@@ -237,7 +238,7 @@ public class StructureFunctions {
       return ARGS_1_4_2;
     }
 
-    public static IExpr evalApply(IExpr f, IExpr expr, IExpr levelExpr, int lastIndex,
+    public static @AllowNIL IExpr evalApply(IExpr f, IExpr expr, IExpr levelExpr, int lastIndex,
         boolean includeHeads, EvalEngine engine) {
 
       java.util.function.Function<IExpr, IExpr> af =
@@ -268,7 +269,7 @@ public class StructureFunctions {
 
   private static final class MapApply extends Apply {
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
         IASTMutable applyFunction = ast.appendAtClone(3, F.CListC1);
@@ -568,7 +569,7 @@ public class StructureFunctions {
   private static final class Flatten extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isDataset()) {
@@ -661,7 +662,7 @@ public class StructureFunctions {
      * @param engine the evaluation engine
      * @return the flattened expression or {@link F#NIL} if the specification is invalid
      */
-    private static IExpr flattenIndexSpec(IAST list, IAST spec, ISymbol head, EvalEngine engine) {
+    private static @AllowNIL IExpr flattenIndexSpec(IAST list, IAST spec, ISymbol head, EvalEngine engine) {
       if (spec.isEmpty()) {
         return F.NIL;
       }
@@ -954,7 +955,7 @@ public class StructureFunctions {
   private static final class Function extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Function) {
         // the Function(...) itself, not an application of it
         if (!PureFunctions.validate(ast, engine)) {
@@ -1096,7 +1097,7 @@ public class StructureFunctions {
   public static class LeafCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine) {
       IExpr expr = engine.evaluate(ast.arg1());
       if (options[0].isFalse()) {
@@ -1279,7 +1280,7 @@ public class StructureFunctions {
   private static class MapAt extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.head().isAST2() && ast.isAST1()) {
           // use operator form: MapAt(f, 3)[{a, b, c, d}] -> {a,b,f(c),d}
@@ -1356,7 +1357,7 @@ public class StructureFunctions {
   private static class ReplaceAt extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.head().isAST2() && ast.isAST1()) {
           // use operator form:
@@ -1602,7 +1603,7 @@ public class StructureFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg2().isAST()) {
         int level = 1;
         if (ast.isAST3()) {
@@ -1765,7 +1766,7 @@ public class StructureFunctions {
    */
   private static final class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, ast.arg1(), 1, engine);
       if (arg1AST.isPresent()) {
         if (arg1AST.isEmpty()) {
@@ -1895,7 +1896,7 @@ public class StructureFunctions {
   private static final class Operate extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int headDepth = 1;
       if (ast.isAST3()) {
         if (!ast.arg3().isInteger()) {
@@ -1979,7 +1980,7 @@ public class StructureFunctions {
   private static class ParallelMap extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Heads -> ..., Method -> ..., DistributedContexts -> ..., ProgressReporting -> ...
       int last = ast.argSize();
       boolean includeHeads = false;
@@ -2031,7 +2032,7 @@ public class StructureFunctions {
      *
      * @return {@link F#NIL} if <code>expr</code> is mapped on this thread
      */
-    private static IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions, EvalEngine engine) {
+    private static @AllowNIL IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions, EvalEngine engine) {
       if (!expr.isAST() || expr.argSize() < 2 || expr.isAssociation() || !expr.head().isSymbol()) {
         return F.NIL;
       }
@@ -2071,7 +2072,7 @@ public class StructureFunctions {
   private static final class Parallelize extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       IAST options = ast.rest();
       if (!options.forAll(x -> x.isRuleAST())) {
@@ -2113,7 +2114,7 @@ public class StructureFunctions {
   private static final class ParallelSelect extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int last = ast.argSize();
       IASTAppendable map = F.ast(S.ParallelMap, ast.argSize());
       map.append(ast.arg2());
@@ -2154,7 +2155,7 @@ public class StructureFunctions {
   private static final class PatternOrder extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 3) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -2251,7 +2252,7 @@ public class StructureFunctions {
   private static class ReverseSort extends Sort {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = F.NIL;
       Comparator<IExpr> comparator = Comparators.CANONICAL_COMPARATOR;
       if (ast.isAST2()) {
@@ -2315,7 +2316,7 @@ public class StructureFunctions {
   private static final class Scan extends Map {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
         int lastIndex = argSize;
@@ -2407,7 +2408,7 @@ public class StructureFunctions {
   private static class Sort extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = F.NIL;
       Comparator<IExpr> comparator = null;
       if (ast.isAST2()) {
@@ -2549,7 +2550,7 @@ public class StructureFunctions {
   private static class SortBy extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2() || ast.isAST3()) {
         try {
           if (ast.isAST2() && ast.arg1().isDataset()) {
@@ -2682,7 +2683,7 @@ public class StructureFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2() && ast.arg1().isDataset()) {
         return F.NIL;
       }
@@ -2730,7 +2731,7 @@ public class StructureFunctions {
   private static class Symbol extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isString()) {
         return F.symbol(ast.arg1().toString(), engine);
       }
@@ -2770,7 +2771,7 @@ public class StructureFunctions {
   private static class SymbolName extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isSymbol()) {
         return F.stringx(ast.arg1().toString());
       }
@@ -2840,7 +2841,7 @@ public class StructureFunctions {
   private static final class Thread extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1().isAST())) {
         return F.NIL;
       }
@@ -2942,7 +2943,7 @@ public class StructureFunctions {
      * @param mask the argument positions to thread over, indexed by argument position
      * @return
      */
-    private static IExpr threadList(final IAST list, IExpr head, IExpr mapHead, boolean[] mask) {
+    private static @AllowNIL IExpr threadList(final IAST list, IExpr head, IExpr mapHead, boolean[] mask) {
       int argSize = list.argSize();
       int listLength = -1;
       for (int i = 1; i <= argSize; i++) {

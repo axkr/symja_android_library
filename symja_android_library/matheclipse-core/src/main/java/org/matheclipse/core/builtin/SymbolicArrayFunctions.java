@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
@@ -97,7 +98,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr dotSymbolic(IExpr arg1, IExpr arg2, EvalEngine engine) {
+  public static @AllowNIL IExpr dotSymbolic(IExpr arg1, IExpr arg2, EvalEngine engine) {
     IAST dimensions1 = SymbolicArrayUtil.tensorDimensions(arg1, engine);
     IAST dimensions2 = SymbolicArrayUtil.tensorDimensions(arg2, engine);
     if (dimensions1.isNIL() || dimensions2.isNIL() || dimensions1.argSize() == 0
@@ -134,7 +135,7 @@ public class SymbolicArrayFunctions {
    * @param conjugate <code>true</code> for {@link S#ConjugateTranspose}
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr transposeSymbolic(IExpr arg1, IExpr arg2, boolean conjugate,
+  public static @AllowNIL IExpr transposeSymbolic(IExpr arg1, IExpr arg2, boolean conjugate,
       EvalEngine engine) {
     IAST dimensions = SymbolicArrayUtil.tensorDimensions(arg1, engine);
     if (dimensions.isNIL() || dimensions.argSize() < 2) {
@@ -229,7 +230,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr conjugateSymbolic(IExpr arg1) {
+  public static @AllowNIL IExpr conjugateSymbolic(IExpr arg1) {
     if (arg1 instanceof IArraySymbol) {
       return ((IArraySymbol) arg1).hasRealDomain() ? arg1 : F.NIL;
     }
@@ -245,7 +246,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr inverseSymbolic(IExpr arg1, EvalEngine engine) {
+  public static @AllowNIL IExpr inverseSymbolic(IExpr arg1, EvalEngine engine) {
     if (!checkSquareMatrix(S.Inverse, arg1, engine)) {
       return F.NIL;
     }
@@ -263,7 +264,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr detSymbolic(IExpr arg1, EvalEngine engine) {
+  public static @AllowNIL IExpr detSymbolic(IExpr arg1, EvalEngine engine) {
     if (!checkSquareMatrix(S.Det, arg1, engine)) {
       return F.NIL;
     }
@@ -282,7 +283,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr trSymbolic(IExpr arg1, EvalEngine engine) {
+  public static @AllowNIL IExpr trSymbolic(IExpr arg1, EvalEngine engine) {
     IAST dimensions = SymbolicArrayUtil.tensorDimensions(arg1, engine);
     if (dimensions.isNIL() || dimensions.argSize() != 2
         || !dimensions.arg1().equals(dimensions.arg2())) {
@@ -302,7 +303,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr matrixPowerSymbolic(IExpr arg1, IExpr exponent, EvalEngine engine) {
+  public static @AllowNIL IExpr matrixPowerSymbolic(IExpr arg1, IExpr exponent, EvalEngine engine) {
     IAST dimensions = SymbolicArrayUtil.tensorDimensions(arg1, engine);
     if (!checkSquareMatrix(S.MatrixPower, arg1, engine) || dimensions.isNIL()) {
       return F.NIL;
@@ -356,7 +357,7 @@ public class SymbolicArrayFunctions {
    * @param ast the symbolic array constant
    * @return {@link F#NIL} if the dimensions aren't positive integers
    */
-  public static IExpr normalSymbolicArray(IAST ast) {
+  public static @AllowNIL IExpr normalSymbolicArray(IAST ast) {
     if (!ast.arg1().isList()) {
       return F.NIL;
     }
@@ -377,7 +378,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** An explicit array of the given dimensions, all of whose entries are <code>value</code>. */
-  private static IExpr constantArray(IExpr value, IAST dimensions) {
+  private static @AllowNIL IExpr constantArray(IExpr value, IAST dimensions) {
     for (int i = 1; i < dimensions.size(); i++) {
       if (dimensions.get(i).toIntDefault() < 0) {
         return F.NIL;
@@ -390,7 +391,7 @@ public class SymbolicArrayFunctions {
    * An explicit array of the given dimensions whose entry is <code>1</code> where the indices in
    * each group of <code>indexGroups</code> all agree, and <code>0</code> otherwise.
    */
-  private static IExpr deltaProductArray(IAST dimensions, IAST indexGroups) {
+  private static @AllowNIL IExpr deltaProductArray(IAST dimensions, IAST indexGroups) {
     final int rank = dimensions.argSize();
     int[] dimensionValues = new int[rank];
     for (int i = 0; i < rank; i++) {
@@ -444,7 +445,7 @@ public class SymbolicArrayFunctions {
    * @param tensorProduct the {@link S#TensorProduct} of the non-scalar factors
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr tensorProductSymbolic(IAST tensorProduct, EvalEngine engine) {
+  public static @AllowNIL IExpr tensorProductSymbolic(IAST tensorProduct, EvalEngine engine) {
     if (tensorProduct.argSize() < 2) {
       return F.NIL;
     }
@@ -485,7 +486,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr arrayDotSymbolic(IAST ast, IExpr arg1, IExpr arg2, EvalEngine engine) {
+  public static @AllowNIL IExpr arrayDotSymbolic(IAST ast, IExpr arg1, IExpr arg2, EvalEngine engine) {
     if (ast.isAST2()) {
       // ArrayDot(a, b) contracts one slot, like Dot(a, b)
       return engine.evaluate(F.Dot(arg1, arg2));
@@ -556,7 +557,7 @@ public class SymbolicArrayFunctions {
    * @param domain the array domain
    * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the membership is undecided
    */
-  public static IExpr elementOfArrayDomain(IExpr expr, IAST domain, EvalEngine engine) {
+  public static @AllowNIL IExpr elementOfArrayDomain(IExpr expr, IAST domain, EvalEngine engine) {
     IAST requestedDimensions = domainDimensions(domain);
     if (requestedDimensions.isNIL()) {
       return F.NIL;
@@ -636,7 +637,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if the component is not known
    */
-  public static IExpr indexedSymbolicArray(IAST array, IAST indices) {
+  public static @AllowNIL IExpr indexedSymbolicArray(IAST array, IAST indices) {
     if (array.isAST(S.SymbolicZerosArray, 2)) {
       return F.C0;
     }
@@ -815,7 +816,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if no rule applies
    */
-  private static IExpr arrayRule(IExpr expr, boolean expand, EvalEngine engine) {
+  private static @AllowNIL IExpr arrayRule(IExpr expr, boolean expand, EvalEngine engine) {
     if (!expr.isAST()) {
       return F.NIL;
     }
@@ -846,7 +847,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if the summands are not all chains sharing a first or a last factor
    */
-  private static IExpr plusFactorRule(IAST plus) {
+  private static @AllowNIL IExpr plusFactorRule(IAST plus) {
     final int size = plus.size();
     IExpr[] coefficients = new IExpr[size];
     IAST[] chains = new IAST[size];
@@ -886,7 +887,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** Rewrite rules for a {@link S#Dot} chain. */
-  private static IExpr dotRule(IAST dot, boolean expand, EvalEngine engine) {
+  private static @AllowNIL IExpr dotRule(IAST dot, boolean expand, EvalEngine engine) {
     if (dot.argSize() < 2) {
       return F.NIL;
     }
@@ -975,7 +976,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** Rewrite rules for {@link S#Transpose} and {@link S#ConjugateTranspose}. */
-  private static IExpr transposeRule(IAST transpose, EvalEngine engine) {
+  private static @AllowNIL IExpr transposeRule(IAST transpose, EvalEngine engine) {
     // reversing a transposed product is a canonicalisation, so it runs in both passes
     if (!transpose.isAST1()) {
       return F.NIL;
@@ -1028,7 +1029,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** Rewrite rules for {@link S#Inverse}. */
-  private static IExpr inverseRule(IAST inverse, EvalEngine engine) {
+  private static @AllowNIL IExpr inverseRule(IAST inverse, EvalEngine engine) {
     if (!inverse.isAST1()) {
       return F.NIL;
     }
@@ -1051,7 +1052,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** Rewrite rules for {@link S#Tr}. */
-  private static IExpr trRule(IAST tr, EvalEngine engine) {
+  private static @AllowNIL IExpr trRule(IAST tr, EvalEngine engine) {
     if (!tr.isAST1()) {
       return F.NIL;
     }
@@ -1073,7 +1074,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** Rewrite rules for {@link S#Det}. */
-  private static IExpr detRule(IAST det, EvalEngine engine) {
+  private static @AllowNIL IExpr detRule(IAST det, EvalEngine engine) {
     if (!det.isAST1()) {
       return F.NIL;
     }
@@ -1127,7 +1128,7 @@ public class SymbolicArrayFunctions {
   }
 
   /** The explicit component array of one symbolic array, or {@link F#NIL}. */
-  private static IExpr componentReplacement(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr componentReplacement(IExpr expr, EvalEngine engine) {
     if (expr instanceof IArraySymbol) {
       return componentArray(expr, ((IArraySymbol) expr).getDimensions());
     }
@@ -1162,7 +1163,7 @@ public class SymbolicArrayFunctions {
    *
    * @return {@link F#NIL} if a dimension is not a positive integer
    */
-  private static IExpr componentArray(IExpr array, IAST dimensions) {
+  private static @AllowNIL IExpr componentArray(IExpr array, IAST dimensions) {
     int[] dimensionValues = new int[dimensions.argSize()];
     for (int i = 0; i < dimensionValues.length; i++) {
       dimensionValues[i] = dimensions.get(i + 1).toIntDefault();
@@ -1250,7 +1251,7 @@ public class SymbolicArrayFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr plusSymbolicArrays(IAST plus, EvalEngine engine) {
+  public static @AllowNIL IExpr plusSymbolicArrays(IAST plus, EvalEngine engine) {
     IAST dimensions = F.NIL;
     IASTAppendable scalars = F.PlusAlloc(plus.argSize());
     List<ArrayTerm> arrayTerms = new ArrayList<ArrayTerm>();
@@ -1356,7 +1357,7 @@ public class SymbolicArrayFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr timesSymbolicArrays(IAST times, EvalEngine engine) {
+  public static @AllowNIL IExpr timesSymbolicArrays(IAST times, EvalEngine engine) {
     IAST dimensions = F.NIL;
     boolean zero = false;
     int arrayFactors = 0;
@@ -1415,7 +1416,7 @@ public class SymbolicArrayFunctions {
    * @param exponent the exponent of the power
    * @return {@link F#NIL} if nothing could be rewritten
    */
-  public static IExpr powerSymbolicArray(IExpr base, IExpr exponent) {
+  public static @AllowNIL IExpr powerSymbolicArray(IExpr base, IExpr exponent) {
     if (!exponent.isInteger() || !exponent.isPositive()) {
       return F.NIL;
     }

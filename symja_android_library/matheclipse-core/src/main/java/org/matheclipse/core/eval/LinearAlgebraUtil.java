@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
@@ -274,7 +275,7 @@ public class LinearAlgebraUtil {
     return 0;
   }
 
-  public static IExpr normalSymbolicIdentityArray(IAST dimensions) {
+  public static @AllowNIL IExpr normalSymbolicIdentityArray(IAST dimensions) {
     if (dimensions.argSize() == 0) {
       return F.C1;
     } else if (dimensions.argSize() == 1) {

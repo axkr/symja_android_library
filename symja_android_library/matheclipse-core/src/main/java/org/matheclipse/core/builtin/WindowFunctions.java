@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
@@ -115,7 +116,7 @@ public class WindowFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isRealResult()) {
         return function.apply(arg1);
       }
@@ -147,7 +148,7 @@ public class WindowFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isRealResult() && (ast.argSize() == 1 || ast.arg2().isRealResult())) {
         return piecewise(ast);
       }

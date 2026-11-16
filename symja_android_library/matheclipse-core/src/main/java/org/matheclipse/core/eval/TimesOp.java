@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
@@ -34,7 +35,7 @@ public final class TimesOp {
    * @param returnNilIfUnevaluated TODO check if this parameter can be removed
    * @return the product of the two expressions or {@link F#NIL}
    */
-  public static org.matheclipse.core.interfaces.IExpr numberLikeTimes(
+  public static @AllowNIL org.matheclipse.core.interfaces.IExpr numberLikeTimes(
       org.matheclipse.core.interfaces.IExpr a1, final org.matheclipse.core.interfaces.IExpr a2,
       boolean returnNilIfUnevaluated) {
     if (a1.isNumber()) {
@@ -103,7 +104,7 @@ public final class TimesOp {
     return timesOp.getProduct();
   }
 
-  public static IExpr getProductNIL(IAST timesAST) {
+  public static @AllowNIL IExpr getProductNIL(IAST timesAST) {
     TimesOp timesOp = new TimesOp(timesAST.size());
     timesOp.appendRecursive(timesAST);
     if (!timesOp.isEvaled()) {

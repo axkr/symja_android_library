@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -48,7 +49,7 @@ public class QuantumPhysicsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr arg3 = ast.arg3();
@@ -99,7 +100,7 @@ public class QuantumPhysicsFunctions {
      * @throws Wigner.NotPhysicalException if an <code>m</code> is not an integer or half-integer, or
      *         violates a selection rule
      */
-    private IExpr value(IExpr[] values)
+    private @AllowNIL IExpr value(IExpr[] values)
         throws Wigner.TriangularException, Wigner.NotPhysicalException {
       int[] d = Wigner.doubled(values);
       if (d == null) {
@@ -136,7 +137,7 @@ public class QuantumPhysicsFunctions {
      * @return the <code>Piecewise</code> (or <code>0</code>), or {@link F#NIL} if the pattern does
      *         not apply
      */
-    private IExpr symbolicProjection(IExpr j1, IExpr j2, IExpr j3, IExpr m1, IExpr m2, IExpr m3,
+    private @AllowNIL IExpr symbolicProjection(IExpr j1, IExpr j2, IExpr j3, IExpr m1, IExpr m2, IExpr m3,
         IAST ast, EvalEngine engine) {
       IExpr[] m = {m1, m2, m3};
       int index = -1;
@@ -211,7 +212,7 @@ public class QuantumPhysicsFunctions {
   private static final class SixJSymbol extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!arg1.isList3() || !arg2.isList3()) {
@@ -263,7 +264,7 @@ public class QuantumPhysicsFunctions {
   private static final class WignerD extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isList3()) {
         return F.NIL;

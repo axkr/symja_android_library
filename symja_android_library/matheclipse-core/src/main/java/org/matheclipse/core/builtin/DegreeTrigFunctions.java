@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -63,7 +64,7 @@ public class DegreeTrigFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IAST radianAST = toRadian(ast);
       if (ast.arg1().isPlus()) {
         // SinDegrees(90+x) is Sin(Pi/2+Pi*x/180)
@@ -81,7 +82,7 @@ public class DegreeTrigFunctions {
      * An angle between 45 and 90 degrees is written as the complement of the cofunction:
      * <code>SinDegrees(80)</code> is <code>CosDegrees(10)</code>.
      */
-    private static IExpr cofunction(IExpr expr) {
+    private static @AllowNIL IExpr cofunction(IExpr expr) {
       return expr.replaceAll(x -> {
         if (x.isAST1() && x.first().isRational()) {
           for (int i = 0; i < FORWARD_DEGREES.length; i++) {
@@ -125,7 +126,7 @@ public class DegreeTrigFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IASTMutable radianAST = ast.setAtCopy(0, radianHead);
       IExpr radian = engine.evaluate(radianAST);
       if (radian.equals(radianAST) && ast.isAST1() && ast.arg1().isInterval1()) {
@@ -154,7 +155,7 @@ public class DegreeTrigFunctions {
      * <code>180*radian/Pi</code>, with the inverse functions in <code>radian</code> written in
      * degrees.
      */
-    private static IExpr toDegrees(IExpr radian, EvalEngine engine) {
+    private static @AllowNIL IExpr toDegrees(IExpr radian, EvalEngine engine) {
       // the inverse functions which stay unevaluated are replaced by placeholders, so that the
       // degree forms aren't evaluated again inside this evaluation
       final IASTAppendable rules = F.ListAlloc();
@@ -181,7 +182,7 @@ public class DegreeTrigFunctions {
      * <code>ArcCsc(x)</code>, if the interval <code>x</code> lies in <code>x&lt;=-1</code> or in
      * <code>x&gt;=1</code>.
      */
-    private IExpr reciprocalArcInterval(IExpr interval, EvalEngine engine) {
+    private @AllowNIL IExpr reciprocalArcInterval(IExpr interval, EvalEngine engine) {
       if (radianHead != S.ArcSec && radianHead != S.ArcCsc) {
         return F.NIL;
       }
@@ -254,7 +255,7 @@ public class DegreeTrigFunctions {
    *
    * @return <code>expr</code> if no function could be written in degrees
    */
-  public static IExpr fromRadian(IExpr expr, EvalEngine engine) {
+  public static @AllowNIL IExpr fromRadian(IExpr expr, EvalEngine engine) {
     return expr.replaceAll(x -> {
       if (x.isAST1()) {
         IBuiltInSymbol degreeHead = degreeHead(x.head(), FORWARD_RADIANS, FORWARD_DEGREES);

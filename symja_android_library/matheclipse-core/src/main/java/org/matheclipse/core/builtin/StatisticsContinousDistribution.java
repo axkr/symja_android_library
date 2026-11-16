@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Random;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
@@ -51,7 +52,7 @@ public class StatisticsContinousDistribution {
    * @return {@link F#NIL} in arbitrary precision mode, for non-numeric arguments or if
    *         <code>function</code> throws
    */
-  private static IExpr machineValue(IExpr p1, IExpr p2, IExpr x, EvalEngine engine,
+  private static @AllowNIL IExpr machineValue(IExpr p1, IExpr p2, IExpr x, EvalEngine engine,
       DoubleTernaryOperator function) {
     if (!engine.isArbitraryMode() //
         && (p1.isNumericArgument(true) || p2.isNumericArgument(true)
@@ -89,7 +90,7 @@ public class StatisticsContinousDistribution {
    * @return {@link F#NIL} in arbitrary precision mode, for non-numeric arguments or for
    *         <code>p</code> outside <code>[0, 1]</code>
    */
-  private static IExpr locationScaleQuantile(IExpr loc, IExpr scale, IExpr k, EvalEngine engine,
+  private static @AllowNIL IExpr locationScaleQuantile(IExpr loc, IExpr scale, IExpr k, EvalEngine engine,
       DoubleUnaryOperator q) {
     if (!engine.isArbitraryMode() //
         && (loc.isNumericArgument(true) || scale.isNumericArgument(true)
@@ -126,7 +127,7 @@ public class StatisticsContinousDistribution {
    *
    * @return {@link F#NIL} if a parameter has no double value
    */
-  private static IExpr randomVariate2(Random random, IExpr p1, IExpr p2, int size,
+  private static @AllowNIL IExpr randomVariate2(Random random, IExpr p1, IExpr p2, int size,
       MachineDistribution distribution) {
     // see exception handling in RandomVariate() function
     double p1Double = p1.evalfNaN();
@@ -145,7 +146,7 @@ public class StatisticsContinousDistribution {
    *
    * @return {@link F#NIL} if <code>matrix</code> is not a square matrix
    */
-  public static IExpr diagonalOfSquareMatrix(IExpr matrix) {
+  public static @AllowNIL IExpr diagonalOfSquareMatrix(IExpr matrix) {
     if (matrix.isSparseArray()) {
       matrix = matrix.normal(false);
     }
@@ -165,7 +166,7 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -177,7 +178,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -204,7 +205,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 arguments
       return F.NIL;
     }
@@ -215,7 +216,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -240,7 +241,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -251,7 +252,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -263,7 +264,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -288,7 +289,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // exception handling in RandonmVariate() function
         IReal a = dist.arg1().evalReal();
@@ -305,7 +306,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -317,7 +318,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -334,17 +335,17 @@ public class StatisticsContinousDistribution {
       ICentralMoment {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr covariance(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr covariance(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         return F.list(F.list(F.C1, p), F.list(p, F.C1));
@@ -390,7 +391,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -400,7 +401,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -411,7 +412,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         return F.CListC0C0;
       }
@@ -425,12 +426,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
       if (dist.isAST3()) {
         if (X.isList2()) {
           IExpr mu = dist.arg1();
@@ -464,7 +465,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       double[] means = new double[] {0.0, 0.0};
       double[][] covariances;
       if (dist.isAST1()) {
@@ -518,7 +519,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         return F.List(F.C1, F.C1);
       }
@@ -542,7 +543,7 @@ public class StatisticsContinousDistribution {
       IGeneratingFunction {
 
     @Override
-    public IExpr cf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr cf(IAST dist, IExpr t, EvalEngine engine) {
       // the moment generating function of the Cauchy distribution does not exist
       if (dist.isAST0()) {
         // E^(-Abs(t))
@@ -559,7 +560,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
         IExpr b = F.C1;
@@ -578,7 +579,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         // Piecewise({{1,m==0}},Indeterminate);
         return F.Piecewise(F.list(F.list(F.C1, F.Equal(m, F.C0))), S.Indeterminate);
@@ -587,7 +588,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -598,7 +599,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
         IExpr b = F.C1;
@@ -634,7 +635,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         return S.Indeterminate;
       }
@@ -642,7 +643,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
         if (dist.isAST2()) {
@@ -655,7 +656,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
         IExpr b = F.C1;
@@ -678,7 +679,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0() || dist.isAST2()) {
         IExpr a = F.C0;
         IExpr b = F.C1;
@@ -696,7 +697,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         return S.Indeterminate;
       }
@@ -704,7 +705,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         return S.Indeterminate;
       }
@@ -719,7 +720,7 @@ public class StatisticsContinousDistribution {
       IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr k = dist.arg1();
         // (1 - 2*t)^(-k/2)
@@ -729,7 +730,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
         IExpr value = machineValue(v, k, engine, (vDouble, kDouble) -> //
@@ -750,7 +751,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       // 2^m*HypergeometricU(-m,1-m-n/2,(-1)*1/2*n)
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
@@ -762,13 +763,13 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 1 or 3 args
       return F.NIL;
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
         IExpr function =
@@ -793,7 +794,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
       // CPD-ON
         // 3+12/n
@@ -804,7 +805,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         return dist.arg1();
       }
@@ -812,7 +813,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
         // [$ 2*InverseGammaRegularized(v/2, 0, 1/2) $]
@@ -822,7 +823,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
         IExpr value = machineValue(v, k, engine, (vDouble, kDouble) -> //
@@ -845,7 +846,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         double v = dist.arg1().evalfNaN();
         if (Double.isNaN(v)) {
@@ -863,7 +864,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // 2*Sqrt(2)*Sqrt(1/s)
@@ -873,7 +874,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
         // 2*v
@@ -890,7 +891,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
@@ -914,14 +915,14 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       if (dist.isAST1()) {
       }
       return F.NIL;
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
           (org.hipparchus.stat.fitting.EmpiricalDistribution) ast
@@ -948,21 +949,21 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
       }
       return F.NIL;
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
       }
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
@@ -975,7 +976,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
       }
       return F.NIL;
@@ -983,7 +984,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
@@ -1007,7 +1008,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
@@ -1032,14 +1033,14 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
       }
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
@@ -1089,7 +1090,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1101,7 +1102,7 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1116,7 +1117,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1126,7 +1127,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1152,7 +1153,7 @@ public class StatisticsContinousDistribution {
     // CPD-ON
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         // n/m
         return F.Divide(dist.arg1(), dist.arg2());
@@ -1161,7 +1162,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1173,7 +1174,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1192,7 +1193,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         // IExpr m = dist.arg2();
@@ -1203,7 +1204,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
       // CPD-ON
         // n/(m^2)
@@ -1219,7 +1220,7 @@ public class StatisticsContinousDistribution {
       IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr lambda = dist.arg1();
         // lambda/(lambda - t)
@@ -1229,7 +1230,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       if (dist.isAST1() && n.isInteger() && !n.isNegative()) {
         // n!/a^n
         return F.Divide(F.Factorial(n), F.Power(dist.arg1(), n));
@@ -1238,7 +1239,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.Greater(dist.arg1(), F.C0);
       }
@@ -1246,7 +1247,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{E^(-n*#), # >= 0}}, 1) &
@@ -1259,7 +1260,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
@@ -1295,7 +1296,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Subfactorial(m)/n^m;
@@ -1306,7 +1307,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1317,7 +1318,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         if (!engine.isArbitraryMode() && //
@@ -1354,7 +1355,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
         return F.C9;
       }
@@ -1362,7 +1363,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         // 1/x
         return F.Power(dist.arg1(), F.CN1);
@@ -1371,7 +1372,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
         // Log(2)/x
         return F.Times(F.Log(F.C2), F.Power(dist.arg1(), F.CN1));
@@ -1380,7 +1381,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         //
@@ -1395,7 +1396,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
         double rate = dist.arg1().evalfNaN();
@@ -1414,7 +1415,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         // 2
         return F.C2;
@@ -1423,7 +1424,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         return F.Power(dist.arg1(), F.CN2);
       }
@@ -1438,7 +1439,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1462,12 +1463,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1495,7 +1496,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         // IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1510,7 +1511,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1526,7 +1527,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1555,7 +1556,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1575,7 +1576,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1625,7 +1626,7 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1641,7 +1642,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1651,7 +1652,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1676,7 +1677,7 @@ public class StatisticsContinousDistribution {
     // CPD-ON
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1690,7 +1691,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1702,7 +1703,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1729,7 +1730,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1753,7 +1754,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         // IExpr m = dist.arg2();
@@ -1785,7 +1786,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1946,7 +1947,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
@@ -1954,7 +1955,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -1965,7 +1966,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       if (dist.isAST2() && n.isInteger() && !n.isNegative()) {
         // b^n*Pochhammer(a, n)
         // CPD-OFF generated distribution formulas with matching boilerplate
@@ -1975,7 +1976,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -2023,7 +2024,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2039,7 +2040,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 or 4 arguments
       return F.NIL;
     }
@@ -2050,7 +2051,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -2096,7 +2097,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         // 3+6/a
@@ -2126,7 +2127,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -2149,7 +2150,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -2169,7 +2170,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr a = dist.arg1();
@@ -2232,7 +2233,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         return randomVariate2(random, dist.arg1(), dist.arg2(), size,
             // CPD-OFF generated distribution formulas with matching boilerplate
@@ -2245,7 +2246,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         return F.Divide(F.C2, F.Sqrt(n));
@@ -2254,7 +2255,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -2284,7 +2285,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2306,7 +2307,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 0 or 2 args
       return F.NIL;
     }
@@ -2334,7 +2335,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2363,7 +2364,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2376,7 +2377,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2388,7 +2389,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2413,7 +2414,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.argSize() == 4) {
         double lambda = dist.arg1().evalfNaN();
         double xi = dist.arg2().evalfNaN();
@@ -2473,7 +2474,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         // The rate parameter dist.arg1() is a pure scale parameter, so it cancels in the
         // skewness and only the shape parameter n is left.
@@ -2507,7 +2508,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -2562,7 +2563,7 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IPDF, IStatistics, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       // minimum convention: Mean(GumbelDistribution(n,m)) == n - EulerGamma*m
       if (dist.isAST0()) {
         // Gamma(1 + t)
@@ -2578,7 +2579,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
           double kDouble = k.evalfNaN();
@@ -2614,7 +2615,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 0 or 2 args
       return F.NIL;
     }
@@ -2625,7 +2626,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         IExpr value = locationScaleQuantile(F.C0, F.C1, k, engine,
             p -> Math.log(-Math.log(1.0 - p)));
@@ -2671,7 +2672,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST0()) {
       // CPD-ON
         // -EulerGamma
@@ -2687,7 +2688,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST0()) {
         // ( ) => Log(Log(2))
         return F.Log(F.Log(F.C2));
@@ -2702,7 +2703,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
           double z = k.evalfNaN();
@@ -2735,7 +2736,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0()) {
         RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
@@ -2760,7 +2761,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         return
         // [$ -((12*Sqrt(6)*Zeta(3))/Pi^3) $]
@@ -2770,7 +2771,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST0()) {
         // (Pi^2)/6
         return F.Times(F.QQ(1, 6), F.Sqr(S.Pi));
@@ -2880,7 +2881,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null || isInvalid(parameters)) {
         return F.NIL;
@@ -2912,12 +2913,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 2 or 4 arguments
       return F.NIL;
     }
@@ -2928,7 +2929,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null || isInvalid(parameters)) {
         return F.NIL;
@@ -2959,7 +2960,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3001,7 +3002,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3026,7 +3027,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3046,7 +3047,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null || isInvalid(parameters)) {
         return F.NIL;
@@ -3085,7 +3086,7 @@ public class StatisticsContinousDistribution {
 
     /** <code>m + b*Y^(-1/g)</code> for <code>Y</code> distributed as <code>GammaDistribution(a, 1)</code>. */
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3110,7 +3111,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3146,7 +3147,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
@@ -3192,12 +3193,12 @@ public class StatisticsContinousDistribution {
     private static final double SQRT2 = Math.sqrt(2.0);
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
         // 3 + 15*m/l
         return F.Plus(F.C3, F.Times(F.ZZ(15), F.Divide(dist.arg1(), dist.arg2())));
@@ -3285,7 +3286,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr l = dist.arg2();
@@ -3310,7 +3311,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3320,7 +3321,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         if (k.isList()) {
           return ((IAST) k).map(p -> inverseCDF(dist, p, engine), 1);
@@ -3338,7 +3339,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
         // (m*BesselK(1 + t, l/m))/BesselK(t, l/m)
         IExpr m = dist.arg1();
@@ -3350,12 +3351,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
@@ -3363,7 +3364,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         // the generalized inverse Gaussian distribution
         IExpr m = dist.arg1();
@@ -3396,7 +3397,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         double m = dist.arg1().evalfNaN();
         double l = dist.arg2().evalfNaN();
@@ -3421,7 +3422,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         // 3*Sqrt(m/l)
         return F.Times(F.C3, F.Sqrt(F.Divide(dist.arg1(), dist.arg2())));
@@ -3430,7 +3431,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST3()) {
         // (m^2*(-BesselK(1 + t, l/m)^2 + BesselK(t, l/m)*BesselK(2 + t, l/m)))/BesselK(t, l/m)^2
         IExpr m = dist.arg1();
@@ -3482,7 +3483,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3511,17 +3512,17 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3561,7 +3562,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
       // CPD-ON
         // IExpr a = dist.arg1();
@@ -3576,7 +3577,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr s = dist.arg2();
@@ -3587,7 +3588,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         // (m,s) -> E^(m+s^2/2)
         // CPD-OFF generated distribution formulas with matching boilerplate
@@ -3597,7 +3598,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3622,7 +3623,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       // CPD-OFF generated distribution formulas with matching boilerplate
       if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
@@ -3647,7 +3648,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         // IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3659,7 +3660,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr s = dist.arg2();
@@ -3677,18 +3678,18 @@ public class StatisticsContinousDistribution {
       IRandomVariate {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       // No simple closed form for the CDF of a general MultinormalDistribution.
       return F.NIL;
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr covariance(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr covariance(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
         return dist.arg1();
       } else if (dist.isAST2()) {
@@ -3698,7 +3699,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3708,12 +3709,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       // The kurtosis of a normal distribution is 3.
       // For Multinormal, this returns a vector of component-wise kurtosis values.
       IExpr mu = mean(dist);
@@ -3724,7 +3725,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr sigmaMatrix = dist.arg2();
         if (isSigmaMatrix(dist, sigmaMatrix, F.C2)) {
@@ -3771,12 +3772,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
       IExpr mu = F.NIL;
       IExpr sigma = F.NIL;
 
@@ -3812,7 +3813,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       try {
         double[] meanVector;
         double[][] covMatrix;
@@ -3877,7 +3878,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       // Skewness of multivariate normal distribution is a vector of zeros
       IExpr mu = mean(dist);
       if (mu.isList()) {
@@ -3887,7 +3888,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // Variance vector contains the diagonal elements of the covariance matrix
       IExpr sigma = F.NIL;
       if (dist.isAST1()) {
@@ -3903,7 +3904,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
@@ -3912,7 +3913,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3937,12 +3938,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3969,7 +3970,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
     // CPD-ON
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
@@ -3981,7 +3982,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -3993,7 +3994,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -4022,7 +4023,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         return randomVariate2(random, dist.arg1(), dist.arg2(), size,
             org.hipparchus.distribution.continuous.NakagamiDistribution::new);
@@ -4035,7 +4036,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         // IExpr m = dist.arg2();
@@ -4050,7 +4051,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
 
         IExpr n = dist.arg1();
@@ -4155,7 +4156,7 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IStatistics, IRandomVariate, IPDF, ICDF, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST0()) {
         // E^(t^2/2)
         return F.Exp(F.Divide(F.Sqr(t), F.C2));
@@ -4170,7 +4171,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       int order = n.toIntDefault();
       if (order < 0) {
         return F.NIL;
@@ -4197,7 +4198,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST0()) {
         return S.True;
       }
@@ -4208,7 +4209,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       if (dist.isAST0()) {
         return F.C1;
       }
@@ -4219,7 +4220,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         // Erfc(#/Sqrt(2))/2 &
         return callFunction(F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.C1DSqrt2, F.Slot1)))), k);
@@ -4235,7 +4236,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         IExpr function =
             // [$ ( (1/2)*Erfc(-(#/Sqrt(2))) & ) $]
@@ -4264,7 +4265,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr n, EvalEngine engine) {
       IExpr b = F.C1;
       if (dist.isAST0() || dist.isAST2()) {
         if (dist.isAST2()) {
@@ -4328,7 +4329,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         IExpr function =
             // [$ (ConditionalExpression((-Sqrt(2))*InverseErfc(2*#1), 0 <= #1 <= 1) & ) $]
@@ -4359,7 +4360,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         return F.C3;
       }
@@ -4367,7 +4368,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST0()) {
         return F.C0;
       }
@@ -4378,7 +4379,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST0()) {
         return F.C0;
       }
@@ -4389,7 +4390,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         IExpr function =
             // [$ ( 1/(E^(#^2/2)*Sqrt(2*Pi)) & ) $]
@@ -4419,7 +4420,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0()) {
         return F.num(random.nextGaussian());
       }
@@ -4449,7 +4450,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST0()) {
         return F.C0;
       }
@@ -4460,7 +4461,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST0()) {
         return F.C1;
       }
@@ -4476,7 +4477,7 @@ public class StatisticsContinousDistribution {
       implements IContinuousDistribution, IStatistics, IPDF, ICDF, IRandomVariate {
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       // by inversion of the distribution function: k*(1-u)^(-1/a), and for the forms with a
       // location m and a shape g: m + k*((1-u)^(-1/a) - 1)^g
       int n = dist.argSize();
@@ -4499,7 +4500,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -4515,7 +4516,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr k = dist.arg1();
@@ -4597,7 +4598,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr k = dist.arg1();
@@ -4666,7 +4667,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr k = dist.arg1();
         IExpr a = dist.arg2();
@@ -4708,7 +4709,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         IExpr k = dist.arg1();
         IExpr a = dist.arg2();
@@ -4744,7 +4745,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       if (dist.isAST2()) {
         //
         IExpr k = dist.arg1();
@@ -4805,7 +4806,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {//
+    public @AllowNIL IExpr skewness(IAST dist) {//
       if (dist.isAST2() || dist.isAST3()) {
         // IExpr k = dist.arg1();
         IExpr a = dist.arg2();
@@ -4859,7 +4860,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2() || dist.isAST3()) {
         IExpr k = dist.arg1();
         IExpr a = dist.arg2();
@@ -4899,7 +4900,7 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IPDF, IStatistics, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr cf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr cf(IAST dist, IExpr t, EvalEngine engine) {
       // the moment generating function of the student t distribution does not exist
       if (dist.isAST1()) {
         IExpr v = dist.arg1();
@@ -4926,7 +4927,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         IExpr value = machineValue(n, k, engine, (nDouble, kDouble) -> //
@@ -4988,7 +4989,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 1 or 3 args
       return F.NIL;
     }
@@ -4999,7 +5000,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         IExpr function =
@@ -5064,7 +5065,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
       // CPD-ON
         IExpr arg1 = dist.arg1();
@@ -5087,7 +5088,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
         return F.C0;
       }
@@ -5099,7 +5100,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         //
@@ -5151,7 +5152,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         double n = dist.arg1().evalfNaN();
         if (Double.isNaN(n)) {
@@ -5183,7 +5184,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         return F.Piecewise(F.list(F.list(F.C0, F.Greater(n, F.C3))), S.Indeterminate);
@@ -5195,7 +5196,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         if (EvalEngine.get().isDoubleMode() || n.isNumericArgument(true)) {
@@ -5275,7 +5276,7 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IStatistics, ICDF, IPDF, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5288,7 +5289,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null && n.isInteger() && !n.isNegative()) {
         IExpr a = minMax[0];
@@ -5302,7 +5303,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         return F.And(F.Element(minMax[0], S.Reals), F.Element(minMax[1], S.Reals),
@@ -5312,7 +5313,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5327,7 +5328,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5367,7 +5368,7 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5396,7 +5397,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // (max + min)/2
@@ -5406,7 +5407,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr l = minMax[0];
@@ -5435,7 +5436,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5451,7 +5452,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
       // CPD-ON
@@ -5462,7 +5463,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // IExpr n = minMax[0];
@@ -5473,7 +5474,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr l = minMax[0];
@@ -5531,7 +5532,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -5541,7 +5542,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -5607,7 +5608,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2() && k.isNumericFunction(true) && dist.arg1().isNumericFunction(true)
           && dist.arg2().isNumericFunction(true)) {
         // no elementary closed form - integrate the density
@@ -5620,7 +5621,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2() && k.isNumericFunction(true) && dist.arg1().isNumericFunction(true)
           && dist.arg2().isNumericFunction(true)) {
         double[] parameters = doubleParameters(dist, k);
@@ -5657,29 +5658,29 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return dist.isAST2() ? dist.arg1() : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return dist.isAST2() ? dist.arg1() : F.NIL;
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       // the density is symmetric around the mean direction
       return dist.isAST2() ? F.C0 : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // Integrate((x-m)^2*pdf) has no elementary closed form
       return F.NIL;
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // see exception handling in RandomVariate() function
         double m = dist.arg1().evalfNaN();
@@ -5727,7 +5728,7 @@ public class StatisticsContinousDistribution {
      * @param cdf <code>true</code> for the CDF, <code>false</code> for the PDF
      * @return {@link F#NIL} if the value is not computed numerically
      */
-    private static IExpr numericWeibull(IExpr n, IExpr scale, IExpr loc, IExpr k, boolean cdf,
+    private static @AllowNIL IExpr numericWeibull(IExpr n, IExpr scale, IExpr loc, IExpr k, boolean cdf,
         EvalEngine engine) {
       if (engine.isArbitraryMode() || !(n.isNumericArgument(true)
           || scale.isNumericArgument(true) || (loc != null && loc.isNumericArgument(true))
@@ -5755,7 +5756,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -5807,7 +5808,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -5880,7 +5881,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         // (a,b) -> b*Gamma(1 + 1/a)
         return F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1))));
@@ -5895,7 +5896,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         // (a,b) -> b*Log(2)^(1/a)
         IExpr a = dist.arg1();
@@ -5915,7 +5916,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -5971,7 +5972,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         return randomVariate2(random, dist.arg1(), dist.arg2(), size,
         // CPD-ON
@@ -5999,7 +6000,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2() || dist.isAST3()) {
         IExpr n = dist.arg1();
         // Shift does not affect Skewness
@@ -6018,7 +6019,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2() || dist.isAST3()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -6044,7 +6045,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IGeneratingFunction {
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr b = dist.arg2();
@@ -6055,7 +6056,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -6071,7 +6072,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6081,7 +6082,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -6099,22 +6100,22 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return dist.isAST2() ? dist.arg1() : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return dist.isAST2() ? dist.arg1() : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST2() ? F.Greater(dist.arg2(), F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -6130,17 +6131,17 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return dist.isAST2() ? F.C0 : F.NIL;
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       return dist.isAST2() ? F.Times(F.CSqrt2, dist.arg2()) : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // 2*m^2
       return dist.isAST2() ? F.Times(F.C2, F.Sqr(dist.arg2())) : F.NIL;
     }
@@ -6177,7 +6178,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6200,7 +6201,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6210,7 +6211,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6237,7 +6238,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         if (isSymmetric(dist)) {
@@ -6251,12 +6252,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         if (isSymmetric(dist)) {
@@ -6269,7 +6270,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6294,12 +6295,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null && isSymmetric(dist)) {
         // (b - a)/(2*Sqrt(6))
@@ -6309,7 +6310,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6334,7 +6335,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // Piecewise({{Erf(#/(Sqrt(2)*s)) - (Sqrt(2/Pi)*#)/(E^(#^2/(2*s^2))*s), # > 0}}, 0) &
@@ -6348,7 +6349,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6358,28 +6359,28 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       // 2*Sqrt(2/Pi)*s
       return dist.isAST1() ? F.Times(F.C2, F.Sqrt(F.Divide(F.C2, F.Pi)), dist.arg1()) : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST1() ? F.Greater(dist.arg1(), F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // Piecewise({{(Sqrt(2/Pi)*#^2)/(E^(#^2/(2*s^2))*s^3), # > 0}}, 0) &
@@ -6395,12 +6396,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         // ((3*Pi - 8)*s^2)/Pi
         return F.Divide(F.Times(F.Plus(F.CN8, F.Times(F.C3, F.Pi)), F.Sqr(dist.arg1())), F.Pi);
@@ -6428,7 +6429,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6449,7 +6450,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6464,7 +6465,7 @@ public class StatisticsContinousDistribution {
      * the CDF.
      */
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p == null || k.isNIL()) {
         return F.NIL;
@@ -6527,25 +6528,25 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[0] : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[0] : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.Greater(p[1], F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr a = p[0];
@@ -6565,13 +6566,13 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.C0 : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       // r^2/4
       return p != null ? F.Divide(F.Sqr(p[1]), F.C4) : F.NIL;
@@ -6596,7 +6597,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // the scale sigma is 1 by default
         return F.binaryAST2(S.MarchenkoPasturDistribution, ast.arg1(), F.C1);
@@ -6610,29 +6611,29 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.Sqr(p[1]) : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.And(F.Greater(p[0], F.C0), F.Greater(p[1], F.C0)) : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p == null || !p[0].isReal() || ((IReal) p[0]).isGT(F.C1)) {
         // for lambda > 1 a part of the mass lies at 0, so the density is only that of a
@@ -6655,7 +6656,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       // lambda*sigma^4
       return p != null ? F.Times(p[0], F.Power(p[1], F.C4)) : F.NIL;
@@ -6682,7 +6683,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         // (2*ArcTan(E^((Pi*(# - m))/(2*s))))/Pi &
@@ -6694,7 +6695,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6705,30 +6706,30 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[0] : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[0] : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.Greater(p[1], F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         // Sech((Pi*(# - m))/(2*s))/(2*s) &
@@ -6743,19 +6744,19 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.C0 : F.NIL;
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[1] : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.Sqr(p[1]) : F.NIL;
     }
@@ -6781,7 +6782,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         // Erfc(1/(Sqrt(2)*E^((# - m)/(2*s)))) &
@@ -6793,7 +6794,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6803,12 +6804,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         // m + s*(EulerGamma + Log(2))
@@ -6818,18 +6819,18 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.Greater(p[1], F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr m = p[0];
@@ -6848,12 +6849,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       // (Pi^2*s^2)/2
       return p != null ? F.Divide(F.Times(F.Sqr(F.Pi), F.Sqr(p[1])), F.C2) : F.NIL;
@@ -6893,7 +6894,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -6906,7 +6907,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6926,7 +6927,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -6936,12 +6937,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -6952,7 +6953,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -6963,12 +6964,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -6977,7 +6978,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -6990,7 +6991,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -7016,7 +7017,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -7027,7 +7028,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p == null) {
         return F.NIL;
@@ -7043,7 +7044,7 @@ public class StatisticsContinousDistribution {
       IRandomVariate, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
           double kDouble = k.evalfNaN();
@@ -7074,7 +7075,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       // no simple closed form for a general order
       return F.NIL;
     }
@@ -7099,7 +7100,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 0 or 2 args
       return F.NIL;
     }
@@ -7110,7 +7111,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         IExpr value = locationScaleQuantile(F.C0, F.C1, k, engine, p -> Math.log(p / (1.0 - p)));
         if (value.isPresent()) {
@@ -7157,7 +7158,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST0() || dist.isAST2()) {
         // 3 + 6/5
         return F.QQ(21, 5);
@@ -7166,7 +7167,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST0()) {
         return F.C0;
       }
@@ -7182,7 +7183,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
+    public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       // the Gamma function form is used, because it evaluates to 1 for t == 0 and can be
       // differentiated symbolically;
       // Gamma(1 - b*t)*Gamma(1 + b*t) == (Pi*b*t)/Sin(Pi*b*t)
@@ -7201,7 +7202,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       int order = n.toIntDefault();
       if (order == 0) {
         return F.C1;
@@ -7222,7 +7223,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.Greater(dist.arg2(), F.C0);
       }
@@ -7230,7 +7231,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST0()) {
         // E^(-#)/(1 + E^(-#))^2 &
         return callFunction(
@@ -7249,7 +7250,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST0()) {
         RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
         double[] vector = rdg.nextDeviates(
@@ -7273,7 +7274,7 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST0() || dist.isAST2()) {
         return F.C0;
       }
@@ -7281,7 +7282,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       if (dist.isAST0()) {
         // Pi/Sqrt(3)
         return F.Divide(F.Pi, F.Sqrt(F.C3));
@@ -7294,7 +7295,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST0()) {
         // Pi^2/3
         return F.Divide(F.Sqr(F.Pi), F.C3);
@@ -7312,7 +7313,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
         IExpr s = dist.arg2();
@@ -7326,7 +7327,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7336,7 +7337,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
         // CPD-ON
@@ -7355,7 +7356,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
         IExpr s = dist.arg2();
@@ -7368,13 +7369,13 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       // CPD-OFF generated distribution formulas with matching boilerplate
       return dist.isAST2() ? dist.arg2() : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
@@ -7382,7 +7383,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
         // CPD-ON
@@ -7400,12 +7401,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr g = dist.arg1();
         IExpr s = dist.arg2();
@@ -7430,7 +7431,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7445,7 +7446,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7455,7 +7456,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7470,7 +7471,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7483,7 +7484,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST2()) {
         // (1 - 2^(-1/b))^(1/a)
         return F.Power(
@@ -7495,7 +7496,7 @@ public class StatisticsContinousDistribution {
 
     /** <code>b*Beta(1 + n/a, b)</code> */
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7506,7 +7507,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
@@ -7514,7 +7515,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7533,12 +7534,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7573,7 +7574,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] par = parameters(dist);
       if (par != null) {
         IExpr p = par[0];
@@ -7598,7 +7599,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7608,12 +7609,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] par = parameters(dist);
       if (par != null) {
         IExpr p = par[0];
@@ -7636,12 +7637,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] par = parameters(dist);
       if (par != null) {
         return F.And(F.Greater(par[0], F.C0), F.Greater(par[1], F.C0), F.Greater(par[2], F.C0),
@@ -7651,7 +7652,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] par = parameters(dist);
       if (par != null) {
         IExpr p = par[0];
@@ -7688,12 +7689,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] par = parameters(dist);
       if (par != null && dist.size() != 5) {
         IExpr p = par[0];
@@ -7716,7 +7717,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr q = dist.arg1();
         IExpr a = dist.arg2();
@@ -7731,7 +7732,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7741,12 +7742,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
       // CPD-ON
         IExpr q = dist.arg1();
@@ -7764,12 +7765,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST3()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0),
             F.Greater(dist.arg3(), F.C0));
@@ -7779,7 +7780,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr q = dist.arg1();
         IExpr a = dist.arg2();
@@ -7799,12 +7800,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       return F.NIL;
     }
   }
@@ -7817,7 +7818,7 @@ public class StatisticsContinousDistribution {
       implements IContinuousDistribution, IStatistics {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7827,7 +7828,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.size() == 5) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7840,12 +7841,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.size() == 5) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Less(F.Negate(F.Pi), dist.arg2(), F.Pi),
             F.Greater(dist.arg4(), F.C0));
@@ -7857,12 +7858,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.size() == 5) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7882,7 +7883,7 @@ public class StatisticsContinousDistribution {
       implements IContinuousDistribution, IStatistics {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7892,7 +7893,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -7903,12 +7904,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST2() ? F.Greater(dist.arg2(), F.C0) : F.NIL;
     }
 
@@ -7916,12 +7917,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr n = dist.arg2();
@@ -7954,7 +7955,7 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -7971,7 +7972,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -7981,12 +7982,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (checkParameters(dist).isPresent()) {
         // 1 + 1/a
         return F.Plus(F.C1, F.Power(dist.arg1(), F.CN1));
@@ -7995,12 +7996,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8012,7 +8013,7 @@ public class StatisticsContinousDistribution {
     // CPD-ON
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8036,12 +8037,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8076,7 +8077,7 @@ public class StatisticsContinousDistribution {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8091,7 +8092,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8101,12 +8102,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (checkParameters(dist).isPresent()) {
         // 1 + 1/a
         return F.Plus(F.C1, F.Power(dist.arg1(), F.CN1));
@@ -8115,12 +8116,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0),
             F.LessEqual(dist.arg2(), F.C1));
@@ -8130,7 +8131,7 @@ public class StatisticsContinousDistribution {
     // CPD-ON
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8149,12 +8150,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (checkParameters(dist).isPresent()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8191,7 +8192,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr shape = p[0];
@@ -8211,7 +8212,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8221,30 +8222,30 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[1] : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? p[1] : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.And(F.Greater(p[0], F.C0), F.Greater(p[2], F.C0)) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr shape = p[0];
@@ -8279,13 +8280,13 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? F.C0 : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         IExpr shape = p[0];
@@ -8306,7 +8307,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8320,7 +8321,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8330,7 +8331,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
     // CPD-ON
@@ -8341,7 +8342,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8352,12 +8353,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         // CPD-OFF generated distribution formulas with matching boilerplate
         return F.And(F.GreaterEqual(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
@@ -8366,7 +8367,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8387,12 +8388,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8413,7 +8414,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr v = dist.arg1();
         IExpr l = dist.arg2();
@@ -8427,7 +8428,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8437,24 +8438,24 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
     // CPD-ON
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       // v + l
       return dist.isAST2() ? F.Plus(dist.arg1(), dist.arg2()) : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.GreaterEqual(dist.arg2(), F.C0));
       }
@@ -8462,7 +8463,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr v = dist.arg1();
         IExpr l = dist.arg2();
@@ -8484,12 +8485,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // 2*v + 4*l
       return dist.isAST2() ? F.Plus(F.Times(F.C2, dist.arg1()), F.Times(F.C4, dist.arg2())) : F.NIL;
     }
@@ -8504,7 +8505,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8531,7 +8532,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8541,12 +8542,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
         return stableMean(dist.arg1(), dist.arg2(), dist.arg3(), false);
       }
@@ -8554,17 +8555,17 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST3() ? F.Greater(dist.arg2(), F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8578,12 +8579,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST3()) {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
@@ -8662,7 +8663,7 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8688,7 +8689,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8698,12 +8699,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
         return stableMean(dist.arg1(), dist.arg2(), dist.arg3(), true);
       }
@@ -8711,17 +8712,17 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST3() ? F.Greater(dist.arg2(), F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -8735,12 +8736,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST3()) {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
@@ -8820,7 +8821,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
@@ -8838,7 +8839,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8848,12 +8849,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         if (p[1].isZero() && p[2].isOne()) {
@@ -8867,13 +8868,13 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] p = parameters(dist);
       return p != null ? mean(dist) : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         return F.And(F.Greater(p[0], F.C0), F.Less(p[1], p[2]));
@@ -8883,7 +8884,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     // CPD-OFF generated distribution formulas with matching boilerplate
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
@@ -8906,12 +8907,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         if (p[1].isZero() && p[2].isOne()) {
@@ -8942,7 +8943,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -8952,7 +8953,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IAST rates = rates(dist);
       // Sum(1/lambda_i)
       return rates != null ? rates.map(S.Plus, x -> F.Power(x, F.CN1)) : F.NIL;
@@ -8965,7 +8966,7 @@ public class StatisticsContinousDistribution {
      * for exactly.
      */
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IAST rates = rates(dist);
       if (rates == null) {
         return F.NIL;
@@ -9024,7 +9025,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IAST rates = rates(dist);
       return rates != null ? rates.map(S.And, x -> F.Greater(x, F.C0)) : F.NIL;
     }
@@ -9033,12 +9034,12 @@ public class StatisticsContinousDistribution {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IAST rates = rates(dist);
       // Sum(1/lambda_i^2)
       return rates != null ? rates.map(S.Plus, x -> F.Power(x, F.CN2)) : F.NIL;
@@ -9079,7 +9080,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // the default scale 1
         return F.binaryAST2(ast.head(), F.C1, ast.arg1());
@@ -9093,7 +9094,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1() || dist.isAST2()) {
         int n = size(dist).toIntDefault();
         if (n > 0) {
@@ -9104,12 +9105,12 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1() || dist.isAST2()) {
         IExpr n = size(dist);
         return F.And(F.Greater(scale(dist), F.C0), F.Element(n, S.Integers),
@@ -9119,7 +9120,7 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (!dist.isAST1() && !dist.isAST2()) {
         return F.NIL;
       }

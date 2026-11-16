@@ -3,7 +3,6 @@ package org.matheclipse.io.archunit;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import com.tngtech.archunit.core.domain.JavaFieldAccess;
 import com.tngtech.archunit.core.domain.JavaMethod;
@@ -19,8 +18,8 @@ public class ReturnNilAnnotationArchTest {
 
   @ArchTest
   static final ArchRule methods_accessing_F_NIL_must_be_annotated_with_AllowNIL =
-      methods().that().areDeclaredInClassesThat().resideInAPackage("org.matheclipse.core.eval")
-          .and().haveRawReturnType(IAST.class) // or check isAssignableTo(IExpr.class) in condition
+      methods().that().areDeclaredInClassesThat().resideInAPackage("org.matheclipse.core.builtin")
+          .and().haveRawReturnType(IExpr.class) // or check isAssignableTo(IExpr.class) in condition
           .should(beAnnotatedWithAllowNILIfUsingFNil());
 
   private static ArchCondition<JavaMethod> beAnnotatedWithAllowNILIfUsingFNil() {
@@ -29,6 +28,10 @@ public class ReturnNilAnnotationArchTest {
       public void check(JavaMethod method, ConditionEvents events) {
         // Check return type is IExpr or a subtype (IAST, ISymbol, etc.)
         if (!method.getRawReturnType().isAssignableTo(IExpr.class)) {
+          return;
+        }
+        // compiler generated bodies of lambdas cannot carry an annotation
+        if (method.getName().startsWith("lambda$")) {
           return;
         }
 

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -588,7 +589,7 @@ public class ExprEvaluator {
    * @param args the arguments given as parsable strings
    * @return <code>F.NIL</code> if the evaluation wasn't possible
    */
-  public IExpr evalFunction(IExpr head, String... args) {
+  public @AllowNIL IExpr evalFunction(IExpr head, String... args) {
 
     try {
       if (args != null) {

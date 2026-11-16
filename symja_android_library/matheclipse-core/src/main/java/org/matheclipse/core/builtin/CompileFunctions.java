@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -44,7 +45,7 @@ public class CompileFunctions {
   private static class Compile extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr head = ast.head();
       if (head.isAST(S.Compile, 3)) {
         return apply((IAST) head, ast, engine);
@@ -57,7 +58,7 @@ public class CompileFunctions {
      * Evaluate the body of <code>compiled</code> with the arguments of <code>call</code> in place
      * of its parameters.
      */
-    private static IExpr apply(IAST compiled, IAST call, EvalEngine engine) {
+    private static @AllowNIL IExpr apply(IAST compiled, IAST call, EvalEngine engine) {
       IExpr parameterSpec = compiled.arg1();
       if (!parameterSpec.isList()) {
         return F.NIL;

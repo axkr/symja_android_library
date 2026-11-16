@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -106,7 +107,7 @@ public class MinMaxFunctions {
   private static class ArgMax extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
         IExpr result = optimize(ast.topHead(), ast.arg1(), x, engine);
@@ -177,7 +178,7 @@ public class MinMaxFunctions {
   private static class FunctionContinuous extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr domain = ast.isAST3() ? ast.arg3() : S.Reals;
@@ -546,7 +547,7 @@ public class MinMaxFunctions {
        * @return a logical expression representing the domain, or {@link F#NIL} if no constraints
        *         are found.
        */
-      private IExpr complexesDomain(IExpr expr) {
+      private @AllowNIL IExpr complexesDomain(IExpr expr) {
         if (expr.isFree(x -> variables.contains(x), false)) {
           return F.NIL;
         }
@@ -669,7 +670,7 @@ public class MinMaxFunctions {
        * @return a logical expression representing the domain, or {@link F#NIL} if no constraints
        *         are found.
        */
-      private IExpr realsDomain(IExpr expr) {
+      private @AllowNIL IExpr realsDomain(IExpr expr) {
         if (isFreeOfVariables(expr)) {
           return F.NIL;
         }
@@ -851,7 +852,7 @@ public class MinMaxFunctions {
         }
       }
 
-      private IExpr reduceRelation(IAST inequation) {
+      private @AllowNIL IExpr reduceRelation(IAST inequation) {
         VariablesSet vset = new VariablesSet(inequation);
         IAST reduceVariables = vset.reduceVariables(variables);
         if (reduceVariables.argSize() == 1) {
@@ -873,7 +874,7 @@ public class MinMaxFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr function = ast.arg1();
       // IExpr vars = ast.arg2();
 
@@ -1009,7 +1010,7 @@ public class MinMaxFunctions {
      * If {@code expr} is a two-argument {@code And} of a lower and an upper bound on the same
      * variable, return the equivalent chained inequality; otherwise {@link F#NIL}.
      */
-    private static IExpr chainBoundedAnd(IExpr expr) {
+    private static @AllowNIL IExpr chainBoundedAnd(IExpr expr) {
       if (!expr.isAnd() || expr.size() != 3) {
         return F.NIL;
       }
@@ -1028,7 +1029,7 @@ public class MinMaxFunctions {
      * {@code a<x<b} (homogeneous) or an {@code Inequality[...]} (mixed open/closed). Returns
      * {@link F#NIL} when the pair is not a valid lower/upper bound on a single variable.
      */
-    private static IExpr chainBoundedPair(IExpr lower, IExpr upper) {
+    private static @AllowNIL IExpr chainBoundedPair(IExpr lower, IExpr upper) {
       if (!lower.isAST2() || !upper.isAST2()) {
         return F.NIL;
       }
@@ -1076,7 +1077,7 @@ public class MinMaxFunctions {
   private static final class FunctionPeriod extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr function = ast.arg1();
       IExpr arg2 = ast.arg2();
       // TODO implement different domains
@@ -1111,7 +1112,7 @@ public class MinMaxFunctions {
     public FunctionSingularities() {}
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr function = ast.arg1();
       IExpr vars = ast.arg2();
       IExpr domain = S.Reals; // Default domain
@@ -1376,7 +1377,7 @@ public class MinMaxFunctions {
   private static class NArgMax extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
       if (maximize.isList2() && maximize.second().isListOfRules()) {
         IAST listOfRules = (IAST) maximize.second();
@@ -1404,7 +1405,7 @@ public class MinMaxFunctions {
   private static class NArgMin extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
       if (minimize.isList2() && minimize.second().isListOfRules()) {
         IAST listOfRules = (IAST) minimize.second();
@@ -1499,7 +1500,7 @@ public class MinMaxFunctions {
   private static class NMaxValue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
       if (maximize.isList2() && maximize.second().isListOfRules()) {
         return maximize.first();
@@ -1687,7 +1688,7 @@ public class MinMaxFunctions {
      *
      * @return {@link F#NIL} if the objective has a numeric value there
      */
-    private static IExpr sampleWithoutNumber(ISymbol head, IExpr function, IAST variables,
+    private static @AllowNIL IExpr sampleWithoutNumber(ISymbol head, IExpr function, IAST variables,
         EvalEngine engine) {
       final IAST point = variables.map(v -> F.num(0.7390851332151607), 1);
       final IAST rules = F.mapRange(1, variables.size(),
@@ -1703,7 +1704,7 @@ public class MinMaxFunctions {
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
       for (int i = 3; i < ast.size(); i++) {
         // NMinimize(f, vars, Method -> ..., MaxIterations -> ...): the options are accepted, the
         // method is chosen from the problem
@@ -1804,7 +1805,7 @@ public class MinMaxFunctions {
      * @param best the machine result <code>{value, {x -> x0, ...}}</code>
      * @return <code>best</code> if there is no such option or the refinement fails
      */
-    private IExpr withWorkingPrecision(IExpr best, IExpr function, IExpr constraints, IAST ast,
+    private @AllowNIL IExpr withWorkingPrecision(IExpr best, IExpr function, IExpr constraints, IAST ast,
         EvalEngine engine) {
       if (!best.isList2() || !best.second().isListOfRules()) {
         return best;
@@ -1857,7 +1858,7 @@ public class MinMaxFunctions {
      * @return {@link F#NIL} if the refined point doesn't satisfy the constraints, leaves the
      *         machine point or is worse
      */
-    private IExpr refineAt(IExpr best, IExpr function, IExpr constraints, IAST fixed, long digits,
+    private @AllowNIL IExpr refineAt(IExpr best, IExpr function, IExpr constraints, IAST fixed, long digits,
         EvalEngine engine) {
       IAST rules = (IAST) best.second();
       IASTAppendable starts = F.ListAlloc();
@@ -1928,7 +1929,7 @@ public class MinMaxFunctions {
      *
      * @return {@link F#NIL} if the variable isn't at such a bound
      */
-    private static IExpr activeBound(IExpr variable, double value, List<IExpr> conjuncts) {
+    private static @AllowNIL IExpr activeBound(IExpr variable, double value, List<IExpr> conjuncts) {
       for (IExpr c : conjuncts) {
         if (c.argSize() != 2 || !(c.isAST(S.LessEqual) || c.isAST(S.Less)
             || c.isAST(S.GreaterEqual) || c.isAST(S.Greater))) {
@@ -2038,7 +2039,7 @@ public class MinMaxFunctions {
      *
      * @return {@link F#NIL} if no point which satisfies the constraints was found
      */
-    private IExpr optimum(IExpr function, IExpr constraints, Search search) {
+    private @AllowNIL IExpr optimum(IExpr function, IExpr constraints, Search search) {
       if (constraints.isTrue()) {
         return unconstrainedOptimum(function, search);
       }
@@ -2068,7 +2069,7 @@ public class MinMaxFunctions {
      * the answer only if it is better than the one from the origin: a problem which has one
      * optimum gets the result it always had.
      */
-    private IExpr unconstrainedOptimum(IExpr function, Search search) {
+    private @AllowNIL IExpr unconstrainedOptimum(IExpr function, Search search) {
       final MultivariateFunction func = new MultiVariateNumerical(function, search.listOfVariables);
       final int dimension = search.vars.size();
       final boolean minimize = getGoalType() == GoalType.MINIMIZE;
@@ -2223,7 +2224,7 @@ public class MinMaxFunctions {
      * <code>NMinimize({x+y, x>=-1 && y>=-2}, {x,y})</code> is <code>-3</code>, not the
      * <code>0</code> a non-negativity constraint gave.
      */
-    private IExpr optimizeSimplexSolver(IExpr constraintExpr, VariablesSet variables,
+    private @AllowNIL IExpr optimizeSimplexSolver(IExpr constraintExpr, VariablesSet variables,
         IExpr function) {
       IExpr listOfconstraints = constraintExpr.makeAST(S.And);
       try {
@@ -2244,7 +2245,7 @@ public class MinMaxFunctions {
      * <code>FindMaximum</code>. A result which violates the constraints is no answer: for
      * contradictory constraints the local solver stops at a point which satisfies none of them.
      */
-    private IExpr constrainedOptimum(IExpr function, IExpr constraints, Search search) {
+    private @AllowNIL IExpr constrainedOptimum(IExpr function, IExpr constraints, Search search) {
       final EvalEngine engine = search.engine;
       final List<IExpr> variables = search.vars.getArrayList();
       boolean[] onlyBounds = new boolean[1];
@@ -2341,7 +2342,7 @@ public class MinMaxFunctions {
      *
      * @return {@link F#NIL} if a conjunct is no relation which can be measured
      */
-    private static IExpr violationOf(IExpr constraints) {
+    private static @AllowNIL IExpr violationOf(IExpr constraints) {
       IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
       IASTAppendable sum = F.PlusAlloc(conjuncts.size());
       for (int i = 1; i < conjuncts.size(); i++) {
@@ -2366,7 +2367,7 @@ public class MinMaxFunctions {
       return sum.oneIdentity0();
     }
 
-    private IExpr localSearch(IExpr function, IExpr constraints, IAST specs, boolean quiet,
+    private @AllowNIL IExpr localSearch(IExpr function, IExpr constraints, IAST specs, boolean quiet,
         EvalEngine engine) {
       final IAST problem = F.list(function, constraints);
       IAST search = F.binaryAST2(getGoalType() == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
@@ -2385,7 +2386,7 @@ public class MinMaxFunctions {
      * <code>x == 12.6</code>, where the search from the origin stopped at the first local maximum
      * <code>0.56</code>.
      */
-    private IExpr boxOptimum(IExpr function, IExpr constraints, double[][] box, boolean onlyBounds,
+    private @AllowNIL IExpr boxOptimum(IExpr function, IExpr constraints, double[][] box, boolean onlyBounds,
         Search search) {
       final EvalEngine engine = search.engine;
       final List<IExpr> variables = search.vars.getArrayList();
@@ -2743,7 +2744,7 @@ public class MinMaxFunctions {
      * <code>v</code> with a fractional part, solve the two problems with <code>x <= Floor(v)</code>
      * and with <code>x >= Ceiling(v)</code>.
      */
-    private IExpr branchAndBound(IExpr function, IExpr constraints, List<IExpr> integerVariables,
+    private @AllowNIL IExpr branchAndBound(IExpr function, IExpr constraints, List<IExpr> integerVariables,
         Search search) {
       final boolean minimize = getGoalType() == GoalType.MINIMIZE;
       IExpr incumbent = F.NIL;
@@ -2818,7 +2819,7 @@ public class MinMaxFunctions {
   private static class NMinValue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
       if (minimize.isList2() && minimize.second().isListOfRules()) {
         return minimize.first();
@@ -2853,7 +2854,7 @@ public class MinMaxFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr extremum = engine.evaluate(ast.setAtCopy(0, search));
       if (extremum.isList2() && extremum.second().isListOfRules()) {
         if (value) {

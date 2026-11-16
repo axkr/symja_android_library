@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +50,7 @@ public class UnitTestingFunctions {
   private static class TestReport extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         if (ast.arg1().isList()) {
           IAST listOfVerificationTest = (IAST) ast.arg1();
@@ -187,7 +188,7 @@ public class UnitTestingFunctions {
   private static class VerificationTest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr sameTest = S.SameQ;
       IExpr testID = S.None;
       IExpr actualOutput = S.None;

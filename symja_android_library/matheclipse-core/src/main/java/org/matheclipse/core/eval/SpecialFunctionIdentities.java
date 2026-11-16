@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -400,7 +401,7 @@ public final class SpecialFunctionIdentities {
    *
    * @return {@link F#NIL} if no identity applies
    */
-  public static IExpr simplify(IExpr expr, EvalEngine engine) {
+  public static @AllowNIL IExpr simplify(IExpr expr, EvalEngine engine) {
     if (!isCandidate(expr)) {
       return F.NIL;
     }
@@ -511,7 +512,7 @@ public final class SpecialFunctionIdentities {
   }
 
   /** Reflections which bring a parameter to its usual sign. */
-  private static IExpr reflections(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr reflections(IExpr expr, EvalEngine engine) {
     return expr.replaceAll(x -> {
       if (!x.isAST() || x.argSize() < 1) {
         return F.NIL;
@@ -569,7 +570,7 @@ public final class SpecialFunctionIdentities {
    *
    * @return {@link F#NIL} if no order was changed
    */
-  private static IExpr alignEvenOrders(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr alignEvenOrders(IExpr expr, EvalEngine engine) {
     List<IAST> calls = new ArrayList<IAST>();
     collectCalls(expr, calls, 0);
     Map<IExpr, IExpr> replacements = new HashMap<IExpr, IExpr>();
@@ -628,7 +629,7 @@ public final class SpecialFunctionIdentities {
    *
    * @return {@link F#NIL} if no group has two different parameters
    */
-  private static IExpr shiftFamilies(IExpr expr, boolean lowest, boolean reversed,
+  private static @AllowNIL IExpr shiftFamilies(IExpr expr, boolean lowest, boolean reversed,
       EvalEngine engine) {
     List<IAST> calls = new ArrayList<IAST>();
     collectCalls(expr, calls, 0);
@@ -780,7 +781,7 @@ public final class SpecialFunctionIdentities {
    *
    * @return {@link F#NIL} if no pair was found
    */
-  private static IExpr pairIdentities(IExpr expanded, EvalEngine engine) {
+  private static @AllowNIL IExpr pairIdentities(IExpr expanded, EvalEngine engine) {
     if (!expanded.isPlus()) {
       return F.NIL;
     }
@@ -845,7 +846,7 @@ public final class SpecialFunctionIdentities {
    * <code>EllipticE(m)</code> of the term at <code>i</code>; the three terms are replaced in
    * <code>terms</code>.
    */
-  private static IExpr legendreRelation(List<IExpr> terms, int i, IAST factor,
+  private static @AllowNIL IExpr legendreRelation(List<IExpr> terms, int i, IAST factor,
       EvalEngine engine) {
     if (!factor.isAST(S.EllipticE, 2)) {
       return F.NIL;

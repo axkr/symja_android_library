@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.Writer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
@@ -62,7 +63,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
    *
    * @param traceEvaluation
    */
-  public IExpr constrainedEval(final Writer writer, final String inputString,
+  public @AllowNIL IExpr constrainedEval(final Writer writer, final String inputString,
       boolean traceEvaluation) throws Exception {
 
     fEvaluationResult = F.NIL;
@@ -82,7 +83,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
   }
 
   /** Runs the evaluation of the given math expression in a time limited thread */
-  public IExpr constrainedEval(final Writer writer, final IExpr inputExpression) throws Exception {
+  public @AllowNIL IExpr constrainedEval(final Writer writer, final IExpr inputExpression) throws Exception {
 
     fEvaluationResult = F.NIL;
     fException = null;

@@ -309,7 +309,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // Requested precision `1` is larger than $MaxPrecision. Using current $MaxPrecision of
             // `2` instead. ...
             Errors.printMessage(S.N, "preclg",
-                F.list(requestedExpr, engine.precisionBoundValue(false)), engine);
+                F.list(requestedExpr, engine.precisionBoundValue(false).orElse(S.$MaxPrecision)), engine);
           } else {
             // Requested precision `1` is smaller than `2`.
             Errors.printMessage(S.N, "precsm", F.list(requestedExpr, S.$MinPrecision), engine);

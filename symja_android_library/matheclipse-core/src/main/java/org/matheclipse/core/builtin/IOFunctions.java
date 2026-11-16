@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -225,7 +226,7 @@ public class IOFunctions {
    */
   private static final class EchoLabel extends Print {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.head().isAST1()) {
         return F.binaryAST2(S.Echo, ast.arg1(), ast.head().first());
       }
@@ -241,7 +242,7 @@ public class IOFunctions {
 
   private static final class EchoFunction extends Print {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
 
       if (ast.isAST1() && ast.head().isAST()) {
         final int size = ast.head().size();
@@ -311,7 +312,7 @@ public class IOFunctions {
   private static class Message extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() > 1) {
         if (ast.arg1().isString()) {
           String message = ast.arg1().toString();
@@ -361,7 +362,7 @@ public class IOFunctions {
   private static class Messages extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkIsVariable(ast, 1, engine);
       if (arg1.isSymbol()) {
         ISymbol symbol = (ISymbol) arg1;
@@ -404,7 +405,7 @@ public class IOFunctions {
   private static class Short extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -417,7 +418,7 @@ public class IOFunctions {
   private static class StyleForm extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.StyleForm) {
         return ast.apply(S.Style);
       }

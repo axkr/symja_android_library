@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
@@ -30,7 +31,7 @@ public class PiecewiseFunctions {
   private static class BernsteinBasis extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr dArg1 = ast.arg1();
       IExpr nArg2 = ast.arg2();
       IExpr x = ast.arg3();
@@ -184,7 +185,7 @@ public class PiecewiseFunctions {
      *
      * @return {@link F#NIL} if a bound cannot be clipped
      */
-    private static IExpr clipInterval(IAST interval, IExpr min, IExpr max) {
+    private static @AllowNIL IExpr clipInterval(IAST interval, IExpr min, IExpr max) {
       IAST normalized = IntervalSym.normalize(interval);
       if (normalized.isNIL()) {
         return F.NIL;
@@ -221,7 +222,7 @@ public class PiecewiseFunctions {
      *
      * @return {@link F#NIL} if a bound cannot be clipped
      */
-    private static IExpr clipIntervalData(IAST intervalData, IExpr min, IExpr max) {
+    private static @AllowNIL IExpr clipIntervalData(IAST intervalData, IExpr min, IExpr max) {
       if (intervalData.isAST0()) {
         // the empty interval set
         return F.NIL;
@@ -265,7 +266,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr min = F.CN1;
       IExpr max = F.C1;
       IExpr vMin = F.CN1;
@@ -374,7 +375,7 @@ public class PiecewiseFunctions {
    */
   private static class DiscreteDelta extends AbstractFunctionEvaluator {
 
-    private static IExpr removeEval(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr removeEval(final IAST ast, EvalEngine engine) {
       IASTAppendable result = F.NIL;
       int size = ast.size();
       int j = 1;
@@ -403,7 +404,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (size == 1) {
         return F.C1;
@@ -504,7 +505,7 @@ public class PiecewiseFunctions {
   private static class KroneckerDelta extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (ast.head() != S.KroneckerDelta) {
         // KroneckerDelta has no operator form in Mathematica, which leaves KroneckerDelta(x)[1,2]
@@ -665,7 +666,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isList()) {
         // Piecewise is HoldAll, so that the value of a branch is only evaluated once its condition
@@ -789,7 +790,7 @@ public class PiecewiseFunctions {
     public Ramp() {}
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       if (expr.isPositiveResult() || expr.isInfinity()) {
         return expr;
@@ -829,7 +830,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
         return F.CInfinity;
@@ -887,7 +888,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = F.NIL;
       IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
@@ -947,7 +948,7 @@ public class PiecewiseFunctions {
   private static class SawtoothWave extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         if (arg1.isList2()) {
@@ -1007,7 +1008,7 @@ public class PiecewiseFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.last();
       if (ast.isAST2() && !ast.arg1().isList2()) {
         return F.NIL;
@@ -1107,7 +1108,7 @@ public class PiecewiseFunctions {
       newSymbol.setAttributes(Attribute.LISTABLE);
     }
 
-    private IExpr unitize(IExpr x, EvalEngine engine) {
+    private @AllowNIL IExpr unitize(IExpr x, EvalEngine engine) {
       if (x.isComplexInfinity() || x.isDirectedInfinity()) {
         // an infinite quantity is not zero
         return F.C1;
@@ -1135,7 +1136,7 @@ public class PiecewiseFunctions {
       return F.NIL;
     }
 
-    private IExpr unitize(IExpr x, IExpr dx, EvalEngine engine) {
+    private @AllowNIL IExpr unitize(IExpr x, IExpr dx, EvalEngine engine) {
       // Piecewise({{1, dx-Abs(x)<= 0}}, 0)
       IExpr temp = engine.evaluate(F.Subtract(dx, F.Abs(x)));
       if (temp.isNegativeResult()) {
@@ -1202,7 +1203,7 @@ public class PiecewiseFunctions {
      * cases,
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (size > 1) {
         for (int i = 1; i < size; i++) {
@@ -1278,7 +1279,7 @@ public class PiecewiseFunctions {
    * @param engine the evaluation engine
    * @return <code>F.NIL</code> if <code>x</code> is not a real constant
    */
-  private static IExpr absOfRealConstant(IExpr x, EvalEngine engine) {
+  private static @AllowNIL IExpr absOfRealConstant(IExpr x, EvalEngine engine) {
     if (x.isReal()) {
       return x.abs();
     }
@@ -1296,7 +1297,7 @@ public class PiecewiseFunctions {
    * @param ast the function call with at least two arguments
    * @return {@link F#NIL} if all or none of the arguments are numeric
    */
-  public static IExpr splitNumericArguments(IAST ast) {
+  public static @AllowNIL IExpr splitNumericArguments(IAST ast) {
     IASTAppendable factors = F.TimesAlloc(ast.size());
     IASTAppendable rest = F.ast(ast.head(), ast.argSize());
     for (int i = 1; i < ast.size(); i++) {
@@ -1317,7 +1318,7 @@ public class PiecewiseFunctions {
   private static class UnitBox extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // multiple arguments are treated as a Product
       // UnitBox(x, y, 1/4) becomes UnitBox(1/4) * UnitBox(x, y)
       if (ast.size() > 2) {
@@ -1364,7 +1365,7 @@ public class PiecewiseFunctions {
   private static class UnitTriangle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // multiple arguments are treated as a Product
       // UnitTriangle(x, y, 1/4) becomes UnitTriangle(1/4) * UnitTriangle(x, y)
       if (ast.size() > 2) {

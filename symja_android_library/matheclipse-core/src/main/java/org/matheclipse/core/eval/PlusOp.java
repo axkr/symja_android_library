@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -39,7 +40,7 @@ public final class PlusOp {
    * @param returnNilIfUnevaluated TODO check if this parameter can be removed
    * @return the result of the addition or {@link F#NIL}
    */
-  public static org.matheclipse.core.interfaces.IExpr numberLikePlus(
+  public static @AllowNIL org.matheclipse.core.interfaces.IExpr numberLikePlus(
       org.matheclipse.core.interfaces.IExpr iExpr, final org.matheclipse.core.interfaces.IExpr that,
       boolean returnNilIfUnevaluated) {
     if (iExpr.isNumber()) {
@@ -278,7 +279,7 @@ public final class PlusOp {
    *
    * @return the sum, or {@link F#NIL}
    */
-  public IExpr getSumIfEvaled() {
+  public @AllowNIL IExpr getSumIfEvaled() {
     boolean folded = foldIntoSeries();
     return (evaled || folded) ? getSum() : F.NIL;
   }
@@ -313,7 +314,7 @@ public final class PlusOp {
    * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>F.NIL</code>
    *         otherwise.
    */
-  public IExpr plus(final IExpr arg) {
+  public @AllowNIL IExpr plus(final IExpr arg) {
     if (arg.isIndeterminate()) {
       return S.Indeterminate;
     }

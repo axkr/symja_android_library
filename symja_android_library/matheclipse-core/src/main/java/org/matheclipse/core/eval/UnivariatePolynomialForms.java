@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +68,7 @@ final class UnivariatePolynomialForms {
    * @param engine the evaluation engine
    * @return the cheapest form, or {@link F#NIL} if <code>expr</code> is no such polynomial
    */
-  static IExpr bestForm(IExpr expr, Function<IExpr, Long> complexity, EvalEngine engine) {
+  static @AllowNIL IExpr bestForm(IExpr expr, Function<IExpr, Long> complexity, EvalEngine engine) {
     if (!expr.isPlus()) {
       return F.NIL;
     }
@@ -94,7 +95,7 @@ final class UnivariatePolynomialForms {
    * @return the quotient of the two forms, or {@link F#NIL} if numerator or denominator isn't a
    *         univariate polynomial with integer coefficients
    */
-  static IExpr bestQuotientForm(IExpr quotient, Function<IExpr, Long> complexity,
+  static @AllowNIL IExpr bestQuotientForm(IExpr quotient, Function<IExpr, Long> complexity,
       EvalEngine engine) {
     if (!quotient.isTimes() || !((IAST) quotient)
         .exists(x -> x.isPower() && x.base().isAST() && x.exponent().isNegativeResult())) {

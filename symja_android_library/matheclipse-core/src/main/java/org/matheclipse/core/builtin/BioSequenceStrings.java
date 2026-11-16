@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
@@ -160,7 +161,7 @@ final class BioSequenceStrings {
    *
    * @return {@link F#NIL} if <code>arg1</code> is no sequence or the call is not supported
    */
-  static IExpr evaluate(IAST ast, IExpr arg1, EvalEngine engine) {
+  static @AllowNIL IExpr evaluate(IAST ast, IExpr arg1, EvalEngine engine) {
     Seq seq = Seq.of(arg1);
     if (seq == null) {
       return F.NIL;
@@ -188,7 +189,7 @@ final class BioSequenceStrings {
    *
    * @return {@link F#NIL} if an argument is no sequence
    */
-  static IExpr join(IAST ast, EvalEngine engine) {
+  static @AllowNIL IExpr join(IAST ast, EvalEngine engine) {
     StringBuilder buf = new StringBuilder();
     List<String> types = new ArrayList<String>();
     Seq first = null;
@@ -218,7 +219,7 @@ final class BioSequenceStrings {
   }
 
   /** Evaluate the string function on the letters and turn strings into sequences again. */
-  private static IExpr delegate(IAST call, Seq seq, EvalEngine engine) {
+  private static @AllowNIL IExpr delegate(IAST call, Seq seq, EvalEngine engine) {
     IExpr result = engine.evaluate(call);
     if (result.isAST() && result.head() == call.head()) {
       return F.NIL;
@@ -320,7 +321,7 @@ final class BioSequenceStrings {
   }
 
   /** The string functions on a circular sequence. */
-  private static IExpr circular(IAST ast, Seq seq, EvalEngine engine) {
+  private static @AllowNIL IExpr circular(IAST ast, Seq seq, EvalEngine engine) {
     IExpr head = ast.head();
     int n = seq.letters.length();
     if (head == S.StringLength && ast.isAST1()) {
@@ -460,7 +461,7 @@ final class BioSequenceStrings {
   }
 
   /** The left hand sides of a rule or a list of rules, as one pattern, or {@link F#NIL}. */
-  private static IExpr ruleLeftHandSides(IExpr rules) {
+  private static @AllowNIL IExpr ruleLeftHandSides(IExpr rules) {
     if (rules.isRuleAST()) {
       return rules.first();
     }

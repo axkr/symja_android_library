@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -204,7 +205,7 @@ public class FileFunctions {
   private static final class BinaryRead extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           final DataInput reader = getDataInput(ast.arg1(), engine);
@@ -242,7 +243,7 @@ public class FileFunctions {
   private static final class BinaryWrite extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       SocketEntry socketTarget = SocketFunctions.entryOf(ast.arg1());
       if (socketTarget != null) {
         return SocketFunctions.write(socketTarget, toBytes(ast.arg2()), S.BinaryWrite, engine);
@@ -319,7 +320,7 @@ public class FileFunctions {
   private static final class Close extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         SocketEntry socket = SocketFunctions.entryOf(arg1);
@@ -356,7 +357,7 @@ public class FileFunctions {
   private static final class Compress extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
 
       String compressed = WMACompress.compress(expr);
@@ -399,7 +400,7 @@ public class FileFunctions {
   private static class CreateDirectory extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (ast.isAST0()) {
@@ -444,7 +445,7 @@ public class FileFunctions {
   private static class CreateFile extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (ast.isAST0()) {
@@ -519,7 +520,7 @@ public class FileFunctions {
    */
   private static final class End extends AbstractCoreFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       org.matheclipse.core.expression.Context context = engine.end();
       if (context == null) {
         return F.NIL;
@@ -585,7 +586,7 @@ public class FileFunctions {
   private static final class FileEvaluator extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
@@ -615,7 +616,7 @@ public class FileFunctions {
   private static final class FileFormat extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -643,7 +644,7 @@ public class FileFunctions {
   private static final class FilePrint extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         IExpr arg1 = ast.arg1();
 
@@ -706,7 +707,7 @@ public class FileFunctions {
   private static final class FindList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IAST searchStrings = Validate.checkListOfStrings(ast, 2, S.FindList, engine);
@@ -868,7 +869,7 @@ public class FileFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (!(ast.arg1() instanceof IStringX)) {
@@ -967,7 +968,7 @@ public class FileFunctions {
   private static final class InputStream extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
@@ -1054,7 +1055,7 @@ public class FileFunctions {
   }
 
   /** The <code>Method</code> option of a stream-opening call, or {@link F#NIL}. */
-  private static IExpr streamMethod(final IAST ast) {
+  private static @AllowNIL IExpr streamMethod(final IAST ast) {
     for (int i = 1; i < ast.size(); i++) {
       IExpr argument = ast.get(i);
       if (argument.isRuleAST() && argument.first() == S.Method && argument.second().isString()) {
@@ -1064,7 +1065,7 @@ public class FileFunctions {
     return F.NIL;
   }
 
-  private static IExpr streamName(final IAST ast) {
+  private static @AllowNIL IExpr streamName(final IAST ast) {
     for (int i = 1; i < ast.size(); i++) {
       IExpr argument = ast.get(i);
       if (argument.isRuleAST()) {
@@ -1078,7 +1079,7 @@ public class FileFunctions {
   private static final class OpenRead extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(EvalEngine.get())) {
         try {
           IExpr name = streamName(ast);
@@ -1118,7 +1119,7 @@ public class FileFunctions {
      * @param engine
      * @return
      */
-    protected IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
+    protected @AllowNIL IExpr openOutputStream(final IAST ast, boolean append, EvalEngine engine) {
       if (ast.isAST1()) {
         OutputStreamExpr standard = standardStream(ast.arg1(), engine);
         if (standard != null) {
@@ -1180,7 +1181,7 @@ public class FileFunctions {
   private static final class OutputStream extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           IExpr arg1 = ast.arg1();
@@ -1209,7 +1210,7 @@ public class FileFunctions {
 
   private static final class Needs extends Get {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       String alias = null;
       // Needs["A`" -> "a`"] and Needs["A`" -> None] read A` without putting it on $ContextPath -
@@ -1361,7 +1362,7 @@ public class FileFunctions {
   private static final class Put extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
 
         final int argSize = ast.argSize();
@@ -1537,7 +1538,7 @@ public class FileFunctions {
   private static final class Read extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isReadable(ast.arg1(), engine)) {
         try {
           IExpr arg1 = ast.arg1();
@@ -1959,7 +1960,7 @@ public class FileFunctions {
   private static final class ReadLine extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isReadable(ast.arg1(), engine)) {
         try {
           // ReadLine[stream, TimeConstraint -> 10] is how a package reads a file it may have to
@@ -1998,7 +1999,7 @@ public class FileFunctions {
   private static final class StreamPosition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1() instanceof InputStreamExpr && isReadable(ast.arg1(), engine)) {
         try {
           long position = ((InputStreamExpr) ast.arg1()).getStreamPosition();
@@ -2024,7 +2025,7 @@ public class FileFunctions {
   private static final class ReadList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1() instanceof InputStreamExpr && isReadable(ast.arg1(), engine)) {
         return readListFromStream((InputStreamExpr) ast.arg1(), ast, engine);
       }
@@ -2095,7 +2096,7 @@ public class FileFunctions {
      * <code>ReadList[stream, type, RecordLists -> True]</code>: the elements of each line of the
      * stream in a list of their own; empty lines are left out.
      */
-    private static IExpr readRecordLists(InputStreamExpr stream, IAST ast, ReadOptions options,
+    private static @AllowNIL IExpr readRecordLists(InputStreamExpr stream, IAST ast, ReadOptions options,
         EvalEngine engine) {
       if (ast.argSize() > 2) {
         return F.NIL;
@@ -2144,7 +2145,7 @@ public class FileFunctions {
      * repeated until <code>EndOfFile</code>, at most <code>n</code> times. An expression may run
      * over several lines. An object which cannot be read ends the list as <code>$Failed</code>.
      */
-    private static IExpr readListFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr readListFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
       int optionsStart = ast.size();
       while (optionsStart > 2 && ast.get(optionsStart - 1).isRuleAST()) {
         optionsStart--;
@@ -2209,7 +2210,7 @@ public class FileFunctions {
   private static final class ReadByteArray extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       byte[] bytes = null;
       if (arg1 instanceof ByteArrayExpr) {
@@ -2295,7 +2296,7 @@ public class FileFunctions {
    *
    * @return the text read, or <code>EndOfFile</code> when the stream had nothing left
    */
-  private static IExpr readFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr readFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
     IExpr terminator = F.NIL;
     for (int i = 2; i < ast.size(); i++) {
       IExpr argument = ast.get(i);
@@ -2380,7 +2381,7 @@ public class FileFunctions {
   private static final class ReadString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1() instanceof InputStreamExpr) {
         return readFromStream((InputStreamExpr) ast.arg1(), ast, engine);
       }
@@ -2500,7 +2501,7 @@ public class FileFunctions {
   private static final class Save extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
 
         if (!(ast.arg1() instanceof IStringX)) {
@@ -2556,7 +2557,7 @@ public class FileFunctions {
   private static final class StringToStream extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a stream over a string reads no file, so it needs no file system access
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
@@ -2593,7 +2594,7 @@ public class FileFunctions {
     private static final int MAX_UNCOMPRESSED_CHARS = 64 * 1024 * 1024;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!(arg1 instanceof IStringX)) {
         return F.NIL;
@@ -2689,7 +2690,7 @@ public class FileFunctions {
         {"Scheme", "User", "Domain", "Port", "Path", "Query", "Fragment"};
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isString()) {
         return F.NIL;
       }
@@ -2798,7 +2799,7 @@ public class FileFunctions {
   private static final class URLBuild extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.URL, 2) && arg1.first().isString()) {
         arg1 = arg1.first();
@@ -3100,7 +3101,7 @@ public class FileFunctions {
   private static final class URLQueryEncode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST rules = queryRules(ast.arg1());
       if (rules.isNIL()) {
         return F.NIL;
@@ -3164,7 +3165,7 @@ public class FileFunctions {
   private static final class URLQueryDecode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isString()) {
         return F.NIL;
       }
@@ -3221,7 +3222,7 @@ public class FileFunctions {
   private static final class URLDecode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       Charset charset = urlCharset(ast);
       if (!(arg1 instanceof IStringX) || charset == null) {
@@ -3253,7 +3254,7 @@ public class FileFunctions {
   private static final class URLEncode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!(arg1 instanceof IStringX)) {
         if (arg1.isTrue()) {
@@ -3509,7 +3510,7 @@ public class FileFunctions {
   private static final class Write extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       OutputStreamExpr standard = standardStream(ast.arg1(), engine);
       if (standard != null) {
         return writeToStream(standard, writeLine(ast), engine);
@@ -3610,7 +3611,7 @@ public class FileFunctions {
   private static final class WriteString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
       if (socket != null && ast.arg2().isString()) {
         // writing to a socket is not a file operation, so it is not behind the file switch

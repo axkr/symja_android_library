@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
@@ -197,7 +198,7 @@ public class StatisticsFunctions {
    * Conditional expectation <code>E(expr | pred) == E(expr * Boole(pred)) / P(pred)</code>,
    * computed with the given expectation and probability heads (symbolic or numeric variants).
    */
-  private static IExpr conditionedExpectation(IBuiltInSymbol expectationHead,
+  private static @AllowNIL IExpr conditionedExpectation(IBuiltInSymbol expectationHead,
       IBuiltInSymbol probabilityHead, IAST conditioned, IExpr distributed, EvalEngine engine) {
     IExpr expr = conditioned.arg1();
     IExpr predicate = conditioned.arg2();
@@ -252,7 +253,7 @@ public class StatisticsFunctions {
    * @param integrateHead {@link S#Integrate} or {@link S#NIntegrate}
    * @return {@link F#NIL} if an integral does not evaluate
    */
-  private static IExpr integrateOverRegion(IExpr integrand, IExpr x, IAST region,
+  private static @AllowNIL IExpr integrateOverRegion(IExpr integrand, IExpr x, IAST region,
       IBuiltInSymbol integrateHead, EvalEngine engine) {
     IASTAppendable sum = F.PlusAlloc(region.argSize() + 1);
     for (int i = 1; i < region.size(); i++) {
@@ -297,7 +298,7 @@ public class StatisticsFunctions {
    * @return {@link F#NIL} if the piecewise cannot be decomposed or the sum does not evaluate to a
    *         closed form
    */
-  private static IExpr sumProductOverPiecewise(IExpr factor, IExpr piecewisePdf, IExpr x,
+  private static @AllowNIL IExpr sumProductOverPiecewise(IExpr factor, IExpr piecewisePdf, IExpr x,
       long[] windows, EvalEngine engine) {
     // CPD-OFF piecewise sum and integral share only the branch walk
     IAST branches = piecewiseZeroDefaultBranches(piecewisePdf);
@@ -380,7 +381,7 @@ public class StatisticsFunctions {
   }
 
   /** Monte carlo estimate of <code>E[function(x)]</code> based on {@link S#RandomVariate}. */
-  private static IExpr monteCarloExpectation(IExpr function, IExpr x, IExpr distribution,
+  private static @AllowNIL IExpr monteCarloExpectation(IExpr function, IExpr x, IExpr distribution,
       int samples, EvalEngine engine) {
     IExpr list = engine.evaluate(F.RandomVariate(distribution, F.ZZ(samples)));
     if (list.isList() && list.argSize() == samples) {
@@ -408,7 +409,7 @@ public class StatisticsFunctions {
   }
 
   /** Monte carlo estimate of <code>P(predicate)</code> based on {@link S#RandomVariate}. */
-  private static IExpr monteCarloProbability(IExpr predicate, IExpr x, IExpr distribution,
+  private static @AllowNIL IExpr monteCarloProbability(IExpr predicate, IExpr x, IExpr distribution,
       int samples, EvalEngine engine) {
     IExpr list = engine.evaluate(F.RandomVariate(distribution, F.ZZ(samples)));
     if (list.isList() && list.argSize() == samples) {
@@ -432,7 +433,7 @@ public class StatisticsFunctions {
    * @param integrateHead {@link S#Integrate} or {@link S#NIntegrate}
    * @return {@link F#NIL} if the piecewise cannot be decomposed or an integral does not evaluate
    */
-  private static IExpr integrateProductOverPiecewise(IExpr factor, IExpr piecewise, IExpr x,
+  private static @AllowNIL IExpr integrateProductOverPiecewise(IExpr factor, IExpr piecewise, IExpr x,
       IAST booleRegion, IBuiltInSymbol integrateHead, EvalEngine engine) {
     // CPD-OFF piecewise sum and integral share only the branch walk
     IAST branches = piecewiseZeroDefaultBranches(piecewise);
@@ -474,7 +475,7 @@ public class StatisticsFunctions {
    *
    * @return {@link F#NIL} if <code>dist</code> is no distribution with a covariance matrix
    */
-  private static IExpr distributionCovariance(IExpr dist, EvalEngine engine) {
+  private static @AllowNIL IExpr distributionCovariance(IExpr dist, EvalEngine engine) {
     if (dist.isAST() && dist.head() instanceof IBuiltInSymbol) {
       IEvaluator evaluator = ((IBuiltInSymbol) dist.head()).getEvaluator();
       if (evaluator instanceof ICovariance) {
@@ -490,7 +491,7 @@ public class StatisticsFunctions {
    *
    * @return {@link F#NIL} if the matrix is unknown or an index is out of range
    */
-  private static IExpr matrixOrEntry(IAST ast, IExpr matrix, EvalEngine engine) {
+  private static @AllowNIL IExpr matrixOrEntry(IAST ast, IExpr matrix, EvalEngine engine) {
     IExpr evaluated = engine.evaluate(matrix);
     if (!evaluated.isList() || ast.isAST1()) {
       return evaluated.isList() ? evaluated : F.NIL;
@@ -507,7 +508,7 @@ public class StatisticsFunctions {
   private static final class AbsoluteCorrelation extends AbstractFunctionEvaluator {
 
     /** The matrix of the expectations of the products of two marginals. */
-    private static IExpr momentMatrix(IExpr dist, EvalEngine engine) {
+    private static @AllowNIL IExpr momentMatrix(IExpr dist, EvalEngine engine) {
       IExpr covariance = engine.evaluate(distributionCovariance(dist, engine));
       IExpr mean = engine.evaluate(F.Mean(dist));
       if (!covariance.isList() || !mean.isList() || mean.argSize() != covariance.argSize()) {
@@ -517,7 +518,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       if (a.isDistribution() && !ast.isAST2()) {
         return matrixOrEntry(ast, momentMatrix(a, engine), engine);
@@ -543,7 +544,7 @@ public class StatisticsFunctions {
   private static class InverseCDF extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 1 or 2 arguments
       // CPD-OFF sibling distribution functions with their own dispatch
       if (ast.size() == 2 || ast.size() == 3) {
@@ -594,7 +595,7 @@ public class StatisticsFunctions {
    */
   private static class ArithmeticGeometricMean extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       if (a.isZero() || a.equals(b)) {
@@ -649,7 +650,7 @@ public class StatisticsFunctions {
     // }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
@@ -742,7 +743,7 @@ public class StatisticsFunctions {
   private static class CDF extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // CPD-OFF sibling distribution functions with their own dispatch
       if (ast.isAST1() || ast.isAST2()) {
         // check because of pure function form ?
@@ -777,7 +778,7 @@ public class StatisticsFunctions {
   private static final class BernoulliProcess extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().isAST() && ast.isAST1()) {
         // operator form
         IAST headAST = (IAST) ast.head();
@@ -836,7 +837,7 @@ public class StatisticsFunctions {
   private static final class HistogramList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList() || ast.arg1().argSize() == 0
           || !((IAST) ast.arg1()).forAll(IExpr::isReal)) {
         return F.NIL;
@@ -1011,7 +1012,7 @@ public class StatisticsFunctions {
   private static final class BinCounts extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (BinLists.isNonPositiveStep(ast, engine)) {
         return F.NIL;
       }
@@ -1055,7 +1056,7 @@ public class StatisticsFunctions {
      * counts of the points in the bins of a grid, nested by the coordinates in their order. A bin
      * contains its lower bounds but not its upper bounds.
      */
-    private static IExpr binCountsND(IAST ast) {
+    private static @AllowNIL IExpr binCountsND(IAST ast) {
       int dimension = ast.argSize() - 1;
       double[] min = new double[dimension];
       double[] step = new double[dimension];
@@ -1124,7 +1125,7 @@ public class StatisticsFunctions {
      * <code>[b1, b2), [b2, b3), ...</code>. Exact edges, which aren't rational numbers, are compared
      * by their numeric value.
      */
-    private static IExpr binCountsEdges(IAST vector, IAST edgeList, EvalEngine engine) {
+    private static @AllowNIL IExpr binCountsEdges(IAST vector, IAST edgeList, EvalEngine engine) {
       int n = edgeList.argSize();
       if (n < 1) {
         return F.NIL;
@@ -1171,7 +1172,7 @@ public class StatisticsFunctions {
       return F.mapRange(0, counts.length, i -> F.ZZ(counts[i]));
     }
 
-    private static IExpr binCounts(IAST ast, IAST vector, final IExpr arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr binCounts(IAST ast, IAST vector, final IExpr arg2, EvalEngine engine) {
       if (arg2.isList1() && arg2.first().isList()) {
         return binCountsEdges(vector, (IAST) arg2.first(), engine);
       }
@@ -1228,7 +1229,7 @@ public class StatisticsFunctions {
      * <code>[xMin+k*dx, xMin+(k+1)*dx)</code> which end at or below <code>xMax</code>, for bounds
      * which aren't all machine integers.
      */
-    private static IExpr binCountsRealSteps(IAST vector, IExpr xMin, IExpr xMax, IExpr step) {
+    private static @AllowNIL IExpr binCountsRealSteps(IAST vector, IExpr xMin, IExpr xMax, IExpr step) {
       double min = xMin.evalfNaN();
       double dx = step.evalfNaN();
       int bins = BinLists.wholeBins(min, xMax.evalfNaN(), dx);
@@ -1296,7 +1297,7 @@ public class StatisticsFunctions {
   private static final class BinomialProcess extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().isAST() && ast.isAST1()) {
         // operator form
         IAST headAST = (IAST) ast.head();
@@ -1315,7 +1316,7 @@ public class StatisticsFunctions {
   private static final class BrownianBridgeProcess extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BrownianBridgeProcess) {
         if (ast.isAST2()) {
           if (ast.arg1().isList2() && ast.arg2().isList2()) {
@@ -1401,7 +1402,7 @@ public class StatisticsFunctions {
   private static final class Correlation extends AbstractFunctionEvaluator {
 
     /** The correlation matrix of a distribution. */
-    private static IExpr correlationMatrix(IExpr dist, EvalEngine engine) {
+    private static @AllowNIL IExpr correlationMatrix(IExpr dist, EvalEngine engine) {
       if (dist.head() == S.BinormalDistribution) {
         IExpr rho = dist.argSize() > 0 ? ((IAST) dist).last() : F.C0;
         return F.list(F.list(F.C1, rho), F.list(rho, F.C1));
@@ -1417,7 +1418,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.arg1().isDistribution() && !ast.isAST2()) {
           return matrixOrEntry(ast, correlationMatrix(ast.arg1(), engine), engine);
@@ -1512,7 +1513,7 @@ public class StatisticsFunctions {
   private static final class FiveNum extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.arg1().isVector();
       if (size >= 0) {
         final IAST param = F.list(//
@@ -1558,7 +1559,7 @@ public class StatisticsFunctions {
   private static class GeometricMean extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNonEmptyList()) {
         IAST list = (IAST) arg1;
@@ -1589,7 +1590,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
       double[] values = ast.get(1).toDoubleVector();
       if (values == null) {
         return F.NIL;
@@ -1602,7 +1603,7 @@ public class StatisticsFunctions {
   private static class HarmonicMean extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNonEmptyList()) {
         IAST list = (IAST) arg1;
@@ -1690,7 +1691,7 @@ public class StatisticsFunctions {
   private static final class Covariance extends AbstractMatrix1Expr {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         return ast.arg1().isDistribution()
             ? matrixOrEntry(ast, distributionCovariance(ast.arg1(), engine), engine)
@@ -1738,7 +1739,7 @@ public class StatisticsFunctions {
       return ARGS_1_3;
     }
 
-    private static IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
       int arg1Length = arg1.isVector();
       if (arg1Length > 1) {
         int arg2Length = arg2.isVector();
@@ -1770,7 +1771,7 @@ public class StatisticsFunctions {
      *
      * @return {@link F#NIL} if any pair of columns cannot be handled
      */
-    private static IExpr columnCovariances(IAST matrix, int[] dimension, EvalEngine engine) {
+    private static @AllowNIL IExpr columnCovariances(IAST matrix, int[] dimension, EvalEngine engine) {
       int rows = dimension[0];
       int columns = dimension[1];
       IASTAppendable columnVectors = F.ListAlloc(columns);
@@ -1812,12 +1813,12 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
+    public @AllowNIL IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
         return super.numericEval(ast, engine);
       }
@@ -1913,7 +1914,7 @@ public class StatisticsFunctions {
 
     @Override
     // CPD-OFF sibling distribution functions with their own dispatch
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
         return F.NIL;
@@ -2014,7 +2015,7 @@ public class StatisticsFunctions {
      * integration to the branch validity intervals.
      */
     // CPD-OFF piecewise sum and integral share only the branch walk
-    private static IExpr expectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr expectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
       if (pdf.isNIL()) {
@@ -2048,7 +2049,7 @@ public class StatisticsFunctions {
      * Expectation for a discrete distribution: enumerate <code>Sum(expr*pmf)</code> exactly over a
      * small finite support, otherwise try the symbolic <code>Sum</code> over the support.
      */
-    private static IExpr expectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr expectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       if (!x.isSymbol()) {
         return F.NIL;
@@ -2107,7 +2108,7 @@ public class StatisticsFunctions {
      * @return {@link F#NIL} if a term has another structure or the distribution has no closed form
      *         for one of the required moments or generating function values
      */
-    private static IExpr polynomialExpectation(IExpr expr, ISymbol x, IAST distribution,
+    private static @AllowNIL IExpr polynomialExpectation(IExpr expr, ISymbol x, IAST distribution,
         EvalEngine engine) {
       IStatistics statistics = distribution.headInstanceOf(IStatistics.class);
       if (statistics == null) {
@@ -2223,7 +2224,7 @@ public class StatisticsFunctions {
      *
      * @param derivativeOrder <code>n >= 0</code>
      */
-    private static IExpr momentGeneratingFunctionValue(IExpr distribution, IExpr t,
+    private static @AllowNIL IExpr momentGeneratingFunctionValue(IExpr distribution, IExpr t,
         int derivativeOrder, EvalEngine engine) {
       if (!hasEntireGeneratingFunction(distribution)) {
         return F.NIL;
@@ -2256,7 +2257,7 @@ public class StatisticsFunctions {
 
     @Override
     // CPD-OFF sibling distribution functions with their own dispatch
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
         return F.NIL;
@@ -2346,7 +2347,7 @@ public class StatisticsFunctions {
      * discontinuous integrand over an infinite interval.
      */
     // CPD-OFF piecewise sum and integral share only the branch walk
-    private static IExpr nExpectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr nExpectationContinuous(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
       if (pdf.isNIL()) {
@@ -2404,7 +2405,7 @@ public class StatisticsFunctions {
      * @return {@link F#NIL} if the quantiles are not finite real numbers or the quadrature still
      *         doesn't return a number
      */
-    private static IExpr integrateOverEffectiveSupport(IExpr xExpr, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr integrateOverEffectiveSupport(IExpr xExpr, IExpr x, IExpr distribution,
         IExpr pdf, EvalEngine engine) {
       IExpr min = numericQuantile(distribution, F.num(EFFECTIVE_SUPPORT_TAIL), engine);
       IExpr max = numericQuantile(distribution, F.num(1.0 - EFFECTIVE_SUPPORT_TAIL), engine);
@@ -2419,7 +2420,7 @@ public class StatisticsFunctions {
      * @return the numeric <code>InverseCDF(distribution, probability)</code> or {@link F#NIL} if it
      *         is not a finite real number
      */
-    private static IExpr numericQuantile(IExpr distribution, IExpr probability, EvalEngine engine) {
+    private static @AllowNIL IExpr numericQuantile(IExpr distribution, IExpr probability, EvalEngine engine) {
       IExpr quantile = S.InverseCDF.ofNIL(engine, distribution, probability);
       if (quantile.isNIL()) {
         return F.NIL;
@@ -2435,7 +2436,7 @@ public class StatisticsFunctions {
      * adaptively extended tail; otherwise a bounded support is enumerated or the computation falls
      * back to {@link NSum}.
      */
-    private static IExpr nExpectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr nExpectationDiscrete(IExpr xExpr, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IDiscreteDistribution dist = getDiscreteDistribution(distribution);
       long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
@@ -2502,7 +2503,7 @@ public class StatisticsFunctions {
   private static class NProbability extends AbstractDistributionQuery {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
         return F.NIL;
@@ -2587,7 +2588,7 @@ public class StatisticsFunctions {
      * pieces, numeric integration of the density over the pieces as first fallback and the
      * <code>Boole</code> integrand over the whole real axis as last resort.
      */
-    private static IExpr nProbabilityContinuous(IExpr predicate, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr nProbabilityContinuous(IExpr predicate, IExpr x, IExpr distribution,
         IAST region, EvalEngine engine) {
       if (region.isPresent()) {
         double result =
@@ -2619,7 +2620,7 @@ public class StatisticsFunctions {
      * fallback, then predicate filtered summation over the quantile window and finally
      * <code>NSum</code> over the support.
      */
-    private static IExpr nProbabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr nProbabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
         IAST region, EvalEngine engine) {
       IDiscreteDistribution dist = getDiscreteDistribution(distribution);
       long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
@@ -2692,7 +2693,7 @@ public class StatisticsFunctions {
   private static final class InterquartileRange extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = normalizeData(ast.arg1());
       if (isQuantityVector(arg1)) {
         // a message from here is the whole answer; do not fall through to the gate as well
@@ -2825,7 +2826,7 @@ public class StatisticsFunctions {
     private static final String[] PROPERTIES = {"PValue", "TestData", "TestStatistic"};
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
           // KolmogorovSmirnovTest(data1)
@@ -3034,7 +3035,7 @@ public class StatisticsFunctions {
   private static final class Kurtosis extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
         if (arg1.isList()) {
@@ -3167,7 +3168,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
       // the mean of a dataset is the mean of its rows - see IASTDataset#normalizeDataset
       final IExpr arg1 = IASTDataset.normalizeDataset(argument);
       try {
@@ -3225,7 +3226,7 @@ public class StatisticsFunctions {
   private static final class DistributionParameterAssumptions extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IDistribution distribution = distributionEvaluator(arg1);
       if (distribution == null) {
@@ -3258,7 +3259,7 @@ public class StatisticsFunctions {
   private static final class DistributionParameterQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IDistribution distribution = distributionEvaluator(arg1);
       if (distribution == null) {
@@ -3317,7 +3318,7 @@ public class StatisticsFunctions {
   private static final class EstimatedDistribution extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr rules = org.matheclipse.core.reflection.system.MaximumLikelihood.estimate(ast, engine);
       if (rules.isList()) {
         return F.subst(ast.arg2(), (IAST) rules);
@@ -3342,7 +3343,7 @@ public class StatisticsFunctions {
   private static final class HazardFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }
@@ -3380,7 +3381,7 @@ public class StatisticsFunctions {
      * Divide two {@link S#Piecewise} expressions which use exactly the same conditions, by dividing
      * the values of the corresponding branches.
      */
-    private static IExpr dividePiecewise(IAST pdf, IAST survival, EvalEngine engine) {
+    private static @AllowNIL IExpr dividePiecewise(IAST pdf, IAST survival, EvalEngine engine) {
       IAST pdfBranches = (IAST) pdf.arg1();
       IAST survivalBranches = (IAST) survival.arg1();
       if (pdfBranches.size() != survivalBranches.size()) {
@@ -3416,7 +3417,7 @@ public class StatisticsFunctions {
   private static final class InverseSurvivalFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }
@@ -3453,7 +3454,7 @@ public class StatisticsFunctions {
   private abstract static class AbstractDeviation extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // an Association contributes its values, a Dataset its rows - see #normalizeData
       IExpr arg1 = normalizeData(ast.arg1());
       if (isQuantityVector(arg1)) {
@@ -3507,7 +3508,7 @@ public class StatisticsFunctions {
   private static final class MedianDeviation extends AbstractDeviation {
 
     @Override
-    protected IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
+    protected @AllowNIL IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
       arg1 = arg1.normal(false);
       if (arg1.isList()) {
         IAST vector = (IAST) arg1;
@@ -3524,7 +3525,7 @@ public class StatisticsFunctions {
   private static final class MeanDeviation extends AbstractDeviation {
 
     @Override
-    protected IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
+    protected @AllowNIL IExpr vectorDeviation(IAST ast, IExpr arg1, int length, EvalEngine engine) {
       if (length == 0) {
         // Argument `1` is neither a nonempty vector nor a nonempty matrix.
         return Errors.printMessage(ast.topHead(), "vecmat1", F.list(ast.arg1()), engine);
@@ -3668,7 +3669,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr argument, EvalEngine engine) {
       // an Association contributes its values, a Dataset its rows - see #normalizeData
       final IExpr arg1 = normalizeData(argument);
       if (isQuantityVector(arg1)) {
@@ -3745,7 +3746,7 @@ public class StatisticsFunctions {
      *
      * @param q the quantile, expected to lie in <code>[0,1]</code>
      */
-    private static IExpr weightedQuantile(final IAST weightedData, IExpr q, EvalEngine engine) {
+    private static @AllowNIL IExpr weightedQuantile(final IAST weightedData, IExpr q, EvalEngine engine) {
       IAST data = (IAST) weightedData.arg1();
       IAST weights = (IAST) weightedData.arg2();
       final int size = data.size();
@@ -3815,7 +3816,7 @@ public class StatisticsFunctions {
   private static final class PrincipalComponents extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       int[] dimension = ast.arg1().isMatrix();
       if (dimension == null) {
@@ -3903,7 +3904,7 @@ public class StatisticsFunctions {
   private static class Probability extends AbstractDistributionQuery {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize != 2) {
         return F.NIL;
@@ -4016,7 +4017,7 @@ public class StatisticsFunctions {
      *
      * @return {@link F#NIL} if the predicate isn't decided for a value
      */
-    private static IExpr empiricalProbability(IExpr predicate, IExpr x, IAST distribution,
+    private static @AllowNIL IExpr empiricalProbability(IExpr predicate, IExpr x, IAST distribution,
         EvalEngine engine) {
       IAST weights = (IAST) distribution.second().first();
       IAST values = (IAST) distribution.second().second();
@@ -4038,7 +4039,7 @@ public class StatisticsFunctions {
      * <code>P == 1 - P(complement)</code>), otherwise use CDF differences; the last resort is a
      * symbolic <code>Sum</code> over the support.
      */
-    private static IExpr probabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
+    private static @AllowNIL IExpr probabilityDiscrete(IExpr predicate, IExpr x, IExpr distribution,
         EvalEngine engine) {
       IDiscreteDistribution dist = getDiscreteDistribution(distribution);
       long supportLo = DistributionRegion.supportLowerBound(dist, distribution);
@@ -4133,7 +4134,7 @@ public class StatisticsFunctions {
      * Compute <code>P(predicate)</code> from the CDF of the distribution, by turning the relational
      * <code>predicate</code> into an interval of the random variable.
      */
-    private static IExpr probabilityFromCDF(IExpr predicate, ISymbol x, IExpr distribution,
+    private static @AllowNIL IExpr probabilityFromCDF(IExpr predicate, ISymbol x, IExpr distribution,
         EvalEngine engine) {
       if (predicate.isAST(S.And)) {
         // combine the single relations into one relation, e.g. x > 1/2 && x > 1/4 -> x > 1/2
@@ -4235,7 +4236,7 @@ public class StatisticsFunctions {
   private static class PDF extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() || ast.isAST2()) {
         // check because of pure function form ?
         try {
@@ -4413,7 +4414,7 @@ public class StatisticsFunctions {
   private static final class KendallTau extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         int[] dim = ast.arg1().isMatrix(false);
         if (dim == null || dim[0] < 2) {
@@ -4441,7 +4442,7 @@ public class StatisticsFunctions {
       return tau(ast.arg1(), ast.arg2(), engine);
     }
 
-    private static IExpr tau(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr tau(IExpr arg1, IExpr arg2, EvalEngine engine) {
       KendallCounts counts = KendallCounts.of(arg1, arg2);
       if (counts == null) {
         return F.NIL;
@@ -4484,7 +4485,7 @@ public class StatisticsFunctions {
   private static final class KendallTauTest extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a property name or a list of them
       IExpr property = ast.isAST3() ? ast.arg3() : F.stringx("PValue");
       IAST propertyList = property.isList() ? (IAST) property : F.list(property);
@@ -4528,7 +4529,7 @@ public class StatisticsFunctions {
   private static final class PearsonCorrelationTest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       int dimension1 = arg1.isVector();
@@ -4607,7 +4608,7 @@ public class StatisticsFunctions {
           engine);
     }
 
-    private static IExpr testData(double[] vector1, double[] vector2,
+    private static @AllowNIL IExpr testData(double[] vector1, double[] vector2,
         org.hipparchus.stat.correlation.PearsonsCorrelation test) {
       RealMatrix correlationPValues = test.getCorrelationPValues();
       if (correlationPValues != null) {
@@ -4636,7 +4637,7 @@ public class StatisticsFunctions {
   private static final class PoissonProcess extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().isAST() && ast.isAST1()) {
         IExpr t = ast.arg1();
         // operator form
@@ -4697,7 +4698,7 @@ public class StatisticsFunctions {
   private static final class Quantile extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = normalizeData(ast.arg1());
       if (isQuantityVector(arg1)) {
         // a message from here is the whole answer; do not fall through to the gate as well
@@ -4841,7 +4842,7 @@ public class StatisticsFunctions {
     private static final IAST PARAMETERS = F.List(F.C1D2, F.C0, F.C0, F.C1);
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = normalizeData(ast.arg1());
       if (isQuantityVector(arg1)) {
         // a message from here is the whole answer; do not fall through to the gate as well
@@ -4908,7 +4909,7 @@ public class StatisticsFunctions {
   private static final class RandomVariate extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() >= 3 && ast.last().isRuleAST() && ast.last().first() == S.WorkingPrecision) {
         // only the machine numbers of the samplers exist, they don't get more digits by a cast
         return RandomFunctions.workingPrecisionDigits(ast.last().second()) == 0
@@ -5093,7 +5094,7 @@ public class StatisticsFunctions {
      *
      * @return {@link F#NIL}
      */
-    private static IExpr parameterMessage(IEvaluator evaluator, IAST dist, EvalEngine engine) {
+    private static @AllowNIL IExpr parameterMessage(IEvaluator evaluator, IAST dist, EvalEngine engine) {
       if (isSymbolicParameter(dist, engine)) {
         return F.NIL;
       }
@@ -5196,7 +5197,7 @@ public class StatisticsFunctions {
     }
 
     /** The quantile for the probability <code>u</code> or {@link F#NIL} if it isn't real. */
-    private static IExpr quantileSample(ICDF evaluator, IAST dist, IExpr u, EvalEngine engine) {
+    private static @AllowNIL IExpr quantileSample(ICDF evaluator, IAST dist, IExpr u, EvalEngine engine) {
       IExpr quantile = evaluator.inverseCDF(dist, u, engine);
       if (quantile.isNIL()) {
         return F.NIL;
@@ -5205,7 +5206,7 @@ public class StatisticsFunctions {
     }
 
     /** The sample as a real number, or {@link F#NIL} if it isn't one. */
-    private static IExpr realSample(IExpr sample, EvalEngine engine) {
+    private static @AllowNIL IExpr realSample(IExpr sample, EvalEngine engine) {
       if (!sample.isReal() && sample.isNumericFunction(true)) {
         sample = engine.evalN(sample);
       }
@@ -5306,7 +5307,7 @@ public class StatisticsFunctions {
   private static final class Rescale extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg1();
       if (ast.size() == 2 && x.isList()) {
         IExpr min = S.Min.of(engine, x);
@@ -5391,7 +5392,7 @@ public class StatisticsFunctions {
   private static final class RootMeanSquare extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
@@ -5468,7 +5469,7 @@ public class StatisticsFunctions {
   private static final class Skewness extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) ast.arg1();
@@ -5561,7 +5562,7 @@ public class StatisticsFunctions {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isSparseArray()) {
         arg1 = arg1.normal(false);
@@ -5648,7 +5649,7 @@ public class StatisticsFunctions {
   private static final class Standardize extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final IExpr f1 = ast.getArg(2, S.Mean);
       final IExpr f2 = ast.getArg(3, S.StandardDeviation);
@@ -5725,7 +5726,7 @@ public class StatisticsFunctions {
   private static final class SurvivalFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.first().isAST()) {
         IAST dist = (IAST) ast.arg1();
         if (dist.isDistribution()) {
@@ -5758,7 +5759,7 @@ public class StatisticsFunctions {
      * Ask the distribution for a dedicated closed form of the survival function, which is usually
      * much simpler than the literal <code>1 - CDF(dist, x)</code>.
      */
-    private static IExpr closedForm(IAST dist, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr closedForm(IAST dist, IExpr x, EvalEngine engine) {
       ICDF cdf = dist.headInstanceOf(ICDF.class);
       if (cdf != null) {
         IAST checked = cdf.checkParameters(dist);
@@ -5774,7 +5775,7 @@ public class StatisticsFunctions {
   private static final class TTest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList2()) {
         IAST list = (IAST) arg1;
@@ -5903,7 +5904,7 @@ public class StatisticsFunctions {
   private static final class Variance extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isSparseArray()) {
         // FieldVector<IExpr> vector = ((ISparseArray) arg1).toFieldVector(false);
@@ -6013,7 +6014,7 @@ public class StatisticsFunctions {
      *
      * @return {@link F#NIL} if the mean or the quadrature doesn't produce a real number
      */
-    private static IExpr numericVariance(IAST dist, EvalEngine engine) {
+    private static @AllowNIL IExpr numericVariance(IAST dist, EvalEngine engine) {
       if (!engine.isNumericMode()) {
         return F.NIL;
       }
@@ -6173,7 +6174,7 @@ public class StatisticsFunctions {
    *
    * @return {@link F#NIL} when <code>ast.arg1()</code> is not a non-empty flat list of quantities
    */
-  public static IExpr quantityStatistic(IAST ast, EvalEngine engine) {
+  public static @AllowNIL IExpr quantityStatistic(IAST ast, EvalEngine engine) {
     if (!isQuantityVector(ast.arg1())) {
       return F.NIL;
     }
@@ -6251,7 +6252,7 @@ public class StatisticsFunctions {
    * @return {@link F#NIL} when the point is not computable, for instance when a symbolic parameter
    *         leaves <code>h</code> non-real
    */
-  private static IExpr quantilePoint(IAST s, IInteger length, IReal q, IExpr a, IExpr b, IExpr c,
+  private static @AllowNIL IExpr quantilePoint(IAST s, IInteger length, IReal q, IExpr a, IExpr b, IExpr c,
       IExpr d, EvalEngine engine) {
     // x = a + (length + b) * q
     IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));

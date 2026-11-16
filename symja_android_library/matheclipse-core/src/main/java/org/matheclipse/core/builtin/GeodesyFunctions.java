@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import org.matheclipse.core.data.GeoLocations;
@@ -111,7 +112,7 @@ public class GeodesyFunctions {
   private static class GeoPosition extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.arg1().isList()) {
           double[] list1 = ast.arg1().toDoubleVector();
@@ -140,7 +141,7 @@ public class GeodesyFunctions {
   private static class GeodesyData extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -231,7 +232,7 @@ public class GeodesyFunctions {
    *
    * @return {@link F#NIL} if <code>arg</code> is no angle
    */
-  private static IExpr toDegrees(IExpr arg, EvalEngine engine) {
+  private static @AllowNIL IExpr toDegrees(IExpr arg, EvalEngine engine) {
     if (arg.isQuantity()) {
       IExpr degrees = arg;
       if (!degrees.second().isString(ANGULAR_DEGREES)) {
@@ -254,7 +255,7 @@ public class GeodesyFunctions {
   private static class DMSList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         IAST dms = parseDMS(arg1.toString());
@@ -297,7 +298,7 @@ public class GeodesyFunctions {
   private static class FromDMS extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         arg1 = parseDMS(arg1.toString());

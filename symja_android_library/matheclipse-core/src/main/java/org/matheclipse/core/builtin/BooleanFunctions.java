@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.math.BigInteger;
@@ -841,7 +842,7 @@ public final class BooleanFunctions {
 
   private static class AllTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isASTOrAssociation()) {
         IAST list = (IAST) arg1;
@@ -893,7 +894,7 @@ public final class BooleanFunctions {
 
   private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -1009,7 +1010,7 @@ public final class BooleanFunctions {
 
   private static class AnyTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
@@ -1038,7 +1039,7 @@ public final class BooleanFunctions {
 
   private static class Between extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isAST(S.CenteredInterval, 3) || arg2.isAST(S.CenteredInterval, 3)) {
@@ -1114,7 +1115,7 @@ public final class BooleanFunctions {
 
   private static class Boole extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isTrue()) {
         return F.C1;
@@ -1155,7 +1156,7 @@ public final class BooleanFunctions {
   private static class BooleanFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BooleanFunction && (ast.argSize() < 1 || ast.argSize() > 4)) {
         return Errors.printMessage(S.BooleanFunction, "argb",
             F.List(S.BooleanFunction, F.ZZ(ast.argSize()), F.C1, F.C4), engine);
@@ -1437,7 +1438,7 @@ public final class BooleanFunctions {
     private static final int SPEC_MULTI = 2;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr spec = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -1645,7 +1646,7 @@ public final class BooleanFunctions {
 
   private static class BooleanMinimize extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         LogicFormula lf = new LogicFormula();
         Formula formula = lf.expr2LogicNGFormula(ast.arg1(), true);
@@ -1709,7 +1710,7 @@ public final class BooleanFunctions {
      * @param isMinterm true if computing minterms, false for maxterms
      * @return the evaluated expression or F.NIL if evaluation is not possible
      */
-    protected static IExpr minMaxtermsEval(final IAST ast, EvalEngine engine, boolean isMinterm) {
+    protected static @AllowNIL IExpr minMaxtermsEval(final IAST ast, EvalEngine engine, boolean isMinterm) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.argSize() > 1 ? ast.arg2() : null;
 
@@ -2016,7 +2017,7 @@ public final class BooleanFunctions {
      *
      * @param rules the values of the variables of the outer levels
      */
-    private static IExpr substitutionTable(IExpr expr, IAST levels, int level, IAST rules,
+    private static @AllowNIL IExpr substitutionTable(IExpr expr, IAST levels, int level, IAST rules,
         EvalEngine engine) {
       IAST variables = (IAST) levels.get(level);
       int n = variables.argSize();
@@ -2099,7 +2100,7 @@ public final class BooleanFunctions {
       return F.binaryAST2(equalOrUnequalSymbol, lhsAST.rest(), rhs);
     }
 
-    protected static IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
+    protected static @AllowNIL IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
         IExpr a2) {
       IExpr lhs;
       INumber rhs;
@@ -2128,7 +2129,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
@@ -2176,7 +2177,7 @@ public final class BooleanFunctions {
      *        is not decided and may still be simplified; stays empty for two quantities
      * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the equation is not decided
      */
-    static IExpr decideEqual(final IExpr a1, final IExpr a2, EvalEngine engine,
+    static @AllowNIL IExpr decideEqual(final IExpr a1, final IExpr a2, EvalEngine engine,
         IExpr[] expanded) {
       if (a1.isQuantity() && a2.isQuantity()) {
         return BooleanFunctions.quantityEquals((IAST) a1, (IAST) a2);
@@ -2225,7 +2226,7 @@ public final class BooleanFunctions {
      * @return {@link S#True} or {@link S#False} if the equation could be decided, {@link F#NIL}
      *         otherwise
      */
-    static IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    static @AllowNIL IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions == null) {
         return F.NIL;
@@ -2263,7 +2264,7 @@ public final class BooleanFunctions {
   private static final class Equivalent extends AbstractFunctionEvaluator
       implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -2338,7 +2339,7 @@ public final class BooleanFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing was evaluated
    */
-  private static IExpr evaluateQuantifier(final IAST ast, IBuiltInSymbol head,
+  private static @AllowNIL IExpr evaluateQuantifier(final IAST ast, IBuiltInSymbol head,
       EvalEngine engine) {
     boolean evaled = false;
     IExpr x = engine.evaluateNIL(ast.arg1());
@@ -2527,7 +2528,7 @@ public final class BooleanFunctions {
      * @return {@link S#True} or {@link S#False} if the relation can be decided, {@link F#NIL}
      *         otherwise
      */
-    protected static IExpr compareDifference(IExpr arg1, IExpr arg2, boolean strict) {
+    protected static @AllowNIL IExpr compareDifference(IExpr arg1, IExpr arg2, boolean strict) {
       if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
         // a relation between two numbers is already decided by compareTernary()
         return F.NIL;
@@ -2743,7 +2744,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() <= 2) {
         if (ast.isAST1() && ast.arg1().isUndefined()) {
           return S.Undefined;
@@ -2920,7 +2921,7 @@ public final class BooleanFunctions {
       return simplifyCompare(a1, a2, S.Greater, S.Less, true);
     }
 
-    protected final IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
+    protected final @AllowNIL IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
         IBuiltInSymbol oppositeHead, boolean setTrue) {
       if (a1.isInfinity() && a2.isInfinity()) {
         return S.False;
@@ -3092,7 +3093,7 @@ public final class BooleanFunctions {
   private static final class Implies extends AbstractCoreFunctionEvaluator
       implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
       IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
@@ -3175,7 +3176,7 @@ public final class BooleanFunctions {
      *
      * @return the conjunction of the parts, or {@link F#NIL} if every relation is a comparison
      */
-    private static IExpr splitAtUnknownRelations(final IAST ast) {
+    private static @AllowNIL IExpr splitAtUnknownRelations(final IAST ast) {
       int i = 2;
       while (i < ast.size() && getCompSign(ast.get(i)) != UNKNOWN) {
         i += 2;
@@ -3201,7 +3202,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
         return S.True;
       }
@@ -3463,7 +3464,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr head = ast.head();
         if (head.isAST(operatorHead, 2)) {
@@ -3487,7 +3488,7 @@ public final class BooleanFunctions {
     private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$Max");
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
@@ -3539,7 +3540,7 @@ public final class BooleanFunctions {
       return ARGS_0_INFINITY;
     }
 
-    private static IExpr maximum(IAST list, boolean flattenedList, EvalEngine engine) {
+    private static @AllowNIL IExpr maximum(IAST list, boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
       if (f.isPresent()) {
@@ -3632,7 +3633,7 @@ public final class BooleanFunctions {
     private final static ISymbol MIN_DUMMY_SYMBOL = F.Dummy("$Min");
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
@@ -3740,7 +3741,7 @@ public final class BooleanFunctions {
      * @param nonReal the arguments of <code>flattened</code> without an order, sorted
      * @return {@link F#NIL} if the call is unchanged
      */
-    protected static IExpr unorderedArguments(IAST original, IAST ast, IAST flattened,
+    protected static @AllowNIL IExpr unorderedArguments(IAST original, IAST ast, IAST flattened,
         IAST nonReal, EvalEngine engine) {
       final ISymbol head = ast.topHead();
       final boolean isMax = head == S.Max;
@@ -3891,7 +3892,7 @@ public final class BooleanFunctions {
       return zeros.exists(z -> z.equals(difference) || z.equals(negated));
     }
 
-    private static IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
+    private static @AllowNIL IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isInfinity());
       if (f.isPresent()) {
@@ -3989,7 +3990,7 @@ public final class BooleanFunctions {
 
   private static class MinMax extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isList() || arg1.isAssociation() || arg1.isSparseArray() || arg1.isInterval()
@@ -4063,7 +4064,7 @@ public final class BooleanFunctions {
 
   private static final class Nand extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4130,7 +4131,7 @@ public final class BooleanFunctions {
 
   private static class Negative extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4193,7 +4194,7 @@ public final class BooleanFunctions {
 
   private static class NoneTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
@@ -4222,7 +4223,7 @@ public final class BooleanFunctions {
 
   private static final class NonNegative extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4285,7 +4286,7 @@ public final class BooleanFunctions {
 
   private static final class NonPositive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4346,7 +4347,7 @@ public final class BooleanFunctions {
 
   private static class Nor extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4391,7 +4392,7 @@ public final class BooleanFunctions {
 
   private static class Not extends AbstractArg1 implements IBooleanFormula {
     @Override
-    public IExpr e1ObjArg(final IExpr o) {
+    public @AllowNIL IExpr e1ObjArg(final IExpr o) {
       if (o.isTrue()) {
         return S.False;
       }
@@ -4442,7 +4443,7 @@ public final class BooleanFunctions {
 
   private static class Or extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4518,7 +4519,7 @@ public final class BooleanFunctions {
 
   private static final class Positive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4639,7 +4640,7 @@ public final class BooleanFunctions {
 
   private static final class SatisfiabilityInstances extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST userDefinedVariables = F.NIL;
       IExpr arg1 = ast.arg1();
 
@@ -4768,7 +4769,7 @@ public final class BooleanFunctions {
       return ARGS_1_3;
     }
 
-    private static IExpr logicNGSatisfiableQ(IExpr arg1) {
+    private static @AllowNIL IExpr logicNGSatisfiableQ(IExpr arg1) {
       LogicFormula lf = new LogicFormula();
       final Formula formula = lf.expr2LogicNGFormula(arg1, true);
       final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
@@ -4819,7 +4820,7 @@ public final class BooleanFunctions {
       return ARGS_1_2;
     }
 
-    private static IExpr logicNGTautologyQ(IExpr arg1) {
+    private static @AllowNIL IExpr logicNGTautologyQ(IExpr arg1) {
       IExpr temp = SatisfiableQ.logicNGSatisfiableQ(F.Not(arg1));
       if (temp.isPresent()) {
         return temp.isTrue() ? S.False : S.True;
@@ -4846,7 +4847,7 @@ public final class BooleanFunctions {
 
   private static final class Unequal extends Equal {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
@@ -4915,7 +4916,7 @@ public final class BooleanFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing could be reduced
    */
-  private static IExpr parityReduce(final IAST ast, boolean negated, EvalEngine engine) {
+  private static @AllowNIL IExpr parityReduce(final IAST ast, boolean negated, EvalEngine engine) {
     if (ast.isEmpty()) {
       return negated ? S.True : S.False;
     }
@@ -4977,7 +4978,7 @@ public final class BooleanFunctions {
    */
   private static class Majority extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int n = ast.argSize();
       int trueCount = 0;
       int falseCount = 0;
@@ -5086,7 +5087,7 @@ public final class BooleanFunctions {
 
   private static class Xor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -5100,7 +5101,7 @@ public final class BooleanFunctions {
   }
 
 
-  private static IExpr quantityEquals(IAST q1, IAST q2) {
+  private static @AllowNIL IExpr quantityEquals(IAST q1, IAST q2) {
     try {
       return org.matheclipse.core.units.QuantityOps.equalsExpr(q1, q2, EvalEngine.get());
     } catch (RuntimeException rex) {
@@ -5121,7 +5122,7 @@ public final class BooleanFunctions {
     return Config.INVALID_INT;
   }
 
-  public static IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
+  public static @AllowNIL IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
     IExpr[] expanded = new IExpr[2];
     IExpr result = Equal.decideEqual(a1, a2, engine, expanded);
     if (result.isTrue()) {
@@ -5262,7 +5263,7 @@ public final class BooleanFunctions {
    * @return {@link F#NIL} if a symbol other than <code>True</code> and <code>False</code> isn't
    *         one of the <code>variables</code>
    */
-  public static IExpr booleanEquationsToFormula(IExpr expr, IAST variables) {
+  public static @AllowNIL IExpr booleanEquationsToFormula(IExpr expr, IAST variables) {
     if (expr.isSymbol()) {
       if (expr.isTrue() || expr.isFalse() || variables.indexOf(expr) > 0) {
         return expr;
@@ -5354,7 +5355,7 @@ public final class BooleanFunctions {
     return new DNFFactorization();
   }
 
-  public static IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
+  public static @AllowNIL IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
     IExpr arg1 = ast.arg1();
     boolean isFunction = false;
     if (arg1.isAST(S.Function, 2)) {
@@ -5395,7 +5396,7 @@ public final class BooleanFunctions {
         conjunctive, engine);
   }
 
-  private static IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
+  private static @AllowNIL IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
       final IAST booleanConvertAST, EvalEngine engine) {
     IExpr temp = booleanConvert(head, isFunction, booleanConvertAST, engine);
     if (temp.isPresent()) {
@@ -5407,7 +5408,7 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
-  private static IExpr booleanConvert(IExpr arg1, boolean isFunction, final IAST ast,
+  private static @AllowNIL IExpr booleanConvert(IExpr arg1, boolean isFunction, final IAST ast,
       EvalEngine engine) {
     FormulaTransformation transformation = transformation(ast, engine);
     if (transformation != null) {

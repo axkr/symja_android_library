@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.analysis.ParametricUnivariateFunction;
@@ -468,7 +469,7 @@ public class CurveFitterFunctions {
       return new LevenbergMarquardtOptimizer().optimize(problem).getPoint().toArray();
     }
 
-    public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr workingPrecision = options[0];
       final IAST variables = fitVariables(ast.arg4());
@@ -615,7 +616,7 @@ public class CurveFitterFunctions {
     private static final int EXACT_PRECISION = -1;
 
     @Override
-    public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr workingPrecision = options[0];
       int precision = workingPrecisionValue(workingPrecision);
@@ -715,7 +716,7 @@ public class CurveFitterFunctions {
      *
      * @return <code>Missing("NotApplicable")</code> for an unknown property
      */
-    private static IExpr fitProperty(IExpr property, IAST data, IAST termList, IAST variables,
+    private static @AllowNIL IExpr fitProperty(IExpr property, IAST data, IAST termList, IAST variables,
         IAST coefficients, IExpr bestFit, EvalEngine engine) {
       if (property.isString()) {
         switch (property.toString()) {
@@ -1194,7 +1195,7 @@ public class CurveFitterFunctions {
    *
    * @return the data unchanged if it has neither form
    */
-  private static IExpr ruleData(IExpr data) {
+  private static @AllowNIL IExpr ruleData(IExpr data) {
     IAST rules = F.NIL;
     if (data.isRuleAST() && data.first().isList() && data.second().isList()
         && data.first().argSize() == data.second().argSize()) {
@@ -1219,7 +1220,7 @@ public class CurveFitterFunctions {
   private static final class LinearModelFit extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, final IAST originalAST) {
       IExpr arg1 = ast.arg1();
       // the call still holds the option; argSize counts the positional arguments alone
@@ -1313,7 +1314,7 @@ public class CurveFitterFunctions {
    * @param includeConstantBasis the value of the option {@link S#IncludeConstantBasis}
    * @return the model or {@link F#NIL}
    */
-  private static IExpr generalizedLinearModelFit(IAST ast, String family, String link,
+  private static @AllowNIL IExpr generalizedLinearModelFit(IAST ast, String family, String link,
       IExpr includeConstantBasis, EvalEngine engine) {
     final ISymbol head = (ISymbol) ast.topHead();
     IAST variables = ast.arg3().makeList();
@@ -1362,7 +1363,7 @@ public class CurveFitterFunctions {
   private static final class GeneralizedLinearModelFit extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, final IAST originalAST) {
       if (argSize != 3) {
         return F.NIL;
@@ -1407,7 +1408,7 @@ public class CurveFitterFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, final IAST originalAST) {
       if (argSize != 3) {
         return F.NIL;
@@ -1434,7 +1435,7 @@ public class CurveFitterFunctions {
   private static final class DiscreteIndicator extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg3().isList()) {
         IAST levels = (IAST) ast.arg3();
         if (levels.contains(ast.arg1()) && levels.contains(ast.arg2())) {
@@ -1463,7 +1464,7 @@ public class CurveFitterFunctions {
   private static final class NonlinearModelFit extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ruleData(ast.arg1());
       IAST variables = FindFit.fitVariables(ast.arg4());
       if (!arg1.isList() || !ast.arg3().isList() || variables.isNIL()) {

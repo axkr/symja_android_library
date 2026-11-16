@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -157,7 +158,7 @@ public class ExpTrigsFunctions {
    * @return {@link F#NIL} if the function stays unevaluated, <code>null</code> if a single multiple
    *         is removed by the caller as <code>(-1)^k</code>, otherwise the shifted function
    */
-  private static IExpr piHalfShift(IAST plus, ISymbol head, EvalEngine engine) {
+  private static @AllowNIL IExpr piHalfShift(IAST plus, ISymbol head, EvalEngine engine) {
     IASTAppendable k = F.PlusAlloc(plus.argSize());
     IASTAppendable rest = F.PlusAlloc(plus.argSize());
     // the parity of k is the sum of the parities of its terms
@@ -213,7 +214,7 @@ public class ExpTrigsFunctions {
   private static final class AnglePath extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
@@ -317,7 +318,7 @@ public class ExpTrigsFunctions {
   private static final class AngleVector extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.first();
       IExpr phi;
       if (ast.isAST2()) {
@@ -422,7 +423,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       // don't check negative argument here - doesn't work with Rubi/MMA pattern matching
       // IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1, false);
       // if (negExpr.isPresent()) {
@@ -452,7 +453,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       // CPD-OFF closed-form tables per function
       return ast.argSize() == 1 ? ast.arg1().acos() : F.NIL;
     }
@@ -588,7 +589,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.arccosh((IAST) arg1);
       }
@@ -668,7 +669,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Plus(Negate(ArcCot(negExpr)));
@@ -775,7 +776,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.ofReciprocal(S.ArcTanh, (IAST) arg1, engine);
       }
@@ -861,7 +862,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.ofReciprocal(S.ArcSin, (IAST) arg1, engine);
       }
@@ -950,7 +951,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.ofReciprocal(S.ArcSinh, (IAST) arg1, engine);
       }
@@ -1029,7 +1030,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       // CPD-OFF closed-form tables per function
       if (arg1.isAST(S.Sech, 2) && arg1.first().isNonNegativeResult()) {
         // ArcSech(Sech(x)) == x /; x >= 0
@@ -1098,7 +1099,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.ofReciprocal(S.ArcCos, (IAST) arg1, engine);
       }
@@ -1189,7 +1190,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CI, F.ArcSinh(imPart));
@@ -1226,7 +1227,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().asin() : F.NIL;
     }
 
@@ -1289,7 +1290,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.arcsinh((IAST) arg1);
       }
@@ -1353,7 +1354,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e1ObjArg(final IExpr arg1) {
+    public @AllowNIL IExpr e1ObjArg(final IExpr arg1) {
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CI, F.ArcTanh(imPart));
@@ -1405,7 +1406,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e2ObjArg(IExpr x, IExpr y) {
+    public @AllowNIL IExpr e2ObjArg(IExpr x, IExpr y) {
       // the two-argument form is the angle of the point (x,y), so only an *exact* zero puts the
       // point on an axis. F.isExactZero() is used instead of IExpr#isZero(), whose tolerance for
       // inexact numbers would collapse a tiny but perfectly ordinary point like
@@ -1653,7 +1654,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.arctanh((IAST) arg1);
       }
@@ -1748,7 +1749,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
@@ -1842,7 +1843,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -1885,7 +1886,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().cos() : F.NIL;
     }
 
@@ -1965,7 +1966,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(Coth(negExpr));
@@ -2021,7 +2022,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -2103,7 +2104,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
@@ -2186,7 +2187,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(EvalEngine engine, IExpr t) {
+    private static @AllowNIL IExpr peelOfTimesPi(EvalEngine engine, IExpr t) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -2233,7 +2234,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr z = ast.arg1().sin();
         if (F.isExactZero(z)) {
@@ -2307,7 +2308,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         // CPD-OFF closed-form tables per function
@@ -2369,7 +2370,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -2389,7 +2390,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         if (ast.arg1() instanceof Num) {
           // Overflow() beyond the exponent of an arbitrary precision number, for either sign
@@ -2477,7 +2478,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
@@ -2553,7 +2554,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -2652,7 +2653,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(Csch(negExpr));
@@ -2712,7 +2713,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -2760,7 +2761,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         try {
           IInexactNumber z = (IInexactNumber) ast.arg1();
@@ -2821,7 +2822,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
 
       if (ast.argSize() == 1) {
         try {
@@ -2875,7 +2876,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr z = ast.arg1();
       if (z.isNumericFunction()) {
         IExpr cos = S.Cos.ofNIL(engine, z);
@@ -2888,7 +2889,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         // Sin(x/2)^2, which has the digits that 1/2*(1-Cos(x)) cancels for a small x
         IExpr sin = ast.arg1().multiply(F.C1D2).sin();
@@ -2917,12 +2918,12 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
 
       if (ast.argSize() == 1) {
         try {
@@ -2966,7 +2967,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr z = ast.arg1();
       if (z.isNumericFunction()) {
         IExpr arcSin = S.ArcSin.ofNIL(engine, F.Sqrt(z));
@@ -2984,7 +2985,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       // 2*ArcSin(Sqrt(z))
       return ast.argSize() == 1 ? ast.arg1().sqrt().asin().multiply(2) : F.NIL;
     }
@@ -3057,7 +3058,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e1FraArg(final IFraction f) {
+    public @AllowNIL IExpr e1FraArg(final IFraction f) {
       if (f.isPositive() && f.isLT(F.C1)) {
         return F.Negate(F.Log(f.inverse()));
       }
@@ -3106,7 +3107,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber num = (IInexactNumber) ast.arg1();
         if (F.isExactZero(num)) {
@@ -3140,7 +3141,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e1ObjArg(IExpr arg1) {
+    public @AllowNIL IExpr e1ObjArg(IExpr arg1) {
       if (arg1.isPower()) {
         IExpr base = arg1.base();
         IExpr exponent = arg1.exponent();
@@ -3218,7 +3219,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr e2ObjArg(IExpr o0, IExpr o1) {
+    public @AllowNIL IExpr e2ObjArg(IExpr o0, IExpr o1) {
       if (F.isExactZero(o0)) {
         if (F.isExactZero(o1)) {
           return S.Indeterminate;
@@ -3239,7 +3240,7 @@ public class ExpTrigsFunctions {
   private static final class LogisticSigmoid extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isInfinity()) {
         return F.C1;
@@ -3265,7 +3266,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.logisticSigmoid();
@@ -3392,7 +3393,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
         if (k != null) {
@@ -3474,7 +3475,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -3515,7 +3516,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr z = ast.arg1();
         if (z.equals(F.CPiHalf)) {
@@ -3589,7 +3590,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Sech(negExpr);
@@ -3649,7 +3650,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -3732,7 +3733,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
@@ -3826,7 +3827,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -3873,7 +3874,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ((IInexactNumber) ast.arg1()).sin();
       }
@@ -3908,7 +3909,7 @@ public class ExpTrigsFunctions {
       implements INumeric, IFunctionExpand, DoubleUnaryOperator {
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr z = ast.arg1();
         if (!z.isZero()) {
@@ -3975,7 +3976,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isZero()) {
         // a machine zero gives a machine one
         return arg1.isMachineNumber() ? F.CD1 : F.C1;
@@ -3996,7 +3997,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         if (z.isZero()) {
@@ -4078,7 +4079,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(Sinh(negExpr));
@@ -4139,7 +4140,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -4177,7 +4178,7 @@ public class ExpTrigsFunctions {
     // }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         if (ast.arg1() instanceof Num) {
           // Overflow() beyond the exponent of an arbitrary precision number, for either sign
@@ -4271,7 +4272,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
 
       if (arg1.isPlus()) {
         IExpr k = AbstractFunctionEvaluator.peelOffPlusRational((IAST) arg1, engine);
@@ -4349,7 +4350,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational realPart = c.re();
@@ -4372,7 +4373,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         try {
           return ((IInexactNumber) ast.arg1()).tan();
@@ -4446,7 +4447,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(Tanh(negExpr));
@@ -4504,7 +4505,7 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+    private static @AllowNIL IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
       if (t.isComplex()) {
         IComplex c = (IComplex) t;
         IRational imaginaryPart = c.im();
@@ -4517,7 +4518,7 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         // CPD-OFF closed-form tables per function
         return ((IInexactNumber) ast.arg1()).tanh();
@@ -4550,7 +4551,7 @@ public class ExpTrigsFunctions {
    * @return
    */
   // CPD-OFF closed-form tables per function
-  private static IExpr arcTanArcCotInverse(final IExpr arg1) {
+  private static @AllowNIL IExpr arcTanArcCotInverse(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
     IExpr k = S.Quotient.of(F.Subtract(zRe, F.CPiHalf), S.Pi).inc();
@@ -4634,7 +4635,7 @@ public class ExpTrigsFunctions {
    * @return
    */
   // CPD-OFF closed-form tables per function
-  private static IExpr arcSinSin(final IExpr arg1) {
+  private static @AllowNIL IExpr arcSinSin(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
     IExpr k = S.Quotient.of(F.Subtract(zRe, F.CPiHalf), S.Pi).inc();
@@ -4676,7 +4677,7 @@ public class ExpTrigsFunctions {
    * @param arg1 is assumed to be <code>Tan(z)</code> or <code>Cot(z)</code>
    * @return
    */
-  private static IExpr arcCosCos(final IExpr arg1) {
+  private static @AllowNIL IExpr arcCosCos(final IExpr arg1) {
     IExpr z = arg1.first();
     IExpr zRe = z.re();
     IExpr k = S.Quotient.of(F.Subtract(zRe, S.Pi), S.Pi).inc();

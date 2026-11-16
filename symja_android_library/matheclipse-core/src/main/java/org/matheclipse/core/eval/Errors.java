@@ -799,7 +799,7 @@ public class Errors {
       "zzdsex", "Non deserialized expression `1`." //
   };
 
-  public static IExpr message(ISymbol symbol, String messageShortcut, final IAST list,
+  public static @AllowNIL IExpr message(ISymbol symbol, String messageShortcut, final IAST list,
       int maximumLength) {
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -89,7 +90,7 @@ public class IntervalFunctions {
   private static final class Interval extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.hasNoFlag(Flag.BUILT_IN_EVALED)) {
         try {
           IAST result = IntervalSym.normalize(ast, engine);
@@ -111,7 +112,7 @@ public class IntervalFunctions {
   private static final class IntervalComplement extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!IntervalDataSym.isRealIntervalDataArgs(ast)) {
         return F.NIL;
       }
@@ -143,7 +144,7 @@ public class IntervalFunctions {
   private static final class IntervalData extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.hasNoFlag(Flag.BUILT_IN_EVALED)) {
         return IntervalDataSym.normalize(ast);
       }
@@ -248,7 +249,7 @@ public class IntervalFunctions {
   private static final class IntervalMemberQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isIntervalData()) {
         return evaluateIntervalData(ast, engine);
       }
@@ -425,7 +426,7 @@ public class IntervalFunctions {
   private static final class IntervalIntersection extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST centered = centeredArgsToIntervals(ast, false, engine);
       if (centered.isPresent()) {
         return centered;
@@ -535,7 +536,7 @@ public class IntervalFunctions {
   private static final class IntervalUnion extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST centered = centeredArgsToIntervals(ast, true, engine);
       if (centered.isPresent()) {
         return centered;

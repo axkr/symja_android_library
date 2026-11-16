@@ -540,7 +540,7 @@ public class SimplifyUtil extends VisitorExpr {
     return new int[] {-1, UNDEFINED};
   }
 
-  public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult, boolean fullSimplify,
+  public static @AllowNIL IExpr simplifyStep(IExpr arg1, IExpr defaultResult, boolean fullSimplify,
       boolean noApart, EvalEngine engine) {
     Function<IExpr, Long> complexityFunction = createComplexityFunction(F.NIL, engine);
     long minCounter = complexityFunction.apply(arg1);
@@ -615,7 +615,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @return the simplified expression, or {@link F#NIL} if nothing was found or the pass was
    *         abandoned
    */
-  private static IExpr runPass(IExpr expr, SimplifyUtil visitor) {
+  private static @AllowNIL IExpr runPass(IExpr expr, SimplifyUtil visitor) {
     try {
       return expr.accept(visitor);
     } catch (LimitException le) {
@@ -773,7 +773,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST the sum to regroup
    * @return the regrouped sum, or {@link F#NIL} if there is nothing to group
    */
-  private IExpr tryGroupwiseTogether(IAST plusAST) {
+  private @AllowNIL IExpr tryGroupwiseTogether(IAST plusAST) {
     if (plusAST.argSize() < 3) {
       // with two summands the grouping is what Together() already does
       return F.NIL;
@@ -813,7 +813,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST the sum
    * @return the sum with the first such pair rewritten, or {@link F#NIL}
    */
-  private IExpr tryTangentDifference(IAST plusAST) {
+  private @AllowNIL IExpr tryTangentDifference(IAST plusAST) {
     int tangents = 0;
     for (int i = 1; i < plusAST.size(); i++) {
       if (tangentTerm(plusAST.get(i)) != null) {
@@ -883,7 +883,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST the sum to inspect
    * @return the sum with its variable part replaced by a power, or {@link F#NIL}
    */
-  private IExpr tryFactorConstantPlusPower(IAST plusAST) {
+  private @AllowNIL IExpr tryFactorConstantPlusPower(IAST plusAST) {
     IASTAppendable constants = F.PlusAlloc(plusAST.size());
     IASTAppendable rest = F.PlusAlloc(plusAST.size());
     for (int i = 1; i < plusAST.size(); i++) {
@@ -1045,7 +1045,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST a sum whose summands are all logarithms or integer multiples of logarithms
    * @return the factored sum, or {@link F#NIL} if there is no common factor greater than 1
    */
-  private IExpr tryPlusLogCommonFactor(IAST plusAST) {
+  private @AllowNIL IExpr tryPlusLogCommonFactor(IAST plusAST) {
     if (plusAST.size() <= 2) {
       return F.NIL;
     }
@@ -1120,7 +1120,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST the sum to fold
    * @return the folded sum, or {@link F#NIL} if fewer than two summands are logarithms
    */
-  private IExpr tryPlusLog(IAST plusAST) {
+  private @AllowNIL IExpr tryPlusLog(IAST plusAST) {
     if (plusAST.size() <= 2) {
       return F.NIL;
     }
@@ -1149,7 +1149,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @return the folded sum, {@link F#NIL} if fewer than two summands fold, or <code>null</code> if
    *         a symbolic power did not cancel
    */
-  private IExpr foldLogs(IAST plusAST, boolean symbolicPowers) {
+  private @AllowNIL IExpr foldLogs(IAST plusAST, boolean symbolicPowers) {
     IRational[] coefficients = new IRational[plusAST.size()];
     IExpr[] arguments = new IExpr[plusAST.size()];
     IRational unit = null;
@@ -1346,7 +1346,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param w the argument of the second logarithm
    * @return the evaluated product <code>z*w</code>, or {@link F#NIL} if the fold is not allowed
    */
-  private IExpr foldsToLogOfProduct(IExpr z, IExpr w) {
+  private @AllowNIL IExpr foldsToLogOfProduct(IExpr z, IExpr w) {
     if (!isNotNegativeReal(z) && !isNotNegativeReal(w)) {
       return F.NIL;
     }
@@ -1377,7 +1377,7 @@ public class SimplifyUtil extends VisitorExpr {
     return re >= 0.0;
   }
 
-  private static IExpr tryTimesLog(IAST timesAST) {
+  private static @AllowNIL IExpr tryTimesLog(IAST timesAST) {
     if (timesAST.size() > 2 && timesAST.first().isInteger() && !timesAST.first().isMinusOne()) {
 
       for (int i = 2; i < timesAST.size(); i++) {
@@ -1468,7 +1468,7 @@ public class SimplifyUtil extends VisitorExpr {
    *
    * @return {@link F#NIL} if no rule applies
    */
-  private IExpr logOfTrigQuotient(IExpr log) {
+  private @AllowNIL IExpr logOfTrigQuotient(IExpr log) {
     if (fEngine.getAssumptions() == null) {
       // every rule needs a sign which only assumptions can give
       return F.NIL;
@@ -1527,7 +1527,7 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /** The argument of the first trigonometric or hyperbolic function in <code>expr</code>. */
-  private static IExpr firstTrigArgument(IExpr expr) {
+  private static @AllowNIL IExpr firstTrigArgument(IExpr expr) {
     IExpr[] found = {F.NIL};
     expr.isFree(x -> {
       if (found[0].isNIL() && x.isAST1() && (x.isTrigFunction() || x.isHyperbolicFunction())) {
@@ -1732,7 +1732,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param timesAST
    * @param sResult
    */
-  private IExpr reduceConjugateFactors(IASTMutable timesAST, SimplifiedResult sResult) {
+  private @AllowNIL IExpr reduceConjugateFactors(IASTMutable timesAST, SimplifiedResult sResult) {
     IExpr temp;
     IASTAppendable newTimes = F.NIL;
     int i = 1;
@@ -1900,7 +1900,7 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr reduceNumberFactor(IASTMutable timesAST) {
+  private @AllowNIL IExpr reduceNumberFactor(IASTMutable timesAST) {
     IExpr temp;
     IASTAppendable basicTimes = F.TimesAlloc(timesAST.size());
     IASTAppendable restTimes = F.TimesAlloc(timesAST.size());
@@ -1977,7 +1977,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST
    * @return <code>F.NIL</code> if no simplification was found
    */
-  private IExpr tryArg1IsOnePlus(IASTMutable plusAST, SimplifiedResult sResult) {
+  private @AllowNIL IExpr tryArg1IsOnePlus(IASTMutable plusAST, SimplifiedResult sResult) {
     IExpr plusArg1 = plusAST.arg1();
     if (plusArg1.isOne() || plusArg1.isMinusOne()) {
       int iterIndx = 2;
@@ -2024,7 +2024,7 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr tryExpand(IAST timesAST, IAST plusAST, INumber arg1, int i,
+  private @AllowNIL IExpr tryExpand(IAST timesAST, IAST plusAST, INumber arg1, int i,
       boolean isPowerReciprocal) {
     IExpr expandedAst = tryExpandTransformation(plusAST, F.Times(arg1, plusAST));
     if (expandedAst.isPresent()) {
@@ -2041,7 +2041,7 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr tryExpandTransformation(IExpr original, IExpr test) {
+  private @AllowNIL IExpr tryExpandTransformation(IExpr original, IExpr test) {
     long minCounter = fComplexityFunction.apply(original);
     IExpr temp;
     long count;
@@ -2110,7 +2110,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @return the quotient, or {@link F#NIL} if the division leaves a remainder or a quotient with a
    *         sum in a denominator
    */
-  private static IExpr polynomialQuotient(IExpr dividend, IExpr divisor, IExpr variable) {
+  private static @AllowNIL IExpr polynomialQuotient(IExpr dividend, IExpr divisor, IExpr variable) {
     IExpr temp =
         EvalEngine.get().evaluate(F.PolynomialQuotientRemainder(dividend, divisor, variable));
     if (temp.isList2() && temp.second().isZero() && !temp.first()
@@ -2130,7 +2130,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @return the normalized fraction, or {@link F#NIL} if the denominator does not lead with a
    *         negative term
    */
-  private static IExpr normalizeDenominatorSign(IExpr expr, SimplifyUtil util) {
+  private static @AllowNIL IExpr normalizeDenominatorSign(IExpr expr, SimplifyUtil util) {
     if (!expr.isTimes() && !expr.isPower()) {
       return F.NIL;
     }
@@ -2441,7 +2441,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the square, or {@link F#NIL}
    */
-  private static IExpr halfAngleSquare(IAST plusAST, SimplifyUtil util) {
+  private static @AllowNIL IExpr halfAngleSquare(IAST plusAST, SimplifyUtil util) {
     if (plusAST.argSize() != 2 || !plusAST.arg1().isRational() || plusAST.arg1().isZero()) {
       return F.NIL;
     }
@@ -2835,7 +2835,7 @@ public class SimplifyUtil extends VisitorExpr {
    *
    * @return {@link F#NIL} if the arguments are not rational multiples of one angle
    */
-  private static IExpr commonAngleTrigExpand(IExpr expr, SimplifyUtil util) {
+  private static @AllowNIL IExpr commonAngleTrigExpand(IExpr expr, SimplifyUtil util) {
     final IExpr[] angle = new IExpr[] {F.NIL};
     final java.util.Set<IExpr> multiples = new java.util.HashSet<IExpr>();
     final boolean[] failed = new boolean[] {false};
@@ -3331,7 +3331,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the scaled quotient, or {@link F#NIL}
    */
-  private static IExpr cancelDenominatorRadical(IExpr quotient, SimplifyUtil util) {
+  private static @AllowNIL IExpr cancelDenominatorRadical(IExpr quotient, SimplifyUtil util) {
     if (!quotient.isTimes() || !quotient.isNumericFunction()) {
       return F.NIL;
     }
@@ -3372,7 +3372,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the product with the negated sum, or {@link F#NIL}
    */
-  private static IExpr negateNegativeSum(IAST timesAST, SimplifyUtil util) {
+  private static @AllowNIL IExpr negateNegativeSum(IAST timesAST, SimplifyUtil util) {
     if (!timesAST.isNumericFunction()) {
       return F.NIL;
     }
@@ -3392,7 +3392,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the quotient with negated numerator and denominator, or {@link F#NIL}
    */
-  private static IExpr flipDenominatorSign(IExpr quotient, SimplifyUtil util) {
+  private static @AllowNIL IExpr flipDenominatorSign(IExpr quotient, SimplifyUtil util) {
     IAST factors = quotient.isTimes() ? (IAST) quotient : F.Times(quotient);
     int index = -1;
     for (int i = 1; i < factors.size(); i++) {
@@ -3421,7 +3421,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the quotient with the factored denominator, or {@link F#NIL}
    */
-  private static IExpr splitDenominatorMonomial(IExpr quotient, SimplifyUtil util) {
+  private static @AllowNIL IExpr splitDenominatorMonomial(IExpr quotient, SimplifyUtil util) {
     if (!quotient.isTimes() && !quotient.isPower()) {
       return F.NIL;
     }
@@ -3505,7 +3505,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param util the simplifier
    * @return the sum with every such factor absorbed, or {@link F#NIL} if there was none
    */
-  private static IExpr absorbReciprocalFactors(IExpr sum, SimplifyUtil util) {
+  private static @AllowNIL IExpr absorbReciprocalFactors(IExpr sum, SimplifyUtil util) {
     if (!sum.isPlus()) {
       return F.NIL;
     }
@@ -3539,7 +3539,7 @@ public class SimplifyUtil extends VisitorExpr {
     return changed ? util.eval(result) : F.NIL;
   }
 
-  private IExpr tryTransformations(IExpr expr) {
+  private @AllowNIL IExpr tryTransformations(IExpr expr) {
     if (!expr.isAST()) {
       return F.NIL;
     }
@@ -3574,7 +3574,7 @@ public class SimplifyUtil extends VisitorExpr {
    * <code>Function</code> or the right-hand side of a <code>RuleDelayed</code> is left alone.
    */
   @Override
-  protected IExpr visitAST(IAST ast) {
+  protected @AllowNIL IExpr visitAST(IAST ast) {
     final IExpr head = ast.head();
     if (head.isSymbol()) {
       final int attributes = ((ISymbol) head).getAttributes();
@@ -3597,7 +3597,7 @@ public class SimplifyUtil extends VisitorExpr {
    *
    * @return the rewritten expression, or {@link F#NIL} if no argument changed
    */
-  private IExpr visitArguments(IAST ast, int from, int to) {
+  private @AllowNIL IExpr visitArguments(IAST ast, int from, int to) {
     IASTMutable result = F.NIL;
     for (int i = from; i < to; i++) {
       IExpr temp = ast.get(i).accept(this);
@@ -3711,7 +3711,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param ast a power or a product
    * @return the evaluated product or {@link F#NIL} if no factor has such a power
    */
-  private IExpr negativeBaseExponentSplit(IAST ast) {
+  private @AllowNIL IExpr negativeBaseExponentSplit(IAST ast) {
     IAST factors = ast.isTimes() ? ast : F.list(ast);
     IASTAppendable result = F.TimesAlloc(factors.argSize() + 1);
     boolean changed = false;
@@ -3829,7 +3829,7 @@ public class SimplifyUtil extends VisitorExpr {
     return sResult.result;
   }
 
-  private IExpr visitPower(IAST powerAST, SimplifiedResult sResult) {
+  private @AllowNIL IExpr visitPower(IAST powerAST, SimplifiedResult sResult) {
     if (fFullSimplify && powerAST.exponent().equals(F.C1D2) && !powerAST.base().isRational()
         && powerAST.base().isAST()) {
       // a nested square root of a field of radicals: Sqrt(c)*A/B with A, B in that field. Cube
@@ -3986,7 +3986,7 @@ public class SimplifyUtil extends VisitorExpr {
 
   // Solve: u^3 + 15*u*v^2 = -2 AND 3*u^2*v + 5*v^3 = 1
   // Try denominators 1,2,3,4... for u = p/d, v = q/d
-  private static IExpr denestCubeRootPlusSqrt(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
+  private static @AllowNIL IExpr denestCubeRootPlusSqrt(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
     // (a + b*Sqrt(c))^(1/3) = u + v*Sqrt(c)?
     // u^3 + 3*u*v^2*c = a
     // 3*u^2*v + v^3*c = b
@@ -4043,7 +4043,7 @@ public class SimplifyUtil extends VisitorExpr {
     }
   }
 
-  private IExpr visitTimes(IASTMutable timesAST, SimplifiedResult sResult) {
+  private @AllowNIL IExpr visitTimes(IASTMutable timesAST, SimplifiedResult sResult) {
     final IExpr denominator = eval(F.Denominator(timesAST));
     if (!denominator.isNumber()) {
       final IExpr numerator = eval(F.Numerator(timesAST));

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import org.hipparchus.special.Beta;
@@ -56,7 +57,7 @@ public class StatisticsNumericDistributions {
    * @return {@link F#NIL} if the parameters are not quantities of one unit or another parameter is
    *         a quantity
    */
-  public static IExpr quantityDistribution(IAST ast, int... positions) {
+  public static @AllowNIL IExpr quantityDistribution(IAST ast, int... positions) {
     IExpr[] unit = new IExpr[1];
     IASTAppendable result = ast.copyAppendable();
     for (int i = 1; i < ast.size(); i++) {
@@ -89,7 +90,7 @@ public class StatisticsNumericDistributions {
    * The magnitude of the quantity <code>arg</code> (or the list of magnitudes of a list of
    * quantities) whose unit is <code>unit[0]</code>, which is set by the first quantity.
    */
-  private static IExpr quantityMagnitude(IExpr arg, IExpr[] unit) {
+  private static @AllowNIL IExpr quantityMagnitude(IExpr arg, IExpr[] unit) {
     if (arg.isList()) {
       return mapQuantities((IAST) arg, unit);
     }
@@ -105,7 +106,7 @@ public class StatisticsNumericDistributions {
     return F.NIL;
   }
 
-  private static IExpr mapQuantities(IAST list, IExpr[] unit) {
+  private static @AllowNIL IExpr mapQuantities(IAST list, IExpr[] unit) {
     IASTAppendable result = F.ListAlloc(list.argSize());
     for (int i = 1; i < list.size(); i++) {
       IExpr magnitude = quantityMagnitude(list.get(i), unit);
@@ -205,7 +206,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (kind == Kind.LANDAU && ast.isAST0()) {
         return F.binaryAST2(S.LandauDistribution, F.C0, F.C1);
       }
@@ -281,7 +282,7 @@ public class StatisticsNumericDistributions {
     }
 
     /** Apply <code>function</code> to the real <code>x</code> or to each element of a list. */
-    private IExpr numericValue(IAST dist, IExpr x, boolean cdf) {
+    private @AllowNIL IExpr numericValue(IAST dist, IExpr x, boolean cdf) {
       if (x.isList()) {
         return ((IAST) x).mapThread(F.binaryAST2(cdf ? S.CDF : S.PDF, dist, F.Slot1), 2);
       }
@@ -298,7 +299,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       if (x.isNIL()) {
         return F.NIL;
       }
@@ -306,7 +307,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       if (kind == Kind.NONCENTRAL_BETA && dist.argSize() == 3
           && !(x.isPresent() && isInexact(dist, x))) {
         IExpr a = dist.arg1();
@@ -328,7 +329,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
       if (q.isList()) {
         return ((IAST) q).mapThread(F.binaryAST2(S.InverseCDF, dist, F.Slot1), 2);
       }
@@ -368,12 +369,12 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -934,7 +935,7 @@ public class StatisticsNumericDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       if (!dist.isAST1()) {
         return F.NIL;
       }
@@ -946,7 +947,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       if (!dist.isAST1()) {
         return F.NIL;
       }
@@ -959,7 +960,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
       if (!dist.isAST1()) {
         return F.NIL;
       }
@@ -974,38 +975,38 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       // Sqrt(Pi/2)*s
       return dist.isAST1() ? F.Times(F.Sqrt(F.Times(F.C1D2, S.Pi)), dist.arg1()) : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       // s*Sqrt(Log(4))
       return dist.isAST1() ? F.Times(dist.arg1(), F.Sqrt(F.Log(F.C4))) : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // (2 - Pi/2)*s^2
       return dist.isAST1() ? F.Times(F.Subtract(F.C2, F.Times(F.C1D2, S.Pi)), F.Sqr(dist.arg1()))
           : F.NIL;
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       // (2*(-3 + Pi)*Sqrt(Pi))/(4 - Pi)^(3/2)
       return dist.isAST1() ? F.Times(F.C2, F.Plus(F.CN3, S.Pi), F.Sqrt(S.Pi),
           F.Power(F.Subtract(F.C4, S.Pi), F.QQ(-3, 2))) : F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       return dist.isAST1() ? F.Greater(dist.arg1(), F.C0) : F.NIL;
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (!dist.isAST1()) {
         return F.NIL;
       }
@@ -1042,7 +1043,7 @@ public class StatisticsNumericDistributions {
     }
 
     /** Evaluate <code>function(InverseGammaDistribution(...), args)</code>. */
-    private static IExpr delegate(IBuiltInSymbol function, IAST dist, IExpr... args) {
+    private static @AllowNIL IExpr delegate(IBuiltInSymbol function, IAST dist, IExpr... args) {
       if (!dist.isAST1() && !dist.isAST2()) {
         return F.NIL;
       }
@@ -1056,7 +1057,7 @@ public class StatisticsNumericDistributions {
     }
 
     /** Bring the values of a <code>Piecewise</code> moment to a common denominator. */
-    private static IExpr together(IExpr moment) {
+    private static @AllowNIL IExpr together(IExpr moment) {
       if (moment.isAST(S.Piecewise, 3) && moment.first().isList()) {
         IAST rows = ((IAST) moment.first())
             .map(row -> row.isList2() ? F.list(F.Together(row.first()), row.second()) : row);
@@ -1066,7 +1067,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1114,7 +1115,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.Greater(dist.arg1(), F.C0);
       }
@@ -1123,7 +1124,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (!dist.isAST1() && !dist.isAST2()) {
         return F.NIL;
       }
@@ -1150,7 +1151,7 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1163,7 +1164,7 @@ public class StatisticsNumericDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (!isValid(dist)) {
         return F.NIL;
       }
@@ -1174,12 +1175,12 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (!isValid(dist)) {
         return F.NIL;
       }
@@ -1192,12 +1193,12 @@ public class StatisticsNumericDistributions {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       if (!isValid(dist) || !x.isList() || x.argSize() != dist.arg2().argSize()) {
         return F.NIL;
       }

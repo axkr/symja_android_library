@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -83,7 +84,7 @@ public class StatisticalMomentFunctions {
   private static final class Moment extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // Moment(r) represents the order r formal raw moment.
         return F.NIL;
@@ -174,7 +175,7 @@ public class StatisticalMomentFunctions {
 
     // CPD-OFF moment evaluators share the argument checks, the per-element moments differ
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // CentralMoment(r) represents the order r formal central moment.
         return F.NIL;
@@ -273,7 +274,7 @@ public class StatisticalMomentFunctions {
   private static class Cumulant extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // Cumulant(r) represents the formal cumulant.
         return F.NIL;
@@ -518,7 +519,7 @@ public class StatisticalMomentFunctions {
 
     // CPD-OFF moment evaluators share the argument checks, the per-element moments differ
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // FactorialMoment(r) represents the order r formal factorial moment.
         return F.NIL;
@@ -609,7 +610,7 @@ public class StatisticalMomentFunctions {
    * {@link IGeneratingFunction#pgf(IAST, IExpr, EvalEngine)} implementation or - for a discrete
    * distribution with a small finite support - the exact enumeration <code>Sum(z^k*pmf(k))</code>.
    */
-  private static IExpr probabilityGeneratingFunction(IExpr distribution, IExpr z,
+  private static @AllowNIL IExpr probabilityGeneratingFunction(IExpr distribution, IExpr z,
       EvalEngine engine) {
     IGeneratingFunction gf = generatingFunction(distribution);
     if (gf != null) {
@@ -693,7 +694,7 @@ public class StatisticalMomentFunctions {
   private static class MomentEvaluate extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       IExpr data = ast.arg2();
       if (data.isList()) {
@@ -813,7 +814,7 @@ public class StatisticalMomentFunctions {
   private static class FactorialMomentGeneratingFunction extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final IExpr z = ast.arg2();
       if (arg1.isList()) {
@@ -851,7 +852,7 @@ public class StatisticalMomentFunctions {
   private static class CentralMomentGeneratingFunction extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final IExpr t = ast.arg2();
       if (arg1.isList()) {
@@ -889,7 +890,7 @@ public class StatisticalMomentFunctions {
   private static class CumulantGeneratingFunction extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final IExpr t = ast.arg2();
       if (arg1.isList()) {

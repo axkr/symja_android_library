@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -147,7 +148,7 @@ public class AssociationFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr leftHandSide = ast.arg1();
       if (leftHandSide.isSymbol()) {
         ISymbol sym = (ISymbol) leftHandSide;
@@ -258,7 +259,7 @@ public class AssociationFunctions {
   private static class Association extends AbstractEvaluator implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAssociation()) {
         return F.NIL;
       }
@@ -407,7 +408,7 @@ public class AssociationFunctions {
      * @param engine the evaluation engine
      * @return {@link F#NIL} if the assignment couldn't be made
      */
-    private static IExpr assignKeys(IAssociation assoc, IAST keys, int keyPosition, IExpr value,
+    private static @AllowNIL IExpr assignKeys(IAssociation assoc, IAST keys, int keyPosition, IExpr value,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       final IExpr key = engine.evaluate(keys.get(keyPosition));
       if (keyPosition == keys.argSize()) {
@@ -528,7 +529,7 @@ public class AssociationFunctions {
   private static final class JoinAcross extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       IExpr collision = F.NIL;
       while (argSize > 3 && ast.get(argSize).isRuleAST()) {
@@ -721,7 +722,7 @@ public class AssociationFunctions {
   private static class AssociationMap extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
@@ -730,7 +731,7 @@ public class AssociationFunctions {
       return F.NIL;
     }
 
-    private static IExpr associationMap(ISymbol symbol, IExpr arg1, IExpr arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr associationMap(ISymbol symbol, IExpr arg1, IExpr arg2, EvalEngine engine) {
       if (arg2.isList()) {
         IAST list2 = (IAST) arg2;
         IAssociation result = F.assoc(); // list2.size());
@@ -810,7 +811,7 @@ public class AssociationFunctions {
   private static class AssociationThread extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
@@ -824,7 +825,7 @@ public class AssociationFunctions {
       return F.NIL;
     }
 
-    private static IExpr associationThread(ISymbol symbol, IExpr arg1, IExpr arg2) {
+    private static @AllowNIL IExpr associationThread(ISymbol symbol, IExpr arg1, IExpr arg2) {
       if (arg1.isList() && arg2.isList()) {
         if (arg1.size() == arg2.size()) {
           final IAST list1 = (IAST) arg1;
@@ -879,7 +880,7 @@ public class AssociationFunctions {
   private static class Counts extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
       IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
       if (arg1.isList()) {
@@ -915,7 +916,7 @@ public class AssociationFunctions {
   private static final class KeyDrop extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
         if (ast.arg1().isListOrAssociation()) {
           final IAST arg1 = (IAST) ast.arg1();
@@ -958,7 +959,7 @@ public class AssociationFunctions {
   private static class KeyExistsQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -995,7 +996,7 @@ public class AssociationFunctions {
   private static class Key extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().isKey()) {
         if (ast.isAST1() && ast.arg1().isAssociation()) {
           IExpr key = ast.head().first();
@@ -1110,7 +1111,7 @@ public class AssociationFunctions {
   private static final class KeySelect extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (size == 3) {
         IExpr arg1 = ast.arg1();
@@ -1196,7 +1197,7 @@ public class AssociationFunctions {
   private static class KeySort extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
         IAST arg1 = (IAST) ast.arg1();
         if (arg1.isAssociation()) {
@@ -1261,7 +1262,7 @@ public class AssociationFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
@@ -1376,7 +1377,7 @@ public class AssociationFunctions {
   private static class Lookup extends AbstractEvaluator implements ICoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isDataset()) {
         // Lookup holds its arguments, so the dataset is only here once arg1 is evaluated - the
@@ -1454,7 +1455,7 @@ public class AssociationFunctions {
   private static class Merge extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -1580,7 +1581,7 @@ public class AssociationFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.head().isAST(S.Query)) {
         // the operator form Query(levelspec1, levelspec2, ...)[expr]
         IAST levelSpecs = (IAST) ast.head();
@@ -1662,7 +1663,7 @@ public class AssociationFunctions {
      * @param engine the evaluation engine
      * @return {@link F#NIL} if the query couldn't be applied
      */
-    private static IExpr query(IAST levelSpecs, int position, IExpr expr, boolean ignoreMissing,
+    private static @AllowNIL IExpr query(IAST levelSpecs, int position, IExpr expr, boolean ignoreMissing,
         EvalEngine engine) {
       if (position >= levelSpecs.size()) {
         // no more level specifications - the current level is the result
@@ -1715,7 +1716,7 @@ public class AssociationFunctions {
      * @param engine the evaluation engine
      * @return {@link F#NIL} if <code>expr</code> has no parts to descend into
      */
-    private static IExpr queryLevel(IAST levelSpecs, int position, IExpr expr,
+    private static @AllowNIL IExpr queryLevel(IAST levelSpecs, int position, IExpr expr,
         boolean ignoreMissing, EvalEngine engine) {
       if (expr.isAssociation()) {
         IAssociation assoc = (IAssociation) expr;
@@ -1797,7 +1798,7 @@ public class AssociationFunctions {
   private static class Structure extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isDataset()) {
         return ((IASTDataset) arg1).structure();
@@ -1859,7 +1860,7 @@ public class AssociationFunctions {
   private static final class KeyTake extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
         if (ast.arg1().isListOfRulesOrAssociation(true) || ast.arg1().isListOfLists()) {
           final IAST arg1 = (IAST) ast.arg1();
@@ -1913,7 +1914,7 @@ public class AssociationFunctions {
       return keyValueMap(ast.arg1(), engine.evaluate(ast.arg2()), engine);
     }
 
-    private static IExpr keyValueMap(IExpr f, IExpr arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr keyValueMap(IExpr f, IExpr arg2, EvalEngine engine) {
       if (arg2.isAssociation()) {
         IAssociation assoc = (IAssociation) arg2;
         IASTAppendable result = F.ListAlloc(assoc.argSize());
@@ -1934,7 +1935,7 @@ public class AssociationFunctions {
   private static class Summary extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isDataset()) {
         return ((IASTDataset) arg1).summary();
@@ -2084,7 +2085,7 @@ public class AssociationFunctions {
    * @param keys <code>true</code> for the keys, <code>false</code> for the values
    * @return {@link F#NIL} if the first argument has no keys or values
    */
-  private static IExpr keysOrValues(final IAST ast, boolean keys) {
+  private static @AllowNIL IExpr keysOrValues(final IAST ast, boolean keys) {
     IExpr arg1 = ast.arg1();
     final IExpr head = ast.isAST2() ? ast.arg2() : F.NIL;
     if (arg1.isAssociation()) {

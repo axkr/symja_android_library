@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -135,7 +136,7 @@ public class MeshFunctions {
     private static final double EPSILON = 1.0e-10;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isNonEmptyList()) {
         return F.NIL;
@@ -1044,7 +1045,7 @@ public class MeshFunctions {
    * @return {@link F#NIL} if the region isn't two dimensional or its boundary isn't a single closed
    *         curve
    */
-  public static IExpr toPolygon(IAST meshRegion) {
+  public static @AllowNIL IExpr toPolygon(IAST meshRegion) {
     if (!isMeshRegion(meshRegion) || embeddingDimension(meshRegion) != 2) {
       return F.NIL;
     }
@@ -1170,7 +1171,7 @@ public class MeshFunctions {
   }
 
   /** The sum of the areas of the two dimensional cells of a mesh region. */
-  public static IExpr area2D(IAST meshRegion, EvalEngine engine) {
+  public static @AllowNIL IExpr area2D(IAST meshRegion, EvalEngine engine) {
     List<IAST> faces = faces2D(meshRegion);
     if (faces == null) {
       return F.NIL;
@@ -1183,7 +1184,7 @@ public class MeshFunctions {
   }
 
   /** The area weighted centroid of the two dimensional cells of a mesh region. */
-  public static IExpr centroid2D(IAST meshRegion, EvalEngine engine) {
+  public static @AllowNIL IExpr centroid2D(IAST meshRegion, EvalEngine engine) {
     List<IAST> faces = faces2D(meshRegion);
     if (faces == null) {
       return F.NIL;
@@ -1207,7 +1208,7 @@ public class MeshFunctions {
   }
 
   /** A point is a member of a mesh region if it lies in one of its two dimensional cells. */
-  public static IExpr member2D(IAST meshRegion, IExpr point, EvalEngine engine) {
+  public static @AllowNIL IExpr member2D(IAST meshRegion, IExpr point, EvalEngine engine) {
     List<IAST> faces = faces2D(meshRegion);
     if (faces == null) {
       return F.NIL;
@@ -1225,7 +1226,7 @@ public class MeshFunctions {
     return allFalse ? S.False : F.NIL;
   }
 
-  public static IExpr volume3D(IAST meshRegion, EvalEngine engine) {
+  public static @AllowNIL IExpr volume3D(IAST meshRegion, EvalEngine engine) {
     List<IAST[]> triangles = boundaryTriangles(meshRegion);
     if (triangles == null) {
       return F.NIL;
@@ -1238,7 +1239,7 @@ public class MeshFunctions {
   }
 
   /** The centroid of a three dimensional mesh region. */
-  public static IExpr centroid3D(IAST meshRegion, EvalEngine engine) {
+  public static @AllowNIL IExpr centroid3D(IAST meshRegion, EvalEngine engine) {
     List<IAST[]> triangles = boundaryTriangles(meshRegion);
     if (triangles == null) {
       return F.NIL;
@@ -1273,7 +1274,7 @@ public class MeshFunctions {
    *
    * @return {@link F#NIL} if the test isn't decidable
    */
-  public static IExpr member3D(IAST meshRegion, IExpr point, EvalEngine engine) {
+  public static @AllowNIL IExpr member3D(IAST meshRegion, IExpr point, EvalEngine engine) {
     List<IAST[]> triangles = boundaryTriangles(meshRegion);
     if (triangles == null || !point.isList3()) {
       return F.NIL;
@@ -1322,7 +1323,7 @@ public class MeshFunctions {
    * @param points the corners of the polygon in boundary order
    * @return {@link F#NIL} if the test isn't decidable
    */
-  public static IExpr convexPointCycleQ(IAST points, EvalEngine engine) {
+  public static @AllowNIL IExpr convexPointCycleQ(IAST points, EvalEngine engine) {
     int size = points.argSize();
     if (size < 3) {
       return F.NIL;
@@ -1358,7 +1359,7 @@ public class MeshFunctions {
    *
    * @return {@link F#NIL} if the test isn't decidable
    */
-  public static IExpr convexQ(IAST meshRegion, EvalEngine engine) {
+  public static @AllowNIL IExpr convexQ(IAST meshRegion, EvalEngine engine) {
     int embeddingDimension = embeddingDimension(meshRegion);
     IAST coordinates = meshCoordinates(meshRegion);
     if (embeddingDimension == 2) {
@@ -1412,7 +1413,7 @@ public class MeshFunctions {
   }
 
   /** The boundary of a mesh region as a <code>MeshRegion</code> of its boundary cells. */
-  public static IExpr regionBoundary(IAST meshRegion) {
+  public static @AllowNIL IExpr regionBoundary(IAST meshRegion) {
     if (!isMeshRegion(meshRegion)) {
       return F.NIL;
     }
@@ -1429,7 +1430,7 @@ public class MeshFunctions {
    * The graphics representation of a mesh region: a <code>GraphicsComplex</code> of the mesh
    * coordinates and its boundary cells.
    */
-  public static IExpr toGraphicsComplex(IAST meshRegion) {
+  public static @AllowNIL IExpr toGraphicsComplex(IAST meshRegion) {
     if (!isMeshRegion(meshRegion)) {
       return F.NIL;
     }
@@ -1444,7 +1445,7 @@ public class MeshFunctions {
   private static class BoundaryMeshRegion extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr coordinates = ast.arg1();
       if (!coordinates.isListOfLists() || coordinates.argSize() == 0) {
         // `1` should be a non-empty list of points.
@@ -1507,7 +1508,7 @@ public class MeshFunctions {
   private static class MeshCoordinates extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (isMeshRegion(arg1)) {
         return meshCoordinates((IAST) arg1);
@@ -1529,7 +1530,7 @@ public class MeshFunctions {
   private static class MeshCells extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!isMeshRegion(arg1)) {
         return F.NIL;
@@ -1590,7 +1591,7 @@ public class MeshFunctions {
   private static class MeshCellCount extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!isMeshRegion(arg1)) {
         return F.NIL;
@@ -1636,7 +1637,7 @@ public class MeshFunctions {
   private static class MeshPrimitives extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!isMeshRegion(arg1)) {
         return F.NIL;
@@ -1690,7 +1691,7 @@ public class MeshFunctions {
   private static class ArrayMesh extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isList() || arg1.argSize() == 0) {
         return F.NIL;
@@ -1702,7 +1703,7 @@ public class MeshFunctions {
       return mesh1D(array);
     }
 
-    private IExpr mesh1D(IAST array) {
+    private @AllowNIL IExpr mesh1D(IAST array) {
       int n = array.argSize();
       // collect the grid points which are used by a cell
       boolean[] used = new boolean[n + 1];
@@ -1738,7 +1739,7 @@ public class MeshFunctions {
       return F.binaryAST2(S.MeshRegion, coordinates, F.list(F.Line(lines)));
     }
 
-    private IExpr mesh2D(IAST array) {
+    private @AllowNIL IExpr mesh2D(IAST array) {
       int rows = array.argSize();
       int columns = array.arg1().argSize();
       for (int i = 1; i <= rows; i++) {
@@ -1812,7 +1813,7 @@ public class MeshFunctions {
   private static class CantorMesh extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int n = ast.arg1().toIntDefault();
       if (n < 0 || n > 15) {
         return F.NIL;
@@ -1900,7 +1901,7 @@ public class MeshFunctions {
   private static class DelaunayMesh extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isListOfLists() || arg1.argSize() < 3) {
         return F.NIL;

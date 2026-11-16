@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -148,7 +149,7 @@ public class FileSystemFunctions {
 
   private static class AbsoluteFileName extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -179,7 +180,7 @@ public class FileSystemFunctions {
 
   private static class CopyDirectory extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -222,7 +223,7 @@ public class FileSystemFunctions {
 
   private static class CopyFile extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -252,7 +253,7 @@ public class FileSystemFunctions {
 
   private static class DeleteDirectory extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -291,7 +292,7 @@ public class FileSystemFunctions {
 
   private static class DeleteFile extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -309,7 +310,7 @@ public class FileSystemFunctions {
       return deleteOne(arg1, engine);
     }
 
-    private static IExpr deleteOne(IExpr name, EvalEngine engine) {
+    private static @AllowNIL IExpr deleteOne(IExpr name, EvalEngine engine) {
       Path file = writePath(S.DeleteFile, name, engine);
       if (file == null) {
         return F.NIL;
@@ -334,7 +335,7 @@ public class FileSystemFunctions {
 
   private static class Directory extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -349,7 +350,7 @@ public class FileSystemFunctions {
 
   private static class DirectoryName extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -385,7 +386,7 @@ public class FileSystemFunctions {
 
   private static class DirectoryQ extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -449,7 +450,7 @@ public class FileSystemFunctions {
 
   private static class Environment extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -472,7 +473,7 @@ public class FileSystemFunctions {
    * directory, which is "." - never where the host keeps that directory. A path outside it has no
    * such name and stays unevaluated.
    */
-  private static IExpr insideSandbox(Path root, Path path) {
+  private static @AllowNIL IExpr insideSandbox(Path root, Path path) {
     if (!path.startsWith(root)) {
       return F.NIL;
     }
@@ -482,7 +483,7 @@ public class FileSystemFunctions {
 
   private static class ExpandFileName extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -517,7 +518,7 @@ public class FileSystemFunctions {
 
   private static class FileBaseName extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       String file = fileNameString(ast.arg1());
       if (file == null) {
         return F.NIL;
@@ -535,7 +536,7 @@ public class FileSystemFunctions {
 
   private static class FileByteCount extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -562,7 +563,7 @@ public class FileSystemFunctions {
    */
   private static class FileSize extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr name = ast.arg1();
       if (name instanceof FileExpr) {
         // File("name") - the name it was made from, which the sandbox then resolves like any other
@@ -604,7 +605,7 @@ public class FileSystemFunctions {
 
   private static class FileDate extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -630,7 +631,7 @@ public class FileSystemFunctions {
 
   private static class FileExistsQ extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -646,7 +647,7 @@ public class FileSystemFunctions {
 
   private static class FileExtension extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       String file = fileNameString(ast.arg1());
       if (file == null) {
         return F.NIL;
@@ -664,7 +665,7 @@ public class FileSystemFunctions {
 
   private static class FileNameDepth extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -679,7 +680,7 @@ public class FileSystemFunctions {
 
   private static class FileNameSplit extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -704,7 +705,7 @@ public class FileSystemFunctions {
    */
   private static class FileNames extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -789,7 +790,7 @@ public class FileSystemFunctions {
 
   private static class FileType extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -808,7 +809,7 @@ public class FileSystemFunctions {
 
   private static class ParentDirectory extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 1 && ast.arg1().isAST(S.File, 2)
           && ast.arg1().first() instanceof IStringX) {
         // the parent of File(name) is the name of the parent directory
@@ -871,7 +872,7 @@ public class FileSystemFunctions {
 
   private static class RenameFile extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -916,7 +917,7 @@ public class FileSystemFunctions {
 
   private static class SetDirectory extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,7 +61,7 @@ public class AttributeFunctions {
   private static final class Attributes extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr expr = ast.arg1();
         if (!expr.isSymbol() && !expr.isString()
@@ -80,7 +81,7 @@ public class AttributeFunctions {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Attributes, 2)) {
         if (!leftHandSide.first().isSymbol()) {
@@ -156,7 +157,7 @@ public class AttributeFunctions {
   private static final class ClearAttributes extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST list = ast.arg1().makeList();
       IExpr arg2 = engine.evaluate(ast.arg2());
       for (int i = 1; i < list.size(); i++) {
@@ -188,7 +189,7 @@ public class AttributeFunctions {
      * @param engine
      * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
-    private IExpr clearAttributes(final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr clearAttributes(final IExpr expr, IExpr attributes, IAST ast, EvalEngine engine) {
       ISymbol sym = writableSymbol(expr, ast, engine);
       if (sym == null) {
         return F.NIL;
@@ -245,7 +246,7 @@ public class AttributeFunctions {
   private static final class Protect extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTMutable mutable = checkIdentifiers(ast, engine);
       if (mutable.isNIL()) {
         return F.NIL;
@@ -276,7 +277,7 @@ public class AttributeFunctions {
   private static final class Unprotect extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.UNPROTECT_ALLOWED && !Config.SHARED_JVM) {
         IASTMutable mutable = checkIdentifiers(ast, engine);
         if (mutable.isNIL()) {
@@ -354,7 +355,7 @@ public class AttributeFunctions {
       return ARGS_2_2;
     }
 
-    private static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, IAST ast,
+    private static @AllowNIL IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, IAST ast,
         EvalEngine engine) {
       attributes = engine.evaluate(attributes);
       if (attributes.isList()) {
@@ -393,7 +394,7 @@ public class AttributeFunctions {
      * @param engine
      * @return {@link F#NIL} if <code>expr</code> is not a symbol
      */
-    private static IExpr addAttributes(final IExpr expr, IExpr attributes, IAST ast,
+    private static @AllowNIL IExpr addAttributes(final IExpr expr, IExpr attributes, IAST ast,
         EvalEngine engine) {
       ISymbol sym = writableSymbol(expr, ast, engine);
       if (sym == null) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -79,7 +80,7 @@ public class SubsetFunctions {
   private static final class SubsetCases extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.argSize() <= 3 && ast.arg1().isAST()) {
         try {
           int maxNumberOfResults = Integer.MAX_VALUE;
@@ -129,7 +130,7 @@ public class SubsetFunctions {
     private static final long MAX_ARRANGEMENTS = 20_000_000L;
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       if (!ast.arg1().isList() || !ast.arg2().isList()) {
         return F.NIL;
@@ -317,7 +318,7 @@ public class SubsetFunctions {
       return result;
     }
 
-    private IExpr applyRule(IAST rule, IAST result, final EvalEngine engine) {
+    private @AllowNIL IExpr applyRule(IAST rule, IAST result, final EvalEngine engine) {
       if (!rule.arg1().isAST()) {
         return F.NIL;
       }
@@ -389,7 +390,7 @@ public class SubsetFunctions {
 
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.argSize() <= 3 && ast.arg1().isAST()) {
         if (!ast.arg1().isList()) {
           // List expected at position `1` in `2`.

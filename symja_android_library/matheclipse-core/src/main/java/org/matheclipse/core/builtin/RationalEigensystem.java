@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.List;
 import org.hipparchus.complex.Complex;
@@ -347,7 +348,7 @@ final class RationalEigensystem {
    * Write the element <code>q(t)</code> of <code>Q(t)</code> as a rational number, a radical or a
    * <code>Root</code> object of its minimal polynomial.
    */
-  private IExpr reduce(IRational[] element, Eigenvalue eigenvalue, AlgebraicField field) {
+  private @AllowNIL IExpr reduce(IRational[] element, Eigenvalue eigenvalue, AlgebraicField field) {
     int degree = field.degree(element);
     if (degree <= 0) {
       return element[0];

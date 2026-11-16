@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -57,7 +58,7 @@ public class ManipulateFunction {
   private static class HeldFrontEndObject extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -84,7 +85,7 @@ public class ManipulateFunction {
   private static class DynamicObject extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -143,7 +144,7 @@ public class ManipulateFunction {
       return expr;
     }
 
-    private static IExpr settings(IExpr expr) {
+    private static @AllowNIL IExpr settings(IExpr expr) {
       return expr.replaceAll(e -> {
         if (e.isAST() && e.argSize() >= 1 && CONTROLS.contains(e.head())) {
           return settings(e.first());
@@ -169,7 +170,7 @@ public class ManipulateFunction {
   private static class ButtonObject extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 

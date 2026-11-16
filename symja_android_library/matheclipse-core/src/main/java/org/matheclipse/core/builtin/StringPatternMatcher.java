@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -133,7 +134,7 @@ abstract class StringPatternMatcher {
    * <code>"$0"</code>, <code>"$1"</code>, … anywhere inside are replaced as well; in any other
    * pattern they are literal text.
    */
-  IExpr substitute(IExpr rhs) {
+  @AllowNIL IExpr substitute(IExpr rhs) {
     IExpr result = rhs;
     for (ISymbol name : names()) {
       String text = value(name);

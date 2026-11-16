@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import java.io.File;
@@ -178,7 +179,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return F.NIL;
     }
   }
@@ -187,12 +188,12 @@ public class ConstantDefinitions {
     static final NILEvaluator CONST = new NILEvaluator();
 
     @Override
-    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -232,7 +233,7 @@ public class ConstantDefinitions {
      * <code>$ContextAliases["a`"]</code> - the context an alias stands for, as in an association.
      */
     @Override
-    public IExpr evaluate(final org.matheclipse.core.interfaces.IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final org.matheclipse.core.interfaces.IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr key = ast.arg1();
         if (key.isString()) {
@@ -264,7 +265,7 @@ public class ConstantDefinitions {
 
     /** <code>$ContextAliases["a`"] = "Actual`"</code> */
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         org.matheclipse.core.interfaces.IBuiltInSymbol builtinSymbol, final EvalEngine engine) {
       if (leftHandSide.isAST(S.$ContextAliases, 2)) {
         IExpr alias = engine.evaluate(leftHandSide.first());
@@ -370,7 +371,7 @@ public class ConstantDefinitions {
   private static class $BaseDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -494,7 +495,7 @@ public class ConstantDefinitions {
   private static class $GeoLocation extends AbstractSymbolEvaluator implements ISetValueEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       IExpr location = S.$GeoLocation.assignedValue();
       if (location != null) {
         return location;
@@ -577,7 +578,7 @@ public class ConstantDefinitions {
   private static class $HomeDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -797,7 +798,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+    public @AllowNIL IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       if (!rightHandSide.isList()) {
         return F.NIL;
       }
@@ -975,7 +976,7 @@ public class ConstantDefinitions {
   private static class $SystemMemory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -988,7 +989,7 @@ public class ConstantDefinitions {
   private static class $TemporaryDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1004,7 +1005,7 @@ public class ConstantDefinitions {
   private static class $UserBaseDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1019,7 +1020,7 @@ public class ConstantDefinitions {
   private static class $UserName extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1047,7 +1048,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+    public @AllowNIL IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       if (rightHandSide.isList()) {
         S.$BoxForms.assignValue(rightHandSide, setDelayed);
         return rightHandSide;
@@ -1067,7 +1068,7 @@ public class ConstantDefinitions {
   private static class $InstallationDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1120,7 +1121,7 @@ public class ConstantDefinitions {
   private static class $MachineName extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1149,7 +1150,7 @@ public class ConstantDefinitions {
   private static class $ProcessID extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1203,7 +1204,7 @@ public class ConstantDefinitions {
   private static class $UserDocumentsDirectory extends AbstractSymbolEvaluator {
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (!FileSandbox.isHostVisible(engine)) {
         // a sandboxed kernel says nothing about the host
         return F.NIL;
@@ -1654,7 +1655,7 @@ public class ConstantDefinitions {
     public static final double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // (3-Sqrt(5))*Pi
       // return F.Times(F.Subtract(F.C3, F.Sqrt(F.C5)), F.Pi);
       return F.NIL;
@@ -1725,7 +1726,7 @@ public class ConstantDefinitions {
     }
 
     @Override
-    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       // 1/2*(1+5^(1/2))
       // return F.Times(F.C1D2, F.Plus(F.C1, F.Power(F.integer(5), F.C1D2)));
       return F.NIL;

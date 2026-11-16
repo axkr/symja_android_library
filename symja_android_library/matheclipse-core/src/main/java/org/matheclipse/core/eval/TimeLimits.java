@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -194,7 +195,7 @@ public final class TimeLimits {
    * @return {@link F#NIL} if the limit runs out, the step exceeds a limit of the engine or returns
    *         <code>null</code>
    */
-  public static IExpr callOrNil(EvalEngine engine, Supplier<IExpr> work, long millis) {
+  public static @AllowNIL IExpr callOrNil(EvalEngine engine, Supplier<IExpr> work, long millis) {
     final int modeFlags = engine.modeFlags();
     final int conditionDepth = engine.conditionDepth();
     final long precision = engine.getNumericPrecision();

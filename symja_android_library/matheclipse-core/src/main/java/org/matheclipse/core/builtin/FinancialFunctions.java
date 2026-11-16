@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -27,7 +28,7 @@ public class FinancialFunctions {
   private static class Annuity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -40,7 +41,7 @@ public class FinancialFunctions {
   private static class AnnuityDue extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -53,7 +54,7 @@ public class FinancialFunctions {
   private static class EffectiveInterest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr a = ast.arg1();
       if (ast.size() == 2) {
         int dim = a.isVector();
@@ -112,7 +113,7 @@ public class FinancialFunctions {
   private static class TimeValue extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr c = ast.argSize() >= 3 ? ast.arg3() : F.C0;

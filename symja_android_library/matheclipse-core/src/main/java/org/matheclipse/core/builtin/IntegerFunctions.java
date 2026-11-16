@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
 import java.util.function.Function;
 import org.apfloat.Apfloat;
@@ -191,7 +192,7 @@ public class IntegerFunctions {
   private static class BitLength extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         IInteger iArg1 = (IInteger) ast.arg1();
         BigInteger big = iArg1.toBigNumerator();
@@ -214,7 +215,7 @@ public class IntegerFunctions {
   private static class BitNot extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         IInteger iArg1 = (IInteger) arg1;
@@ -250,7 +251,7 @@ public class IntegerFunctions {
    * @param and <code>true</code> for <code>BitAnd</code>
    * @return {@link F#NIL} if nothing changes
    */
-  private static IExpr bitAndOr(final IAST ast, boolean and) {
+  private static @AllowNIL IExpr bitAndOr(final IAST ast, boolean and) {
     final BigInteger absorbing = and ? BigInteger.ZERO : IInteger.BI_MINUS_ONE;
     final BigInteger neutral = and ? IInteger.BI_MINUS_ONE : BigInteger.ZERO;
     BigInteger constant = null;
@@ -299,7 +300,7 @@ public class IntegerFunctions {
    *        the <code>Orderless</code> attribute
    * @return {@link F#NIL} if nothing changes
    */
-  private static IExpr bitXor(final IAST ast) {
+  private static @AllowNIL IExpr bitXor(final IAST ast) {
     boolean not = false;
     BigInteger constant = null;
     int integers = 0;
@@ -424,7 +425,7 @@ public class IntegerFunctions {
   private abstract static class AbstractBitIndexFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         int k = ast.arg2().toMachineInt();
         if (F.isPresent(k)) {
@@ -456,7 +457,7 @@ public class IntegerFunctions {
   private static class BitSet extends AbstractBitIndexFunction {
 
     @Override
-    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+    @AllowNIL IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
       if (power2_K >= 0) {
         if ((Config.MAX_BIT_LENGTH) <= power2_K) {
           BigIntegerLimitExceeded.throwIt(power2_K);
@@ -488,7 +489,7 @@ public class IntegerFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr n = ast.arg1();
       long k = 1;
       if (ast.isAST2()) {
@@ -582,7 +583,7 @@ public class IntegerFunctions {
   private static class BitClear extends AbstractBitIndexFunction {
 
     @Override
-    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+    @AllowNIL IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
       if (power2_K >= 0) {
         try {
           return F.ZZ(value.toBigNumerator().clearBit(power2_K));
@@ -621,7 +622,7 @@ public class IntegerFunctions {
   private static class BitGet extends AbstractBitIndexFunction {
 
     @Override
-    IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
+    @AllowNIL IExpr evalBit(IInteger value, int power2_K, EvalEngine engine) {
       if (power2_K >= 0) {
         return value.isBitSet(power2_K) ? F.C1 : F.C0;
       }
@@ -688,7 +689,7 @@ public class IntegerFunctions {
 
     private static final class CeilingPlusFunction implements Function<IExpr, IExpr> {
       @Override
-      public IExpr apply(IExpr expr) {
+      public @AllowNIL IExpr apply(IExpr expr) {
         if (expr.isInteger()) {
           return expr;
         }
@@ -713,7 +714,7 @@ public class IntegerFunctions {
      * ceiling functions</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
           // Ceiling(0.6, 0.2) is 3*0.2, because 0.6/0.2 is 2.9999999999999996
@@ -735,7 +736,7 @@ public class IntegerFunctions {
       return ARGS_1_2;
     }
 
-    public IExpr evalCeiling(IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evalCeiling(IExpr arg1, EvalEngine engine) {
       if (arg1.isNumber()) {
         return ((INumber) arg1).ceilFraction();
       }
@@ -811,7 +812,7 @@ public class IntegerFunctions {
     private static final int MAX_DIGIT_COUNT_BASE = 1 << 24;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -942,7 +943,7 @@ public class IntegerFunctions {
   private static class IntegerDigits extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       int base = 10;
       int padLeftZeros = 0;
       if (ast.argSize() >= 2) {
@@ -1058,7 +1059,7 @@ public class IntegerFunctions {
   private static class IntegerExponent extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IInteger base = F.C10;
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
@@ -1166,7 +1167,7 @@ public class IntegerFunctions {
 
     private static final class FloorPlusFunction implements Function<IExpr, IExpr> {
       @Override
-      public IExpr apply(IExpr expr) {
+      public @AllowNIL IExpr apply(IExpr expr) {
         if (expr.isInteger()) {
           return expr;
         }
@@ -1191,7 +1192,7 @@ public class IntegerFunctions {
      * ceiling functions</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
           // Floor(0.7, 0.1) is 6*0.1, because 0.7/0.1 is 6.999999999999999
@@ -1213,7 +1214,7 @@ public class IntegerFunctions {
       return ARGS_1_2;
     }
 
-    public static IExpr evalFloor(IExpr arg1, EvalEngine engine) {
+    public static @AllowNIL IExpr evalFloor(IExpr arg1, EvalEngine engine) {
       if (arg1.isNumber()) {
         return ((INumber) arg1).floorFraction();
       }
@@ -1318,7 +1319,7 @@ public class IntegerFunctions {
      * @param engine
      * @return {@link F#NIL} if no assumption determines the value
      */
-    private static IExpr fractionalPartFromAssumptions(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr fractionalPartFromAssumptions(IExpr expr, EvalEngine engine) {
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions == null) {
         return F.NIL;
@@ -1341,7 +1342,7 @@ public class IntegerFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         // Note: fractional part for a complex number returns a new complex number with the
@@ -1431,7 +1432,7 @@ public class IntegerFunctions {
   private static class FromDigits extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr base = F.C10;
       if (ast.size() >= 3) {
         base = ast.arg2();
@@ -1622,7 +1623,7 @@ public class IntegerFunctions {
   private static class IntegerLength extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         IInteger radix = F.C10;
         if (ast.isAST2()) {
@@ -1686,7 +1687,7 @@ public class IntegerFunctions {
   private static class IntegerPart extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isNumber()) {
@@ -1797,7 +1798,7 @@ public class IntegerFunctions {
   private static class Mod extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr m = ast.arg1();
         IExpr n = ast.arg2();
@@ -1925,7 +1926,7 @@ public class IntegerFunctions {
      * @param engine
      * @return {@link F#NIL} if no assumption determines the value
      */
-    private static IExpr modFromAssumptions(IExpr m, IExpr n, EvalEngine engine) {
+    private static @AllowNIL IExpr modFromAssumptions(IExpr m, IExpr n, EvalEngine engine) {
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions == null || !n.isNumber()) {
         // a numeric modulus keeps the Mod(-r, n) below from recursing back into this method
@@ -1945,7 +1946,7 @@ public class IntegerFunctions {
       return F.NIL;
     }
 
-    private static IExpr mod(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
+    private static @AllowNIL IExpr mod(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
       if (m.isNumber() && n.isNumber() && d.isNumber()) {
         // m-n*Floor((-d+m)/n)
         if (m.isInteger() && n.isInteger() && d.isInteger()) {
@@ -2001,7 +2002,7 @@ public class IntegerFunctions {
   private static class NumberDigit extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
@@ -2143,7 +2144,7 @@ public class IntegerFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       // 1. FAST PATH: Standard integers over Z (preserves SymPy/native fast integer algorithms)
       if (ast.arg1().isInteger() && ast.arg3().isInteger()) {
@@ -2345,7 +2346,7 @@ public class IntegerFunctions {
   private static class Quotient extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr m = ast.arg1();
         IExpr n = ast.arg2();
@@ -2384,7 +2385,7 @@ public class IntegerFunctions {
      * @param n
      * @return
      */
-    private static IExpr quotient(IExpr z, IExpr n) {
+    private static @AllowNIL IExpr quotient(IExpr z, IExpr n) {
       if (z.isInteger() && n.isInteger()) {
         return ((IInteger) z).quotient((IInteger) n);
       }
@@ -2448,7 +2449,7 @@ public class IntegerFunctions {
       return F.complexNum(zComplex.divide(nComplex)).floorFraction();
     }
 
-    private static IExpr quotient(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
+    private static @AllowNIL IExpr quotient(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
       if (m.isNumber() && n.isNumber() && d.isNumber()) {
         if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
             || n.isComplexNumeric() || d.isComplexNumeric()) {
@@ -2520,7 +2521,7 @@ public class IntegerFunctions {
   private static class QuotientRemainder extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
 
       try {
         IExpr arg1 = ast.arg1().eval(engine);
@@ -2625,7 +2626,7 @@ public class IntegerFunctions {
    * @param engine the evaluation engine
    * @return the multiple of the step or {@link F#NIL}
    */
-  private static IExpr multipleOf(ISymbol integerFunction, IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr multipleOf(ISymbol integerFunction, IAST ast, EvalEngine engine) {
     final IExpr x = ast.arg1();
     final IExpr a = engine.evaluateNonNumeric(ast.arg2());
     final IExpr quotient = multipleQuotient(x, a);
@@ -2691,7 +2692,7 @@ public class IntegerFunctions {
   private static class RealDigits extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
         int base = 10;
@@ -2749,7 +2750,7 @@ public class IntegerFunctions {
      * base <code>base &gt; 1</code>: each digit is the largest one which leaves the rest
      * non-negative.
      */
-    private static IExpr realDigitsOfRealBase(IExpr x, IExpr base, long length,
+    private static @AllowNIL IExpr realDigitsOfRealBase(IExpr x, IExpr base, long length,
         EvalEngine engine) {
       if (length < 1L || length > MAX_REAL_BASE_DIGITS) {
         return F.NIL;
@@ -2848,7 +2849,7 @@ public class IntegerFunctions {
      * ceiling functions</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTMutable res = F.NIL;
       try {
         IExpr expr = ast.arg1();
@@ -2930,7 +2931,7 @@ public class IntegerFunctions {
       return res;
     }
 
-    private IExpr round(EvalEngine engine, IExpr expr, IExpr k) {
+    private @AllowNIL IExpr round(EvalEngine engine, IExpr expr, IExpr k) {
       // Round(0.35, 0.1) is 3*0.1 and Round(0.35, 1/10) is 3/10, because 0.35/0.1 is
       // 3.4999999999999996
       IExpr n = engine.evaluate(multipleQuotient(expr, k));
@@ -3012,7 +3013,7 @@ public class IntegerFunctions {
    * @return the integer, {@link F#NIL} if the side could not be told, or <code>null</code> if the
    *         value is decided otherwise
    */
-  private static IExpr exactInteger(ISymbol kind, ISymbol messageHead, IExpr expr, INumber number,
+  private static @AllowNIL IExpr exactInteger(ISymbol kind, ISymbol messageHead, IExpr expr, INumber number,
       EvalEngine engine) {
     if (number == null || !number.isReal() || expr.isNumber()
         || !expr.isFree(x -> x.isInexactNumber(), false)) {
@@ -3124,7 +3125,7 @@ public class IntegerFunctions {
     return first == 1 ? digits : digits.subList(first);
   }
 
-  public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
+  public static @AllowNIL IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
     INumber number = null;
     if (arg1.isReal()) {
       number = (IReal) arg1;
@@ -3152,7 +3153,7 @@ public class IntegerFunctions {
    * @return {@link F#NIL} if <code>x</code> has no real value, or a message was printed because it
    *         cannot be told from <code>0</code>
    */
-  private static IExpr truncatedDigits(IExpr x, int radix, long length, long startDigit) {
+  private static @AllowNIL IExpr truncatedDigits(IExpr x, int radix, long length, long startDigit) {
     final double digitsPerPlace = Math.max(1.0, Math.log10(radix));
     long needed = (long) Math
         .ceil((length + (F.isPresent(startDigit) ? Math.abs(startDigit) : 0)) * digitsPerPlace);
@@ -3186,7 +3187,7 @@ public class IntegerFunctions {
    *
    * @return {@link F#NIL} if the digits cannot be determined
    */
-  private static IExpr digitsOfReal(IReal number, int radix, long length, long startDigit) {
+  private static @AllowNIL IExpr digitsOfReal(IReal number, int radix, long length, long startDigit) {
     IReal realNumber = number;
     if (realNumber.isNegative()) {
       realNumber = realNumber.abs();

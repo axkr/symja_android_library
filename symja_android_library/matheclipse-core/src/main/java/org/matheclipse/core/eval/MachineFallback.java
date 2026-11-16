@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
@@ -63,7 +64,7 @@ public final class MachineFallback {
    * @return the number which the function is, or {@link F#NIL} if this is no numeric function of
    *         machine numbers, or the arbitrary precision arithmetic gives no number either
    */
-  public static IExpr evaluate(final ISymbol symbol, final IAST ast, final EvalEngine engine) {
+  public static @AllowNIL IExpr evaluate(final ISymbol symbol, final IAST ast, final EvalEngine engine) {
     if (engine.fMachineFallback || !Attribute.NUMERICFUNCTION.isSetIn(symbol.getAttributes())
         || ast.argSize() < 1 || ast.argSize() > 6) {
       return F.NIL;

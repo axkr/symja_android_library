@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,7 +74,7 @@ public class PermutationGroupFunctions {
   private static final class PermutationMatrix extends LinearAlgebra.AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       final int[] permutation = toPermutation(ast.arg1(), engine);
       if (permutation == null) {
         return F.NIL;
@@ -225,7 +226,7 @@ public class PermutationGroupFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.PermutationGroup, 2) && arg1.first().isList()
           && (kind == SUPPORT || kind == MAX || kind == MIN)) {
@@ -319,7 +320,7 @@ public class PermutationGroupFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       PermGroups group = toGroup(ast.arg1(), engine);
       if (group == null) {
         return kind == ELEMENTQ && ast.arg1().isAST(S.PermutationGroup) ? S.False : F.NIL;
@@ -433,7 +434,7 @@ public class PermutationGroupFunctions {
       return list;
     }
 
-    private static IExpr orbits(final IAST ast, PermGroups group) {
+    private static @AllowNIL IExpr orbits(final IAST ast, PermGroups group) {
       if (ast.isAST2()) {
         if (!ast.arg2().isList()) {
           return F.NIL;
@@ -492,7 +493,7 @@ public class PermutationGroupFunctions {
       return result;
     }
 
-    private static IExpr stabilizer(final IAST ast, PermGroups group, EvalEngine engine) {
+    private static @AllowNIL IExpr stabilizer(final IAST ast, PermGroups group, EvalEngine engine) {
       IAST points = ast.arg2().isList() ? (IAST) ast.arg2() : F.List(ast.arg2());
       for (int i = 1; i < points.size(); i++) {
         int point = points.get(i).toIntDefault();
@@ -533,7 +534,7 @@ public class PermutationGroupFunctions {
    */
   private static final class CayleyGraph extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, ast.arg1()));
       IExpr generators = engine.evaluate(F.unaryAST1(S.GroupGenerators, ast.arg1()));
       if (!elements.isList() || !generators.isList()) {

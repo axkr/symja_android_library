@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class PacletFunctions {
    */
   private static class PacletDirectoryLoad extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -137,7 +138,7 @@ public class PacletFunctions {
    */
   private static class PacletObject extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr head = ast.head();
       if (head.isAST(S.PacletObject, 2) && ast.isAST1()) {
         IExpr fields = head.first();
@@ -162,7 +163,7 @@ public class PacletFunctions {
    */
   private static class LoadWolframLanguageCode extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }

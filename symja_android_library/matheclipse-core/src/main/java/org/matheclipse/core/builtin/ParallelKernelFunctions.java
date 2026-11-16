@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -205,7 +206,7 @@ public class ParallelKernelFunctions {
   /** <code>ParallelSubmit[expr]</code>, <code>ParallelSubmit[{x, ...}, expr]</code>. */
   private static final class ParallelSubmit extends AbstractCoreFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       if (ast.isAST2()) {
         if (!ast.arg1().isList()) {
@@ -247,7 +248,7 @@ public class ParallelKernelFunctions {
    */
   private static final class WaitAll extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.isAST1()) {
         return F.NIL;
       }

@@ -982,7 +982,7 @@ public class CompareUtil {
         || isZeroOverInertCalls(function, tolerance, engine);
   }
 
-  private static IExpr inertCallsAsVariables(IExpr expr, Map<IExpr, ISymbol> variables) {
+  private static @AllowNIL IExpr inertCallsAsVariables(IExpr expr, Map<IExpr, ISymbol> variables) {
     if (!expr.isAST()) {
       return expr;
     }
@@ -1252,7 +1252,7 @@ public class CompareUtil {
    *
    * @return {@link F#NIL} if no argument changed
    */
-  private static IExpr togetherInArguments(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr togetherInArguments(IExpr expr, EvalEngine engine) {
     if (!expr.isAST()) {
       return F.NIL;
     }
@@ -1289,7 +1289,7 @@ public class CompareUtil {
    *
    * @return {@link F#NIL} if no argument changed
    */
-  private static IExpr expandInArguments(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr expandInArguments(IExpr expr, EvalEngine engine) {
     if (!expr.isAST()) {
       return F.NIL;
     }
@@ -1327,7 +1327,7 @@ public class CompareUtil {
    *
    * @return {@link F#NIL} if <code>arg</code> is not expanded or doesn't change
    */
-  private static IExpr expandArgument(IExpr arg, EvalEngine engine) {
+  private static @AllowNIL IExpr expandArgument(IExpr arg, EvalEngine engine) {
     if ((arg.isPlus() || arg.isTimes() || arg.isPower())
         && arg.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
       IExpr expanded = F.evalExpandAll(arg, engine);
@@ -1351,7 +1351,7 @@ public class CompareUtil {
    *
    * @return {@link F#NIL} if nothing was substituted
    */
-  private static IExpr numericSubstitution(IExpr expr) {
+  private static @AllowNIL IExpr numericSubstitution(IExpr expr) {
     if (expr.isNumericFunction(true)) {
       IExpr number = IExpr.ofNullable(expr.evalNumber());
       if (number.isPresent()) {

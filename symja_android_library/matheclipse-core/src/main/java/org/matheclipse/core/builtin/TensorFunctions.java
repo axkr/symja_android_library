@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -156,7 +157,7 @@ public class TensorFunctions {
    * @param dim the dimension of <code>transform</code>; <code>p</code> has to be a vector with
    *        <code>dim</code> elements, otherwise the homogeneous matrices wouldn't be composable
    */
-  private static IExpr centeredTransform(IExpr transform, IExpr p, int dim) {
+  private static @AllowNIL IExpr centeredTransform(IExpr transform, IExpr p, int dim) {
     if (p.isVector() == dim) {
       return F.Dot(F.TranslationTransform(p), transform, F.TranslationTransform(F.Negate(p)));
     }
@@ -166,7 +167,7 @@ public class TensorFunctions {
   private static class AffineTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int[] dims = arg1.isMatrix(false);
       if (dims != null) {
@@ -202,7 +203,7 @@ public class TensorFunctions {
   }
 
   private static final class ArrayReduce extends AbstractEvaluator {
-    private IExpr arrayReduce(IExpr f, ITensorAccess array, int[] levels, EvalEngine engine) {
+    private @AllowNIL IExpr arrayReduce(IExpr f, ITensorAccess array, int[] levels, EvalEngine engine) {
       ITensorAccess currentArray = array;
       Arrays.sort(levels);
       IntList dimensions = LinearAlgebraUtil.dimensions(array, S.List, Integer.MAX_VALUE, false);
@@ -281,7 +282,7 @@ public class TensorFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = ast.arg2();
       if (arg2.isList() || arg2.isSparseArray()) {
         final IExpr f = ast.arg1();
@@ -476,7 +477,7 @@ public class TensorFunctions {
   private static class HodgeDual extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Normalize to a dense nested list
       IExpr tensorExpr = ast.arg1().normal(false);
       if (!tensorExpr.isList()) {
@@ -562,7 +563,7 @@ public class TensorFunctions {
      * tensor of the given {@code dim}. Spectator slots remain as the trailing indices of the
      * result.
      */
-    private static IExpr hodgeDualSlots(IAST tensor, int[] contractedSlots, int[] spectatorSlots,
+    private static @AllowNIL IExpr hodgeDualSlots(IAST tensor, int[] contractedSlots, int[] spectatorSlots,
         IntList dims, int dim, EvalEngine engine) {
       int r = contractedSlots.length;
       int dualRank = dim - r;
@@ -603,7 +604,7 @@ public class TensorFunctions {
      * Recursively build the result tensor. Outer indices are the {@code dualRank} new "free" (Hodge
      * dual) indices; inner indices are the spectator indices.
      */
-    private static IExpr buildHodgeDualResult(IAST tensor, IAST lct, int[] contractedSlots,
+    private static @AllowNIL IExpr buildHodgeDualResult(IAST tensor, IAST lct, int[] contractedSlots,
         int[] spectatorSlots, int[] spectatorDims, int dim, int r, int dualRank, int[] freeIdx,
         int freeLevel, int[] spectIdx, int[] contrIdx, EvalEngine engine) {
 
@@ -626,7 +627,7 @@ public class TensorFunctions {
           r, dualRank, freeIdx, spectIdx, 0, contrIdx, engine);
     }
 
-    private static IExpr buildSpectatorResult(IAST tensor, IAST lct, int[] contractedSlots,
+    private static @AllowNIL IExpr buildSpectatorResult(IAST tensor, IAST lct, int[] contractedSlots,
         int[] spectatorSlots, int[] spectatorDims, int dim, int r, int dualRank, int[] freeIdx,
         int[] spectIdx, int spectLevel, int[] contrIdx, EvalEngine engine) {
 
@@ -766,7 +767,7 @@ public class TensorFunctions {
   private static class KroneckerProduct extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.forAll(
           x -> x instanceof org.matheclipse.core.expression.data.SparseArrayExpr)) {
         // sparse matrices: the products of the stored entries only
@@ -853,7 +854,7 @@ public class TensorFunctions {
      * multiply element-wise.
      * </ul>
      */
-    private static IExpr kronecker(IAST a, IAST b, EvalEngine engine) {
+    private static @AllowNIL IExpr kronecker(IAST a, IAST b, EvalEngine engine) {
       int[] dimsA = LinearAlgebraUtil.dimensions(a, S.List, Integer.MAX_VALUE, true).toIntArray();
       int[] dimsB = LinearAlgebraUtil.dimensions(b, S.List, Integer.MAX_VALUE, true).toIntArray();
       final int ra = dimsA.length;
@@ -1028,7 +1029,7 @@ public class TensorFunctions {
   private static class LeviCivitaTensor extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int n = arg1.toMachineInt();
       if (n <= 0) {
@@ -1148,7 +1149,7 @@ public class TensorFunctions {
      * @param paddingDim the dimensions of a list <code>padding</code>, otherwise <code>null</code>
      * @return {@link F#NIL} if an entry isn't a real number, or exact entries aren't all integers
      */
-    static IExpr correlate(IAST kernel, IAST tensor, IExpr padding, int[] kernelDim,
+    static @AllowNIL IExpr correlate(IAST kernel, IAST tensor, IExpr padding, int[] kernelDim,
         int[] tensorDim, int[] paddingDim, int[] left, int[] outputDim) {
       final int rank = kernelDim.length;
       Flat k = flatten(kernel, kernelDim);
@@ -1382,7 +1383,7 @@ public class TensorFunctions {
      * "https://github.com/idsc-frazzoli/tensor/blob/master/src/main/java/ch/ethz/idsc/tensor/alg/ListConvolve.java">tensor/alg/ListConvolve.java</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 3) {
         // CPD-OFF ListConvolve and ListCorrelate check their arguments differently
         return ListCorrelate.aligned(ast, true);
@@ -1485,7 +1486,7 @@ public class TensorFunctions {
      * @return correlation of kernel with tensor
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 3) {
         // CPD-OFF ListConvolve and ListCorrelate check their arguments differently
         return aligned(ast, false);
@@ -1520,7 +1521,7 @@ public class TensorFunctions {
      * @param convolve <code>true</code> for <code>ListConvolve</code>
      * @return {@link F#NIL} if the arguments don't fit
      */
-    static IExpr aligned(final IAST ast, boolean convolve) {
+    static @AllowNIL IExpr aligned(final IAST ast, boolean convolve) {
       IExpr k = ast.arg1().normal(false);
       IExpr t = ast.arg2().normal(false);
       if (!k.isList() || !t.isList()) {
@@ -1682,7 +1683,7 @@ public class TensorFunctions {
      *
      * @return {@link F#NIL} if the ranks do not fit or the kernel is larger than the tensor
      */
-    public static IExpr listCorrelate(IAST kernel, IAST tensor, final ISymbol plusFunction,
+    public static @AllowNIL IExpr listCorrelate(IAST kernel, IAST tensor, final ISymbol plusFunction,
         final ISymbol timesFunction) {
       IntList kernelDimension = LinearAlgebraUtil.dimensions(kernel);
       IntList tensorDimension = LinearAlgebraUtil.dimensions(tensor);
@@ -1874,7 +1875,7 @@ public class TensorFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
         IAST list = (IAST) ast.arg1();
         Integer[] indexes;
@@ -1992,7 +1993,7 @@ public class TensorFunctions {
   private static class TensorSymmetry extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAssumptions oldAssumptions = engine.getAssumptions();
       OptionArgs options = null;
       IExpr sameTest = S.SameQ;
@@ -2141,7 +2142,7 @@ public class TensorFunctions {
      * @param rowColumnSize the row and column size of the square matrix
      * @return
      */
-    private static IExpr isZeroSymmetricSquareMatrix(IAST squareMatrix, int rowColumnSize) {
+    private static @AllowNIL IExpr isZeroSymmetricSquareMatrix(IAST squareMatrix, int rowColumnSize) {
       boolean isZero = true;
       for (int i = 1; i < rowColumnSize; i++) {
         for (int j = 1; j < rowColumnSize; j++) {
@@ -2171,7 +2172,7 @@ public class TensorFunctions {
   private static class TensorRank extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a QuantityArray ranks as the array it stands for, not as its two arguments
       IExpr arg1 = QuantityFunctions.normalizeQuantityArray(ast.arg1());
       if (arg1.isAST(S.MatrixSymbol, 2)) {
@@ -2217,7 +2218,7 @@ public class TensorFunctions {
   private static class ReflectionTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int dim = arg1.isVector();
       if (dim > 0) {
@@ -2254,7 +2255,7 @@ public class TensorFunctions {
   private static class RotationTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr phi = ast.arg1();
       if (phi.isList()) {
@@ -2335,7 +2336,7 @@ public class TensorFunctions {
   private static class ScalingTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr s = ast.arg1();
       int scalingDim = s.isVector();
@@ -2390,7 +2391,7 @@ public class TensorFunctions {
       implements ISymbolicArray {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2446,7 +2447,7 @@ public class TensorFunctions {
       implements ISymbolicArray {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2480,7 +2481,7 @@ public class TensorFunctions {
   private static class ShearingTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr phi = ast.arg1();
       IExpr direction = ast.arg2();
@@ -2540,7 +2541,7 @@ public class TensorFunctions {
   private static class GeometricTransformation extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.isAST2()) {
         return F.NIL;
       }
@@ -2555,7 +2556,7 @@ public class TensorFunctions {
      *
      * @return {@link F#NIL} if there is nothing to rewrite
      */
-    private static IExpr affinePair(IExpr transformation) {
+    private static @AllowNIL IExpr affinePair(IExpr transformation) {
       if (transformation.isAST(S.TransformationFunction, 2)) {
         return splitHomogeneous(transformation.first());
       }
@@ -2584,7 +2585,7 @@ public class TensorFunctions {
      * @return {@link F#NIL} if the matrix does not have that shape, in which case the
      *         transformation is projective and has no <code>{linear, translation}</code> form
      */
-    private static IExpr splitHomogeneous(IExpr expr) {
+    private static @AllowNIL IExpr splitHomogeneous(IExpr expr) {
       if (!expr.isList()) {
         return F.NIL;
       }
@@ -2626,7 +2627,7 @@ public class TensorFunctions {
   private static class TransformationFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.head().isAST(S.TransformationFunction, 2)) {
         if (ast.isAST(S.TransformationFunction, 2) && ast.arg1().isList()) {
           // The wrapped matrix should be printed on a single line, so clear the matrix formatting
@@ -2691,7 +2692,7 @@ public class TensorFunctions {
      * @param region the primitive
      * @return {@link F#NIL} if the image is not such a primitive
      */
-    private static IExpr transformRegion(IAST m, IAST region, EvalEngine engine) {
+    private static @AllowNIL IExpr transformRegion(IAST m, IAST region, EvalEngine engine) {
       final int n = m.argSize() - 1;
       final IAST lastRow = (IAST) m.get(n + 1);
       for (int j = 1; j <= n; j++) {
@@ -2776,7 +2777,7 @@ public class TensorFunctions {
      * axes by numbers, otherwise the polygon of the mapped corners <code>{x1, y1}, {x1, y2}, {x2,
      * y2}, {x2, y1}</code>.
      */
-    private static IExpr transformRectangle(IAST m, IAST rectangle, EvalEngine engine) {
+    private static @AllowNIL IExpr transformRectangle(IAST m, IAST rectangle, EvalEngine engine) {
       final IExpr p1;
       final IExpr p2;
       if (rectangle.argSize() == 0) {
@@ -2822,7 +2823,7 @@ public class TensorFunctions {
      * @return {@link F#NIL} if <code>coordinates</code> are no such points of dimension
      *         <code>n</code>
      */
-    private static IExpr transformPoints(IAST m, int n, IExpr coordinates, int depth,
+    private static @AllowNIL IExpr transformPoints(IAST m, int n, IExpr coordinates, int depth,
         EvalEngine engine) {
       final IExpr list = coordinates.normal(false);
       if (!list.isList() || list.argSize() == 0 || depth <= 0) {
@@ -2853,7 +2854,7 @@ public class TensorFunctions {
      *
      * @return {@link F#NIL} if the linear part distorts angles or is singular
      */
-    private static IExpr similaritySquare(IAST linear, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr similaritySquare(IAST linear, int n, EvalEngine engine) {
       final IExpr gram = engine.evaluate(F.Dot(F.Transpose(linear), linear));
       if (gram.isMatrix(false) == null) {
         return F.NIL;
@@ -2891,7 +2892,7 @@ public class TensorFunctions {
   private static class TranslationTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int dim = ast.arg1().isVector();
 
       if (dim > 0) {

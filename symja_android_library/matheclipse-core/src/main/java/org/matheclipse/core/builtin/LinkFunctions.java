@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +136,7 @@ public class LinkFunctions {
    */
   private static class LinkLaunch extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
       }
@@ -190,7 +191,7 @@ public class LinkFunctions {
    */
   private static class LinkCreate extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
       }
@@ -282,7 +283,7 @@ public class LinkFunctions {
    */
   private static class LinkConnect extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
       }

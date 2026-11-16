@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.function.Function;
@@ -186,7 +187,7 @@ public class RootsFunctions {
      * @see Roots
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
 
       IAST variables;
@@ -360,7 +361,7 @@ public class RootsFunctions {
      * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
      */
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       boolean cubicsInRadicals = options[0].isTrue();
       boolean quarticsInRadicals = options[1].isTrue();

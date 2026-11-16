@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
@@ -48,7 +49,7 @@ public class BoxesFunctions {
   private static class MakeExpression extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr form = ast.isAST2() ? ast.arg2() : S.StandardForm;
       if (form != S.StandardForm && form != S.TraditionalForm) {
         return F.NIL;
@@ -138,7 +139,7 @@ public class BoxesFunctions {
      * be looked for here rather than by the evaluator's own up-value probe, because
      * <code>MakeBoxes</code> is HoldAllComplete and that probe is skipped for such a head.
      */
-    private static IExpr upValueBoxes(IExpr expr, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr upValueBoxes(IExpr expr, IExpr form, EvalEngine engine) {
       // an object held as an atom (a Graph, a ByteArray, ...) carries its head like an expression
       if (engine == null || !(expr.isASTOrAssociation() || expr instanceof IDataExpr)
           || !RulesData.isUpRulesDefined()) {
@@ -398,7 +399,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if the cases are not a list of pairs
      */
-    private static IExpr piecewiseBox(IAST piecewise, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr piecewiseBox(IAST piecewise, IExpr form, EvalEngine engine) {
       if (!piecewise.arg1().isList()) {
         return F.NIL;
       }
@@ -518,7 +519,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} for any other function
      */
-    private static IExpr traditionalNotationBox(IAST function, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr traditionalNotationBox(IAST function, IExpr form, EvalEngine engine) {
       if (function.isAST(S.D) && function.argSize() >= 2) {
         return derivativeBox(function, form, engine);
       }
@@ -567,7 +568,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if an order is no positive integer
      */
-    private static IExpr derivativeBox(IAST d, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr derivativeBox(IAST d, IExpr form, EvalEngine engine) {
       IASTAppendable differentials = F.ListAlloc(d.size() * 2);
       int order = 0;
       for (int i = 2; i < d.size(); i++) {
@@ -642,7 +643,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} for any other power or form
      */
-    private static IExpr traditionalPowerBox(IExpr base, IExpr exponent, IExpr form,
+    private static @AllowNIL IExpr traditionalPowerBox(IExpr base, IExpr exponent, IExpr form,
         EvalEngine engine) {
       if (form != S.TraditionalForm || !base.isAST()
           || !(exponent.isInteger() || exponent.isSymbol())) {
@@ -694,7 +695,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if the expression is none of these
      */
-    private static IExpr traditionalLogicBox(IAST function, int precedence, IExpr form,
+    private static @AllowNIL IExpr traditionalLogicBox(IAST function, int precedence, IExpr form,
         EvalEngine engine) {
       final IExpr head = function.head();
       if (function.isAST(S.Inequality) && function.argSize() >= 3
@@ -773,7 +774,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if the wrapper does not format an integer or a real number
      */
-    private static IExpr numberFormBox(IAST formAST, EvalEngine engine) {
+    private static @AllowNIL IExpr numberFormBox(IAST formAST, EvalEngine engine) {
       NumberFormatter.FormattedNumber formatted =
           NumberFormPrinter.formatArgument(formAST, engine == null ? EvalEngine.get() : engine);
       if (formatted == null) {
@@ -836,7 +837,7 @@ public class BoxesFunctions {
      * any other expression. <code>E</code> and <code>I</code> stay letters: that is how the outputs
      * a WLJS notebook saves spell them.
      */
-    private static IExpr specialSymbolBox(IExpr expr) {
+    private static @AllowNIL IExpr specialSymbolBox(IExpr expr) {
       if (expr == S.Pi) {
         return F.$str("\\[Pi]");
       }
@@ -953,7 +954,7 @@ public class BoxesFunctions {
      * <code>TemplateBox[&lt;|"color" -> c|&gt;, "RGBColorSwatchTemplate"]</code> or a
      * <code>GridBox</code> into its widget. {@link F#NIL} for any other expression.
      */
-    private static IExpr shapedBox(IExpr expr, int precedence, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr shapedBox(IExpr expr, int precedence, IExpr form, EvalEngine engine) {
       if (expr instanceof ASTSeriesData) {
         return seriesBox((ASTSeriesData) expr, form, engine);
       }
@@ -1229,7 +1230,7 @@ public class BoxesFunctions {
           standardFormRecursive(positive, 0, form, engine));
     }
 
-    private static IExpr timesBox(IAST times, int precedence, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr timesBox(IAST times, int precedence, IExpr form, EvalEngine engine) {
       if (form == S.TraditionalForm && HELD_DEPTH.get()[0] == 0) {
         times = TraditionalSumOrder.orderFactors(times);
       }
@@ -1364,7 +1365,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if no factor stands under the line
      */
-    private static IExpr mergedFractionBox(IAST times, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr mergedFractionBox(IAST times, IExpr form, EvalEngine engine) {
       IASTAppendable above = F.ListAlloc(times.size());
       IASTAppendable below = F.ListAlloc(times.size());
       boolean negative = false;
@@ -1489,7 +1490,7 @@ public class BoxesFunctions {
           : precedence;
     }
 
-    private static IExpr plusBox(IAST plus, int precedence, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr plusBox(IAST plus, int precedence, IExpr form, EvalEngine engine) {
       if (form == S.TraditionalForm && HELD_DEPTH.get()[0] == 0) {
         return parenthesize(traditionalSumBox(plus, form, engine), Precedence.PLUS, precedence);
       }
@@ -1517,7 +1518,7 @@ public class BoxesFunctions {
      * the term without their own sign, and every further negative term is written after a minus
      * sign between the terms.
      */
-    private static IExpr traditionalSumBox(IAST plus, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr traditionalSumBox(IAST plus, IExpr form, EvalEngine engine) {
       IAST terms = TraditionalSumOrder.order(plus);
       if (terms.argSize() == 2 && withoutMinus(terms.arg1()).isPresent()
           && withoutMinus(terms.arg2()).isNIL()) {
@@ -1547,7 +1548,7 @@ public class BoxesFunctions {
      *
      * @return {@link F#NIL} if the boxes don't begin with a minus sign
      */
-    private static IExpr withoutLeadingMinusBox(IExpr box) {
+    private static @AllowNIL IExpr withoutLeadingMinusBox(IExpr box) {
       if (!box.isAST(S.RowBox, 2) || !box.first().isList() || box.first().argSize() < 1) {
         return F.NIL;
       }
@@ -1568,7 +1569,7 @@ public class BoxesFunctions {
      * carries none. Structural on purpose: MakeBoxes is HoldAllComplete, so what it is shown is
      * what it must show.
      */
-    private static IExpr withoutMinus(IExpr term) {
+    private static @AllowNIL IExpr withoutMinus(IExpr term) {
       if (isNegativeNumber(term)) {
         return ((INumber) term).negate();
       }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Deque;
@@ -124,7 +125,7 @@ public final class PatternMatching {
     public static final Blank CONST = new Blank();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Blank) {
         if (ast.isAST0()) {
           return F.$b();
@@ -151,7 +152,7 @@ public final class PatternMatching {
     public static final BlankSequence CONST = new BlankSequence();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BlankSequence) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null);
@@ -179,7 +180,7 @@ public final class PatternMatching {
     public static final BlankNullSequence CONST = new BlankNullSequence();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BlankNullSequence) {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null, true);
@@ -209,7 +210,7 @@ public final class PatternMatching {
    *
    * @return <code>Null</code>, or {@link F#NIL} for an argument that is no symbol or string
    */
-  private static IExpr clearSymbols(final IAST ast, EvalEngine engine,
+  private static @AllowNIL IExpr clearSymbols(final IAST ast, EvalEngine engine,
       java.util.function.Consumer<ISymbol> action) {
     java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
 
@@ -318,7 +319,7 @@ public final class PatternMatching {
    * arguments of the left side, and the up-values of <code>object</code> then take the assignment.
    * With the wrapper kept no up-value matched, and a stray sub-value was stored instead.
    */
-  private static IExpr spliceSequences(IBuiltInSymbol assignment, IExpr leftHandSide,
+  private static @AllowNIL IExpr spliceSequences(IBuiltInSymbol assignment, IExpr leftHandSide,
       IExpr rightHandSide, EvalEngine engine) {
     if (leftHandSide.isAST() && !leftHandSide.isAST(S.HoldPattern)) {
       IExpr flat = F.flattenSequence((IAST) leftHandSide);
@@ -342,7 +343,7 @@ public final class PatternMatching {
    *
    * @return the result of the assignment, or {@link F#NIL} when the head needs no second look
    */
-  private static IExpr assignToEvaluatedHead(IBuiltInSymbol assignment, IExpr leftHandSide,
+  private static @AllowNIL IExpr assignToEvaluatedHead(IBuiltInSymbol assignment, IExpr leftHandSide,
       IExpr rawHead, IExpr evaluatedHead, IExpr rightHandSide, EvalEngine engine) {
     if (leftHandSide.isAST() && evaluatedHead.isAST() && !evaluatedHead.isAssociation()
         && !evaluatedHead.equals(rawHead)) {
@@ -363,7 +364,7 @@ public final class PatternMatching {
   private static final class Remove extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       java.util.List<ISymbol> toRemove = new java.util.ArrayList<>();
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
@@ -468,7 +469,7 @@ public final class PatternMatching {
   private static final class Context extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr x = Validate.checkIdentifierHoldPattern(ast.arg1(), ast, engine);
         if (x.isNIL()) {
@@ -499,7 +500,7 @@ public final class PatternMatching {
   private static final class Contexts extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       ContextPath contextPath = engine.getContextPath();
       if (ast.isAST0()) {
         return contextPath.getContexts();
@@ -594,7 +595,7 @@ public final class PatternMatching {
   private static final class Default extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
@@ -611,7 +612,7 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Default) && leftHandSide.size() > 1) {
         if (!leftHandSide.first().isSymbol()) {
@@ -720,7 +721,7 @@ public final class PatternMatching {
   private static final class DefaultValues extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       ISymbol symbol = null;
       if (arg1.isString()) {
@@ -786,7 +787,7 @@ public final class PatternMatching {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (builtinSymbol == S.Set && leftHandSide.isAST1() && leftHandSide.first().isSymbol()
           && !((ISymbol) leftHandSide.first()).hasProtectedAttribute()) {
@@ -808,7 +809,7 @@ public final class PatternMatching {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
@@ -929,7 +930,7 @@ public final class PatternMatching {
   private static final class FilterRules extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr rules = ast.arg1();
       if (rules.isRuleAST()) {
         rules = F.list(rules);
@@ -1149,7 +1150,7 @@ public final class PatternMatching {
   private static final class HoldComplete extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1236,7 +1237,7 @@ public final class PatternMatching {
   private static class HoldPattern extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
@@ -1283,7 +1284,7 @@ public final class PatternMatching {
   private static final class Verbatim extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1347,7 +1348,7 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return ast.arg1();
       }
@@ -1376,7 +1377,7 @@ public final class PatternMatching {
      * @param property the property name, or <code>null</code> for <code>Information[object]</code>
      * @return {@link F#NIL} if <code>object</code> is no such data object
      */
-    private static IExpr dataObjectInformation(IExpr object, String property, EvalEngine engine) {
+    private static @AllowNIL IExpr dataObjectInformation(IExpr object, String property, EvalEngine engine) {
       if (!(object instanceof org.matheclipse.core.interfaces.IDataExpr)) {
         return F.NIL;
       }
@@ -1394,7 +1395,7 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2 || ast.size() == 3) {
         try {
           boolean longForm = true;
@@ -1571,7 +1572,7 @@ public final class PatternMatching {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Here we only validate the arguments
       // The assignment of the message is handled in the Set() function
       if (!ast.arg1().isSymbol()) {
@@ -1604,7 +1605,7 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.MessageName, 3, 4) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
@@ -1685,7 +1686,7 @@ public final class PatternMatching {
     public static final Optional CONST = new Optional();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Optional) {
         // convert only special forms of _. or x_.
         if (ast.size() == 2) {
@@ -1743,7 +1744,7 @@ public final class PatternMatching {
   private static final class SetOptions extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return ((IAST) arg1).mapThread(ast, 1);
@@ -1799,7 +1800,7 @@ public final class PatternMatching {
   private static final class Options extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a symbol with a value stands for an expression, like the graphics of a plot
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST options;
@@ -1890,7 +1891,7 @@ public final class PatternMatching {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Options, 2) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
@@ -1927,7 +1928,7 @@ public final class PatternMatching {
 
   public static class OptionValue extends AbstractCoreFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.head() == S.OptionValue) {
         IAST call = ast;
@@ -2005,7 +2006,7 @@ public final class PatternMatching {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         return ConditionalOwnValues.ownValues((ISymbol) arg1);
@@ -2029,7 +2030,7 @@ public final class PatternMatching {
     public static final OptionsPattern CONST = new OptionsPattern();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.OptionsPattern) {
         if (ast.isAST0()) {
           return F.$OptionsPattern();
@@ -2057,7 +2058,7 @@ public final class PatternMatching {
     public static final Pattern CONST = new Pattern();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Pattern) {
         if (ast.size() == 3) {
           if (ast.arg1().isSymbol()) {
@@ -2170,7 +2171,7 @@ public final class PatternMatching {
   private static final class PatternTest extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof IPatternObject) {
         IPatternObject po = (IPatternObject) arg1;
@@ -2201,7 +2202,7 @@ public final class PatternMatching {
       return F.subst(arg1, ReleaseHold::releaseHold);
     }
 
-    private static IExpr releaseHold(IExpr expr) {
+    private static @AllowNIL IExpr releaseHold(IExpr expr) {
       if (expr.isAST()) {
         IAST holdAST = (IAST) expr;
         if (holdAST.isFunctionID(ID.Hold, ID.HoldForm, ID.HoldComplete, ID.HoldPattern)) {
@@ -2240,7 +2241,7 @@ public final class PatternMatching {
     public static final Repeated CONST = new Repeated();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Repeated && ast.argSize() >= 1) {
         // what is repeated is worked out first: `Repeated[newLine[1]]` is a repetition of
         // whatever newLine[1] came to, not of the call itself
@@ -2256,7 +2257,7 @@ public final class PatternMatching {
       return F.NIL;
     }
 
-    protected static IExpr repeatedLimit(IExpr arg1, IExpr arg2, int defaultMin,
+    protected static @AllowNIL IExpr repeatedLimit(IExpr arg1, IExpr arg2, int defaultMin,
         EvalEngine engine) {
       if (arg2.isList1()) {
         IExpr first = arg2.first();
@@ -2324,7 +2325,7 @@ public final class PatternMatching {
     public static final RepeatedNull CONST = new RepeatedNull();
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.RepeatedNull && ast.argSize() >= 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
@@ -2377,7 +2378,7 @@ public final class PatternMatching {
   private static final class Rule extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr leftHandSide = ast.arg1();
       // if (leftHandSide.isAST()) {
       // leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
@@ -2426,7 +2427,7 @@ public final class PatternMatching {
   private static final class RuleDelayed extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr leftHandSide = ast.arg1();
       // if (leftHandSide.isAST()) {
@@ -2455,7 +2456,7 @@ public final class PatternMatching {
   private static final class Sequence extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       Deque<IExpr> stack = engine.getStack();
       if (stack.size() == 1 && ast.head() == S.Sequence) {
         if (ast.hasFlag(Flag.BUILT_IN_EVALED)) {
@@ -2884,7 +2885,7 @@ public final class PatternMatching {
   private static final class SetSystemOptions extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         IAST rules = arg.isList() ? (IAST) arg : F.List(arg);
@@ -2942,7 +2943,7 @@ public final class PatternMatching {
    */
   private static final class Splice extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
@@ -3404,7 +3405,7 @@ public final class PatternMatching {
   private static class TagSet extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (ast.isAST2()) {
@@ -3677,7 +3678,7 @@ public final class PatternMatching {
   private static final class TagUnset extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isSymbol()) {
@@ -3758,7 +3759,7 @@ public final class PatternMatching {
   private static final class TagSetDelayed extends TagSet {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isSymbol()) {
@@ -3847,7 +3848,7 @@ public final class PatternMatching {
   private static final class Unique extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.symbol(EvalEngine.uniqueName("$"), engine);
       }
@@ -3868,7 +3869,7 @@ public final class PatternMatching {
      * A new symbol for a symbol or a string and, element by element, a list of new symbols for a
      * list of them.
      */
-    private static IExpr uniqueSymbols(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr uniqueSymbols(IExpr expr, EvalEngine engine) {
       if (expr.isList()) {
         IAST list = (IAST) expr;
         IASTAppendable symbols = F.ListAlloc(list.size());
@@ -3983,7 +3984,7 @@ public final class PatternMatching {
   private static final class Unset extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         final IExpr leftHandSide = ast.arg1();
         try {
@@ -4199,7 +4200,7 @@ public final class PatternMatching {
   private static final class UpSet extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         final IExpr leftHandSide = ast.arg1();
         IExpr rightHandSide = ast.arg2();
@@ -4270,7 +4271,7 @@ public final class PatternMatching {
   private static final class UpSetDelayed extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         final IExpr leftHandSide = ast.arg1();
         final IExpr rightHandSide = ast.arg2();
@@ -4353,7 +4354,7 @@ public final class PatternMatching {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the name of a symbol; other text is no name and gets the message of a wrong argument
       IExpr named = DefinitionFunctions.symbolOfName(ast.arg1(), engine);
       if (named.isPresent()) {
@@ -4538,7 +4539,7 @@ public final class PatternMatching {
     return null;
   }
 
-  public static IExpr messageName(ISymbol symbol, IExpr expr) {
+  public static @AllowNIL IExpr messageName(ISymbol symbol, IExpr expr) {
     RulesData rules = symbol.getRulesData();
     if (rules != null) {
       Map<IExpr, PatternMatcherEquals> map = rules.getEqualDownRules();
