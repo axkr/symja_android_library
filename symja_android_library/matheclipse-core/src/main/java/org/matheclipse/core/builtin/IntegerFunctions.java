@@ -717,7 +717,7 @@ public class IntegerFunctions {
       try {
         if (ast.isAST2()) {
           // Ceiling(0.6, 0.2) is 3*0.2, because 0.6/0.2 is 2.9999999999999996
-          return F.Times(F.Ceiling(multipleQuotient(ast.arg1(), ast.arg2())), ast.arg2());
+          return multipleOf(S.Ceiling, ast, engine);
         }
         IExpr arg1 = engine.evaluateNIL(ast.arg1());
         if (arg1.isPresent()) {
@@ -1195,7 +1195,7 @@ public class IntegerFunctions {
       try {
         if (ast.isAST2()) {
           // Floor(0.7, 0.1) is 6*0.1, because 0.7/0.1 is 6.999999999999999
-          return F.Times(F.Floor(multipleQuotient(ast.arg1(), ast.arg2())), ast.arg2());
+          return multipleOf(S.Floor, ast, engine);
         }
         // IExpr arg1 = engine.evaluateNIL(ast.arg1());
         // if (arg1.isPresent()) {
@@ -2611,6 +2611,35 @@ public class IntegerFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
+  }
+
+  /**
+   * <code>Floor(x, a)</code> or <code>Ceiling(x, a)</code>: the multiple <code>n*a</code> of the
+   * step <code>a</code>, if the integer function of the quotient <code>x/a</code> evaluates to an
+   * expression free of the integer function. Otherwise the call stays unevaluated (with an
+   * evaluated step), so that <code>Floor(x, Pi)</code> is not rewritten to
+   * <code>Pi*Floor(x/Pi)</code>.
+   *
+   * @param integerFunction {@link S#Floor} or {@link S#Ceiling}
+   * @param ast the call with two arguments
+   * @param engine the evaluation engine
+   * @return the multiple of the step or {@link F#NIL}
+   */
+  private static IExpr multipleOf(ISymbol integerFunction, IAST ast, EvalEngine engine) {
+    final IExpr x = ast.arg1();
+    final IExpr a = engine.evaluateNonNumeric(ast.arg2());
+    final IExpr quotient = multipleQuotient(x, a);
+    final IExpr n = engine.evaluateNonNumeric(F.unaryAST1(integerFunction, quotient));
+    // an integer function in the result which the quotient doesn't already contain is left over
+    // from the call: Floor(y + 1/2) stays, Floor(Floor(y) + 1/2) is Floor(y)
+    if (n.has(e -> (e.isAST(S.Floor) || e.isAST(S.Ceiling))
+        && !quotient.has(sub -> sub.equals(e), true), true)) {
+      if (a.equals(ast.arg2())) {
+        return F.NIL;
+      }
+      return F.binaryAST2(integerFunction, x, a);
+    }
+    return F.Times(n, a);
   }
 
   /**

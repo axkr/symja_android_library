@@ -1270,8 +1270,9 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
-   * The planar convex hull as a list of point indices in counter-clockwise order. This is the
-   * function of the legacy <code>ComputationalGeometry</code> package.
+   * The planar convex hull as a list of point indices in counter-clockwise order, starting at the
+   * rightmost point (the lowest one of several rightmost points). This is the function of the
+   * legacy <code>ComputationalGeometry</code> package.
    */
   private static class ConvexHull extends AbstractFunctionOptionEvaluator {
 
@@ -1290,12 +1291,27 @@ public class ComputationalGeometryFunctions {
       boolean allPoints = !options[0].isFalse();
       int[] hull = hullIndices2D(listOfPoints, allPoints);
       if (hull == null) {
+        IExpr collinear = collinearHull(listOfPoints, allPoints);
+        if (collinear.isPresent()) {
+          return collinear;
+        }
         // `1` should be a list of `2` or more affinely independent points.
         return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3), engine);
       }
+      // the cycle starts at the rightmost point, the lowest one of several rightmost points
+      int start = 0;
+      for (int i = 1; i < hull.length; i++) {
+        IAST point = (IAST) listOfPoints.get(hull[i]);
+        IAST startPoint = (IAST) listOfPoints.get(hull[start]);
+        int cmp = Double.compare(point.arg1().evalf(), startPoint.arg1().evalf());
+        if (cmp > 0
+            || (cmp == 0 && Double.compare(point.arg2().evalf(), startPoint.arg2().evalf()) < 0)) {
+          start = i;
+        }
+      }
       IASTAppendable result = F.ListAlloc(hull.length);
       for (int i = 0; i < hull.length; i++) {
-        result.append(F.ZZ(hull[i]));
+        result.append(F.ZZ(hull[(start + i) % hull.length]));
       }
       return result;
     }
@@ -1308,6 +1324,56 @@ public class ComputationalGeometryFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    /**
+     * The hull of two or more distinct real points on one line: the points ordered along the line
+     * by their coordinates, or only its two end points for <code>AllPoints-&gt;False</code>.
+     *
+     * @return {@link F#NIL} if the points are no such list
+     */
+    private static IExpr collinearHull(IAST listOfPoints, boolean allPoints) {
+      if (!isRealPointList(listOfPoints)) {
+        return F.NIL;
+      }
+      IntArrayList candidates = distinctPointIndices(listOfPoints);
+      if (candidates.size() < 2) {
+        return F.NIL;
+      }
+      // ordered by value; of several points with equal coordinates, as 1 and 1.0, the first one
+      // is kept
+      List<Integer> sorted = new ArrayList<Integer>(candidates);
+      Collections.sort(sorted, (index1, index2) -> {
+        int cmp = compareByValue((IAST) listOfPoints.get(index1), (IAST) listOfPoints.get(index2));
+        return cmp != 0 ? cmp : Integer.compare(index1, index2);
+      });
+      for (int k = sorted.size() - 1; k > 0; k--) {
+        if (compareByValue((IAST) listOfPoints.get(sorted.get(k - 1)),
+            (IAST) listOfPoints.get(sorted.get(k))) == 0) {
+          sorted.remove(k);
+        }
+      }
+      if (sorted.size() < 2) {
+        return F.NIL;
+      }
+      IAST first = (IAST) listOfPoints.get(sorted.get(0));
+      IAST last = (IAST) listOfPoints.get(sorted.get(sorted.size() - 1));
+      for (int index : sorted) {
+        if (!counterClockwise(first, last, (IAST) listOfPoints.get(index)).isZero()) {
+          // not one line
+          return F.NIL;
+        }
+      }
+      if (!allPoints) {
+        return F.List(F.ZZ(sorted.get(0)), F.ZZ(sorted.get(sorted.size() - 1)));
+      }
+      return F.mapRange(0, sorted.size(), i -> F.ZZ(sorted.get(i)));
+    }
+
+    /** Compare two planar points by the values of their x, then their y coordinates. */
+    private static int compareByValue(IAST point1, IAST point2) {
+      int cmp = Double.compare(point1.arg1().evalf(), point2.arg1().evalf());
+      return cmp != 0 ? cmp : Double.compare(point1.arg2().evalf(), point2.arg2().evalf());
     }
 
     @Override

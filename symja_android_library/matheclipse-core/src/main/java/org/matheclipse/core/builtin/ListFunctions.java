@@ -2340,12 +2340,7 @@ public final class ListFunctions {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        IAST removed = ast.remove(x -> x == S.Identity);
-        IExpr composed = composeTransformationFunctions(removed.orElse(ast));
-        if (composed.isPresent()) {
-          return composed;
-        }
-        return removed;
+        return composition(ast, false);
       }
       if (ast.head().isAST()) {
 
@@ -2367,28 +2362,77 @@ public final class ListFunctions {
     }
 
     /**
+     * Simplify a <code>Composition(...)</code> or <code>RightComposition(...)</code> call:
+     * <code>Identity</code> drops out, a composition of one function is the function, and adjacent
+     * transformation functions are fused.
+     *
+     * @param ast the call with at least one argument
+     * @param rightComposition <code>true</code> for <code>RightComposition(...)</code>
+     * @return {@link F#NIL} if nothing changed
+     */
+    static IExpr composition(IAST ast, boolean rightComposition) {
+      IAST removed = ast.remove(x -> x == S.Identity);
+      IAST functions = removed.orElse(ast);
+      if (functions.isAST0()) {
+        return S.Identity;
+      }
+      if (functions.isAST1()) {
+        return functions.arg1();
+      }
+      IExpr composed = composeTransformationFunctions(functions, rightComposition);
+      if (composed.isPresent()) {
+        return composed;
+      }
+      return removed;
+    }
+
+    /**
      * Fuse runs of adjacent {@link S#TransformationFunction} arguments into a single
      * {@link S#TransformationFunction} of the matrix product of their matrices, because
      * <code>Composition(TransformationFunction(a), TransformationFunction(b))</code> is the
-     * transformation <code>TransformationFunction(a.b)</code>.
+     * transformation <code>TransformationFunction(a.b)</code>. In a
+     * <code>RightComposition(...)</code> the first function is applied first, so the product is
+     * taken in the reverse order: <code>RightComposition(TransformationFunction(a),
+     * TransformationFunction(b))</code> is <code>TransformationFunction(b.a)</code>.
      *
-     * @param composition a <code>Composition(...)</code> expression
+     * @param composition a <code>Composition(...)</code> or <code>RightComposition(...)</code>
+     *        expression
+     * @param rightComposition <code>true</code> if <code>composition</code> applies its arguments
+     *        from left to right
      * @return {@link F#NIL} if no two adjacent {@link S#TransformationFunction}s were found
      */
-    private static IExpr composeTransformationFunctions(IAST composition) {
+    private static IExpr composeTransformationFunctions(IAST composition,
+        boolean rightComposition) {
       final int size = composition.size();
-      IASTAppendable result = F.ast(S.Composition, size);
+      IASTAppendable result = F.ast(composition.head(), size);
       boolean evaled = false;
       int i = 1;
       while (i < size) {
         int j = i;
-        while (j < size && composition.get(j).isAST(S.TransformationFunction, 2)) {
+        if (composition.get(i).isAST(S.TransformationFunction, 2)) {
+          // only transformations of the same dimension are fused
+          final int dimension = composition.get(i).first().argSize();
           j++;
+          while (j < size && composition.get(j).isAST(S.TransformationFunction, 2)) {
+            if (composition.get(j).first().argSize() != dimension) {
+              // `1` and `2` in Composition have incompatible dimensions.
+              Errors.printMessage(S.TransformationFunction, "comp",
+                  F.List(composition.get(j - 1), composition.get(j)), EvalEngine.get());
+              break;
+            }
+            j++;
+          }
         }
         if (j > i + 1) {
           IASTAppendable dot = F.ast(S.Dot, j - i);
-          for (int k = i; k < j; k++) {
-            dot.append(composition.get(k).first());
+          if (rightComposition) {
+            for (int k = j - 1; k >= i; k--) {
+              dot.append(composition.get(k).first());
+            }
+          } else {
+            for (int k = i; k < j; k++) {
+              dot.append(composition.get(k).first());
+            }
           }
           result.append(F.TransformationFunction(dot));
           evaled = true;
@@ -7568,7 +7612,7 @@ public final class ListFunctions {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        return ast.remove(x -> x == S.Identity);
+        return Composition.composition(ast, true);
       }
       if (ast.head().isAST()) {
 

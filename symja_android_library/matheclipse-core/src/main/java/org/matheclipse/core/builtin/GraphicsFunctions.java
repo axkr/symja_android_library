@@ -555,6 +555,7 @@ public class GraphicsFunctions {
       S.GraphicsRow.setEvaluator(new GraphicsRow());
       S.GraphicsColumn.setEvaluator(new GraphicsColumn());
       S.GraphicsGrid.setEvaluator(new GraphicsGrid());
+      S.GraphicsArray.setEvaluator(new GraphicsArray());
       S.Point.setEvaluator(new Point());
       S.Polygon.setEvaluator(new Polygon());
       S.Rectangle.setEvaluator(new Rectangle());
@@ -765,6 +766,51 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // {{rows}}, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, layoutOptions());
+    }
+  }
+
+  /**
+   * <code>GraphicsArray({g1, g2, ...})</code> draws its items in one row,
+   * <code>GraphicsArray({{g11, g12, ...}, ...})</code> in a grid. It is the older name of
+   * {@link GraphicsGrid} and becomes the <code>GraphicsGrid</code> with the same rows and options,
+   * so that both draw the same picture, with the message <code>GraphicsArray::obs</code>.
+   */
+  private static final class GraphicsArray extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST items = (IAST) ast.arg1();
+      IAST rows;
+      if (items.forAll(x -> x.isList())) {
+        rows = items;
+      } else if (items.exists(x -> x.isList())) {
+        // a mixture of rows and single items has no layout
+        return F.NIL;
+      } else {
+        rows = F.List(items);
+      }
+      // `1` is obsolete. Switching to `2`.
+      Errors.printMessage(S.GraphicsArray, "obs", F.list(S.GraphicsArray, S.GraphicsGrid), engine);
+      return ast.setAtCopy(1, rows).apply(S.GraphicsGrid);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {items} or {{rows}}, and any number of option rules
       return ARGS_1_INFINITY;
     }
 
@@ -1225,7 +1271,7 @@ public class GraphicsFunctions {
         IExpr element = list.get(i + 1);
         colors[i] = positioned ? element.second() : element;
         positions[i] = positioned ? element.first() : n == 1 ? F.C0 : F.QQ(i, n - 1);
-        values[i] = ColorValue.of(colors[i], engine);
+        values[i] = colorWithOpacity(colors[i], engine);
         if (values[i] == null) {
           if (colors[i].isAST(S.Image) || colors[i] instanceof org.matheclipse.core.interfaces.IDataExpr) {
             return F.NIL;
@@ -1255,10 +1301,10 @@ public class GraphicsFunctions {
       // the color at the parameter arg2
       double t = arg2.evalf();
       if (n == 1 || t <= positions[0].evalf()) {
-        return colors[0];
+        return endColor(colors[0], values[0]);
       }
       if (t >= positions[n - 1].evalf()) {
-        return colors[n - 1];
+        return endColor(colors[n - 1], values[n - 1]);
       }
       int k = 0;
       while (k < n - 2 && positions[k + 1].evalf() <= t) {
@@ -1279,6 +1325,27 @@ public class GraphicsFunctions {
           opaque ? null : interpolate(from.opacity, to.opacity, u, engine)).toDirective();
     }
 
+    /**
+     * A color directive, or <code>Opacity(a, color)</code> which is the color with the opacity
+     * <code>a</code>.
+     *
+     * @return <code>null</code> if <code>color</code> is no such directive
+     */
+    private static ColorValue colorWithOpacity(IExpr color, EvalEngine engine) {
+      if (color.isAST(S.Opacity, 3) && color.first().isReal()) {
+        ColorValue value = ColorValue.of(color.second(), engine);
+        return value == null ? null : value.withOpacity(color.first());
+      }
+      return ColorValue.of(color, engine);
+    }
+
+    /**
+     * The color at an end of the blend: a color directive as it is, <code>Opacity(a, color)</code>
+     * as the color directive with the opacity <code>a</code>.
+     */
+    private static IExpr endColor(IExpr color, ColorValue value) {
+      return color.isAST(S.Opacity, 3) ? value.toDirective() : color;
+    }
     /** <code>a + u (b - a)</code>; for machine numbers as one fused multiply-add. */
     private static IExpr interpolate(IExpr a, IExpr b, IExpr u, EvalEngine engine) {
       if (a.isMachineNumber() || b.isMachineNumber() || u.isMachineNumber()) {

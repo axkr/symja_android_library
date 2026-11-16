@@ -4358,6 +4358,13 @@ public class EvalEngine implements Serializable {
       if (expr.isFreeOfPatterns()) {
         return evalWithoutNumericReset(expr);
       }
+      if (isPatternInHeldPartOnly(expr)) {
+        // the pattern is the value of a computation on held patterns, as in Hold({_Integer})[[1]]
+        IExpr value = evalWithoutNumericReset(expr);
+        if (!value.equals(expr)) {
+          return evalPattern(value);
+        }
+      }
       if (expr.isAST()) {
         if (expr.isOneIdentityAST() && expr.head().isBuiltInSymbol()) {
           // Times(x_) or Plus(x_) is x_ as an expression too; for a symbol of a package, f(y_)
@@ -4376,6 +4383,37 @@ public class EvalEngine implements Serializable {
       setNumericMode(numericMode);
       fEvalPatternMatcherMode = patternMatcherMode;
     }
+  }
+
+  /**
+   * <code>true</code> if every pattern object of <code>expr</code> lies inside a
+   * <code>Hold</code>, <code>HoldForm</code> or <code>HoldComplete</code> part, so that none of
+   * them is an active pattern of <code>expr</code> as it is written.
+   */
+  private static boolean isPatternInHeldPartOnly(IExpr expr) {
+    if (expr instanceof IPatternObject) {
+      return false;
+    }
+    if (expr.isAST() && !expr.isFreeOfPatterns()) {
+      IAST ast = (IAST) expr;
+      IExpr head = ast.head();
+      if (head == S.Hold || head == S.HoldForm || head == S.HoldComplete) {
+        return true;
+      }
+      if (head == S.Blank || head == S.BlankSequence || head == S.BlankNullSequence
+          || head == S.Pattern || head == S.Optional || head == S.Repeated
+          || head == S.RepeatedNull || head == S.Condition || head == S.PatternTest
+          || head == S.Except || head == S.HoldPattern || head == S.Verbatim
+          || head == S.OptionsPattern || head == S.PatternSequence) {
+        return false;
+      }
+      for (int i = 0; i < ast.size(); i++) {
+        if (!isPatternInHeldPartOnly(ast.get(i))) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**

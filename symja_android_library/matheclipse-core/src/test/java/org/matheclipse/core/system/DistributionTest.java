@@ -1857,6 +1857,26 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSkewNormalDistributionRandomVariate() {
+    check("Head(RandomVariate(SkewNormalDistribution(-1, 3, 2)))", //
+        "Real");
+    check("Dimensions(RandomVariate(SkewNormalDistribution(0, 2, -3), {2, 5}))", //
+        "{2,5}");
+    check("Dimensions(RandomReal(SkewNormalDistribution(0, 1, 5), {4, 3}))", //
+        "{4,3}");
+    // the sample moments are near the moments of the distribution
+    check("SeedRandom(1234); d = SkewNormalDistribution(-2, 3, 5); s = RandomVariate(d, 20000);" //
+        + "{Abs(Mean(s) - N(Mean(d))) < 0.1, Abs(Variance(s)/N(Variance(d)) - 1) < 0.05, "
+        + "Abs(Skewness(s) - N(Skewness(d))) < 0.1}", //
+        "{True,True,True}");
+    check("SeedRandom(4321); s = RandomVariate(SkewNormalDistribution(1, 2, -7), 20000); "
+        + "Skewness(s) < -0.6", //
+        "True");
+    check("RandomVariate(SkewNormalDistribution(0, 1, b))", //
+        "RandomVariate(SkewNormalDistribution(0,1,b))");
+  }
+
+  @Test
   public void testInverseGaussianDistribution() {
     check("PDF(InverseGaussianDistribution(1, 4), x)", //
         "Piecewise({{(Sqrt(2/Pi)*Sqrt(1/x^3))/E^((2*(1-x)^2)/x),x>0}},0)");

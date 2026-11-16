@@ -2556,7 +2556,13 @@ public class GraphicsOptions {
     }
     IExpr dataRange = optionValue(originalAST, S.DataRange, S.Automatic);
     final double[] extent = rasterExtent(dataRange, rows, cols);
-    primitives.append(rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
+    IAST raster = rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]);
+    if (!dataRange.isList()) {
+      // the cells are the unit squares of the array, whose corners are integers
+      raster = raster.setAtCopy(2,
+          F.List(F.List(F.C0, F.C0), F.List(F.ZZ(cols), F.ZZ(rows))));
+    }
+    primitives.append(raster);
     IExpr meshLines = meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows);
     if (meshLines.isPresent()) {
       primitives.append(meshLines);

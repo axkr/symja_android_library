@@ -50,6 +50,20 @@ public class ArrayPlot extends ListPlot {
       return F.NIL;
     }
 
+    // the options without the array, which the search for a rule would otherwise walk through
+    final IAST optionRules = originalAST == null ? null : originalAST.rest();
+    // PlotRange -> {amin, amax} or amax is the range of values the colours span, not a range of
+    // coordinates: the picture still shows every cell
+    final double[] valueRange =
+        valueRange(GraphicsOptions.optionValue(optionRules, S.PlotRange, S.Automatic));
+    if (valueRange != null) {
+      options[GraphicsOptions.X_PLOTRANGE] = S.All;
+    }
+    final IExpr clippingStyle =
+        GraphicsOptions.optionValue(optionRules, S.ClippingStyle, S.Automatic);
+    final boolean clipsToBackground = clippingStyle.isAutomatic() || clippingStyle.isNone()
+        || clippingStyle.isFalse();
+
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     GraphicsOptions.MatrixPlotOptions matrixOptions =
@@ -128,14 +142,24 @@ public class ArrayPlot extends ListPlot {
     PlotColorFunction colorMap = PlotColorFunction
         .of(PlotColorFunction.Family.ARRAY, matrixOptions.colorFunction, F.booleSymbol(scaling),
             S.ArrayPlot, engine)
-        .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
+        .range(1, valueRange != null ? valueRange[0] : min,
+            valueRange != null ? valueRange[1] : max)
+        .sink(PlotColorFunction.Sink.FLAT)
         .fallback(t -> greyColor(t, greyLimit, scaling)).build();
     // compiled once for the whole array: the rules are matched like Replace, once per cell
     GraphicsOptions.ColorRuleTable colorRules =
         GraphicsOptions.colorRules(matrixOptions.colorRules, engine);
     // an array of plain numbers on the default grey scale keeps its values in the raster
-    final IExpr[][] levels =
-        colorMap == null && colorRules == null && scaling ? greyLevels(grid, rows, cols) : null;
+    final boolean greyScale = colorMap == null && colorRules == null && scaling;
+    final IExpr[][] levels;
+    if (!greyScale) {
+      levels = null;
+    } else if (valueRange == null) {
+      levels = greyLevels(grid, rows, cols);
+    } else {
+      levels =
+          rangeLevels(grid, rows, cols, valueRange, clipsToBackground ? null : clippingStyle);
+    }
     IExpr[][] cells = levels != null ? levels : new IExpr[rows][cols];
 
     // Draw cells
@@ -160,8 +184,19 @@ public class ArrayPlot extends ListPlot {
           // 2. Numeric Mapping
           try {
             double d = val.evalf();
-            if (Double.isFinite(d)) {
-              color = colorMap == null ? greyColor(d, greyLimit, scaling) : colorMap.color(d);
+            if (valueRange != null && Double.isFinite(d)
+                && (d < valueRange[0] || d > valueRange[1])) {
+              // outside the range of values: the background, or the colour asked for
+              color = clipsToBackground ? F.NIL : clippingColor(clippingStyle, d > valueRange[1]);
+            } else if (Double.isFinite(d)) {
+              if (colorMap != null) {
+                color = colorMap.color(d);
+              } else if (valueRange != null) {
+                color = greyColor(scaling ? d - valueRange[0] : d,
+                    valueRange[1] - valueRange[0], scaling);
+              } else {
+                color = greyColor(d, greyLimit, scaling);
+              }
             }
           } catch (Exception e) {
           }
@@ -184,7 +219,7 @@ public class ArrayPlot extends ListPlot {
       // the scale of the values as the third argument: 0 is white, the largest magnitude black
       IAST raster = (IAST) primitives.arg1();
       primitives.set(1, F.ternaryAST3(S.Raster, raster.arg1(), raster.arg2(),
-          F.list(F.C0, greyLimitExpr(grid, greyLimit))));
+          valueRange != null ? F.list(F.C0, F.C1) : F.list(F.C0, greyLimitExpr(grid, greyLimit))));
     }
     if (!(frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue())
         && graphicsOptions.frameTicks().isNone()
@@ -195,10 +230,21 @@ public class ArrayPlot extends ListPlot {
     }
 
     // the raster alone is the content itself, so that First(ArrayPlot(...)) is the Raster
-    return createGraphicsFunction(
+    IExpr graphics = createGraphicsFunction(
         primitives.argSize() == 1 && primitives.arg1().isAST() ? (IAST) primitives.arg1()
             : primitives,
         graphicsOptions, wrappedAST);
+    // a range of values is no range of coordinates: the picture keeps no PlotRange option
+    return valueRange != null ? withoutPlotRange(graphics) : graphics;
+  }
+
+  /** <code>Graphics(...)</code> without its <code>PlotRange</code> option. */
+  private static IExpr withoutPlotRange(IExpr graphics) {
+    if (!graphics.isAST(S.Graphics)) {
+      return graphics;
+    }
+    return ((IAST) graphics)
+        .removeIf(option -> option.isRuleAST() && option.first() == S.PlotRange);
   }
 
   /**
@@ -210,17 +256,13 @@ public class ArrayPlot extends ListPlot {
    * @return {@code null} if a cell is missing, a colour or not a real number
    */
   private static IExpr[][] greyLevels(IExpr[][] grid, int rows, int cols) {
+    double[][] values = numericCells(grid, rows, cols);
+    if (values == null) {
+      return null;
+    }
     double greyLimit = 0.0;
-    for (int r = 0; r < rows; r++) {
-      for (int c = 0; c < cols; c++) {
-        IExpr val = grid[r][c];
-        if (val == null || GraphicsOptions.isBasicColor(val)) {
-          return null;
-        }
-        double d = val.evalfNaN();
-        if (!Double.isFinite(d)) {
-          return null;
-        }
+    for (double[] row : values) {
+      for (double d : row) {
         greyLimit = Math.max(greyLimit, Math.abs(d));
       }
     }
@@ -239,6 +281,102 @@ public class ArrayPlot extends ListPlot {
       }
     }
     return levels;
+  }
+
+  /**
+   * The range of values of <code>PlotRange -> {amin, amax}</code> or <code>PlotRange -> amax</code>
+   * (from 0); <code>null</code> for any other setting, which is a range of coordinates or
+   * automatic.
+   */
+  static double[] valueRange(IExpr plotRange) {
+    double lo;
+    double hi;
+    if (plotRange.isReal()) {
+      lo = 0.0;
+      hi = plotRange.evalf();
+    } else if (plotRange.isList2() && plotRange.first().isReal() && plotRange.second().isReal()) {
+      lo = plotRange.first().evalf();
+      hi = plotRange.second().evalf();
+    } else {
+      return null;
+    }
+    return Double.isFinite(lo) && Double.isFinite(hi) && lo < hi ? new double[] {lo, hi} : null;
+  }
+
+  /**
+   * The cells of an array of numbers as opaque grey <code>{g, g, g, 1.}</code> over an explicit
+   * range of values: white at its minimum, black at its maximum. A cell outside the range is
+   * transparent, <code>{1., 1., 1., 0.}</code>, so that the background shows, or has the colour
+   * <code>ClippingStyle</code> gives it.
+   *
+   * @param clippingStyle the colours of the cells below and above the range, {@code null} for the
+   *        background
+   * @return {@code null} if a cell is missing, a colour or not a real number
+   */
+  private static IExpr[][] rangeLevels(IExpr[][] grid, int rows, int cols, double[] range,
+      IExpr clippingStyle) {
+    double[][] values = numericCells(grid, rows, cols);
+    if (values == null) {
+      return null;
+    }
+    IExpr[][] levels = new IExpr[rows][cols];
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        double d = values[r][c];
+        if (d < range[0] || d > range[1]) {
+          levels[r][c] = clippingStyle == null ? TRANSPARENT
+              : opaque(GraphicsOptions.rasterPixel(clippingColor(clippingStyle, d > range[1])));
+        } else {
+          IExpr g = F.num((range[1] - d) / (range[1] - range[0]));
+          levels[r][c] = F.List(g, g, g, F.num(1.0));
+        }
+      }
+    }
+    return levels;
+  }
+
+  /**
+   * The cells as machine numbers.
+   *
+   * @return {@code null} if a cell is missing, a colour or not a real number
+   */
+  private static double[][] numericCells(IExpr[][] grid, int rows, int cols) {
+    double[][] values = new double[rows][cols];
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        IExpr val = grid[r][c];
+        if (val == null || GraphicsOptions.isBasicColor(val)) {
+          return null;
+        }
+        values[r][c] = val.evalfNaN();
+        if (!Double.isFinite(values[r][c])) {
+          return null;
+        }
+      }
+    }
+    return values;
+  }
+
+  /** A cell which lets the background show. */
+  private static final IExpr TRANSPARENT = F.List(F.num(1.0), F.num(1.0), F.num(1.0), F.num(0.0));
+
+  /** The red, green, blue and opacity of a raster cell; opaque if it has no opacity. */
+  private static IExpr opaque(IExpr pixel) {
+    if (pixel.isList() && pixel.argSize() == 3) {
+      return ((IAST) pixel).appendClone(F.num(1.0));
+    }
+    return pixel;
+  }
+
+  /**
+   * The colour of a cell outside the range of values: <code>ClippingStyle -> {below, above}</code>
+   * or one colour for both.
+   */
+  private static IExpr clippingColor(IExpr clippingStyle, boolean above) {
+    if (clippingStyle.isList2()) {
+      return above ? clippingStyle.second() : clippingStyle.first();
+    }
+    return clippingStyle;
   }
 
   /**

@@ -404,6 +404,9 @@ public class ParametricPlot extends Plot {
       steps = Math.max(2, steps / 8);
     }
     double step = (tMaxD - tMinD) / steps;
+    // the height of the frame over its width, NaN if the axes are scaled alike
+    final double aspectRatio = graphicsOptions.aspectRatio() == null ? Double.NaN
+        : graphicsOptions.aspectRatio().evalfNaN();
     // the parameter is scaled over the range its iterator declares, like every other argument
     graphicsOptions.setColorRange(3, tMinD, tMaxD);
 
@@ -457,7 +460,7 @@ public class ParametricPlot extends Plot {
 
         // the parameters to sample at: the even sweep, refined where the curve turns sharply
         final List<double[]> samples = refinedSamples(fx, fy, tSym, tMinD, step, steps,
-            maxRecursion < 0 ? DEFAULT_REFINEMENT_LEVELS : maxRecursion, engine);
+            maxRecursion < 0 ? DEFAULT_REFINEMENT_LEVELS : maxRecursion, aspectRatio, engine);
         for (int i = 0; i < samples.size(); i++) {
           final double[] sample = samples.get(i);
           double t = sample[0];
@@ -519,6 +522,12 @@ public class ParametricPlot extends Plot {
   private static final int MAX_REFINEMENT_SAMPLES = 20000;
 
   /**
+   * The length, as a fraction of the width of the frame, below which two segments are too short to
+   * show a corner: a curve which winds into a point is not refined there.
+   */
+  private static final double MIN_VISIBLE_SEGMENT = 1.0e-3;
+
+  /**
    * The samples {@code {t, x, y}} of a curve, {@code x} and {@code y} being {@code NaN} where the
    * curve has no point: {@code steps + 1} evenly spaced values, with the
    * intervals on either side of a sample where the curve turns by more than {@link #MAX_TURN}
@@ -526,9 +535,18 @@ public class ParametricPlot extends Plot {
    * at its tight turns; refining there keeps the polyline from showing corners the curve does not
    * have. Samples without a point of the curve are left alone, so a pole or a gap in the curve is
    * not refined into.
+   *
+   * <p>
+   * The turns are measured as the curve is drawn: with the coordinates scaled to the frame, whose
+   * height is <code>aspectRatio</code> times its width, so that a curve stretched by the frame is
+   * refined where it bends on the screen. Segments shorter than {@link #MIN_VISIBLE_SEGMENT} of the
+   * frame show no corner and are not refined.
+   *
+   * @param aspectRatio the height of the frame over its width, <code>NaN</code> if x and y are
+   *        drawn at the same scale
    */
   private static List<double[]> refinedSamples(IExpr fx, IExpr fy, ISymbol tSym, double tMin,
-      double step, int steps, int levels, EvalEngine engine) {
+      double step, int steps, int levels, double aspectRatio, EvalEngine engine) {
     List<double[]> samples = new ArrayList<>(steps + 1);
     for (int i = 0; i <= steps; i++) {
       double t = tMin + i * step;
@@ -539,6 +557,7 @@ public class ParametricPlot extends Plot {
         samples.get(i)[2] = point[1];
       }
     }
+    final double[] scale = displayScale(samples, aspectRatio);
     int added = 0;
     for (int level = 0; level < levels && added < MAX_REFINEMENT_SAMPLES; level++) {
       engine.checkTimeLimit();
@@ -546,7 +565,7 @@ public class ParametricPlot extends Plot {
       boolean[] split = new boolean[n];
       boolean any = false;
       for (int k = 1; k < n - 1; k++) {
-        if (turn(samples.get(k - 1), samples.get(k), samples.get(k + 1)) > MAX_TURN) {
+        if (turn(samples.get(k - 1), samples.get(k), samples.get(k + 1), scale) > MAX_TURN) {
           split[k - 1] = true;
           split[k] = true;
           any = true;
@@ -573,17 +592,57 @@ public class ParametricPlot extends Plot {
   }
 
   /**
-   * The angle between the segments {@code a -> b} and {@code b -> c}; {@code 0} where a point is
-   * missing or a segment has no length.
+   * The factors which take x and y to the coordinates of a frame of width 1: from the extent of the
+   * finite samples, the height of the frame being <code>aspectRatio</code>, or both axes at the
+   * scale of the wider extent if it is <code>NaN</code>. <code>null</code> if the samples have no
+   * extent.
    */
-  private static double turn(double[] a, double[] b, double[] c) {
-    double ux = b[1] - a[1];
-    double uy = b[2] - a[2];
-    double vx = c[1] - b[1];
-    double vy = c[2] - b[2];
+  private static double[] displayScale(List<double[]> samples, double aspectRatio) {
+    double xMin = Double.POSITIVE_INFINITY;
+    double xMax = Double.NEGATIVE_INFINITY;
+    double yMin = Double.POSITIVE_INFINITY;
+    double yMax = Double.NEGATIVE_INFINITY;
+    for (double[] sample : samples) {
+      if (Double.isFinite(sample[1]) && Double.isFinite(sample[2])) {
+        xMin = Math.min(xMin, sample[1]);
+        xMax = Math.max(xMax, sample[1]);
+        yMin = Math.min(yMin, sample[2]);
+        yMax = Math.max(yMax, sample[2]);
+      }
+    }
+    double width = xMax - xMin;
+    double height = yMax - yMin;
+    if (!Double.isFinite(width) || !Double.isFinite(height)) {
+      return null;
+    }
+    if (aspectRatio > 0.0 && Double.isFinite(aspectRatio) && width > 0.0 && height > 0.0) {
+      return new double[] {1.0 / width, aspectRatio / height};
+    }
+    double extent = Math.max(width, height);
+    return extent > 0.0 ? new double[] {1.0 / extent, 1.0 / extent} : null;
+  }
+
+  /**
+   * The angle between the segments {@code a -> b} and {@code b -> c} as they are drawn, the
+   * coordinates multiplied by {@code scale}; {@code 0} where a point is missing or both segments
+   * are too short to show a corner.
+   *
+   * @param scale the factors of x and y, see {@link #displayScale(List, double)}; {@code null} to
+   *        measure in the coordinates of the curve
+   */
+  private static double turn(double[] a, double[] b, double[] c, double[] scale) {
+    double sx = scale == null ? 1.0 : scale[0];
+    double sy = scale == null ? 1.0 : scale[1];
+    double ux = (b[1] - a[1]) * sx;
+    double uy = (b[2] - a[2]) * sy;
+    double vx = (c[1] - b[1]) * sx;
+    double vy = (c[2] - b[2]) * sy;
     double lu = Math.hypot(ux, uy);
     double lv = Math.hypot(vx, vy);
     if (!(lu > 0.0) || !(lv > 0.0) || !Double.isFinite(lu) || !Double.isFinite(lv)) {
+      return 0.0;
+    }
+    if (scale != null && Math.max(lu, lv) < MIN_VISIBLE_SEGMENT) {
       return 0.0;
     }
     double cos = (ux * vx + uy * vy) / (lu * lv);

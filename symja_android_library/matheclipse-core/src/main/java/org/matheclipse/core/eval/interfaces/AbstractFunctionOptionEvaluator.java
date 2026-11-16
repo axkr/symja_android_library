@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -32,6 +33,20 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   protected boolean samplesFirstArgument() {
     return false;
   }
+
+  /**
+   * The milliseconds which the first argument of a call with {@link #samplesFirstArgument()} may
+   * take to evaluate once with symbolic variables, quietly, before it is sampled: if it finishes,
+   * its value is sampled, so that <code>D(f, x)</code> is differentiated and an expansion is done
+   * once; if it doesn't, as for an iteration which never settles on symbols, the argument as it is
+   * written is sampled. <code>0</code> samples the argument as it is written.
+   */
+  protected long symbolicFirstArgumentMillis() {
+    return 0L;
+  }
+
+  /** The time a plot gives its function to evaluate with symbolic variables before sampling it. */
+  protected static final long PLOT_SYMBOLIC_MILLIS = 400L;
 
   /**
    * Whether a range of the call may have bounds which depend on the variable of an earlier range,
@@ -146,6 +161,9 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       IExpr first = held.argSize() > 0 ? held.arg1() : F.NIL;
       boolean holdFirst = samplesFirstArgument() && first.isPresent() && !first.isSymbol()
           && !first.isAST(S.Evaluate);
+      if (holdFirst && symbolicFirstArgumentMillis() > 0L) {
+        first = symbolicValue(first, symbolicFirstArgumentMillis(), engine);
+      }
       IASTAppendable list = F.ListAlloc(held.argSize());
       list.appendArgs(held);
       if (holdFirst) {
@@ -168,6 +186,20 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       }
       return body.apply(call);
     }, variables);
+  }
+
+  /**
+   * The value of <code>expr</code> evaluated quietly within <code>millis</code> milliseconds, or
+   * <code>expr</code> itself if the evaluation doesn't finish in time or runs into a limit.
+   */
+  private static IExpr symbolicValue(IExpr expr, long millis, EvalEngine engine) {
+    boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      return TimeLimits.evaluateOrNil(expr, millis).orElse(expr);
+    } finally {
+      engine.setQuietMode(quiet);
+    }
   }
 
   @Override

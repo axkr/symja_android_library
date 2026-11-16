@@ -60,6 +60,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     int points = plotPoints(options[Plot3DTools.X_PLOT_POINTS]);
+    double[][] axis = axis(min, max, new int[] {points, points, points});
+    // the region cuts the surfaces at its edge rather than leaving out the grid cells it touches,
+    // so the samples are taken everywhere and the region only decides which levels are chosen
+    RegionFunctionFilter region =
+        RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
     double[][][][] grids = new double[functions.argSize()][][][];
     double[][] levelSets = new double[functions.argSize()][];
     double lowestLevel = Double.POSITIVE_INFINITY;
@@ -72,13 +77,12 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
         expr = F.Subtract(((IAST) expr).arg1(), ((IAST) expr).arg2());
       }
       grids[f] = MarchingCubes.sample(expr, vars, min, max,
-          options[Plot3DTools.X_EVALUATION_MONITOR], points, engine,
-          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
+          options[Plot3DTools.X_EVALUATION_MONITOR], points, engine, null);
       if (grids[f] == null) {
         return F.NIL;
       }
-      levelSets[f] =
-          contourLevels(options[Plot3DTools.X_CONTOURS], grids[f], isEquation || several);
+      levelSets[f] = contourLevels(options[Plot3DTools.X_CONTOURS],
+          region == null ? grids[f] : inRegion(grids[f], axis, region), isEquation || several);
       if (levelSets[f].length == 0) {
         return F.NIL;
       }
@@ -108,14 +112,23 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
         levelColors == null && (styleSource == null || styleSource.isAutomatic());
     IExpr boundaryStyle = options[Plot3DTools.X_BOUNDARY_STYLE];
     IASTAppendable surfaces = F.ListAlloc(surfaceCount);
-    double[][] axis = axis(min, max, new int[] {points, points, points});
     int surfaceIndex = 0;
     for (int f = 0; f < grids.length; f++) {
       for (double value : levelSets[f]) {
         IExpr style =
             levelStyle(surfaceIndex++, value, levelColors, ownLights, styleSource, min, max);
-        IExpr complex = surface(grids[f], axis, value, style, options[Plot3DTools.X_MESH],
-            options[Plot3DTools.X_MESH_STYLE], boundaryStyle);
+        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
+        Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
+        if (region == null) {
+          MarchingCubes.marchingCubes(builder, grids[f], value, axis);
+        } else {
+          GraphicsComplexBuilder whole = new GraphicsComplexBuilder(true, false);
+          MarchingCubes.marchingCubes(whole, grids[f], value, axis);
+          clipToRegion(whole, builder, region, value, engine);
+        }
+        addMesh(builder, axis, options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE]);
+        addRim(builder, boundaryStyle);
+        IExpr complex = builder.build();
         if (complex.isPresent()) {
           surfaces.append(complex);
         }
@@ -127,6 +140,159 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, !ownLights);
     return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
+  }
+
+  /**
+   * Whether a contour surface is outlined where it ends, at the box or at the edge of the region,
+   * when <code>BoundaryStyle</code> is <code>Automatic</code>: in black.
+   */
+  private static final boolean OUTLINED_BY_DEFAULT = true;
+
+  /** The number of halvings which place the edge of the region on an edge of the surface. */
+  private static final int REGION_EDGE_ITERATIONS = 24;
+
+  /**
+   * A copy of <code>grid</code> with the samples outside the region replaced by <code>NaN</code>.
+   */
+  private static double[][][] inRegion(double[][][] grid, double[][] axis,
+      RegionFunctionFilter region) {
+    double[][][] inside = new double[grid.length][][];
+    for (int i = 0; i < grid.length; i++) {
+      inside[i] = new double[grid[i].length][];
+      for (int j = 0; j < grid[i].length; j++) {
+        inside[i][j] = grid[i][j].clone();
+        for (int k = 0; k < grid[i][j].length; k++) {
+          double value = grid[i][j][k];
+          if (Double.isFinite(value)
+              && !region.accepts(axis[0][i], axis[1][j], axis[2][k], value)) {
+            inside[i][j][k] = Double.NaN;
+          }
+        }
+      }
+    }
+    return inside;
+  }
+
+  /**
+   * Copy the polygons of <code>whole</code> into <code>clipped</code>, each cut to the part inside
+   * the region. Where an edge of a polygon leaves the region the edge of the region is found by
+   * halving the edge, always from its inner end, so that the polygons on either side of the edge
+   * get the same point and stay joined. The surface takes the value <code>level</code> at every
+   * point, which is the value the region function is given.
+   */
+  private static void clipToRegion(GraphicsComplexBuilder whole, GraphicsComplexBuilder clipped,
+      RegionFunctionFilter region, double level, EvalEngine engine) {
+    java.util.Map<Integer, Boolean> inside = new java.util.HashMap<>();
+    for (int p = 1; p <= whole.polygonCount(); p++) {
+      engine.checkTimeLimit();
+      int[] corners = whole.polygon(p);
+      int n = corners.length;
+      boolean[] in = new boolean[n];
+      boolean all = true;
+      boolean none = true;
+      for (int c = 0; c < n; c++) {
+        double[] point = whole.coordinatesOf(corners[c]);
+        in[c] = inside.computeIfAbsent(corners[c],
+            v -> region.accepts(point[0], point[1], point[2], level));
+        all &= in[c];
+        none &= !in[c];
+      }
+      if (none) {
+        continue;
+      }
+      java.util.List<Integer> indices = new java.util.ArrayList<>(n + 2);
+      for (int c = 0; c < n; c++) {
+        int a = corners[c];
+        int b = corners[(c + 1) % n];
+        if (in[c]) {
+          indices.add(copyVertex(whole, clipped, a));
+        }
+        if (!all && in[c] != in[(c + 1) % n]) {
+          indices.add(regionEdge(whole, clipped, in[c] ? a : b, in[c] ? b : a, region, level));
+        }
+      }
+      // a point of the region edge which is welded onto a corner adds no corner
+      for (int k = indices.size() - 1; k >= 0 && indices.size() > 1; k--) {
+        if (indices.get(k).equals(indices.get((k + 1) % indices.size()))) {
+          indices.remove(k);
+        }
+      }
+      if (indices.size() >= 3) {
+        int[] polygon = new int[indices.size()];
+        for (int k = 0; k < polygon.length; k++) {
+          polygon[k] = indices.get(k);
+        }
+        if (polygon.length == 3) {
+          clipped.addPolygon(polygon[0], polygon[1], polygon[2]);
+        } else {
+          clipped.addPolygon(polygon);
+        }
+      }
+    }
+  }
+
+  /** Vertex <code>index</code> of <code>from</code> added to <code>to</code>. */
+  private static int copyVertex(GraphicsComplexBuilder from, GraphicsComplexBuilder to,
+      int index) {
+    double[] point = from.coordinatesOf(index);
+    return to.addVertex(point[0], point[1], point[2], from.normalOf(index), null);
+  }
+
+  /**
+   * The point where the edge from vertex <code>inner</code>, inside the region, to vertex
+   * <code>outer</code> leaves the region, added to <code>to</code> with an interpolated normal.
+   */
+  private static int regionEdge(GraphicsComplexBuilder from, GraphicsComplexBuilder to, int inner,
+      int outer, RegionFunctionFilter region, double level) {
+    double[] a = from.coordinatesOf(inner);
+    double[] b = from.coordinatesOf(outer);
+    double lo = 0.0;
+    double hi = 1.0;
+    for (int i = 0; i < REGION_EDGE_ITERATIONS; i++) {
+      double mid = 0.5 * (lo + hi);
+      if (region.accepts(a[0] + mid * (b[0] - a[0]), a[1] + mid * (b[1] - a[1]),
+          a[2] + mid * (b[2] - a[2]), level)) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    double t = lo;
+    double[] na = from.normalOf(inner);
+    double[] nb = from.normalOf(outer);
+    double[] normal = null;
+    if (na != null && nb != null) {
+      normal = new double[3];
+      double length = 0.0;
+      for (int c = 0; c < 3; c++) {
+        normal[c] = na[c] + t * (nb[c] - na[c]);
+        length += normal[c] * normal[c];
+      }
+      length = Math.sqrt(length);
+      if (length > 0.0) {
+        for (int c = 0; c < 3; c++) {
+          normal[c] /= length;
+        }
+      } else {
+        normal = na;
+      }
+    }
+    return to.addVertex(a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]),
+        a[2] + t * (b[2] - a[2]), normal, null);
+  }
+
+  /**
+   * Outline a contour surface where it ends, at the box or at the edge of the region, unless
+   * <code>BoundaryStyle</code> says not to: one <code>Line</code> of vertex numbers in the
+   * <code>GraphicsComplex</code>, each open curve of the rim joined into one list.
+   */
+  static void addRim(GraphicsComplexBuilder builder, IExpr boundaryStyle) {
+    if (Plot3DTools.drawsBoundary(boundaryStyle, OUTLINED_BY_DEFAULT)) {
+      IExpr rim = builder.openEdgeLine();
+      if (rim.isPresent()) {
+        builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle), rim));
+      }
+    }
   }
 
   /**
@@ -156,15 +322,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.applyStyle(builder, style, meshOption);
     MarchingCubes.marchingCubes(builder, grid, value, axis);
     addMesh(builder, axis, meshOption, meshStyle);
-    // the rim where the surface leaves the box, outlined unless told not to: the edges only
-    // one triangle has
-    if (Plot3DTools.drawsBoundary(boundaryStyle, true)) {
-      IASTAppendable rim = builder.openEdges();
-      if (rim.argSize() > 0) {
-        builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyle),
-            F.binaryAST2(S.Line, rim, F.Rule(S.VertexColors, S.None))));
-      }
-    }
+    addRim(builder, boundaryStyle);
     return builder.build();
   }
 
@@ -384,6 +542,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     return new int[] {4, Integer.MAX_VALUE};
   }
 
+  // CPD-OFF the sampling settings of a plot function, the same as those of Plot3D
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
@@ -392,6 +551,19 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   protected int dependentRangeOffset() {
     return 0;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is evaluated at the sample points: a function which iterates until its values
+    // agree never stops on symbolic coordinates
+    return true;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // D(f, x) or an expansion is still done once with symbolic coordinates, if it finishes
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override
@@ -405,6 +577,7 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     // a plot variable like x(1) is replaced by a unique symbol
     return true;
   }
+  // CPD-ON
 
   @Override
   public void setUp(final ISymbol newSymbol) {

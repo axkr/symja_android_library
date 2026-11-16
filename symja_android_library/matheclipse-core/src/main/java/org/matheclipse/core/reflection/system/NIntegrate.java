@@ -903,6 +903,61 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * A multidimensional integral over a box with numeric limits whose integrand has a variable
+   * which is no integration variable can't be sampled: print <code>NIntegrate::inumr</code> for
+   * the whole region once, instead of a message for every inner integral.
+   *
+   * @param ast <code>NIntegrate(f, {x, x0, x1}, {y, y0, y1}, ...)</code>
+   * @param argSize the number of arguments without the options
+   * @param integrand the evaluated integrand
+   * @return <code>true</code> if the message was printed
+   */
+  private static boolean isNonNumericIntegrand(IAST ast, int argSize, IExpr integrand,
+      EvalEngine engine) {
+    IASTAppendable boundaries = F.ListAlloc(argSize - 1);
+    for (int i = 2; i <= argSize; i++) {
+      IAST iterator = (IAST) ast.get(i);
+      if (!Double.isFinite(iterator.arg2().evalfNaN())
+          || !Double.isFinite(iterator.arg3().evalfNaN())) {
+        return false;
+      }
+      boundaries.append(F.List(iterator.arg2(), iterator.arg3()));
+    }
+    IAST variables = new VariablesSet(integrand).getVarList();
+    if (!variables.exists(v -> {
+      for (int i = 2; i <= argSize; i++) {
+        if (ast.get(i).first().equals(v)) {
+          return false;
+        }
+      }
+      return true;
+    })) {
+      return false;
+    }
+    // a variable bound inside the integrand, as k of an unevaluated Sum(f(k, x), {k, 1, n}), is
+    // not free: the integrand is non-numerical only if its value at the centre of the box is
+    IASTAppendable centre = F.ListAlloc(argSize - 1);
+    for (int i = 2; i <= argSize; i++) {
+      IAST iterator = (IAST) ast.get(i);
+      centre.append(F.Rule(iterator.arg1(),
+          F.num((iterator.arg2().evalf() + iterator.arg3().evalf()) / 2.0)));
+    }
+    try {
+      IExpr sample = engine.evalN(F.subst(integrand, centre));
+      if (sample.isNumber()) {
+        return false;
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+    // The integrand `1` has evaluated to non-numerical values for all sampling points in the
+    // region with boundaries `2`.
+    Errors.printMessage(ast.topHead(), "inumr", F.List(integrand, boundaries), engine);
+    return true;
+  }
+
+  /**
    * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
    * integration</a> of univariate real functions.
    *
@@ -975,6 +1030,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           && iterator.first().isSymbol() && ((ISymbol) iterator.first()).hasAssignedSymbolValue(),
           2)) {
         IExpr integrand = engine.evaluate(ast.arg1());
+        if (isNonNumericIntegrand(ast, argSize, integrand, engine)) {
+          return F.NIL;
+        }
         if (integrand.isFree(S.Function, true)) {
           // the half angle form before the outer value is substituted: Cos(0.001) is a number
           inner.set(1, withoutCosineCancellation(integrand));

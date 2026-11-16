@@ -229,4 +229,22 @@ public class ModuleReplaceAllScopeIndexTest extends ExprEvaluatorTestCase {
     check("With({u = 3, w = 4}, Hold(h(u_) :> u + w))", //
         "Hold(h(u$_):>u$+4)");
   }
+
+  @Test
+  public void testAssignmentInsideThePatternOfARule() {
+    // a Set, SetDelayed or Rule inside the pattern of a rule binds nothing of its own: its names
+    // are those of the outer rule, whichever local the right-hand side reaches
+    check("Module({l = {}}, {Hold(g = 2)} /. {Hold(Set(a_, b_)) :> AppendTo(l, Hold(a))}; l)", //
+        "{Hold(g)}");
+    check("Module({l = {}}, {Hold(g := 2)} /. {Hold(SetDelayed(a_, b_)) :> AppendTo(l, Hold(b))}; "
+        + "l)", //
+        "{Hold(2)}");
+    check("Module({l = {}}, {Hold(g -> 2)} /. {Hold(Rule(a_, b_)) :> AppendTo(l, Hold(a))}; l)", //
+        "{Hold(g)}");
+    check("Hold(g = 2) /. With({l = x}, Hold(Set(a_, b_)) :> f(l, a))", //
+        "f(x,g)");
+    // a pattern variable which is a local itself still shadows it
+    check("Hold(g = 2) /. With({a = 3}, Hold(Set(a_, b_)) :> f(a, b))", //
+        "f(g,2)");
+  }
 }

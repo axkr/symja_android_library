@@ -53,11 +53,11 @@ public class MatrixPlotRasterTest extends ExprEvaluatorTestCase {
   public void testArrayPlotGreyLevels() {
     // the largest magnitude less the magnitude of each cell, over the range {0, largest}
     check("Cases(ArrayPlot({{3, -6}, {1/2, 0}}), _Raster, Infinity)", //
-        "{Raster({{11/2,6},{3,0}},{{0.0,0.0},{2.0,2.0}},{0,6})}");
+        "{Raster({{11/2,6},{3,0}},{{0,0},{2,2}},{0,6})}");
     check("Cases(ArrayPlot({{1.5, -0.5}}), _Raster, Infinity)", //
-        "{Raster({{0.0,1.0}},{{0.0,0.0},{2.0,1.0}},{0,1.5})}");
+        "{Raster({{0.0,1.0}},{{0,0},{2,1}},{0,1.5})}");
     check("Cases(ArrayPlot({{0, 0}}), _Raster, Infinity)", //
-        "{Raster({{1,1}},{{0.0,0.0},{2.0,1.0}},{0,1})}");
+        "{Raster({{1,1}},{{0,0},{2,1}},{0,1})}");
     // a colour among the cells keeps the colours
     check("Cases(ArrayPlot({{1, Red}}), Raster(r_, ___) :> r, Infinity)", //
         "{{{{0.0,0.0,0.0},{1.0,0.0,0.0}}}}");

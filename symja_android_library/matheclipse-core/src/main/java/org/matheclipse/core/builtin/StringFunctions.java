@@ -1271,7 +1271,7 @@ public final class StringFunctions {
    * A match scores 1, a mismatch and a gap -1; adjacent mismatches and gaps form one pair.
    */
   private static class SequenceAlignment extends AbstractFunctionEvaluator {
-    /** The largest score table, about 100 MB. */
+    /** The largest table of traceback bits, about 6 MB. */
     private static final long MAX_ALIGNMENT_CELLS = 25_000_000L;
 
     @Override
@@ -1293,24 +1293,40 @@ public final class StringFunctions {
       List<IExpr> y = strings ? LongestCommonSequence.characters(b.toString()) : elements((IAST) b);
       final int n = x.size();
       final int m = y.size();
-      final long cells = (long) (n + 1) * (m + 1);
-      if (cells > MAX_ALIGNMENT_CELLS || cells > Config.MAX_AST_SIZE) {
-        // the score table grows with the product of the lengths
+      final long cells = (long) n * m;
+      if (cells > MAX_ALIGNMENT_CELLS) {
+        // the traceback table grows with the product of the lengths
         ASTElementLimitExceeded.throwIt(cells);
       }
-      // score[i][j] is the best score of aligning x[i..] with y[j..]
-      int[][] score = new int[n + 1][m + 1];
-      for (int i = n; i >= 0; i--) {
+      // With score(i, j) the best score of aligning x[i..] with y[j..], the traceback only asks
+      // whether the diagonal step and the step down x are optimal at (i, j). These two bits per
+      // cell are kept; the scores themselves only need the row below.
+      final java.util.BitSet diagonalBest = new java.util.BitSet((int) cells);
+      final java.util.BitSet downBest = new java.util.BitSet((int) cells);
+      int[] below = new int[m + 1];
+      int[] row = new int[m + 1];
+      for (int j = 0; j <= m; j++) {
+        below[j] = -(m - j);
+      }
+      for (int i = n - 1; i >= 0; i--) {
         engine.checkTimeLimit();
-        for (int j = m; j >= 0; j--) {
-          if (i == n || j == m) {
-            score[i][j] = -(n - i) - (m - j);
-          } else {
-            int diagonal = score[i + 1][j + 1] + (x.get(i).equals(y.get(j)) ? 1 : -1);
-            score[i][j] =
-                Math.max(diagonal, Math.max(score[i + 1][j] - 1, score[i][j + 1] - 1));
+        row[m] = -(n - i);
+        for (int j = m - 1; j >= 0; j--) {
+          int diagonal = below[j + 1] + (x.get(i).equals(y.get(j)) ? 1 : -1);
+          int down = below[j] - 1;
+          int best = Math.max(diagonal, Math.max(down, row[j + 1] - 1));
+          row[j] = best;
+          int cell = i * m + j;
+          if (best == diagonal) {
+            diagonalBest.set(cell);
+          }
+          if (best == down) {
+            downBest.set(cell);
           }
         }
+        int[] swap = below;
+        below = row;
+        row = swap;
       }
       IASTAppendable result = F.ListAlloc();
       List<IExpr> common = new java.util.ArrayList<>();
@@ -1319,8 +1335,7 @@ public final class StringFunctions {
       int i = 0;
       int j = 0;
       while (i < n || j < m) {
-        if (i < n && j < m && x.get(i).equals(y.get(j))
-            && score[i][j] == score[i + 1][j + 1] + 1) {
+        if (i < n && j < m && x.get(i).equals(y.get(j)) && diagonalBest.get(i * m + j)) {
           appendDifference(result, partOfA, partOfB, strings);
           common.add(x.get(i));
           i++;
@@ -1328,11 +1343,10 @@ public final class StringFunctions {
           continue;
         }
         appendCommon(result, common, strings);
-        if (i < n && j < m && !x.get(i).equals(y.get(j))
-            && score[i][j] == score[i + 1][j + 1] - 1) {
+        if (i < n && j < m && !x.get(i).equals(y.get(j)) && diagonalBest.get(i * m + j)) {
           partOfA.add(x.get(i++));
           partOfB.add(y.get(j++));
-        } else if (i < n && (j == m || score[i][j] == score[i + 1][j] - 1)) {
+        } else if (i < n && (j == m || downBest.get(i * m + j))) {
           partOfA.add(x.get(i++));
         } else {
           partOfB.add(y.get(j++));

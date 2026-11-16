@@ -4626,23 +4626,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testConvexHull() {
-    // the planar convex hull as a list of point indices in counter-clockwise order
+    // the planar convex hull as a list of point indices in counter-clockwise order, starting at
+    // the rightmost point (the lowest one of several rightmost points)
     check("ConvexHull({{0,0},{2,0},{2,2},{0,2}})", //
-        "{1,2,3,4}");
+        "{2,3,4,1}");
 
     // AllPoints->True is the default and keeps the points which lie on a hull edge
     check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}})", //
-        "{1,2,3,4,5}");
+        "{3,4,5,1,2}");
     check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}}, AllPoints->False)", //
-        "{1,3,4,5}");
+        "{3,4,5,1}");
 
     // an interior point isn't part of the hull
     check("ConvexHull({{1,1},{0,0},{2,0},{2,2},{0,2}})", //
-        "{2,3,4,5}");
+        "{3,4,5,2}");
+    // a single rightmost point which is not the lowest point
+    check("ConvexHull({{-1,0},{1,-1},{3,1},{0,2},{1,1}})", //
+        "{3,4,1,2}");
+    // a point on the right edge between the two rightmost corners
+    check("ConvexHull({{0,1},{4,3},{4,-1},{4,1},{1,-2}})", //
+        "{3,4,2,1,5}");
 
-    // co-linear points don't have a two dimensional hull
+    // co-linear points are ordered along their line, without AllPoints only its ends
     check("ConvexHull({{0,0},{1,1},{2,2}})", //
-        "ConvexHull({{0,0},{1,1},{2,2}})");
+        "{1,2,3}");
+    check("ConvexHull({{2,-1},{0,3},{1,1},{-1,5}})", //
+        "{4,2,3,1}");
+    check("ConvexHull({{2,-1},{0,3},{1,1},{-1,5}}, AllPoints->False)", //
+        "{4,1}");
+    check("ConvexHull({{5,7},{2,4}})", //
+        "{2,1}");
+    // a single distinct point has no hull
+    check("ConvexHull({{1,2},{1,2}})", //
+        "ConvexHull({{1,2},{1,2}})");
+    // an exact and an inexact copy of a point are one point of the hull
+    check("ConvexHull({{3,6},{1,2},{2,4},{1.,2.}})", //
+        "{2,3,1}");
   }
 
   /**
@@ -12060,7 +12079,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Head(First(ArrayPlot({{1, 2}, {3, 4}})))", //
         "Raster");
     check("First(ArrayPlot({{1, 2}, {3, 4}}))[[2]]", //
-        "{{0.0,0.0},{2.0,2.0}}");
+        "{{0,0},{2,2}}");
     // DataReversed draws the first row at the bottom
     check(
         "First(ArrayPlot({{3, 4}, {1, 2}}, DataReversed -> True)) === "
@@ -13592,6 +13611,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{same}");
     check("SequenceAlignment(\"pq\", \"pq\", Weight -> 2)", //
         "SequenceAlignment(pq,pq,weight->2)");
+    // the traceback table of two 201-character strings has more cells than the largest AST
+    check("With({a = SequenceAlignment(StringRepeat(\"ab\", 100) <> \"x\" <> StringRepeat(\"cd\", 100), "
+        + "StringRepeat(\"ab\", 100) <> \"y\" <> StringRepeat(\"cd\", 100))}, "
+        + "{Length(a), a[[2]], StringLength(a[[1]]), StringLength(a[[3]])})", //
+        "{3,{x,y},200,200}");
+    check("SequenceAlignment({1, 2, 3, 4, 5}, {2, 3, 9, 5, 6})", //
+        "{{{1},{}},{2,3},{{4},{9}},{5},{{},{6}}}");
   }
 
   @Test

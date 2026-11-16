@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.PatternNested;
+import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -1941,8 +1942,20 @@ public class OutputFormFactory {
     if (oper.getPrecedence() <= precedence) {
       append(buf, "(");
     }
-    convert(buf, list.arg1(), oper.getPrecedence(), false);
-    append(buf, oper.getOperatorString());
+    final String operatorString = oper.getOperatorString();
+    if (operatorString.startsWith(".")) {
+      // _.. would read as the optional blank _. followed by a dot: _ .. and _Integer.. instead
+      StringBuilder operand = new StringBuilder();
+      convert(operand, list.arg1(), oper.getPrecedence(), false);
+      // the columns of the operand are counted by its conversion
+      buf.append(operand);
+      if (operand.length() > 0 && operand.charAt(operand.length() - 1) == '_') {
+        append(buf, " ");
+      }
+    } else {
+      convert(buf, list.arg1(), oper.getPrecedence(), false);
+    }
+    append(buf, operatorString);
     if (oper.getPrecedence() <= precedence) {
       append(buf, ")");
     }
@@ -2417,6 +2430,10 @@ public class OutputFormFactory {
       convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
     } else if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
+    } else if (o instanceof RepeatedPattern) {
+      // p.. and p... are postfix operators, whose operand is parenthesized by its precedence:
+      // (a->b).., (x_)..
+      convert(buf, ((RepeatedPattern) o).toFullFormAST(), precedence, false);
     } else if (o instanceof IPatternObject) {
       // a named pattern x_ or x:p and a pattern with a default _. are operators themselves, which
       // bind weaker than the operators they are an operand of: 2*(a_), (x_)|(y_), (_.)+1

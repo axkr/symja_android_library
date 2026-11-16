@@ -55,6 +55,24 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBlendOpacity() {
+    // the opacity is blended too, a color without one is opaque
+    check("Blend({Opacity(1/4, Green), Red}, 1/3)", //
+        "RGBColor(1/3,2/3,0,1/2)");
+    check("Blend({Red, Opacity(0.6, Blue)}, 0.5)", //
+        "RGBColor(0.5,0.0,0.5,0.8)");
+    check("Blend({Opacity(1/3, Red), Opacity(1/3, Blue), Green})", //
+        "RGBColor(1/3,1/3,1/3,5/9)");
+    check("Blend({GrayLevel(0), Opacity(1/2, GrayLevel(1))}, 1/2)", //
+        "GrayLevel(1/2,3/4)");
+    check("Blend({Opacity(1/2, Red), Blue}, {1, 3})", //
+        "RGBColor(1/4,0,3/4,7/8)");
+    // an end of the blend with an opacity is that color directive with the opacity
+    check("Blend({Opacity(1/3, Green), Blue}, -1)", //
+        "RGBColor(0,1,0,1/3)");
+  }
+
+  @Test
   public void testBarLegendPlacement() {
     check("Plot(Sin(t), {t, 0, 2}, PlotLegends -> BarLegend(\"TemperatureMap\"))[[2]]", //
         "Placed(BarLegend(TemperatureMap),After)");

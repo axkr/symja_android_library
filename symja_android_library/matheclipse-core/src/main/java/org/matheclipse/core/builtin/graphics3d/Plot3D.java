@@ -881,6 +881,19 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected boolean samplesFirstArgument() {
+    // the function is evaluated at the sample points: a function which iterates until its values
+    // agree never stops on symbolic coordinates
+    return true;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // D(f, x) or an expansion is still done once with symbolic coordinates, if it finishes
+    return PLOT_SYMBOLIC_MILLIS;
+  }
+
+  @Override
   public boolean localIterators() {
     // the plot variable is local to the plot
     return true;

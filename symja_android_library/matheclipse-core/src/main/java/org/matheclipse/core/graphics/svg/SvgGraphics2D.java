@@ -892,10 +892,21 @@ public class SvgGraphics2D {
     return out;
   }
 
-  /** The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. */
+  /**
+   * The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. A label
+   * per edge, {@code {{left, right}, {bottom, top}}}, gives its bottom and left label; the right
+   * and top edges are not labelled.
+   */
   private IExpr[] labelParts(IExpr expr) {
     IExpr[] out = new IExpr[2];
-    if (expr.isList() && ((IAST) expr).argSize() >= 2) {
+    if (expr.isList2() && expr.first().isList2() && expr.second().isList2()) {
+      if (!unlabelled(expr.second().first())) {
+        out[0] = expr.second().first();
+      }
+      if (!unlabelled(expr.first().first())) {
+        out[1] = expr.first().first();
+      }
+    } else if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
       if (!unlabelled(list.arg1())) {
         out[0] = list.arg1();

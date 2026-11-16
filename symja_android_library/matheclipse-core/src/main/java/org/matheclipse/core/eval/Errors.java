@@ -197,6 +197,7 @@ public class Errors {
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "colconv", "`1` should be one of RGBColor, Hue, CMYKColor or GrayLevel.", //
       "color", "`1` is not a valid color or gray-level specification.", //
+      "comp", "`1` and `2` in Composition have incompatible dimensions.", //
       "compat", "`1` and `2` are incompatible units", //
       "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", //
       "corrupt", "Compressed data `1` is corrupt and does not represent an expression.", //
@@ -560,6 +561,7 @@ public class Errors {
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
       "nwargs",
       "Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j are non-negative machine-sized integers.", //
+      "obs", "`1` is obsolete. Switching to `2`.", //
       "openx", "`1` is not open.", //
       "optb", "Optional object `1` in `2` is not a single blank.", //
       "optnf", "Option name `2` not found in defaults for `1`.", //
