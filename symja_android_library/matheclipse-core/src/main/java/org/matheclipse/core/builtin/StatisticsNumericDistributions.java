@@ -941,9 +941,7 @@ public class StatisticsNumericDistributions {
       }
       IExpr s = dist.arg1();
       // Piecewise({{1 - E^(-#^2/(2*s^2)), # > 0}}, 0) &
-      return callFunction(F.Function(F.Piecewise(F.list(F.list(
-          F.Subtract(F.C1, F.Exp(F.Times(F.CN1D2, F.Sqr(F.Slot1), F.Power(s, F.CN2)))),
-          F.Greater(F.Slot1, F.C0))), F.C0)), x);
+      return onPositiveAxis(F.Subtract(F.C1, gaussianFactor(s)), x);
     }
 
     @Override
@@ -953,10 +951,21 @@ public class StatisticsNumericDistributions {
       }
       IExpr s = dist.arg1();
       // Piecewise({{#/(E^(#^2/(2*s^2))*s^2), # > 0}}, 0) &
-      return callFunction(F.Function(F.Piecewise(F.list(F.list(
-          F.Times(F.Slot1, F.Power(s, F.CN2),
-              F.Exp(F.Times(F.CN1D2, F.Sqr(F.Slot1), F.Power(s, F.CN2)))),
-          F.Greater(F.Slot1, F.C0))), F.C0)), x);
+      return onPositiveAxis(F.Times(F.Slot1, F.Power(s, F.CN2), gaussianFactor(s)), x);
+    }
+
+    /** <code>E^(-#^2/(2*s^2))</code> */
+    private static IExpr gaussianFactor(IExpr s) {
+      return F.Exp(F.Times(F.CN1D2, F.Sqr(F.Slot1), F.Power(s, F.CN2)));
+    }
+
+    /**
+     * Apply <code>Piecewise({{value, # > 0}}, 0) &amp;</code> to <code>x</code>; the distribution
+     * lives on the positive real axis.
+     */
+    private IExpr onPositiveAxis(IExpr value, IExpr x) {
+      return callFunction(
+          F.Function(F.Piecewise(F.list(F.list(value, F.Greater(F.Slot1, F.C0))), F.C0)), x);
     }
 
     @Override

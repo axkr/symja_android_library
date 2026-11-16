@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.annotation.EnsuresPresent;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.lang.reflect.InvocationTargetException;
@@ -841,6 +842,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    @EnsuresPresent(false)
     public boolean isNIL() {
       return true;
     }
@@ -976,6 +978,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    @EnsuresPresent(true)
     public final boolean isPresent() {
       return false;
     }

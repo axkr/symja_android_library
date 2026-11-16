@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.annotation.EnsuresPresent;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -4361,6 +4362,7 @@ public interface IExpr
    * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
    * @see java.util.Optional#isPresent()
    */
+  @EnsuresPresent(false)
   default boolean isNIL() {
     return false;
   }
@@ -5082,6 +5084,7 @@ public interface IExpr
    * @return {@code true} if the expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * @see java.util.Optional#isPresent()
    */
+  @EnsuresPresent(true)
   default boolean isPresent() {
     return true;
   }
