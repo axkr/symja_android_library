@@ -2377,7 +2377,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{(I*2*Pi*C(1))/Log(3),1+(I*2*Pi*C(1))/Log(3)}");
     // 4^(1+x/2) == 4*2^x
     check("Solve(4^(1+x/2)+2^x==10,x)", //
-        "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(2))/Log(2),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(1+(I*2*Pi*C(1))/Log(2),C(1)∈Integers)}}");
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.Writer;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -202,7 +203,7 @@ public class EvalUtilities extends MathMLUtilities {
    *        is set to <code>null</code>, all expressions are traced.
    * @return <code>F.NIL</code> if <code>inputExpression == null</code>
    */
-  public IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher) {
+  public @AllowNIL IAST evalTrace(final String inputExpression, Predicate<IExpr> matcher) {
 
     if (inputExpression != null) {
       // try {
@@ -227,7 +228,7 @@ public class EvalUtilities extends MathMLUtilities {
    *        is set to <code>null</code>, all expressions are traced.
    * @return
    */
-  public IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher)
+  public @AllowNIL IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher)
       throws RuntimeException {
     if (parsedExpression != null) {
       // F.join();

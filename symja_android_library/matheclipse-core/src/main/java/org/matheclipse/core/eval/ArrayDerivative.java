@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -229,8 +230,11 @@ public class ArrayDerivative {
     for (int k = 1; k < rank; k++) {
       pairs.append(F.list(F.ZZ(k), F.ZZ(rank + k)));
     }
-    return F.SymbolicDeltaProductArray(
-        SymbolicArrayUtil.joinDimensions(totalDimensions, dimensions), pairs);
+    // both lists are present, so joining them cannot give F.NIL
+    IASTAppendable joined = F.ListAlloc(totalDimensions.argSize() + rank);
+    joined.appendArgs(totalDimensions);
+    joined.appendArgs(dimensions);
+    return F.SymbolicDeltaProductArray(joined, pairs);
   }
 
   /**
@@ -240,7 +244,7 @@ public class ArrayDerivative {
    *
    * @return {@link F#NIL} if <code>spec</code> is not a valid permutation of that length
    */
-  private static IAST transposePermutation(IExpr spec, int rank) {
+  private static @AllowNIL IAST transposePermutation(IExpr spec, int rank) {
     int[] permutation = new int[rank];
     if (spec.isInteger()) {
       int k = spec.toIntDefault();

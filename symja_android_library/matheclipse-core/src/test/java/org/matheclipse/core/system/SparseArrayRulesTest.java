@@ -56,4 +56,38 @@ public class SparseArrayRulesTest extends ExprEvaluatorTestCase {
     check("LinearSolve(SparseArray({{4, 1} -> 1}, {3, 3}), {1, 2, 3})", //
         "LinearSolve(SparseArray({{4,1}->1},{3,3}),{1,2,3})");
   }
+
+  @Test
+  public void testRejectedRulesGiveNoArray() {
+    // SparseArray({7 -> u}, 3) stays an unevaluated call, which other functions don't take apart
+    check("Join(SparseArray({7 -> u}, 3), {v})", //
+        "Join(SparseArray({7->u},3),{v})");
+    check("Join(SparseArray({7 -> u}, 3), SparseArray({2 -> v}, 3))[[1]]", //
+        "SparseArray({7->u},3)");
+    check("Join(SparseArray({7 -> u}, 3))", //
+        "SparseArray({7->u},3)");
+    check("Riffle(SparseArray({7 -> u}, 3), w)", //
+        "Riffle(SparseArray({7->u},3),w)");
+    check("ArrayReshape(SparseArray({7 -> u}, 3), {3})", //
+        "ArrayReshape(SparseArray({7->u},3),{3})");
+    check("Flatten({{SparseArray({7 -> u}, 3)}})", //
+        "{SparseArray({7->u},3)}");
+    // a sparse array joins with lists only
+    check("Check(Join(h(u), SparseArray({2 -> v}, 3)), failed)", //
+        "failed");
+    check("Join({u}, SparseArray({2 -> v}, 3))", //
+        "{u,0,v,0}");
+    // sparse vectors join into a sparse vector
+    check("Normal(Join(SparseArray({3 -> u}, 3), SparseArray({1 -> v}, 2)))", //
+        "{0,0,u,v,0}");
+    check("Head(Join(SparseArray({3 -> u}, 3), SparseArray({1 -> v}, 2)))", //
+        "SparseArray");
+  }
+
+  @Test
+  public void testSymbolicRightHandSide() {
+    // the matrix is neither decomposed nor written out
+    check("Head(LinearSolve(SparseArray({i_, i_} -> 3.0, {2500, 2500}), w))", //
+        "LinearSolve");
+  }
 }

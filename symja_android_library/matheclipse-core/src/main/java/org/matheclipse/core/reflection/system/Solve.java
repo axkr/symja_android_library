@@ -2081,6 +2081,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           continue;
         }
         IExpr value = solution.first().second();
+        IExpr real = realFamilyMember(value, engine);
+        if (real.isFalse()) {
+          continue;
+        }
+        if (real != value) {
+          value = real;
+          solution = F.list(F.Rule(variable, real));
+        }
         if (value.isConditionalExpression()) {
           IExpr family = value.isFree(IExpr::isInexactNumber, true) ? value
               : engine.evaluate(F.Chop(value));
@@ -2140,6 +2148,55 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
 
     /**
+     * The solution with the real member of each family of a variable which has an interval or
+     * occurs in an ordering <code>x &gt; 0</code>, <code>a &lt;= x</code> or an
+     * <code>Inequality</code>, as an ordering says that the variable is real.
+     *
+     * @param list a list of rules <code>{x->value1, ...}</code>
+     * @param inequationsList the inequalities of the system
+     * @param intervalInequations more inequalities, may be <code>null</code>
+     * @return the changed list, or {@link F#NIL} if a family has no real member
+     */
+    private IAST realMembersOfOrderedVariables(IAST list, IAST inequationsList,
+        IAST intervalInequations, EvalEngine engine) {
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr rule = list.get(i);
+        if (!rule.isRuleAST() || !rule.second().isConditionalExpression()) {
+          continue;
+        }
+        IExpr variable = rule.first();
+        if (!intervalDataMap.containsKey(variable)
+            && !isInOrdering(variable, inequationsList)
+            && !isInOrdering(variable, intervalInequations)) {
+          continue;
+        }
+        IExpr member = realFamilyMember(rule.second(), engine);
+        if (member.isFalse()) {
+          return F.NIL;
+        }
+        if (member != rule.second()) {
+          if (result.isNIL()) {
+            result = list.copy();
+          }
+          result.set(i, F.Rule(variable, member));
+        }
+      }
+      return result.isPresent() ? result : list;
+    }
+
+    /**
+     * Whether <code>variable</code> occurs algebraically in one of the orderings of
+     * <code>inequalities</code>: <code>x^2 &lt; 1</code> says that x is real,
+     * <code>Abs(x) &lt; 1</code> doesn't.
+     */
+    private static boolean isInOrdering(IExpr variable, IAST inequalities) {
+      return inequalities != null && inequalities.isPresent()
+          && inequalities.exists(x -> isOrdering(x) && !x.isFree(variable, true) && ((IAST) x)
+              .forAll(side -> side.isBuiltInSymbol() || isAlgebraicOccurrence(side, variable)));
+    }
+
+    /**
      * A quotient whose denominator is a sum of negative terms only with numerator and denominator
      * negated: <code>(-b-a*e)/(-1-a*c)</code> is <code>(b+a*e)/(1+a*c)</code>.
      */
@@ -2183,6 +2240,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     private IExpr filterSingleSolution(IAST list, IAST inequationsList, IAST intervalInequations,
         final boolean[] isNumeric, EvalEngine engine) {
+      list = realMembersOfOrderedVariables(list, inequationsList, intervalInequations, engine);
+      if (list.isNIL()) {
+        return F.NIL;
+      }
 
       // Constrained parametric solutions: if a solved value still depends on a free (unsolved)
       // constraint variable, project every constraint onto the free variable(s) with Reduce and
@@ -2822,6 +2883,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                       || maxRootsOption.equals(F.C1000));
               IExpr integersResult = solveIntegers(ast, equationVariables, variables, maxRoots,
                   domain, allowParametricSolution, options.method(), engine);
+              if (integersResult.isNIL() && domain == S.Integers) {
+                integersResult = integerRealSolutions(ast.arg1(), variables, engine);
+              }
               if (domain == S.Primes) {
                 return checkDomain(integersResult, domain, maxRoots);
               }
@@ -2854,9 +2918,22 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IASTMutable termsEqualZeroList = dropRepeatedEquations(lists[0], engine);
           IASTMutable inequationsList = lists[1];
           if ((domain == S.Reals || domain == S.Complexes) && inequationsList.argSize() > 0) {
-            IASTAppendable remainingInequations = inequationsList.copyAppendable();
+            // an interval of x says that x is real, which Abs(x) < 10 doesn't: such an ordering
+            // stays a condition of the solutions
+            IASTAppendable remainingInequations = F.ListAlloc(inequationsList.argSize());
+            IASTAppendable nonAlgebraic = F.ListAlloc();
+            final IAST solveVariables = variables;
+            for (IExpr inequation : inequationsList) {
+              if (inequation.isAST() && !((IAST) inequation).forAll(side -> side.isBuiltInSymbol()
+                  || solveVariables.forAll(v -> isAlgebraicOccurrence(side, v)))) {
+                nonAlgebraic.append(inequation);
+              } else {
+                remainingInequations.append(inequation);
+              }
+            }
             IntervalDataSym.extractIntervalData(remainingInequations, variables, intervalDataMap,
                 engine, true);
+            remainingInequations.appendArgs(nonAlgebraic);
             lists[1] = remainingInequations;
             inequationsList = remainingInequations;
           }
@@ -3459,6 +3536,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return algebraic && radical[0];
   }
 
+  /**
+   * Whether the variable occurs in the expression only through sums, products and rational powers:
+   * <code>x^2 &lt; 1</code> says that x is real, <code>Abs(x) &lt; 1</code> doesn't.
+   */
+  private static boolean isAlgebraicOccurrence(IExpr expr, IExpr variable) {
+    return isAlgebraicIn(expr, variable, new boolean[] {false});
+  }
+
   private static boolean isAlgebraicIn(IExpr expr, IExpr variable, boolean[] radical) {
     if (expr.isFree(variable)) {
       return true;
@@ -3788,6 +3873,28 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The value of a real variable: the real member of a family which isn't real, like
+   * <code>3</code> of <code>3+(2*I*Pi*C(1))/Log(2)</code>.
+   *
+   * @return the real member, {@link S#False} if the family has none, or <code>value</code> itself
+   */
+  private static IExpr realFamilyMember(IExpr value, EvalEngine engine) {
+    if (!value.isConditionalExpression()) {
+      return value;
+    }
+    // a machine number family has imaginary parts like 1.0E-17*I, which don't make it non-real
+    IExpr family =
+        value.isFree(IExpr::isInexactNumber, true) ? value : engine.evaluate(F.Chop(value));
+    if (!isRealValue(family)) {
+      IExpr member = realMember(family, engine);
+      if (member.isPresent()) {
+        return member;
+      }
+    }
+    return value;
+  }
+
+  /**
    * The real member of the family <code>ConditionalExpression(a+b*C(k), C(k)∈Integers)</code>:
    * <code>a+b*c</code> for the integer <code>c = -Im(a)/Im(b)</code>.
    *
@@ -3825,6 +3932,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     IExpr member = engine.evalQuiet(F.Plus(a, F.Times(b, integer)));
+    IExpr rational = SolveUtils.exactRational(member, engine);
+    if (rational.isPresent()) {
+      return rational;
+    }
     return member.isRealResult() ? member : S.False;
   }
 
@@ -3898,6 +4009,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     if (expr.isListOfLists()) {
       expr = distinctFamilies((IAST) expr, domain == S.Reals);
+      expr = expandedFamilies((IAST) expr, EvalEngine.get());
     }
     IExpr result = expr;
     if (expr.isList()) {
@@ -3912,13 +4024,128 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       } else if (domain == S.Primes) {
         result = checkDomain(list, result, Solve::isPrime);
       } else if (domain == S.Rationals) {
-        result = checkDomain(list, result, Solve::isNotRational);
+        // the real member of a family, Log(4)/Log(8) for 8^x == 4, and its exact value 2/3
+        IAST members = realMembers(list, EvalEngine.get());
+        if (members.isPresent()) {
+          list = members;
+        }
+        list = simplifiedValues(list, EvalEngine.get());
+        result = checkDomain(list, list, Solve::isNotRational);
       }
     }
     if (result.isListOfLists() && maxRoots < result.argSize()) {
       return ((IAST) expr).subList(1, maxRoots + 1);
     }
     return result;
+  }
+
+  /**
+   * The integer solutions of an equation in one variable, which isn't a polynomial equation, among
+   * its finitely many real solutions: <code>16^x == 8</code> has the real solution
+   * <code>3/4</code> and no integer one.
+   *
+   * @return {@link F#NIL} if the real solutions aren't finitely many numbers, or a value close to
+   *         an integer isn't decided
+   */
+  private static IExpr integerRealSolutions(IExpr system, IAST variables, EvalEngine engine) {
+    if (variables.argSize() != 1 || !system.isEqual()) {
+      return F.NIL;
+    }
+    IExpr variable = variables.arg1();
+    IExpr difference = engine.evalQuiet(F.Subtract(system.first(), system.second()));
+    if (difference.isPolynomial(variables)) {
+      return F.NIL;
+    }
+    // a message like the one of inverse functions says that solutions may be lost
+    IExpr real = engine
+        .evalQuiet(F.binaryAST2(S.Check, F.Solve(system, variable, S.Reals), S.$Failed));
+    if (!real.isListOfLists()) {
+      return F.NIL;
+    }
+    IAST solutions = simplifiedValues((IAST) real, engine);
+    IASTAppendable result = F.ListAlloc(solutions.argSize());
+    for (IExpr solution : solutions) {
+      IExpr value = solution.isList1() && solution.first().isRuleAST() //
+          ? solution.first().second()
+          : F.NIL;
+      if (value.isInteger()) {
+        result.append(solution);
+        continue;
+      }
+      if (value.isRational()) {
+        continue;
+      }
+      if (value.isNIL() || !value.isNumericFunction(true)) {
+        return F.NIL;
+      }
+      try {
+        double d = value.evalf();
+        if (Math.abs(d - Math.rint(d)) > 1.0e-6) {
+          continue;
+        }
+      } catch (RuntimeException rex) {
+        // not a real number
+      }
+      return F.NIL;
+    }
+    return result;
+  }
+
+  /**
+   * The values of the solutions which are numbers but not rational ones as written, simplified:
+   * <code>Log(4)/Log(8)</code> is <code>2/3</code>.
+   */
+  private static IAST simplifiedValues(IAST list, EvalEngine engine) {
+    if (!list.isListOfLists()) {
+      return list;
+    }
+    return F.mapList(list, solution -> {
+      IAST rules = (IAST) solution;
+      IASTMutable newRules = rules.copy();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (rule.isRuleAST() && !rule.second().isRational()
+            && rule.second().isNumericFunction(true)) {
+          IExpr rational = SolveUtils.exactRational(rule.second(), engine);
+          if (rational.isNIL()) {
+            IExpr simplified = engine.evalQuiet(F.Simplify(rule.second()));
+            rational = simplified.isRational() ? simplified : F.NIL;
+          }
+          if (rational.isPresent()) {
+            newRules.set(i, F.Rule(rule.first(), rational));
+          }
+        }
+      }
+      return newRules;
+    });
+  }
+
+  /**
+   * The value <code>ConditionalExpression((u + v*C(1))/w, ...)</code> of a family written as
+   * <code>u/w + v/w*C(1)</code>, if that isn't larger: <code>Log(3^51)/Log(9)</code> of
+   * <code>9^x == 3^51</code> is then <code>51/2</code>.
+   */
+  private static IAST expandedFamilies(IAST solutions, EvalEngine engine) {
+    return F.mapList(solutions, solution -> {
+      if (!solution.isList()) {
+        return solution;
+      }
+      IAST rules = (IAST) solution;
+      IASTMutable newRules = rules.copy();
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (rule.isRuleAST() && rule.second().isConditionalExpression()
+            && rule.second().first().isTimes()) {
+          IExpr value = rule.second().first();
+          IExpr expanded = engine.evalQuiet(F.Expand(value));
+          if (expanded.leafCount() <= value.leafCount()) {
+            newRules.set(i, F.Rule(rule.first(),
+                F.ConditionalExpression(expanded, rule.second().second())));
+          }
+        }
+      }
+      return newRules;
+    });
   }
 
   /**
@@ -5525,7 +5752,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   private static boolean isEquationOrInequality(IExpr relation) {
     return (relation.isEqual() && relation.argSize() == 2) || relation.isAST(S.Unequal)
-        || relation.isAST(S.Less) || relation.isAST(S.LessEqual) || relation.isAST(S.Greater)
+        || isOrdering(relation);
+  }
+
+  /**
+   * <code>a &lt; b</code>, <code>a &lt;= b</code>, <code>a &gt; b</code>, <code>a &gt;= b</code> or an
+   * <code>Inequality</code>.
+   */
+  private static boolean isOrdering(IExpr relation) {
+    return relation.isAST(S.Less) || relation.isAST(S.LessEqual) || relation.isAST(S.Greater)
         || relation.isAST(S.GreaterEqual) || relation.isAST(S.Inequality);
   }
 

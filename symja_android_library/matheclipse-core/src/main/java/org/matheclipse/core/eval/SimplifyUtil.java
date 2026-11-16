@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
@@ -1268,7 +1269,7 @@ public class SimplifyUtil extends VisitorExpr {
    *
    * @return the rewritten (unevaluated) sum, or <code>plusAST</code> itself if nothing was split
    */
-  private IAST splitPositiveFactorLogs(IAST plusAST) {
+  private @AllowNIL IAST splitPositiveFactorLogs(IAST plusAST) {
     IASTAppendable result = F.NIL;
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr summand = plusAST.get(i);

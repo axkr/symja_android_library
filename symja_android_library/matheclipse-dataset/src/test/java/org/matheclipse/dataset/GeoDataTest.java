@@ -87,6 +87,74 @@ public class GeoDataTest {
   }
 
   @Test
+  public void testCountryIndicatorUnits() {
+    // rates per year, durations in years, people counts and money per year
+    check("QuantityUnit /@ (CountryData(\"Norway\", #) & /@ {\"DeathRateFraction\", "
+        + "\"LifeExpectancy\", \"MalePopulation\", \"FemaleElderlyPopulation\", "
+        + "\"AnnualDeaths\", \"GDPPerCapita\"})", //
+        "{1/\"Years\",\"Years\",\"People\",\"People\",\"People\"/\"Years\","
+            + "\"USDollars\"/(\"People\"*\"Years\")}");
+    // the population counts are integers
+    check("Head /@ QuantityMagnitude /@ (CountryData(\"Chile\", #) & /@ "
+        + "{\"FemalePopulation\", \"MalePopulation\", \"FemaleChildPopulation\"})", //
+        "{Integer,Integer,Integer}");
+    // the fractions are plain reals between 0 and 1
+    check("With({v = CountryData(\"Chile\", #)}, {Head(v), 0 < v < 1}) & /@ "
+        + "{\"PovertyFraction\", \"UnemploymentFraction\", \"InfantMortalityFraction\", "
+        + "\"GiniIndex\", \"LiteracyFraction\"}", //
+        "{{Real,True},{Real,True},{Real,True},{Real,True},{Real,True}}");
+  }
+
+  @Test
+  public void testCountryIndicatorValues() {
+    check("{CountryData(\"Norway\", {\"LifeExpectancy\", 2000}), "
+        + "CountryData(\"Peru\", {\"GiniIndex\", 2006})}", //
+        "{Quantity(78.63`,\"Years\"),0.503`}");
+    // the female and male populations make up the population of a year
+    check("p = CountryData(\"Mexico\", {#, 2015}) & /@ "
+        + "{\"Population\", \"FemalePopulation\", \"MalePopulation\"}; p[[1]] == p[[2]] + p[[3]]", //
+        "True");
+    // the female age groups make up the female population
+    check("p = CountryData(\"Vietnam\", #) & /@ {\"FemalePopulation\", "
+        + "\"FemaleChildPopulation\", \"FemaleAdultPopulation\", \"FemaleElderlyPopulation\"}; "
+        + "Abs(QuantityMagnitude(p[[1]] - Total(Rest(p)))) < 10^-3 * QuantityMagnitude(p[[1]])", //
+        "True");
+    // the births of a year are the birth rate times the population
+    check("{b, r, n} = CountryData(\"Kenya\", {#, 2010}) & /@ "
+        + "{\"AnnualBirths\", \"BirthRateFraction\", \"Population\"}; "
+        + "Abs(QuantityMagnitude(b) - QuantityMagnitude(r) * QuantityMagnitude(n)) < 1", //
+        "True");
+    check("Head(CountryData(\"Peru\", {\"GiniIndex\", {2005, 2010}}))", //
+        "TemporalData");
+    // the same values through the entity
+    check("{Entity(\"Country\", \"Chile\") @ \"UnemploymentFraction\" === "
+        + "CountryData(\"Chile\", \"UnemploymentFraction\"), "
+        + "EntityValue(Entity(\"Country\", \"Peru\"), \"BirthRateFraction\") === "
+        + "CountryData(\"Peru\", \"BirthRateFraction\")}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testCountryIndicatorMissing() {
+    // a country without a value, a year without a value and a country without people
+    check("{CountryData(\"VaticanCity\", \"DeathRateFraction\"), "
+        + "CountryData(\"Mexico\", {\"LifeExpectancy\", 1900}), "
+        + "CountryData(\"Antarctica\", \"AnnualBirths\")}", //
+        "{Missing(NotAvailable),Missing(NotAvailable),Missing(\"NoResidentPopulation\")}");
+  }
+
+  @Test
+  public void testCountryFlagDescription() {
+    check("CountryData(\"Vietnam\", \"FlagDescription\")", //
+        "\"red field with a five-pointed yellow star in the center\"");
+    check("{StringQ(EntityValue(Entity(\"Country\", \"Kenya\"), \"FlagDescription\")), "
+        + "CountryData(\"Martinique\", \"FlagDescription\")}", //
+        "{True,Missing(NotAvailable)}");
+    check("Count(CountryData(\"SouthAmerica\", \"FlagDescription\"), _String)", //
+        "13");
+  }
+
+  @Test
   public void testCountryShape() {
     check("s = CountryData(\"Luxembourg\", \"Shape\"); "
         + "{Head(s), s[[1, 1]], s[[1, 2]], Head(s[[1, -1]]), Dimensions(s[[1, -1, 1]])}", //

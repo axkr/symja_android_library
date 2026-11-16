@@ -484,13 +484,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
       String result = evaluator.eval(integral).toString();
       assertFalse(result.contains("Rubi`"), integral + " => " + result);
     }
+    // the continuous antiderivative, branch by branch
     check("Integrate(E^t*Piecewise({{2,0<=t<=1}},0), t)", //
-        "Integrate(E^t*Piecewise({{2,0<=t<=1}},0),t)");
+        "Piecewise({{0,t<=0},{-2+2*E^t,0<t<=1}},-2+2*E)");
     // the rules used to return part of an antiderivative around the leaked integral
     check("Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3), t)", //
-        "Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3),t)");
+        "Piecewise({{3*(-t+t*Log(t)),t<=0},{2*(-t+t*Log(t)),0<t<=1}},1+3*(-t+t*Log(t)))");
     check("Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)), x)", //
-        "Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)),x)");
+        "Piecewise({{-x*Cos(x)+Sin(x),x<=1}},-2*Cos(1)+Cos(x)+x*Sin(x))");
   }
 
   @Test
@@ -629,10 +630,12 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testIntegrate() {
 
+    // a condition which isn't an interval of x: branch by branch
     check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
         "Piecewise({{-1/(2*x),Abs(x)>1}},4*x)");
+    // the antiderivative is continuous at the break points
     check("Integrate(Piecewise({{x^2, x <= 0}, {x, x > 0}}),x)", //
-        "Piecewise({{x^3/3,x<=0},{x^2/2,x>0}},0)");
+        "Piecewise({{x^3/3,x<=0}},x^2/2)");
 
 
     // u*Abs(u)/(2*l1) is the antiderivative of Abs(u), u==l0+l1*x, which is continuous through

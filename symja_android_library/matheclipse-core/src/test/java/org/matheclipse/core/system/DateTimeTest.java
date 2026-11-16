@@ -1027,4 +1027,25 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
         "2025-W01-2 Q4");
     check("DateString({2024, 1, 5}, {\"MonthNameInitial\", \"DayNameInitial\"})", "JF");
   }
+
+  @Test
+  public void testDateListFarYears() {
+    // months and days beyond the range are carried over in closed form
+    check("DateList({3*10^12, 25, 1})", //
+        "{3000000000002,1,1,0,0,0.0}");
+    check("DateList({10^14+1, 2, 29})", //
+        "{100000000000001,3,1,0,0,0.0}");
+    check("DateList({10^14+4, 2, 29})", //
+        "{100000000000004,2,29,0,0,0.0}");
+    check("DateList({10^12, 1, 146098})", //
+        "{1000000000400,1,1,0,0,0.0}");
+    check("DateList({10^12, 0, 1, 23, 59, 61.25})", //
+        "{999999999999,12,2,0,0,1.25}");
+    check("DateList({-2*10^11, 3, 1})", //
+        "{-200000000000,3,1,0,0,0.0}");
+    check("DayName({4*10^20, 1, 1})", //
+        "Saturday");
+    check("DayName({4*10^20+1, 1, 1})", //
+        "Monday");
+  }
 }

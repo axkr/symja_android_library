@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 
 public final class GaussianInteger {
 
@@ -282,26 +283,61 @@ public final class GaussianInteger {
   public static IAST factorize(IBigNumber gaussianInteger, BigInteger realPart,
       BigInteger imaginaryPart) {
     GaussianFactors g = new GaussianFactors();
-    SortedMap<ComplexSym, Integer> complexMap = g.factorize(realPart, imaginaryPart);
-    IASTAppendable list = F.ListAlloc(complexMap.size() + 1);
+    return factorList(gaussianInteger, g.factorize(realPart, imaginaryPart));
+  }
 
-    IASTAppendable ast = F.TimesAlloc(complexMap.size());
-    for (Map.Entry<ComplexSym, Integer> e : complexMap.entrySet()) {
-      if (e.getValue() == 1) {
-        ast.append(e.getKey());
-      } else {
-        ast.append(F.Power(e.getKey(), F.ZZ(e.getValue())));
-      }
+  /**
+   * The list <code>{{unit, 1}, {p1, e1}, {p2, e2}, ...}</code> of the Gaussian primes and their
+   * exponents with the unit which makes their product the number, left out if it is
+   * <code>1</code>.
+   *
+   * @param number the factored number
+   * @param exponents the Gaussian primes of the number and their exponents
+   */
+  private static IAST factorList(IExpr number, SortedMap<ComplexSym, Integer> exponents) {
+    IASTAppendable product = F.TimesAlloc(exponents.size());
+    for (Map.Entry<ComplexSym, Integer> e : exponents.entrySet()) {
+      product.append(e.getValue() == 1 ? e.getKey() : F.Power(e.getKey(), F.ZZ(e.getValue())));
     }
-
-    IExpr factor = F.eval(F.Divide(gaussianInteger, ast));
-    if (!factor.isOne()) {
-      list.append(F.list(factor, F.C1));
+    IASTAppendable list = F.ListAlloc(exponents.size() + 1);
+    IExpr unit = F.eval(F.Divide(number, product));
+    if (!unit.isOne()) {
+      list.append(F.list(unit, F.C1));
     }
-    for (Map.Entry<ComplexSym, Integer> e : complexMap.entrySet()) {
+    for (Map.Entry<ComplexSym, Integer> e : exponents.entrySet()) {
       list.append(F.list(e.getKey(), F.ZZ(e.getValue())));
     }
     return list;
+  }
+
+  /**
+   * The factorization of a Gaussian rational number <code>(a + b*I)/d</code> into Gaussian primes:
+   * the primes of the denominator <code>d</code> get negative exponents, and a unit comes first.
+   *
+   * @param realPart the real part
+   * @param imaginaryPart the imaginary part
+   */
+  public static IAST factorizeRational(IRational realPart, IRational imaginaryPart) {
+    BigInteger d = realPart.toBigDenominator();
+    BigInteger d2 = imaginaryPart.toBigDenominator();
+    d = d.divide(d.gcd(d2)).multiply(d2);
+    BigInteger re = realPart.toBigNumerator().multiply(d.divide(realPart.toBigDenominator()));
+    BigInteger im =
+        imaginaryPart.toBigNumerator().multiply(d.divide(imaginaryPart.toBigDenominator()));
+    SortedMap<ComplexSym, Integer> exponents = new GaussianFactors().factorize(re, im);
+    if (!d.equals(BigInteger.ONE)) {
+      SortedMap<ComplexSym, Integer> denominator =
+          new GaussianFactors().factorize(d, BigInteger.ZERO);
+      for (Map.Entry<ComplexSym, Integer> e : denominator.entrySet()) {
+        int exponent = exponents.getOrDefault(e.getKey(), 0) - e.getValue();
+        if (exponent == 0) {
+          exponents.remove(e.getKey());
+        } else {
+          exponents.put(e.getKey(), exponent);
+        }
+      }
+    }
+    return factorList(F.complex(realPart, imaginaryPart), exponents);
   }
 
   /**

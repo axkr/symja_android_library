@@ -439,8 +439,15 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
-      if (argSize >= 2 && argSize <= 3) {
-        Set<String> messageNames = argSize == 3 ? messageNames(ast.arg3()) : null;
+      if (argSize >= 2) {
+        // Check(expr, failexpr, s1::t1, s2::t2, ...) and Check(expr, failexpr, {s1::t1, ...})
+        Set<String> messageNames = null;
+        if (argSize >= 3) {
+          messageNames = new HashSet<String>();
+          for (int i = 3; i <= argSize; i++) {
+            messageNames.addAll(messageNames(ast.get(i)));
+          }
+        }
         // inside Quiet the messages of expr are still seen by this Check, only not printed; the
         // quiet mode of an internal speculative evaluation below it still hides them
         final boolean quiet = engine.isQuietMode();
@@ -487,7 +494,8 @@ public final class Programming {
     }
 
     /**
-     * The <code>symbol::tag</code> names of <code>Check(expr, failexpr, {s1::t1, s2::t2, ...})</code>.
+     * The <code>symbol::tag</code> names of one argument of
+     * <code>Check(expr, failexpr, {s1::t1, s2::t2, ...})</code>.
      * An entry which isn't a message name (a message group name) matches no message.
      */
     private static Set<String> messageNames(IExpr messages) {
@@ -504,7 +512,7 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_INFINITY;
     }
 
     @Override

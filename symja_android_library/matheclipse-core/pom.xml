@@ -160,6 +160,14 @@
 			<groupId>com.j2html</groupId>
 			<artifactId>j2html</artifactId>
 		</dependency>
+		<!-- Build-time only: the NilToNoNilArgument Error Prone check. Declared so that the reactor
+		builds it before this module (also with -am); provided scope keeps it non-transitive. -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-errorprone</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -202,6 +210,46 @@
 			</resource>
 		</resources>
 		<plugins>
+			<!-- Enforces @AllowNIL/@NoNIL (org.matheclipse.core.annotation) with the NilToNoNilArgument
+			Error Prone check from matheclipse-errorprone; all other Error Prone checks are off.
+			Error Prone needs the javac internals opened, hence the forked compiler. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<annotationProcessorPaths combine.children="append">
+						<path>
+							<groupId>com.google.errorprone</groupId>
+							<artifactId>error_prone_core</artifactId>
+							<version>2.52.0</version>
+						</path>
+						<path>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>matheclipse-errorprone</artifactId>
+							<version>${project.version}</version>
+						</path>
+					</annotationProcessorPaths>
+					<compilerArgs combine.children="append">
+						<arg>-XDcompilePolicy=simple</arg>
+						<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+						<arg>--should-stop=ifError=FLOW</arg>
+						<arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NilToNoNilArgument:ERROR</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+						<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

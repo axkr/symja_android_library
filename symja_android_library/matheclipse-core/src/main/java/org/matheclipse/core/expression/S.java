@@ -11858,6 +11858,16 @@ public class S {
       S.initFinalSymbol("Graphics3DJSON", ID.Graphics3DJSON);
 
   /**
+   * GraphicsArray(x) - TODO describe `GraphicsArray`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphicsArray.md">GraphicsArray
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphicsArray =
+      S.initFinalSymbol("GraphicsArray", ID.GraphicsArray);
+
+  /**
    * GraphicsBox(x) - TODO describe `GraphicsBox`.
    * 
    * @see <a href=
