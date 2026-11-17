@@ -3092,6 +3092,14 @@ public class SimplifyUtil extends VisitorExpr {
           }
         }
       }), //
+      // a sum with a square root in a denominator, rationalized by conjugates and cancelled:
+      // -1/Sqrt(a)-y/(a*Sqrt(a+y)-Sqrt(a)*(a+y)) is 1/Sqrt(a+y)
+      new Step("RadicalNormalForm", CatchPolicy.RUNTIME, ctx -> {
+        IExpr form = RadicalNormalForm.of(ctx.expr, ctx.util.fEngine);
+        if (form.isPresent()) {
+          ctx.result.checkLess(form);
+        }
+      }), //
       // In FullSimplify mode this is offered for every expression, as it always was — it reaches
       // further than powers of E, and rewriting -I/2*Log(4-I*4)+I/2*Log(4+I*4) is what gives the
       // -Pi/4 in a MatrixLog. Plain Simplify only offers it for an expression that has a power in

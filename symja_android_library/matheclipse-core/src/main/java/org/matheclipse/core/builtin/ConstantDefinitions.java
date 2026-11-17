@@ -12,9 +12,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatContext;
 import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.matheclipse.external.apfloat.ApfloatConstantMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.data.GeoLocations;
 import org.matheclipse.core.eval.Errors;
@@ -1340,7 +1342,8 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      return F.num(engine.apfloatHelper().catalan());
+      return F.num(ApfloatConstantMath.catalan(engine.apfloatHelper().precision(),
+          ApfloatContext.getContext().getDefaultRadix()));
     }
 
     @Override

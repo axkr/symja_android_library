@@ -27,6 +27,7 @@ import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import org.matheclipse.external.apfloat.ApcomplexTrigMath;
 import org.matheclipse.external.apfloat.ApfloatTrigMath;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2649,6 +2650,14 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (fApfloat.isInteger() && fApfloat.signum() > 0 && fApfloat.scale() < 10) {
+        // the power series for |z| <= 3/4
+        Apcomplex series = ApcomplexZetaMath.polylogOfSmallArgument(fApfloat.longValue(),
+            ApcomplexNum.precisionOfParts(((INumber) arg2).apcomplexValue(), h().precision()));
+        if (series != null) {
+          return arg2 instanceof IReal ? valueOf(series.real()) : F.complexNum(series);
+        }
+      }
       if (arg2 instanceof IReal && ((IReal) arg2).isLE(F.C1)) {
         try {
           return valueOf(h().polylog(fApfloat, ((IReal) arg2).apfloatValue()));
