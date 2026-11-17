@@ -7,7 +7,9 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
+import org.apfloat.ApintMath;
 import org.apfloat.Aprational;
+import org.apfloat.AprationalMath;
 import org.apfloat.InfiniteExpansionException;
 import org.junit.jupiter.api.Test;
 
@@ -106,5 +108,34 @@ public class ApfloatTrigMathTest
         assertClose("asec(-1)", ApfloatMath.pi(PRECISION), ApfloatTrigMath.asec(new Apint(-1), PRECISION), PRECISION - 2);
         assertClose("acsch(2)", new Apfloat("0.48121182505960344749775891342436842313518"), ApfloatTrigMath.acsch(new Apint(2), PRECISION), PRECISION - 2);
         assertThrows(InfiniteExpansionException.class, () -> ApfloatTrigMath.acsch(new Apint(2)));
+    }
+
+    @Test
+    public void testSinhTanhOfSmallArguments()
+    {
+        // exp(x) - exp(-x) cancels the leading digits, which are calculated in addition; the
+        // references are the series sinh(x) - x = x^3/6 + x^5/120 + ... and
+        // tanh(x) - x = -x^3/3 + 2 x^5/15 - ... with exact rationals
+        Aprational x = new Aprational(new Apint(3), ApintMath.pow(new Apint(10), 20));
+        Aprational sinhSeries = AprationalMath.pow(x, 3).divide(new Apint(6)).add(AprationalMath.pow(x, 5).divide(new Apint(120)));
+        Apfloat sinh = ApfloatTrigMath.sinh(x.precision(70), 70);
+        assertClose("sinh(3e-20)-3e-20", sinhSeries.precision(40), sinh.subtract(x), 28);
+        Aprational y = new Aprational(new Apint(2), ApintMath.pow(new Apint(10), 18));
+        Aprational tanhSeries = AprationalMath.pow(y, 3).divide(new Apint(-3)).add(AprationalMath.pow(y, 5).multiply(new Apint(2)).divide(new Apint(15)));
+        Apfloat tanh = ApfloatTrigMath.tanh(y.precision(70), 70);
+        assertClose("tanh(2e-18)-2e-18", tanhSeries.precision(40), tanh.subtract(y), 30);
+        // an argument below the precision is the value itself, and the result has the precision
+        assertEquals(new Apfloat("1e-50", 30), ApfloatTrigMath.sinh(new Apfloat("1e-50", 30), 30));
+        assertEquals(30, ApfloatTrigMath.tanh(new Apfloat("0.25", 50), 30).precision());
+    }
+
+    @Test
+    public void testSinhOfLargeArgument()
+    {
+        // the digits in front of the decimal point are calculated in addition
+        Apfloat x = new Apfloat(1000, 30);
+        Apfloat reference = ApfloatMath.sinh(new Apfloat(1000, 80));
+        assertClose("sinh(1000)", reference, ApfloatTrigMath.sinh(x, 30), 28);
+        assertClose("tanh(-1000)", new Apfloat(-1), ApfloatTrigMath.tanh(new Apfloat(-1000, 30), 30), 28);
     }
 }

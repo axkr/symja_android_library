@@ -1483,17 +1483,24 @@ public abstract class Scanner {
             fCurrentPosition++;
             startPosition = fCurrentPosition;
             boolean evaled = false;
+            boolean point = false;
             getChar();
             while (Character.isDigit(fCurrentChar) || (fCurrentChar >= 'a' && fCurrentChar <= 'z')
-                || (fCurrentChar >= 'A' && fCurrentChar <= 'Z')) {
+                || (fCurrentChar >= 'A' && fCurrentChar <= 'Z')
+                || (fCurrentChar == '.' && !point && isBaseDigitFollowing(numFormat))) {
+              // 16^^1.8 has a fractional part: one point between the digits
+              point |= fCurrentChar == '.';
               evaled = true;
               getChar();
             }
             if (evaled && numFormat > 0 && numFormat <= 36) {
-              int endPosition = fCurrentPosition--;
-              fNumberString =
-                  new String(fInputString, startPosition, (--endPosition) - startPosition);
+              // the digits end before the current character
+              final int numberEnd = fCurrentPosition - 1;
+              fNumberString = new String(fInputString, startPosition, numberEnd - startPosition);
               fNumberFormat = numFormat;
+              // b^^digits*^e is the number times b^e, with a decimal exponent e
+              fNumberExponent = scanBaseExponent();
+              fCurrentPosition--;
               return;
             }
           } catch (RuntimeException rex) {
@@ -1569,6 +1576,109 @@ public abstract class Scanner {
     }
     fNumberString = numberStr;
     fNumberFormat = numFormat;
+  }
+
+  /**
+   * The value of base <code>b</code> digits with a fraction point, like <code>1.8</code> of
+   * <code>16^^1.8</code>, as the integer of all digits over <code>b^k</code> for <code>k</code>
+   * digits behind the point.
+   *
+   * @param digits the digits with one point, optionally behind a minus sign
+   * @param base the base between 2 and 36
+   * @return <code>{numerator, denominator}</code>
+   */
+  public static java.math.BigInteger[] baseFraction(String digits, int base) {
+    int point = digits.indexOf('.');
+    String all = digits.substring(0, point) + digits.substring(point + 1);
+    if (all.isEmpty() || all.equals("-")) {
+      all += "0";
+    }
+    java.math.BigInteger numerator = new java.math.BigInteger(all, base);
+    java.math.BigInteger denominator =
+        java.math.BigInteger.valueOf(base).pow(digits.length() - point - 1);
+    return new java.math.BigInteger[] {numerator, denominator};
+  }
+
+  /** The largest exponent of <code>b^^digits*^e</code>. */
+  private static final int MAX_BASE_EXPONENT = 100000;
+
+  /**
+   * The value <code>{numerator, denominator}</code> of <code>b^^digits*^e</code>: the value of the
+   * digits times <code>b^e</code>.
+   *
+   * @param fraction the value of the digits, see {@link #baseFraction(String, int)}
+   * @param base the base between 2 and 36
+   * @param exponent the decimal exponent <code>e</code>, or <code>null</code>
+   * @throws NumberFormatException for an exponent beyond {@link #MAX_BASE_EXPONENT}
+   */
+  public static java.math.BigInteger[] timesBasePower(java.math.BigInteger[] fraction, int base,
+      String exponent) {
+    if (exponent == null) {
+      return fraction;
+    }
+    int e = Integer.parseInt(exponent);
+    if (Math.abs(e) > MAX_BASE_EXPONENT) {
+      throw new NumberFormatException("exponent " + exponent + " too large");
+    }
+    java.math.BigInteger power = java.math.BigInteger.valueOf(base).pow(Math.abs(e));
+    return e >= 0 ? new java.math.BigInteger[] {fraction[0].multiply(power), fraction[1]}
+        : new java.math.BigInteger[] {fraction[0], fraction[1].multiply(power)};
+  }
+
+  /**
+   * The precision of a number of base <code>b</code> digits: the decimal digits of the integer of
+   * all its digits, <code>Log10(n)</code>, so that the leading digit counts with its value.
+   *
+   * @param numerator the integer of all digits, see {@link #baseFraction(String, int)}
+   */
+  public static double baseDigitsPrecision(java.math.BigInteger numerator) {
+    java.math.BigInteger n = numerator.abs();
+    if (n.signum() == 0) {
+      return 0.0;
+    }
+    int shift = Math.max(0, n.bitLength() - 60);
+    // log10(n) = log10(n / 2^shift) + shift*log10(2), exact enough for any size
+    return Math.log10(n.shiftRight(shift).doubleValue()) + shift * Math.log10(2.0);
+  }
+
+  /**
+   * Whether the character after the current one is a digit of the base, so that a point before
+   * it is a fraction point: in <code>16^^ff.x</code> it is the operator <code>Dot</code>.
+   */
+  private boolean isBaseDigitFollowing(int base) {
+    if (!isValidPosition()) {
+      return false;
+    }
+    return Character.digit(fInputString[fCurrentPosition], base) >= 0;
+  }
+
+  /**
+   * The decimal exponent <code>e</code> of <code>b^^digits*^e</code> if the current character
+   * starts one, read up to the character after it; otherwise <code>null</code>, and the position
+   * is unchanged.
+   */
+  private String scanBaseExponent() {
+    if (fCurrentChar != '*' || !isValidPosition() || fInputString[fCurrentPosition] != '^') {
+      return null;
+    }
+    final int starPosition = fCurrentPosition;
+    getChar(); // ^
+    getChar();
+    final int exponentStart = fCurrentPosition - 1;
+    if (fCurrentChar == '+' || fCurrentChar == '-') {
+      getChar();
+    }
+    if (!Character.isDigit(fCurrentChar)) {
+      // no exponent: the '*' is the Times operator
+      fCurrentPosition = starPosition;
+      fCurrentChar = '*';
+      return null;
+    }
+    while (Character.isDigit(fCurrentChar)) {
+      getChar();
+    }
+    int exponentEnd = Math.min(fCurrentPosition - 1, fInputString.length);
+    return new String(fInputString, exponentStart, exponentEnd - exponentStart);
   }
 
   private String sanitizeBackslash(String numberStr) {

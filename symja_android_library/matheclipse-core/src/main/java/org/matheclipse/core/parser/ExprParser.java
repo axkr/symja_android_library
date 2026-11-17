@@ -19,6 +19,7 @@ import java.util.Locale;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1257,7 +1258,27 @@ public class ExprParser extends Scanner {
           temp = ((NumStr) temp).promoted();
         }
       } else {
-        if (exponentStr == null) {
+        if (numberStr.indexOf('.') >= 0) {
+          // b^^ddd.ddd*^e: a real number of the digits' precision
+          java.math.BigInteger[] digits = baseFraction(numberStr, numFormat);
+          double precision = baseDigitsPrecision(digits[0]);
+          java.math.BigInteger[] value = timesBasePower(digits, numFormat, exponentStr);
+          if (precision <= ParserConfig.MACHINE_PRECISION) {
+            temp = F.num(F.QQ(F.ZZ(value[0]), F.ZZ(value[1])).doubleValue());
+          } else {
+            // a few guard digits; the precision mark is the real number of the digits
+            long digitCount = (long) Math.ceil(precision) + 5L;
+            temp = ApfloatNum.valueOf(new org.apfloat.Apfloat(value[0], digitCount)
+                .divide(new org.apfloat.Apfloat(value[1], digitCount)), precision);
+          }
+        } else if (exponentStr != null && numFormat != 10) {
+          // b^^ddd*^e: the exact number ddd*b^e
+          java.math.BigInteger[] value = timesBasePower(
+              new java.math.BigInteger[] {new java.math.BigInteger(numberStr, numFormat),
+                  java.math.BigInteger.ONE},
+              numFormat, exponentStr);
+          temp = F.QQ(F.ZZ(value[0]), F.ZZ(value[1])).normalize();
+        } else if (exponentStr == null) {
           temp = F.ZZ(numberStr, numFormat);
         } else {
           if (numFormat == 10) {

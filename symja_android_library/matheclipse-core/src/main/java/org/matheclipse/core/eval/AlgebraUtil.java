@@ -505,7 +505,10 @@ public class AlgebraUtil {
         PlusOp plusOp = new PlusOp(plusAST0.argSize());
         final IExpr t =
             plusAST1.isPlusTimesPower() ? expandAST(plusAST1).orElse(plusAST1) : plusAST1;
-        plusAST0.forEach(x -> evalAndExpandAST(x, true, t, false, plusOp, engine));
+        plusAST0.forEach(x -> {
+          engine.checkTimeLimit();
+          evalAndExpandAST(x, true, t, false, plusOp, engine);
+        });
         return plusOp.getSum();
       }
       IExpr expanded = expandSimpleTimesPlus(plusAST0, plusAST1);
@@ -520,6 +523,9 @@ public class AlgebraUtil {
       plusAST0.forEach(x -> {
         final IExpr t = x.isPlusTimesPower() ? expandAST((IAST) x).orElse(x) : x;
         plusAST1.forEach(y -> {
+          // the product of two large sums runs without the evaluation loop, which would see a
+          // time limit
+          engine.checkTimeLimit();
           // evaluate to flatten out Times() expressions
           evalAndExpandAST(t, false, y, true, plusOp, engine);
         });
@@ -4941,6 +4947,9 @@ public class AlgebraUtil {
   public static IASTMutable togetherForEach(final IAST ast, EvalEngine engine) {
     IASTMutable result = F.NIL;
     for (int i = 1; i < ast.size(); i++) {
+      // the recursion over the arguments runs without the evaluation loop, which would see a
+      // time limit
+      engine.checkTimeLimit();
       final IExpr arg = ast.get(i);
       if (arg.isAST()) {
         final IExpr temp = togetherNull((IAST) arg, engine);
@@ -4963,6 +4972,7 @@ public class AlgebraUtil {
    * @return F.NIL couldn't be transformed by ExpandAll() or togetherAST()
    */
   public static @AllowNIL IExpr togetherNull(IAST ast, EvalEngine engine) {
+    engine.checkTimeLimit();
     boolean evaled = false;
     IExpr temp = F.NIL;
     if (ast.isPlus()) {
@@ -5136,7 +5146,10 @@ public class AlgebraUtil {
     IASTAppendable denominatorList = F.TimesAlloc(plusArgSize);
     boolean[] evaled = new boolean[1];
 
-    plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominatorList, evaled));
+    plusAST.forEach((IExpr x, int i) -> {
+      engine.checkTimeLimit();
+      togetherPlusArg(x, i, numerator, denominatorList, evaled);
+    });
     if (!evaled[0]) {
       return F.NIL;
     }
@@ -5150,8 +5163,11 @@ public class AlgebraUtil {
       return overCommonDenominator;
     }
 
-    numerator.forEach(
-        (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
+    // every numerator times all other denominators: quadratic in the number of terms
+    numerator.forEach((IExpr x, int i) -> {
+      engine.checkTimeLimit();
+      togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST);
+    });
 
     int i = 1;
     while (denominatorList.size() > i) {
@@ -5722,16 +5738,21 @@ public class AlgebraUtil {
     if (size < 2)
       return F.NIL;
 
+    // the parts of each term once, not once for each pair
+    IExpr[][] parts = new IExpr[size + 1][];
     for (int i = 1; i <= size; i++) {
+      parts[i] = extractFractionalPower(plusAST.get(i));
+    }
+    for (int i = 1; i <= size; i++) {
+      // quadratic in the number of terms, and without the evaluation loop which would see a time
+      // limit
+      engine.checkTimeLimit();
+      IExpr[] part1 = parts[i];
+      if (part1 == null) {
+        continue;
+      }
       for (int j = i + 1; j <= size; j++) {
-        IExpr arg1 = plusAST.get(i);
-        IExpr arg2 = plusAST.get(j);
-
-        IExpr[] part1 = extractFractionalPower(arg1);
-        if (part1 == null)
-          continue;
-
-        IExpr[] part2 = extractFractionalPower(arg2);
+        IExpr[] part2 = parts[j];
         if (part2 == null)
           continue;
 

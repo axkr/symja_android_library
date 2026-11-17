@@ -39,6 +39,8 @@ import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.matheclipse.external.apfloat.ApcomplexTrigMath;
+import org.matheclipse.external.apfloat.ApfloatTrigMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.Errors;
@@ -4048,12 +4050,13 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
       PrecisionLoss.periodic(arg1.imag());
-      return F.complexNum(ApcomplexMath.sinh(arg1));
+      // the digits which exp(z)-exp(-z) cancels for a small z are calculated in addition
+      return F.complexNum(ApcomplexTrigMath.sinh(arg1, arg1.precision()));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.sinh(arg1));
+      return F.num(ApfloatTrigMath.sinh(arg1, arg1.precision()));
     }
 
     @Override
@@ -4425,7 +4428,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.tanh(arg1));
+      // the digits which the numerator exp(2x)-1 cancels for a small x are calculated in addition
+      return F.num(ApfloatTrigMath.tanh(arg1, arg1.precision()));
     }
 
     @Override

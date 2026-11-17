@@ -931,7 +931,28 @@ public class Parser extends Scanner {
         }
         temp = fFactory.createDouble(numberStr);
       } else {
-        if (exponentStr == null) {
+        if (numberStr.indexOf('.') >= 0) {
+          // b^^ddd.ddd*^e: the real number as a decimal string of the digits' precision
+          java.math.BigInteger[] digits = baseFraction(numberStr, numFormat);
+          int digitCount = Math.max(17, (int) Math.ceil(baseDigitsPrecision(digits[0])));
+          java.math.BigInteger[] value = timesBasePower(digits, numFormat, exponentStr);
+          temp = fFactory.createDouble(new java.math.BigDecimal(value[0])
+              .divide(new java.math.BigDecimal(value[1]), new java.math.MathContext(digitCount))
+              .toPlainString());
+        } else if (exponentStr != null && numFormat != 10) {
+          // b^^ddd*^e: the exact number ddd*b^e
+          java.math.BigInteger[] value = timesBasePower(
+              new java.math.BigInteger[] {new java.math.BigInteger(numberStr, numFormat),
+                  java.math.BigInteger.ONE},
+              numFormat, exponentStr);
+          java.math.BigInteger gcd = value[0].gcd(value[1]);
+          java.math.BigInteger numerator = value[0].divide(gcd);
+          java.math.BigInteger denominator = value[1].divide(gcd);
+          temp = denominator.equals(java.math.BigInteger.ONE)
+              ? fFactory.createInteger(numerator.toString(), 10)
+              : fFactory.createFraction(fFactory.createInteger(numerator.toString(), 10),
+                  fFactory.createInteger(denominator.toString(), 10));
+        } else if (exponentStr == null) {
           temp = fFactory.createInteger(numberStr, numFormat);
         } else {
           if (numFormat == 10) {

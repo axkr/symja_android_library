@@ -2612,7 +2612,12 @@ public class Num implements INum {
         return F.complexNum(
             EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) that).apcomplexValue()));
       }
-      return F.num(EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) that).apfloatValue()));
+      ApfloatNum result = ApfloatNum
+          .valueOf(EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) that).apfloatValue()));
+      // a machine base makes a machine number, as in Plus and Times
+      return ((ApfloatNum) that).precision() > ParserConfig.MACHINE_PRECISION
+          ? ApfloatNum.machineResult(result)
+          : result;
     }
 
     return INum.super.power(that);

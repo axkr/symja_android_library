@@ -102,4 +102,14 @@ public class ApcomplexTrigMathTest
         // a real argument gives the value of the real function
         assertClose("acot(0.3)", ApfloatTrigMath.acot(new Apfloat("0.3", PRECISION)), ApcomplexTrigMath.acot(new Apcomplex(new Apfloat("0.3", PRECISION))), PRECISION - 2);
     }
+
+    @Test
+    public void testSinhTanhOfSmallArguments()
+    {
+        // z = (2 + i) 10^-20; sinh(z) - z = z^3/6 + ..., tanh(z) - z = -z^3/3 + ...
+        Apcomplex z = new Apcomplex(new Apfloat("2e-20", 70), new Apfloat("1e-20", 70));
+        Apcomplex cube = z.multiply(z).multiply(z);
+        assertClose("sinh(z)-z", cube.divide(new Apint(6)), ApcomplexTrigMath.sinh(z, 70).subtract(z), 28);
+        assertClose("tanh(z)-z", cube.divide(new Apint(-3)), ApcomplexTrigMath.tanh(z, 70).subtract(z), 28);
+    }
 }

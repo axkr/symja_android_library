@@ -64,6 +64,7 @@ import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -4409,6 +4410,17 @@ public final class Arithmetic {
     // CPD-ON
 
     /**
+     * A real arbitrary precision result of an operation of <code>bignum</code> with a machine
+     * number at machine precision. A number of machine precision itself keeps its form: in
+     * machine numeric mode an exact exponent arrives as a machine number too.
+     */
+    private static IExpr machineContagion(IExpr result, ApfloatNum bignum) {
+      return result instanceof ApfloatNum && bignum.precision() > ParserConfig.MACHINE_PRECISION
+          ? ApfloatNum.machineResult((ApfloatNum) result)
+          : result;
+    }
+
+    /**
      * The machine value of an exact real number, or the arbitrary precision number of machine
      * precision if it lies beyond the double range.
      */
@@ -4677,10 +4689,17 @@ public final class Arithmetic {
       if (o0 instanceof ApfloatNum) {
         if (o1.isReal()) {
           result = e2ApfloatArg((ApfloatNum) o0, ((IReal) o1).apfloatNumValue());
+          if (o1 instanceof Num) {
+            // a machine operand makes a machine number, as in Plus and Times
+            result = machineContagion(result, (ApfloatNum) o0);
+          }
         }
       } else if (o1 instanceof ApfloatNum) {
         if (o0.isReal()) {
           result = e2ApfloatArg(((IReal) o0).apfloatNumValue(), (ApfloatNum) o1);
+          if (o0 instanceof Num) {
+            result = machineContagion(result, (ApfloatNum) o1);
+          }
         }
       } else if (o0 instanceof Num) {
         if (o1.isReal()) {
@@ -4978,6 +4997,10 @@ public final class Arithmetic {
       }
       // exponent is integer
       IInteger exp = exponent.numerator();
+      // the squarings of a huge power can't be interrupted: refuse it before they start
+      BigIntegerLimitExceeded.checkPower(
+          Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()),
+          exp.toLongDefault(Long.MAX_VALUE));
       final int expInt = exp.toIntDefault();
       if (F.isPresent(expInt)) {
         return base.powerRational(expInt);
@@ -5001,6 +5024,7 @@ public final class Arithmetic {
       }
       // may throw ArithmeticException
       long n = exponent.toLong();
+      BigIntegerLimitExceeded.checkPower(base.bitLength(), n);
       return base.power(n);
     }
 

@@ -1867,6 +1867,8 @@ public abstract class AbstractFractionSym implements IFraction {
       }
       exp *= -1;
     }
+    BigIntegerLimitExceeded.checkPower(
+        Math.max(toBigNumerator().bitLength(), toBigDenominator().bitLength()), exp);
     int b2pow = 0;
 
     while ((exp & 1) == 0) {

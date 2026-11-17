@@ -1725,7 +1725,16 @@ public final class LinearAlgebra {
         }
         IExpr temp = numericalDot(arg1, arg2);
         if (temp.isPresent()) {
-          return temp;
+          if (Convert.isFiniteResult(temp)) {
+            return temp;
+          }
+          // the doubles overflowed: the evaluator's Times and Plus carry the products over to
+          // arbitrary precision
+          IExpr inner = S.Inner.ofNIL(engine, S.Times, arg1, arg2, S.Plus);
+          if (inner.isPresent()) {
+            return inner;
+          }
+          // Inner of a sparse array stays unevaluated: the general path below
         }
 
         final IntList dimensions1 =
@@ -5428,6 +5437,8 @@ public final class LinearAlgebra {
             return linearSolve(lsf, ast.arg2(), ast, engine);
           }
         } catch (final RuntimeException e) {
+          // a time limit ends the solve, it isn't a failure of this path
+          Errors.rethrowsInterruptException(e);
           // fall through to general path below
         } finally {
           engine.setTogetherMode(togetherMode);
@@ -5489,6 +5500,7 @@ public final class LinearAlgebra {
         } catch (LimitException le) {
           throw le;
         } catch (final RuntimeException e) {
+          Errors.rethrowsInterruptException(e);
           return Errors.printMessage(ast.topHead(), e, engine);
         }
       }
@@ -6356,6 +6368,45 @@ public final class LinearAlgebra {
    */
   public static class Norm extends AbstractEvaluator {
 
+    /**
+     * The 2-norm of a vector of machine numbers, scaled by the largest absolute value so that
+     * tiny or huge entries neither underflow nor overflow when they are squared.
+     *
+     * @return <code>F.NIL</code> if an entry isn't a finite machine number or the norm is too
+     *         large for a machine number
+     */
+    private static IExpr machineVectorNorm(IAST vector) {
+      final int n = vector.argSize();
+      double[] absValues = new double[n];
+      double scale = 0.0;
+      for (int i = 1; i <= n; i++) {
+        IExpr x = vector.get(i);
+        double d;
+        if (x instanceof Num) {
+          d = Math.abs(((Num) x).doubleValue());
+        } else if (x instanceof ComplexNum) {
+          d = ((ComplexNum) x).dabs();
+        } else {
+          return F.NIL;
+        }
+        if (!Double.isFinite(d)) {
+          return F.NIL;
+        }
+        absValues[i - 1] = d;
+        scale = Math.max(scale, d);
+      }
+      if (scale == 0.0) {
+        return F.CD0;
+      }
+      double sum = 0.0;
+      for (double d : absValues) {
+        double q = d / scale;
+        sum += q * q;
+      }
+      double norm = scale * Math.sqrt(sum);
+      return Double.isFinite(norm) ? F.num(norm) : F.NIL;
+    }
+
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -6420,6 +6471,15 @@ public final class LinearAlgebra {
             // The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater
             // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
             return Errors.printMessage(S.Norm, "ptype", F.List(p), engine);
+          }
+          IExpr machineNorm = machineVectorNorm(vector);
+          if (machineNorm.isPresent()) {
+            return machineNorm;
+          }
+          if (vector.forAll(x -> x instanceof Num || x instanceof ComplexNum)) {
+            // too large for a machine number: Power carries the squares over to arbitrary
+            // precision
+            return F.Sqrt(vector.map(S.Plus, x -> F.Power(x.abs(), F.C2)));
           }
           return F.Sqrt(vector.map(S.Plus, x -> x.abs().sqr()));
         }

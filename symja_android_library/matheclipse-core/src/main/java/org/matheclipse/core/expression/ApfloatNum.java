@@ -1256,7 +1256,7 @@ public class ApfloatNum implements INum {
    * so it is a machine number (<code>N[Pi,20]*2.</code>), or an arbitrary precision number of
    * machine precision if it lies beyond the double range (<code>N[10^400,20]*2.</code>).
    */
-  private IInexactNumber machineResult(INum result) {
+  public static IInexactNumber machineResult(INum result) {
     if (EvalEngine.get().isArbitraryMode()) {
       return result;
     }
@@ -2727,7 +2727,11 @@ public class ApfloatNum implements INum {
       if (fApfloat.compareTo(Apfloat.ZERO) < 0 && !(exponent.scale() <= 18 && exponent.isInteger())) {
         return F.complexNum(h().pow(fApfloat, ((INum) that).apcomplexValue()));
       }
-      return valueOf(pow(fApfloat, exponent, h()));
+      ApfloatNum result = valueOf(pow(fApfloat, exponent, h()));
+      // a machine exponent makes a machine number, as in Plus and Times
+      return that instanceof Num && precision() > ParserConfig.MACHINE_PRECISION
+          ? machineResult(result)
+          : result;
     }
     return INum.super.power(that);
   }
@@ -2822,7 +2826,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum sinh() {
-    return valueOf(h().sinh(fApfloat));
+    // the digits which exp(x)-exp(-x) cancels for a small x are calculated in addition
+    return valueOf(ApfloatTrigMath.sinh(fApfloat, h().precision()));
   }
 
   @Override
@@ -3034,7 +3039,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum tanh() {
-    return valueOf(h().tanh(fApfloat));
+    return valueOf(ApfloatTrigMath.tanh(fApfloat, h().precision()));
   }
 
   @Override

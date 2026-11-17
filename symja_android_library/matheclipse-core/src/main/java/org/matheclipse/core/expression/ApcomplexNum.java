@@ -2235,7 +2235,8 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum sinh() {
     PrecisionLoss.periodic(fApcomplex.imag());
-    return valueOf(h().sinh(fApcomplex));
+    // the digits which exp(z)-exp(-z) cancels for a small z are calculated in addition
+    return valueOf(ApcomplexTrigMath.sinh(fApcomplex, h().precision()));
   }
 
   @Override
@@ -2446,7 +2447,7 @@ public class ApcomplexNum implements IComplexNum {
     if (nearPole != null) {
       return valueOf(nearPole);
     }
-    return valueOf(h().tanh(fApcomplex));
+    return valueOf(ApcomplexTrigMath.tanh(fApcomplex, h().precision()));
   }
 
   /**

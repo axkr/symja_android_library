@@ -1744,13 +1744,19 @@ public class StatisticsFunctions {
       if (arg1Length > 1) {
         int arg2Length = arg2.isVector();
         if (arg1Length == arg2Length) {
-          if (engine.isNumericMode()) {
+          if (engine.isNumericMode() || (arg1.isRealVector() && arg2.isRealVector())) {
+            // machine data: the double path, with the evaluator for an overflow
             double[] arg1DoubleArray = arg1.toDoubleVector();
             double[] arg2DoubleArray = arg2.toDoubleVector();
             if (arg1DoubleArray != null && arg2DoubleArray != null) {
               org.hipparchus.stat.correlation.Covariance cov =
                   new org.hipparchus.stat.correlation.Covariance();
-              return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
+              double covariance = cov.covariance(arg1DoubleArray, arg2DoubleArray, true);
+              if (Double.isFinite(covariance)) {
+                return F.num(covariance);
+              }
+              // the products overflowed
+              return realCovarianceByEvaluator(arg1, arg2, engine);
             }
           }
           return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
@@ -1797,6 +1803,17 @@ public class StatisticsFunctions {
         result.append(row);
       }
       return result;
+    }
+
+    /**
+     * The sample covariance of two real vectors of the same length, evaluated as
+     * <code>Total((x-Mean(x))*(y-Mean(y)))/(n-1)</code>. Where the doubles of the fast path
+     * overflow, the evaluator's arithmetic carries the products over to arbitrary precision.
+     */
+    static IExpr realCovarianceByEvaluator(final IAST x, final IAST y, EvalEngine engine) {
+      return engine.evaluate(F.Divide(
+          F.Total(F.Times(F.Subtract(x, F.Mean(x)), F.Subtract(y, F.Mean(y)))),
+          F.ZZ(x.argSize() - 1)));
     }
 
     private static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2,
@@ -3177,7 +3194,11 @@ public class StatisticsFunctions {
           if (values == null) {
             return F.NIL;
           }
-          return F.num(StatUtils.mean(values));
+          double mean = StatUtils.mean(values);
+          if (Double.isFinite(mean)) {
+            return F.num(mean);
+          }
+          // the sum overflowed: the arithmetic of the expressions continues in arbitrary precision
         }
         if (arg1.isListOrAssociation()) {
           final IAST list = (IAST) arg1;
@@ -5426,7 +5447,12 @@ public class StatisticsFunctions {
         double[] doubleVector = list.toDoubleVector();
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(doubleVector);
         double quadraticMean = descriptiveStatistics.getQuadraticMean();
-        return F.num(quadraticMean);
+        if (Double.isFinite(quadraticMean)) {
+          return F.num(quadraticMean);
+        }
+        // the squares overflowed: Power carries them over to arbitrary precision
+        return F.Times(F.Power(F.sum(i -> F.Power(list.get(i), F.C2), 1, list.argSize()), F.C1D2),
+            F.Power(F.ZZ(list.argSize()), F.CN1D2));
       }
       IExpr sum = F.sum(i -> list.get(i).times(list.get(i)), 1, list.argSize());
       return F.Times(F.Power(sum, F.C1D2), F.Power(F.ZZ(list.argSize()), F.CN1D2));
@@ -5580,7 +5606,12 @@ public class StatisticsFunctions {
               }
               org.hipparchus.stat.descriptive.moment.StandardDeviation sd =
                   new org.hipparchus.stat.descriptive.moment.StandardDeviation();
-              return F.num(sd.evaluate(values));
+              double deviation = sd.evaluate(values);
+              if (Double.isFinite(deviation)) {
+                return F.num(deviation);
+              }
+              // the squares overflowed
+              return F.Sqrt(Covariance.realCovarianceByEvaluator(list, list, engine));
             }
             return standardDeviation(arg1);
           }
@@ -5947,7 +5978,12 @@ public class StatisticsFunctions {
                 if (values == null) {
                   return F.NIL;
                 }
-                return F.num(StatUtils.variance(values));
+                double variance = StatUtils.variance(values);
+                if (Double.isFinite(variance)) {
+                  return F.num(variance);
+                }
+                // the squares overflowed
+                return Covariance.realCovarianceByEvaluator(list1, list1, engine);
               }
               return Covariance.vectorCovarianceSymbolic(list1, list1, vectorLength);
             }
