@@ -60,7 +60,7 @@ public class TraditionalFormTest extends ExprEvaluatorTestCase {
     check("ToBoxes(TraditionalForm(HoldForm(Div(h, {u, v, w})))) // InputForm", //
         "TagBox(FormBox(TagBox(RowBox({SubscriptBox(\"∇\",RowBox({\"{\",RowBox({\"u\",\",\",\"v\",\",\",\"w\"}),\"}\"})),\"⋅\",\"h\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(TraditionalForm(HoldForm(E(w)))) // InputForm", //
-        "TagBox(FormBox(TagBox(RowBox({\"\",\"(\",\"w\",\")\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
+        "TagBox(FormBox(TagBox(RowBox({\"\\[ExponentialE]\",\"(\",\"w\",\")\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
   }
 
   @Test

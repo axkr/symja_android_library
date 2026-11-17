@@ -73,11 +73,9 @@ public class GraphicsFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the default radius 1 stays implied
       if (ast.isAST0()) {
-        return F.Cone(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
-      }
-      if (ast.isAST1()) {
-        return F.Cone(ast.arg1(), F.C1);
+        return F.unaryAST1(S.Cone, F.list(F.List(0, 0, -1), F.List(0, 0, 1)));
       }
       return F.NIL;
     }
@@ -131,11 +129,9 @@ public class GraphicsFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the default radius 1 stays implied
       if (ast.isAST0()) {
-        return F.Cylinder(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
-      }
-      if (ast.isAST1()) {
-        return F.Cylinder(ast.arg1(), F.C1);
+        return F.unaryAST1(S.Cylinder, F.list(F.List(0, 0, -1), F.List(0, 0, 1)));
       }
       return F.NIL;
     }

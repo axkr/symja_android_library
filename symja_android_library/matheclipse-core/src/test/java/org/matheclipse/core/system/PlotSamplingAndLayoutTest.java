@@ -172,4 +172,152 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
     check("Head(GraphicsArray({{Graphics(Point({0, 0}))}, Graphics(Point({1, 1}))}))", //
         "GraphicsArray");
   }
+
+  @Test
+  public void testPlotSamplesTheHeldFunctionWhereItsSymbolicValueDiffers() {
+    // w(x) solves for the plot variable itself when x is a symbol; at numbers it is a root in a
+    check("w(a_) := Part(FindRoot(Exp(-x) == a*x, {x, 0.5}), 1, -1); "
+        + "Round(Cases(Plot(w(x), {x, 1, 3}), Line(l_) :> {First(l), Last(l)}, Infinity), "
+        + "0.001)", //
+        "{{{1.0,0.567},{3.0,0.258}}}");
+    // a function which is only a number for a number: the curve is drawn all the same
+    check("v(b_) := Part(FindRoot(r^3 + b*r == 1, {r, 1.0}), 1, -1); "
+        + "l = First(Cases(ParametricPlot({b, v(b)}, {b, 0, 2}), Line(l_) :> l, Infinity)); "
+        + "Round({First(l), Last(l)}, 0.001)", //
+        "{{0.0,1.0},{2.0,0.453}}");
+    // the polar radius of the same kind
+    check("q(b_) := Part(FindRoot(r^3 + b*r == 1, {r, 1.0}), 1, -1); "
+        + "l = First(Cases(PolarPlot(q(t), {t, 0, 1}), Line(l_) :> l, Infinity)); "
+        + "Round(Norm /@ {First(l), Last(l)}, 0.001)", //
+        "{1.0,0.682}");
+    // a symbolic value which agrees with the function is sampled, and evaluated once
+    check("k = 0; e(n_) := (k++; Expand((1 + x)^n)); Plot(e(4), {x, 0, 1}); k", //
+        "1");
+    check("Round(Cases(Plot(D(x^3, x, x, x), {x, 0, 1}), Line(l_) :> {First(l), Last(l)}, "
+        + "Infinity), 0.001)", //
+        "{{{0.0,6.0},{1.0,6.0}}}");
+  }
+
+  @Test
+  public void testRegionPlotOfSeveralRegions() {
+    // every region in its own colour, the fills before the boundary lines
+    check("g = RegionPlot({x^2 + y^2 < 1, x > 1/2}, {x, -1, 1}, {y, -1, 1})[[1]]; "
+        + "{Map(Head, Cases(g, _Polygon | _Line, Infinity)), "
+        + "Length(Union(Cases(g, Directive(c_RGBColor, _, Opacity(_)) :> c, Infinity)))}", //
+        "{{Polygon,Polygon,Line,Line},2}");
+    // a boundary style is added to the default one
+    check("Cases(RegionPlot(x + y < 1/2, {x, -1, 1}, {y, -1, 1}, BoundaryStyle -> Red)[[1]], "
+        + "{s_, __Line} :> s, Infinity)", //
+        "{Directive(RGBColor(0.24,0.6,0.8),AbsoluteThickness(2.0),RGBColor(1,0,0))}");
+    check("Cases(RegionPlot({x < 0, y < 0}, {x, -1, 1}, {y, -1, 1}, BoundaryStyle -> None), "
+        + "_Line, Infinity)", //
+        "{}");
+  }
+
+  @Test
+  public void testRegionPlotStyles() {
+    // a given fill style is opaque unless it says otherwise, and is not nested in a directive
+    check("Cases(First(RegionPlot(x + y > 0, {x, -1, 1}, {y, -1, 1}, "
+        + "PlotStyle -> Directive(Red, Opacity(0.5)))), _Directive, Infinity)", //
+        "{Directive(AbsoluteThickness(2.0),RGBColor(1,0,0),Opacity(0.5)),"
+            + "Directive(RGBColor(0.24,0.6,0.8),AbsoluteThickness(2.0))}");
+    check("Cases(First(RegionPlot(x + y > 0, {x, -1, 1}, {y, -1, 1}, PlotStyle -> Orange, "
+        + "BoundaryStyle -> Thick)), _Directive, Infinity)", //
+        "{Directive(AbsoluteThickness(2.0),Opacity(1),RGBColor(1.0,0.5,0.0)),"
+            + "Directive(RGBColor(0.24,0.6,0.8),AbsoluteThickness(2.0),Thickness(Large))}");
+    // a boundary of one piece is one list of point indices, of several pieces a list of them
+    check("Cases(First(RegionPlot(x^2 + 2*y^2 < 1, {x, -2, 2}, {y, -2, 2})), "
+        + "Line(p_) :> {VectorQ(p, IntegerQ), First(p) == Last(p)}, Infinity)", //
+        "{{True,True}}");
+    check("Cases(First(RegionPlot(x^2 > 1, {x, -2, 2}, {y, -2, 2})), "
+        + "Line(p_) :> {Length(p), VectorQ(First(p), IntegerQ)}, Infinity)", //
+        "{{2,True}}");
+    // the surface of a region in space is in a list of primitives
+    check("Head(First(RegionPlot3D(x^2 + y^2 + z^2 < 0.5, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "PlotPoints -> 6)))", //
+        "List");
+  }
+
+  @Test
+  public void testCurvesClippedAtExplicitVerticalRange() {
+    check("Round(MinMax(Flatten(Cases(First(Plot(1/x^2, {x, 0, 3}, PlotRange -> {0, 4})), "
+        + "Line(p_) :> p[[All, 2]], Infinity))), 0.01)", //
+        "{0.11,4.0}");
+    // the pieces inside the range end on its boundary
+    check("Cases(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> {-2, 2})), "
+        + "Line(p_) :> Round({First(p)[[1]], Last(p)}, 0.01), Infinity)", //
+        "{{0.0,{0.73,2.0}},{2.41,{3.87,-2.0}},{5.55,{6.28,0.0}}}");
+    check("Count(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> {{0, 4}, {-2, 2}})), "
+        + "_Line, Infinity)", //
+        "3");
+    // a ClippingStyle draws the stretches outside along the boundary
+    check("Count(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> {-2, 2}, "
+        + "ClippingStyle -> Green)), _Line, Infinity)", //
+        "5");
+    check("Count(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> {-2, 2}, "
+        + "ClippingStyle -> None)), _Line, Infinity)", //
+        "3");
+    // only the ends which are numbers cut the curve
+    check("Count(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> {Full, {-2, Automatic}})), "
+        + "_Line, Infinity)", //
+        "2");
+    check("Count(First(Plot(3*Sin(x), {x, 0, 2*Pi}, PlotRange -> All)), _Line, Infinity)", //
+        "1");
+    check("Cases(First(ListLinePlot({0, 3, 0, -3, 0}, PlotRange -> {-1, 1})), "
+        + "Line(p_) :> Round(p, 0.01), Infinity)", //
+        "{{{1.0,0.0},{1.33,1.0}},{{2.67,1.0},{3.0,0.0},{3.33,-1.0}},{{4.67,-1.0},{5.0,0.0}}}");
+    // a style for the bottom and one for the top
+    check("Cases(First(ListLinePlot({0, 3, 0, -3, 0}, PlotRange -> {-1, 1}, "
+        + "ClippingStyle -> {Blue, Red})), {_RGBColor, __Line}, Infinity)", //
+        "{{RGBColor(0,0,1),Line({{3.33333,-1.0},{4.66667,-1.0}})},"
+            + "{RGBColor(1,0,0),Line({{1.33333,1.0},{2.66667,1.0}})}}");
+  }
+
+  @Test
+  public void testFillingBetweenConsecutiveCurves() {
+    check("Count(Plot({x, 2*x, 3*x, 4*x}, {x, 0, 1}, Filling -> True), _Polygon, Infinity)", //
+        "3");
+    check("Count(Plot(Sin(x), {x, 0, 1}, Filling -> True), _Polygon, Infinity)", //
+        "0");
+    // the area between two curves which cross is one polygon on each side of the crossing; the
+    // fillings come before the curves
+    check("Map(Head, Cases(First(Plot({x, 1 - x}, {x, 0, 1}, Filling -> True)), "
+        + "_Polygon | _Line, Infinity))", //
+        "{Polygon,Polygon,Line,Line}");
+  }
+
+  @Test
+  public void testColorFunctionOfRegionAndContourSurfaces() {
+    // one colour everywhere is the style of the surface, opacity and all
+    check("g = RegionPlot3D(x^2 + y^2 + z^2 < 0.8, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "ColorFunction -> (Directive(Blue, Opacity(0.5)) &), Mesh -> None, PlotPoints -> 8); "
+        + "{Union(Cases(First(g), _RGBColor | _Opacity, Infinity)), FreeQ(g, VertexColors)}", //
+        "{{Opacity(0.5),RGBColor(0,0,1)},True}");
+    // colours which vary are the colours of the vertices; the coordinates are scaled to 0..1
+    check("g = RegionPlot3D(x^2 + y^2 + z^2 < 0.8, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "ColorFunction -> Function({x, y, z}, If(z > 0.5, Red, Blue)), Mesh -> None, "
+        + "PlotPoints -> 8); Union(Flatten(Cases(g, (VertexColors -> c_) :> c, Infinity)))", //
+        "{RGBColor(0,0,1),RGBColor(1,0,0)}");
+    check("g = ContourPlot3D(z == 0, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "ColorFunction -> Function({x, y, z, f}, If(x < 0.5, Red, Blue)), Mesh -> None, "
+        + "PlotPoints -> 6); {Union(Flatten(Cases(g, (VertexColors -> c_) :> c, Infinity))), "
+        + "FreeQ(Rest(List @@ g), ColorFunction)}", //
+        "{{RGBColor(0,0,1),RGBColor(1,0,0)},True}");
+  }
+
+  @Test
+  public void testColorFunctionCurveIsOneLine() {
+    // a curve coloured along its length is one line with a colour at each point, and keeps its
+    // style
+    check("g = ParametricPlot({Sin(2*t), Cos(t)}, {t, 0, Pi}, PlotStyle -> Dotted, "
+        + "ColorFunction -> Function({x, y, u}, GrayLevel(u))); "
+        + "l = First(Cases(g, _Line, Infinity)); "
+        + "{Count(g, _Line, Infinity), Length(l[[1]]) == Length(VertexColors /. Rest(List @@ l)), "
+        + "Count(g, _Dashing, Infinity)}", //
+        "{1,True,1}");
+    check("l = First(Cases(Plot(x^2, {x, 0, 1}, ColorFunction -> (GrayLevel(#2) &), "
+        + "ColorFunctionScaling -> False), _Line, Infinity)); "
+        + "c = VertexColors /. Rest(List @@ l); Round({First(c)[[1]], Last(c)[[1]]}, 0.01)", //
+        "{0.0,1.0}");
+  }
 }

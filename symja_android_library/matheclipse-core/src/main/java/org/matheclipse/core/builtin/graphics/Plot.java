@@ -584,6 +584,11 @@ public class Plot extends ListPlot {
   }
 
   @Override
+  protected boolean clipsCurvesToPlotRange() {
+    return true;
+  }
+
+  @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
   }
@@ -603,6 +608,18 @@ public class Plot extends ListPlot {
   protected boolean compoundIteratorVariables() {
     // a plot variable like x(1) is replaced by a unique symbol
     return true;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is what is sampled; it is evaluated once with a symbolic variable before
+    return true;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // the curves of Plot, ParametricPlot, PolarPlot and the logarithmic plots
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override

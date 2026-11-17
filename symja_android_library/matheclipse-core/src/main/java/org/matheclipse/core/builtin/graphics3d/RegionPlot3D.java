@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -129,8 +130,27 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-    Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
     MarchingCubes.marchingCubes(builder, grid, 0.0, axis);
+    // a ColorFunction of x, y and z colours the surface at its vertices, in place of the colour
+    // of the style
+    PlotColorFunction colors = Plot3DTools
+        .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.RegionPlot3D, engine)
+        .sink(PlotColorFunction.Sink.DIRECTIVE)
+        .ranges(min[0], max[0], min[1], max[1], min[2], max[2]).build();
+    if (colors != null) {
+      IExpr uniform = Plot3DTools.colorVertices(builder, colors, p -> p, engine);
+      if (uniform.isPresent()) {
+        style = ownLights ? F.Directive(F.Rule(S.Lighting, lighting), uniform) : uniform;
+      } else {
+        style = ownLights ? F.Directive(F.Rule(S.Lighting, lighting)) : F.NIL;
+      }
+    }
+    if (style.isPresent()) {
+      Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
+    } else {
+      // the vertices carry the colours
+      builder.setStyle(F.EdgeForm(S.None));
+    }
     IExpr complex = builder.build();
 
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, true);
@@ -142,8 +162,8 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * <code>Graphics3D(primitives, {options})</code>: the options gathered in a list, as
-   * Mathematica's <code>RegionPlot3D</code> writes them. The WLJS notebook relies on that shape:
+   * <code>Graphics3D({primitives}, {options})</code>: the surface in a list and the options
+   * gathered in a list, as Mathematica's <code>RegionPlot3D</code> writes them. The WLJS notebook relies on that shape:
    * its demo adds an option with <code>Insert(plot, "Renderer" -> "PathTracing", {2, -1})</code>,
    * which put the rule into the first option when the options followed one by one.
    */
@@ -161,7 +181,12 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
         options.append(arg);
       }
     }
-    return F.binaryAST2(S.Graphics3D, ast.arg1(), options);
+    IExpr content = ast.arg1();
+    if (content.isAST(S.GraphicsComplex)) {
+      // the surface stays in a list of primitives
+      content = F.list(content);
+    }
+    return F.binaryAST2(S.Graphics3D, content, options);
   }
 
   /**

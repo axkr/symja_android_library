@@ -21,6 +21,24 @@ class ParserTestCase {
   }
 
   @Test
+  void testRepeatedPrefixNot() {
+    // in front of an operand the token !! is two negations, after an operand it is Factorial2
+    assertEquals("Not(Not(p))", PARSE_UNRELAXED.parse("!!p").toString());
+    assertEquals("Not(Not(Not(q)))", PARSE_UNRELAXED.parse("!!!q").toString());
+    assertEquals("Not(Not(Not(Not(r))))", PARSE_UNRELAXED.parse("!!!!r").toString());
+    assertEquals("Not(Not(Unequal(u, v)))", PARSE_UNRELAXED.parse("!!u != v").toString());
+    assertEquals("Or(Not(Not(u)), v)", PARSE_UNRELAXED.parse("!!u || v").toString());
+    assertEquals("Not(Not(Factorial2(k)))", PARSE_UNRELAXED.parse("!!k!!").toString());
+    assertEquals("Times(Factorial2(m), w)", PARSE_UNRELAXED.parse("m!!w").toString());
+    assertEquals("Times(Factorial2(m), Not(Not(w)))",
+        PARSE_UNRELAXED.parse("m!! * !!w").toString());
+    assertEquals("g(Not(Not(s)), Factorial2(t))", PARSE_UNRELAXED.parse("g[!!s, t!!]").toString());
+    Parser relaxed = new Parser(true);
+    assertEquals("Not(Not(p))", relaxed.parse("!!p").toString());
+    assertEquals("f(Not(Not(Not(q))))", relaxed.parse("f(!!!q)").toString());
+  }
+
+  @Test
   void testParser0() {
     ASTNode obj = PARSE_UNRELAXED.parse("(#^3)&[x][y,z].{a,b,c}");
     assertEquals("Dot(Function(Power(Slot(1), 3))[x][y, z], List(a, b, c))", obj.toString());

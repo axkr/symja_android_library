@@ -75,7 +75,9 @@ public class GraphicsComplexBuilder {
     if (useNormals && normals.argSize() > 0) {
       gc.append(F.Rule(S.VertexNormals, normals));
     }
-    if (useColors && colors.argSize() > 0) {
+    if (vertexColorList.isPresent()) {
+      gc.append(F.Rule(S.VertexColors, vertexColorList));
+    } else if (useColors && colors.argSize() > 0) {
       gc.append(F.Rule(S.VertexColors, colors));
     }
 
@@ -124,6 +126,25 @@ public class GraphicsComplexBuilder {
       }
     }
     return vertexMap.get(key);
+  }
+
+  /**
+   * The colours of all vertices at once, which take the place of the colours given with
+   * {@link #addVertex}; {@link F#NIL} for those.
+   */
+  private IAST vertexColorList = F.NIL;
+
+  /**
+   * Give every vertex added so far its colour, in the order the vertices were added; written as the
+   * <code>VertexColors</code> of the complex.
+   */
+  public void setVertexColors(IAST colorList) {
+    this.vertexColorList = colorList;
+  }
+
+  /** The number of vertices added so far. */
+  public int vertexCount() {
+    return coordinates.size();
   }
 
   /** The normal of vertex {@code index}, counted from one, or {@code null} when there is none. */

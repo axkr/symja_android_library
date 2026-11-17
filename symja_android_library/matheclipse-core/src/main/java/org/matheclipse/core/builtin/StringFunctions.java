@@ -5527,7 +5527,48 @@ public final class StringFunctions {
       if (encoding.isString("UTF8") || encoding.isString("UTF-8")) {
         return new String(str.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
       }
+      if (encoding.isString("Unicode")) {
+        return privateUseCharacters(str);
+      }
       return str;
+    }
+
+    /**
+     * The text with each named character <code>\[Name]</code> of a private use character, which the
+     * input form writes for it, replaced by the character itself. An escaped backslash
+     * <code>\\</code> stays as it is.
+     */
+    private static String privateUseCharacters(String str) {
+      if (str.indexOf("\\[") < 0) {
+        return str;
+      }
+      StringBuilder buf = new StringBuilder(str.length());
+      int i = 0;
+      while (i < str.length()) {
+        char ch = str.charAt(i);
+        if (ch == '\\' && i + 1 < str.length()) {
+          if (str.charAt(i + 1) == '[') {
+            int end = str.indexOf(']', i + 2);
+            if (end > 0) {
+              String named = org.matheclipse.parser.client.Characters.NamedCharactersMap
+                  .get(str.substring(i + 2, end));
+              if (named != null && named.length() == 1 && named.charAt(0) >= '\uE000'
+                  && named.charAt(0) <= '\uF8FF') {
+                buf.append(named);
+                i = end + 1;
+                continue;
+              }
+            }
+          }
+          // an escape sequence of two characters, like \\, is kept
+          buf.append(ch).append(str.charAt(i + 1));
+          i += 2;
+          continue;
+        }
+        buf.append(ch);
+        i++;
+      }
+      return buf.toString();
     }
 
     /**

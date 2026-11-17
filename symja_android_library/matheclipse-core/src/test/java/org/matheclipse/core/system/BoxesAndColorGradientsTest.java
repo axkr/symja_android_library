@@ -19,7 +19,7 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   @Test
   public void testTraditionalFormExponentialAndReciprocal() {
     check("ToBoxes(TraditionalForm(E^(2*y))) // InputForm", //
-        "TagBox(FormBox(SuperscriptBox(\"\uF74D\",RowBox({\"2\",\" \",\"y\"})),TraditionalForm),TraditionalForm,Editable->True)");
+        "TagBox(FormBox(SuperscriptBox(\"\\[ExponentialE]\",RowBox({\"2\",\" \",\"y\"})),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(TraditionalForm(1/Log(y))) // InputForm", //
         "TagBox(FormBox(FractionBox(\"1\",RowBox({\"log\",\"(\",\"y\",\")\"})),TraditionalForm),TraditionalForm,Editable->True)");
     // under the fraction line the power still goes on the function name
@@ -36,11 +36,11 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   @Test
   public void testPiecewiseBox() {
     check("ToBoxes(Piecewise({{p, q > 0}, {s, q < -1}}, r)) // InputForm", //
-        "TagBox(GridBox({{\"\uF361\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"s\",RowBox({\"q\",\"<\",RowBox({\"-\",\"1\"})})},{\"r\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
+        "TagBox(GridBox({{\"\\[Piecewise]\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"s\",RowBox({\"q\",\"<\",RowBox({\"-\",\"1\"})})},{\"r\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->1.2`,ColumnWidths->Automatic,AllowedDimensions->{2,Automatic},Selectable->True,Editable->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->0.5`,ColumnWidths->Automatic),\"Piecewise\",SyntaxForm->Equal,SelectWithContents->True,StripWrapperBoxes->True,Selectable->False,Editable->False,DeleteWithContents->True)");
     check("ToBoxes(TraditionalForm(Piecewise({{p, q > 0}}))) // InputForm", //
-        "TagBox(FormBox(TagBox(GridBox({{\"\uF361\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"0\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
+        "TagBox(FormBox(TagBox(GridBox({{\"\\[Piecewise]\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"0\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->1.2`,ColumnWidths->Automatic,AllowedDimensions->{2,Automatic},Selectable->True,Editable->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->0.5`,ColumnWidths->Automatic),\"Piecewise\",SyntaxForm->Equal,SelectWithContents->True,StripWrapperBoxes->True,Selectable->False,Editable->False,DeleteWithContents->True),TraditionalForm),TraditionalForm,Editable->True)");
   }

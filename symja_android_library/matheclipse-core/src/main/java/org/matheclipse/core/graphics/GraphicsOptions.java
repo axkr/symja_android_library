@@ -1908,19 +1908,20 @@ public class GraphicsOptions {
    * A curve painted along its length by {@code ColorFunction}.
    *
    * <p>
-   * Each step of the curve becomes its own piece, coloured from where that piece sits. The colour
-   * function is given the two coordinates of that place, and a named gradient is given the second
-   * of them - the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of the
-   * curve rather than sweeping across the picture. The positions are scaled into 0..1 over the
-   * curve unless {@code ColorFunctionScaling -> False} asks for the raw values.
+   * A joined curve is one <code>Line(points, VertexColors -&gt; colors)</code>, every point in the
+   * colour of its place; unjoined points are each drawn in their own colour. The colour function is
+   * given the two coordinates of that place, and a named gradient is given the second of them -
+   * the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of the curve
+   * rather than sweeping across the picture. The positions are scaled into 0..1 over the curve
+   * unless {@code ColorFunctionScaling -> False} asks for the raw values.
    *
    * <p>
-   * A step the function has nothing to say about keeps the colour the curve would have had, rather
+   * A point the function has nothing to say about keeps the colour the curve would have had, rather
    * than costing the whole curve its colouring: a function with a hole in it should leave a mostly
    * right picture.
    *
    * @param points the curve, as a list of {@code {x, y}} pairs
-   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
+   * @return the coloured line or points, or {@link F#NIL} when no colour function applies
    */
   private IAST colorFunctionCurve(IAST points) {
     if (points.argSize() < 1) {
@@ -1963,71 +1964,66 @@ public class GraphicsOptions {
       return F.NIL;
     }
 
-    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
-    boolean painted = false;
-    int last = joined ? points.argSize() - 1 : points.argSize();
-    for (int i = 1; i <= last; i++) {
-      IAST from = (IAST) points.get(i);
-      double x = from.arg1().evalfNaN();
-      double y = from.arg2().evalfNaN();
-      if (joined) {
-        // colour a step from its middle, so the two ends of it agree
-        IAST to = (IAST) points.get(i + 1);
-        x = (x + to.arg1().evalfNaN()) / 2.0;
-        y = (y + to.arg2().evalfNaN()) / 2.0;
+    if (joined) {
+      // one line through all the points, each point in the colour of its own place
+      IASTAppendable vertexColors = F.ListAlloc(points.argSize());
+      EvalEngine engine = EvalEngine.get();
+      for (int i = 1; i < points.size(); i++) {
+        engine.checkTimeLimit();
+        IAST at = (IAST) points.get(i);
+        vertexColors.append(flatColor(colors.color(
+            colorTuple(i, at.arg1().evalfNaN(), at.arg2().evalfNaN(), pointParameters(at)))));
       }
-      double[] tuple = new double[colorFamily.arity];
-      tuple[0] = x;
-      tuple[1] = y;
-      if (colorFamily == PlotColorFunction.Family.POLAR_2D) {
-        // the angle and the radius are the point itself in another form, so they need no plumbing
-        tuple[2] = Math.atan2(y, x);
-        tuple[3] = Math.hypot(x, y);
-      } else if (colorFamily.arity > 2 && recordedParameters(points, i) != null) {
-        // a parametric curve carries the parameter it was drawn at on the point itself
-        double[] parameters = recordedParameters(points, i);
-        for (int slot = 2; slot < colorFamily.arity && slot - 2 < parameters.length; slot++) {
-          tuple[slot] = parameters[slot - 2];
-        }
-      } else if (colorFamily.arity > 2 && colorExtras != null) {
-        double[] extras = colorExtras.apply(i);
-        for (int slot = 2; slot < colorFamily.arity && slot - 2 < extras.length; slot++) {
-          tuple[slot] = extras[slot - 2];
-        }
-      }
-      IExpr color = colors.color(tuple);
-      painted = true;
-      out.append(F.List(color, joined ? F.Line(F.List(from, points.get(i + 1))) : F.Point(from)));
+      return F.binaryAST2(S.Line, points, F.Rule(S.VertexColors, vertexColors));
     }
-    return painted ? out : F.NIL;
+    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
+    for (int i = 1; i < points.size(); i++) {
+      IAST at = (IAST) points.get(i);
+      IExpr color = colors.color(colorTuple(i, at.arg1().evalfNaN(), at.arg2().evalfNaN(),
+          pointParameters(at)));
+      out.append(F.List(color, F.Point(at)));
+    }
+    return out;
   }
 
   /**
-   * The parameters of the piece of curve that starts at point {@code i}.
+   * The arguments of the colour function at point <code>i</code> of a curve, at
+   * <code>{x, y}</code>.
    *
-   * <p>
-   * A joined step is coloured from its middle, so its parameter is the middle one too - the same
-   * rule its coordinates follow, which is what keeps the two ends of a step agreeing.
-   *
-   * @return the parameters, or {@code null} when this curve carries none
+   * @param parameters the parameters the point was drawn at, or <code>null</code>
    */
-  private double[] recordedParameters(IAST points, int i) {
-    double[] from = pointParameters(points.get(i));
-    if (from == null) {
-      return null;
+  private double[] colorTuple(int i, double x, double y, double[] parameters) {
+    double[] tuple = new double[colorFamily.arity];
+    tuple[0] = x;
+    tuple[1] = y;
+    if (colorFamily == PlotColorFunction.Family.POLAR_2D) {
+      // the angle and the radius are the point itself in another form, so they need no plumbing
+      tuple[2] = Math.atan2(y, x);
+      tuple[3] = Math.hypot(x, y);
+    } else if (colorFamily.arity > 2 && parameters != null) {
+      // a parametric curve carries the parameter it was drawn at on the point itself
+      for (int slot = 2; slot < colorFamily.arity && slot - 2 < parameters.length; slot++) {
+        tuple[slot] = parameters[slot - 2];
+      }
+    } else if (colorFamily.arity > 2 && colorExtras != null) {
+      double[] extras = colorExtras.apply(i);
+      for (int slot = 2; slot < colorFamily.arity && slot - 2 < extras.length; slot++) {
+        tuple[slot] = extras[slot - 2];
+      }
     }
-    if (!joined || i + 1 >= points.size()) {
-      return from;
+    return tuple;
+  }
+
+  /**
+   * A colour as a vertex can hold it: a colour of its own as it is, a directive folded into one
+   * colour.
+   */
+  private static IExpr flatColor(IExpr color) {
+    if (org.matheclipse.core.graphics.svg.ColorUtil.parse(color) != null) {
+      return color;
     }
-    double[] to = pointParameters(points.get(i + 1));
-    if (to == null || to.length != from.length) {
-      return from;
-    }
-    double[] middle = new double[from.length];
-    for (int k = 0; k < middle.length; k++) {
-      middle[k] = (from[k] + to[k]) / 2.0;
-    }
-    return middle;
+    IExpr flat = toColorExpr(color, F.NIL);
+    return flat.isPresent() ? flat : color;
   }
 
   /**

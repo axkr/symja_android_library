@@ -6375,7 +6375,7 @@ public final class LinearAlgebra {
      * @return <code>F.NIL</code> if an entry isn't a finite machine number or the norm is too
      *         large for a machine number
      */
-    private static IExpr machineVectorNorm(IAST vector) {
+    private static @AllowNIL IExpr machineVectorNorm(IAST vector) {
       final int n = vector.argSize();
       double[] absValues = new double[n];
       double scale = 0.0;
@@ -10518,6 +10518,60 @@ public final class LinearAlgebra {
   }
 
   /**
+   * The number of units in the last place of the products, which the determinant of machine numbers
+   * may be off for its matrix to count as singular.
+   */
+  private static final double SINGULAR_DETERMINANT_ULPS = 8.0;
+
+  /**
+   * Whether the coefficient matrix of the <code>2 x 3</code> or <code>3 x 4</code> augmented
+   * <code>matrix</code> of machine numbers is singular: its determinant is no larger than the
+   * rounding error of the products which cancel in it. <code>{{0.1, 0.3}, {0.7, 2.1}}</code> has
+   * the determinant <code>2.8*10^-17</code>.
+   *
+   * @return <code>false</code> if an entry is no machine number or the matrix has another size
+   */
+  private static boolean isMachineSingular(FieldMatrix<IExpr> matrix) {
+    final int n = matrix.getRowDimension();
+    if ((n != 2 && n != 3) || matrix.getColumnDimension() != n + 1) {
+      return false;
+    }
+    final double[][] a = new double[n][n];
+    boolean machine = false;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        final IExpr entry = matrix.getEntry(i, j);
+        if (!entry.isReal() || !(entry.isRational() || entry.isMachineNumber())) {
+          return false;
+        }
+        machine |= entry.isMachineNumber();
+        a[i][j] = entry.evalf();
+      }
+    }
+    if (!machine) {
+      return false;
+    }
+    double determinant;
+    double size;
+    if (n == 2) {
+      determinant = a[0][0] * a[1][1] - a[0][1] * a[1][0];
+      size = Math.abs(a[0][0] * a[1][1]) + Math.abs(a[0][1] * a[1][0]);
+    } else {
+      determinant = 0.0;
+      size = 0.0;
+      for (int j = 0; j < 3; j++) {
+        // the products of the diagonals, which the determinant adds and subtracts
+        double plus = a[0][j] * a[1][(j + 1) % 3] * a[2][(j + 2) % 3];
+        double minus = a[0][j] * a[1][(j + 2) % 3] * a[2][(j + 1) % 3];
+        determinant += plus - minus;
+        size += Math.abs(plus) + Math.abs(minus);
+      }
+    }
+    return Double.isFinite(size) && size > 0.0
+        && Math.abs(determinant) <= SINGULAR_DETERMINANT_ULPS * Math.ulp(size);
+  }
+
+  /**
    * Row reduce the given (augmented-)<code>matrix</code> and append the result as rules for the
    * given <code>variableList</code>.
    *
@@ -10535,9 +10589,11 @@ public final class LinearAlgebra {
     int rows = matrix.getRowDimension();
     int cols = matrix.getColumnDimension();
     IAST smallList = null;
-    if (rows == 2 && cols == 3) {
+    // a determinant of machine numbers which is rounding noise is no divisor for Cramer's rule
+    final boolean singular = isMachineSingular(matrix);
+    if (!singular && rows == 2 && cols == 3) {
       smallList = cramersRule2x3(matrix, true, engine);
-    } else if (rows == 3 && cols == 4) {
+    } else if (!singular && rows == 3 && cols == 4) {
       smallList = cramersRule3x4(matrix, true, engine);
     }
     // A determinant of zero does not say that there is no solution: {x+y==2, x+y==2} has the
@@ -10564,6 +10620,11 @@ public final class LinearAlgebra {
     FieldReducedRowEchelonForm ref =
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
+    // a matrix of machine numbers was reduced with its columns scaled, where what the rounding
+    // leaves of a zero was set to zero relative to the size of each column - so that a small
+    // coefficient or right-hand side is no zero just because another column is large
+    final Predicate<IExpr> isZero = ref.isScaled() ? IExpr::isZero
+        : entry -> entry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE);
     IASTAppendable list = F.ListAlloc(rows);
     if (additionalRule.isPresent()) {
       list.append(additionalRule);
@@ -10573,15 +10634,13 @@ public final class LinearAlgebra {
       // before it moves every later pivot one column along
       int pivot = -1;
       for (int col = 0; col < cols - 1; col++) {
-        if (!rowReduced.getEntry(row, col).isPossibleZero(true,
-            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (!isZero.test(rowReduced.getEntry(row, col))) {
           pivot = col;
           break;
         }
       }
       if (pivot < 0) {
-        if (!rowReduced.getEntry(row, cols - 1).isPossibleZero(true,
-            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (!isZero.test(rowReduced.getEntry(row, cols - 1))) {
           // 0 == c with c != 0: no solution
           return F.ListAlloc();
         }
@@ -10589,15 +10648,22 @@ public final class LinearAlgebra {
       }
       IASTAppendable plus = F.PlusAlloc(cols);
       plus.append(rowReduced.getEntry(row, cols - 1));
-      for (int col = pivot + 1; col < cols - 1; col++) {
+      boolean inexactNumbers = false;
+      boolean numbers = true;
+      for (int col = pivot + 1; col < cols; col++) {
         IExpr rowEntry = rowReduced.getEntry(row, col);
-        if (rowEntry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        numbers &= rowEntry.isNumber();
+        inexactNumbers |= rowEntry.isInexactNumber();
+        if (col == cols - 1 || isZero.test(rowEntry)) {
           continue;
         }
         plus.append(F.Times(rowEntry.negate(), listOfVariables.get(col + 1)));
       }
-      list.append(
-          F.Rule(listOfVariables.get(pivot + 1), S.Together.of(engine, plus.oneIdentity0())));
+      // a row of machine numbers is the linear form itself: a common denominator would only
+      // factor out a number, 0.5*(3.0-x) instead of 1.5-0.5*x
+      IExpr value = numbers && inexactNumbers ? engine.evaluate(plus.oneIdentity0())
+          : S.Together.of(engine, plus.oneIdentity0());
+      list.append(F.Rule(listOfVariables.get(pivot + 1), value));
     }
     resultList.append(list);
     return resultList;

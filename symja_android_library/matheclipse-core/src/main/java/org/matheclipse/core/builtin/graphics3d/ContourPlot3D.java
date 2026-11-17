@@ -97,12 +97,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr styleSource =
         contourStyle == S.Automatic ? options[Plot3DTools.X_PLOT_STYLE] : contourStyle;
 
-    // The colour function of a contour surface is given the point and the value there. Marching
-    // cubes produces a triangle soup rather than a grid, so a level is coloured as a whole, from
-    // the middle of the box and the level's own value - which is exactly what a colour scheme
-    // name asks for, since it reads the fourth argument.
+    // The colour function of a contour surface is given the point and the value there, at every
+    // vertex of the surface; a level where it gives one colour everywhere is drawn in that colour.
     PlotColorFunction levelColors = Plot3DTools
         .plotColors(PlotColorFunction.Family.CONTOUR_3D, options, S.ContourPlot3D, engine)
+        .sink(PlotColorFunction.Sink.DIRECTIVE)
         .ranges(min[0], max[0], min[1], max[1], min[2], max[2], lowestLevel, highestLevel)
         .build();
 
@@ -115,16 +114,27 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     int surfaceIndex = 0;
     for (int f = 0; f < grids.length; f++) {
       for (double value : levelSets[f]) {
-        IExpr style =
-            levelStyle(surfaceIndex++, value, levelColors, ownLights, styleSource, min, max);
+        IExpr style = levelColors != null ? F.NIL
+            : levelStyle(surfaceIndex, value, levelColors, ownLights, styleSource, min, max);
+        surfaceIndex++;
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, false);
-        Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
         if (region == null) {
           MarchingCubes.marchingCubes(builder, grids[f], value, axis);
         } else {
           GraphicsComplexBuilder whole = new GraphicsComplexBuilder(true, false);
           MarchingCubes.marchingCubes(whole, grids[f], value, axis);
           clipToRegion(whole, builder, region, value, engine);
+        }
+        if (levelColors != null) {
+          final double level = value;
+          style = Plot3DTools.colorVertices(builder, levelColors,
+              p -> new double[] {p[0], p[1], p[2], level}, engine);
+        }
+        if (style.isPresent()) {
+          Plot3DTools.applyStyle(builder, style, options[Plot3DTools.X_MESH]);
+        } else {
+          // the vertices carry the colours
+          builder.setStyle(F.EdgeForm(S.None));
         }
         addMesh(builder, axis, options[Plot3DTools.X_MESH], options[Plot3DTools.X_MESH_STYLE]);
         addRim(builder, boundaryStyle);

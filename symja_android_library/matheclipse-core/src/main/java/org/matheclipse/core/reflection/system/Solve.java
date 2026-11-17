@@ -356,6 +356,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 matrix, vector, maximumNumberOfResults, exprAnalyzer, currEquation, listOfRules,
                 numericFlag, engine);
             if (temp.isPresent()) {
+              if (temp.isEmpty()) {
+                // no value of the variable leaves a solvable system: an empty list here is no
+                // solution, and not "every equation holds", which a caller reads from an empty
+                // list of a system without equations
+                throw new NoSolution(NoSolution.WRONG_SOLUTION);
+              }
               return temp;
             }
           }
@@ -383,6 +389,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               rootsOfCyclotomicFactors(exprAnalyzer.getNumerator(), variable, engine);
           if (unityRoots.isPresent()) {
             return unityRoots;
+          }
+          // a binomial in x+s, whose layers the decomposition would solve one by one
+          IAST shiftedRoots =
+              RootsFunctions.shiftedBinomialRoots(exprAnalyzer.getNumerator(), variable);
+          if (shiftedRoots.isPresent()) {
+            IASTAppendable rules = F.ListAlloc(shiftedRoots.argSize());
+            shiftedRoots.forEach(root -> rules.append(F.Rule(variable, root)));
+            return QuarticSolver.sortASTArguments(rules);
           }
         }
         IAST decompRules =
@@ -632,6 +646,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                       solveRowReducedMatrix(subMatrix, subVector, subVariables, F.NIL,
                           this.intervalInequations, substitutionRule, resultList, engine);
                   if (linearSolution.isPresent()) {
+                    if (linearSolution.isEmpty()) {
+                      // the linear equations contradict each other for this value of the
+                      // variable: the other values may still give solutions
+                      continue;
+                    }
                     matrix.clear();
                     vector.clear();
                     return linearSolution;
@@ -2812,7 +2831,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     public IExpr of(IAST ast, final boolean numeric, final boolean bareExpressionsAreEquations,
         EvalEngine engine) {
       ast = withDomainOnly(ast);
-      preferLastVariables = !numeric;
+      // Solve with machine numbers solves for the last variables as with exact numbers; only the
+      // numerical solver NSolve, which reads bare expressions as equations, keeps the first ones
+      preferLastVariables = !numeric || !bareExpressionsAreEquations;
       completeSolutions = false;
       if (!bareExpressionsAreEquations && !isQuantifiedSystem(ast.arg1())) {
         // `1` is not a quantified system of equations and inequalities.
@@ -4530,7 +4551,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (terms.argSize() < 2 || terms.exists(x -> !x.isEqual() || !x.second().isZero())) {
         return result;
       }
-      IExpr rationalized = engine.evalQuiet(F.Rationalize(terms.map(x -> x.first())));
+      IExpr rationalized = rationalizeFaithfully(terms.map(x -> x.first()), engine);
       if (!rationalized.isList() || !rationalized.isFree(x -> x.isInexactNumber(), false)) {
         return result;
       }
@@ -4634,6 +4655,74 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return result;
     }
+  }
+
+  /**
+   * The units in the last place by which a machine number may differ from the fraction it is
+   * rationalized to, for the fraction to stand for it.
+   */
+  private static final double RATIONALIZED_ULPS = 4.0;
+
+  /**
+   * Rationalize the <code>terms</code>, but only if every machine number is the nearest double of
+   * its fraction up to {@link #RATIONALIZED_ULPS}, like <code>0.25</code> or <code>0.1</code>.
+   * Rationalizing within a tolerance changes the system: <code>1000.0000001</code> becomes
+   * <code>1000</code>, and the exact solution of the changed system replaces the numerical one -
+   * a solution <code>1.*10^-11</code> became <code>0.0</code>.
+   *
+   * @return {@link F#NIL} if a machine number isn't such a fraction
+   */
+  private static IExpr rationalizeFaithfully(IAST terms, EvalEngine engine) {
+    boolean faithful = terms.forAllLeaves(x -> !x.isInexactNumber() || !x.isMachineNumber()
+        || faithfulFraction((INumber) x, engine).isPresent(), 1);
+    if (!faithful) {
+      return F.NIL;
+    }
+    return engine.evalQuiet(F.Rationalize(terms));
+  }
+
+  /**
+   * Replace every machine number of <code>expr</code> by the small fraction it stands for, like
+   * <code>1/10</code> for <code>0.1</code>, or else by the exact binary fraction it represents -
+   * never by a fraction close to it, which would change the equations: <code>1000.0000001</code>
+   * is no <code>1000</code>. Other inexact numbers are rationalized with
+   * {@link S#Rationalize}.
+   *
+   * @return the expression, which still has inexact numbers if they couldn't be rationalized
+   */
+  private static IExpr rationalizeMachineNumbers(IExpr expr, EvalEngine engine) {
+    IExpr result = expr.replaceAll(x -> {
+      if (!x.isInexactNumber() || !x.isMachineNumber()) {
+        return F.NIL;
+      }
+      IExpr fraction = faithfulFraction((INumber) x, engine);
+      return fraction.isPresent() ? fraction : engine.evalQuiet(F.Rationalize(x, F.C0));
+    }).orElse(expr);
+    if (result.isFree(x -> x.isInexactNumber(), false)) {
+      return result;
+    }
+    IExpr rationalized = engine.evalQuiet(F.Rationalize(result));
+    return rationalized.isFree(x -> x.isInexactNumber(), false) ? rationalized
+        : engine.evalQuiet(F.Rationalize(result, F.C0));
+  }
+
+  /**
+   * The small fraction which the machine number is the nearest double of, up to
+   * {@link #RATIONALIZED_ULPS}.
+   *
+   * @return {@link F#NIL} if there is none
+   */
+  private static IExpr faithfulFraction(INumber number, EvalEngine engine) {
+    IExpr fraction = engine.evalQuiet(F.Rationalize(number));
+    return fraction.isNumber() && !fraction.isInexactNumber()
+        && isNearestDouble(((INumber) fraction).reDoubleValue(), number.reDoubleValue())
+        && isNearestDouble(((INumber) fraction).imDoubleValue(), number.imDoubleValue())
+            ? fraction
+            : F.NIL;
+  }
+
+  private static boolean isNearestDouble(double fraction, double value) {
+    return Math.abs(fraction - value) <= RATIONALIZED_ULPS * Math.ulp(value);
   }
 
   /**
@@ -4807,10 +4896,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     final ISymbol variable = (ISymbol) variables.arg1();
     final IExpr term = termsEqualZeroList.arg1();
-    // a fraction is zero exactly where its numerator is zero
-    IExpr together = S.Together.of(engine, term);
-    IExpr numerator = S.Numerator.of(engine, together);
-    IExpr denominator = S.Denominator.of(engine, together);
+    IExpr numerator = term;
+    IExpr denominator = F.C1;
+    if (!term.isPolynomial(F.list(variable))) {
+      // a fraction is zero exactly where its numerator is zero. A polynomial is taken as it is:
+      // the common denominator of machine numbers factors out a number, -0.1*(3.0-10.0*x) for
+      // x-0.3, and the coefficients multiplied back are off in their last digit
+      IExpr together = S.Together.of(engine, term);
+      numerator = S.Numerator.of(engine, together);
+      denominator = S.Denominator.of(engine, together);
+    }
     if (!numerator.isPolynomial(F.list(variable))) {
       // an equation like Sin(x)==0 or 3^x==2*x has to be solved symbolically
       return F.NIL;
@@ -4893,7 +4988,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    * <code>y</code>.
    *
    * <p>
-   * A term with machine number coefficients is taken if they rationalize to small fractions.
+   * A machine number coefficient is taken as the small fraction it stands for, or else as the exact
+   * binary fraction it represents.
    *
    * @param termsEqualZeroList the equations, as expressions which have to become <code>0</code>
    * @param variables the variables to solve for
@@ -4923,15 +5019,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     IASTAppendable denominators = F.ListAlloc();
     for (IExpr term : termsEqualZeroList) {
       if (term.has(x -> x.isInexactNumber(), false)) {
-        IExpr inexact = term;
-        term = engine.evalQuiet(F.Rationalize(inexact));
+        term = rationalizeMachineNumbers(term, engine);
         if (term.has(x -> x.isInexactNumber(), false)) {
-          // a machine number without a small rational approximation is taken as the exact
-          // binary fraction it represents
-          term = engine.evalQuiet(F.Rationalize(inexact, F.C0));
-          if (term.has(x -> x.isInexactNumber(), false)) {
-            return F.NIL;
-          }
+          return F.NIL;
         }
       }
       IExpr together = S.Together.of(engine, term);
@@ -6008,10 +6098,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // the variable inside another function, like Sin(x) == 0.0, keeps its families of solutions
       return F.NIL;
     }
-    IExpr rationalized = engine.evalQuiet(F.Rationalize(equation));
-    if (!rationalized.isFree(x -> x.isInexactNumber(), false)) {
-      rationalized = engine.evalQuiet(F.Rationalize(equation, F.C0));
-    }
+    IExpr rationalized = rationalizeMachineNumbers(equation, engine);
     if (!rationalized.isEqual() || !rationalized.isFree(x -> x.isInexactNumber(), false)) {
       return F.NIL;
     }
@@ -6311,12 +6398,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     try {
       if (isNumeric) {
-        system = engine.evaluate(F.Rationalize(system));
+        system = rationalizeMachineNumbers(system, engine);
         if (!system.isFree(x -> x.isInexactNumber(), false)) {
-          system = engine.evaluate(F.Rationalize(system, F.C0));
-          if (!system.isFree(x -> x.isInexactNumber(), false)) {
-            return F.NIL;
-          }
+          return F.NIL;
         }
       }
       java.util.List<IExpr[]> cases = new ArrayList<IExpr[]>();

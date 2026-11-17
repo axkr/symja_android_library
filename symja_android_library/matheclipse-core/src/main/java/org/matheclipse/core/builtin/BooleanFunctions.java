@@ -8,6 +8,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -660,6 +661,17 @@ public final class BooleanFunctions {
                   return factory.not(convertAnd(dnf, substituteExpressions));
                 }
                 return factory.not(expr2LogicNGFormula(dnf, substituteExpressions));
+              }
+              break;
+            case ID.If:
+              if (ast.isAST(S.If, 4)) {
+                // If(c, t, f), as the decision trees BooleanConvert writes: (c && t) || (!c && f)
+                final Formula condition = expr2LogicNGFormula(ast.arg1(), substituteExpressions);
+                return factory.or(
+                    factory.and(condition,
+                        expr2LogicNGFormula(ast.arg2(), substituteExpressions)),
+                    factory.and(factory.not(condition),
+                        expr2LogicNGFormula(ast.arg3(), substituteExpressions)));
               }
               break;
             case ID.Implies:
@@ -5362,6 +5374,22 @@ public final class BooleanFunctions {
       arg1 = arg1.first();
       isFunction = true;
     }
+    final String method = ast.isAST2() && ast.arg2().isString() ? ast.arg2().toString() : "";
+    if (DECISION_TREE_FORMS.contains(method)) {
+      if (arg1.isAST() && arg1.argSize() > 0 && engine.evaluate(arg1.head()) instanceof BDDExpr) {
+        // a boolean function object applied to arguments: first written as a formula
+        arg1 = engine.evaluate(F.unaryAST1(S.BooleanConvert, arg1));
+      }
+      if (!(arg1 instanceof BDDExpr)) {
+        IExpr result = decisionTree(arg1, engine);
+        if (method.equals("BDT")) {
+          result = andOrForm(result, new IdentityHashMap<IExpr, IExpr>(), engine);
+        } else if (method.equals("IMPLIES")) {
+          result = impliesForm(result, new IdentityHashMap<IExpr, IExpr>(), engine);
+        }
+        return isFunction ? F.Function(result) : result;
+      }
+    }
     if (arg1 instanceof BDDExpr) {
       return booleanConvertBDDExpr((BDDExpr) arg1, isFunction, arg1, ast, engine);
     } else if (arg1.head() instanceof BDDExpr) {
@@ -5373,13 +5401,19 @@ public final class BooleanFunctions {
       }
     }
     if (ast.isAST2() && ast.arg2().isString()) {
-      IStringX arg2 = (IStringX) ast.arg2();
-      String method = arg2.toString();
       if (method.equals("BFF") || method.equals("BooleanFunction")) {
         LogicFormula lf = new LogicFormula();
         Formula formula = lf.expr2LogicNGFormula(arg1, true);
-        BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), false);
-        return isFunction ? F.Function(bddExpr) : bddExpr;
+        if (isFunction) {
+          return F.Function(BDDExpr.newInstance(formula.bdd(), false));
+        }
+        // the function object applied to the variables in the order they appear in the expression
+        IAST variables = variablesInOrder(lf, formula, arg1);
+        if (variables.argSize() == 0) {
+          return formula instanceof CTrue ? S.True : formula instanceof CFalse ? S.False : F.NIL;
+        }
+        BDD bdd = orderedBDD(lf, formula, variables);
+        return variables.apply(BDDExpr.newInstance(bdd, false));
       }
     }
     final String form =
@@ -5396,11 +5430,257 @@ public final class BooleanFunctions {
         conjunctive, engine);
   }
 
+  /**
+   * The forms which are written from the decision tree of nested <code>If</code>: the tree itself,
+   * its <code>And</code>/<code>Or</code> form and its <code>Implies</code> form.
+   */
+  private static final Set<String> DECISION_TREE_FORMS = Set.of("IF", "BDT", "IMPLIES");
+
+  /**
+   * The variables of a formula as expressions, in the order they first appear in
+   * <code>expr</code>, depth first and from left to right. A variable which doesn't appear as
+   * such, follows in canonical order.
+   */
+  private static IAST variablesInOrder(LogicFormula lf, Formula formula, IExpr expr) {
+    SortedSet<Variable> variables = formula.variables();
+    IASTAppendable list = F.ListAlloc(variables.size());
+    Set<Variable> seen = new HashSet<Variable>();
+    collectVariables(expr, lf, variables, seen, list);
+    if (seen.size() < variables.size()) {
+      IASTAppendable rest = F.ListAlloc(variables.size() - seen.size());
+      for (Variable variable : variables) {
+        if (!seen.contains(variable)) {
+          rest.append(lf.mapToSymbol(variable));
+        }
+      }
+      EvalAttributes.sort(rest);
+      list.appendArgs(rest);
+    }
+    return list;
+  }
+
+  private static void collectVariables(IExpr expr, LogicFormula lf, Set<Variable> variables,
+      Set<Variable> seen, IASTAppendable list) {
+    Variable variable = lf.symbol2variableMap.get(expr);
+    if (variable != null) {
+      if (variables.contains(variable) && seen.add(variable)) {
+        list.append(lf.mapToSymbol(variable));
+      }
+      return;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 1; i < ast.size(); i++) {
+        collectVariables(ast.get(i), lf, variables, seen, list);
+      }
+    }
+  }
+
+  /**
+   * The decision diagram of a formula which tests the variables in the order of the list
+   * <code>variables</code>.
+   */
+  private static BDD orderedBDD(LogicFormula lf, Formula formula, IAST variables) {
+    List<Variable> ordering = new ArrayList<Variable>(variables.argSize());
+    for (int i = 1; i < variables.size(); i++) {
+      ordering.add(lf.symbol2variableMap.get(variables.get(i)));
+    }
+    org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel kernel =
+        new org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel(lf.getFactory(), ordering, 1000,
+            1000);
+    return org.logicng.knowledgecompilation.bdds.BDDFactory.build(formula, kernel);
+  }
+
+  /**
+   * A boolean expression as a binary decision tree: the Shannon decomposition
+   * <code>If(v, f(v=True), f(v=False))</code> on the variables in the order they appear in
+   * <code>expr</code>, where a variable
+   * the remaining function does not depend on is not tested. The leaves are <code>True</code> and
+   * <code>False</code>.
+   */
+  private static IExpr decisionTree(IExpr expr, EvalEngine engine) {
+    LogicFormula lf = new LogicFormula();
+    Formula formula = lf.expr2LogicNGFormula(expr, true);
+    BDD bdd = orderedBDD(lf, formula, variablesInOrder(lf, formula, expr));
+    org.logicng.knowledgecompilation.bdds.datastructures.BDDNode root = bdd.toLngBdd();
+    Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, Long> sizes =
+        new HashMap<>();
+    long size = decisionTreeSize(root, sizes, engine);
+    if (size > Config.MAX_AST_SIZE) {
+      throw new ASTElementLimitExceeded(size);
+    }
+    return decisionTree(root, lf,
+        new HashMap<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, IExpr>(), engine);
+  }
+
+  /** The number of nodes of the tree which the decision diagram node unfolds into. */
+  private static long decisionTreeSize(
+      org.logicng.knowledgecompilation.bdds.datastructures.BDDNode node,
+      Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, Long> sizes,
+      EvalEngine engine) {
+    if (!node.isInnerNode()) {
+      return 1L;
+    }
+    Long size = sizes.get(node);
+    if (size == null) {
+      engine.checkTimeLimit();
+      long high = decisionTreeSize(node.high(), sizes, engine);
+      long low = decisionTreeSize(node.low(), sizes, engine);
+      size = Math.min(Long.MAX_VALUE / 2, high + low + 2L);
+      sizes.put(node, size);
+    }
+    return size;
+  }
+
+  private static IExpr decisionTree(org.logicng.knowledgecompilation.bdds.datastructures.BDDNode node,
+      LogicFormula lf,
+      Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, IExpr> trees,
+      EvalEngine engine) {
+    if (!node.isInnerNode()) {
+      return node.label() instanceof CTrue ? S.True : S.False;
+    }
+    IExpr tree = trees.get(node);
+    if (tree == null) {
+      engine.checkTimeLimit();
+      tree = F.If(lf.mapToSymbol((Variable) node.label()),
+          decisionTree(node.high(), lf, trees, engine),
+          decisionTree(node.low(), lf, trees, engine));
+      trees.put(node, tree);
+    }
+    return tree;
+  }
+
+  /**
+   * The decision tree <code>If(c, a, b)</code> written with <code>And</code>, <code>Or</code> and
+   * <code>Not</code>: <code>(c &amp;&amp; a) || (!c &amp;&amp; b)</code>, where a branch
+   * <code>True</code> leaves the literal <code>c</code> or <code>!c</code> alone and a branch
+   * <code>False</code> is left out.
+   *
+   * @param trees the forms of the subtrees already written; the tree shares its subtrees
+   */
+  private static IExpr andOrForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine) {
+    return treeForm(tree, trees, engine, (condition, high, low) -> {
+      final IExpr notCondition = negateLiteral(condition);
+      // null for a branch False, which is left out
+      IExpr highPart = high.isTrue() ? condition
+          : high.isFalse() ? null : flatAnd(condition, andOrForm(high, trees, engine));
+      IExpr lowPart = low.isTrue() ? notCondition
+          : low.isFalse() ? null : flatAnd(notCondition, andOrForm(low, trees, engine));
+      if (highPart == null) {
+        return lowPart != null ? lowPart : S.False;
+      }
+      return lowPart == null ? highPart : F.Or(highPart, lowPart);
+    });
+  }
+
+  /** The form of one node <code>If(condition, high, low)</code> of a decision tree. */
+  private interface NodeForm {
+    IExpr of(IExpr condition, IExpr high, IExpr low);
+  }
+
+  /**
+   * The form of a decision tree: a leaf stays as it is, the form of a node
+   * <code>If(c, a, b)</code> is computed once and remembered in <code>trees</code>.
+   */
+  private static IExpr treeForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine,
+      NodeForm nodeForm) {
+    if (!tree.isAST(S.If, 4)) {
+      return tree;
+    }
+    IExpr result = trees.get(tree);
+    if (result == null) {
+      engine.checkTimeLimit();
+      final IAST node = (IAST) tree;
+      result = nodeForm.of(node.arg1(), node.arg2(), node.arg3());
+      trees.put(tree, result);
+    }
+    return result;
+  }
+
+  /** <code>x &amp;&amp; y</code>, with the arguments of a conjunction <code>y</code> spliced in. */
+  private static IExpr flatAnd(IExpr x, IExpr y) {
+    if (y.isAnd()) {
+      IASTAppendable and = F.And();
+      and.append(x);
+      and.appendArgs((IAST) y);
+      return and;
+    }
+    return F.And(x, y);
+  }
+
+  /** The negation of a literal or a formula: a double negation cancels. */
+  private static IExpr negateLiteral(IExpr expr) {
+    if (expr.isNot()) {
+      return expr.first();
+    }
+    if (expr.isTrue()) {
+      return S.False;
+    }
+    if (expr.isFalse()) {
+      return S.True;
+    }
+    return F.Not(expr);
+  }
+
+  /**
+   * The decision tree <code>If(c, a, b)</code> written with <code>Implies</code> and
+   * <code>Not</code> only: <code>Implies(Implies(c, !a), !Implies(!c, !b))</code>, which is
+   * <code>(c &amp;&amp; a) || (!c &amp;&amp; b)</code>. A branch <code>True</code> or
+   * <code>False</code> gives a single implication, the branches <code>True, False</code> the
+   * literal <code>c</code> and <code>False, True</code> the literal <code>!c</code>. A double
+   * negation cancels.
+   *
+   * @param trees the forms of the subtrees already written; the tree shares its subtrees
+   */
+  private static IExpr impliesForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine) {
+    return treeForm(tree, trees, engine, (condition, high, low) -> {
+      if (high.isTrue() && low.isFalse()) {
+        return condition;
+      }
+      if (high.isFalse() && low.isTrue()) {
+        return negateLiteral(condition);
+      }
+      if (high.isTrue()) {
+        // c || b
+        return F.Implies(negateLiteral(condition), impliesForm(low, trees, engine));
+      }
+      if (low.isTrue()) {
+        // !c || a
+        return F.Implies(condition, impliesForm(high, trees, engine));
+      }
+      if (low.isFalse()) {
+        // c && a
+        return negateLiteral(
+            F.Implies(condition, negateLiteral(impliesForm(high, trees, engine))));
+      }
+      if (high.isFalse()) {
+        // !c && b
+        return negateLiteral(F.Implies(negateLiteral(condition),
+            negateLiteral(impliesForm(low, trees, engine))));
+      }
+      return F.Implies(F.Implies(condition, negateLiteral(impliesForm(high, trees, engine))),
+          negateLiteral(F.Implies(negateLiteral(condition),
+              negateLiteral(impliesForm(low, trees, engine)))));
+    });
+  }
+
   private static @AllowNIL IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
       final IAST booleanConvertAST, EvalEngine engine) {
     IExpr temp = booleanConvert(head, isFunction, booleanConvertAST, engine);
     if (temp.isPresent()) {
       if (arg1.size() > 0) {
+        List<Variable> variableOrder = head.toData().getVariableOrder();
+        if (arg1.argSize() > 0 && arg1.argSize() == variableOrder.size()) {
+          // the function applied to arguments: the formula of the function with the arguments
+          // put in for its variables, all at once
+          IExpr formula = temp.isAST(S.Function, 2) ? temp.first() : temp;
+          IASTAppendable rules = F.ListAlloc(variableOrder.size());
+          for (int i = 0; i < variableOrder.size(); i++) {
+            rules.append(
+                F.Rule(LogicFormula.variableToExpr(variableOrder.get(i)), ((IAST) arg1).get(i + 1)));
+          }
+          return engine.evaluate(formula.replaceAll(rules).orElse(formula));
+        }
         return ((IAST) arg1).setAtCopy(0, temp);
       }
       return temp;

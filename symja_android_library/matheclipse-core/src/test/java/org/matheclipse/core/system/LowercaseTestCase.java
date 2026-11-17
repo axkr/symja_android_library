@@ -5618,7 +5618,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("x\\[EmptySet] = 3; x\\[EmptySet] + 1", //
         "4");
     check("Infix(t(a, b), \\[EmptySmallCircle])", //
-        "a \u25E6 b");
+        "a\u25E6b");
     check("Head(\\[GothicCapitalA])", //
         "Symbol");
     // Syntax error in line: 1 - Unknown unicode longname Fake.
@@ -6138,8 +6138,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCapitalDifferentialD() {
+    // the characters in front of the mapped character are kept
     check("\"start \\[CapitalDifferentialD] 123 end\"", //
-        "startⅅ 123 end");
+        "start ⅅ 123 end");
   }
 
   @Test
@@ -12005,11 +12006,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Graphics");
     check("Head /@ RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]", //
         "{GraphicsComplex,List}");
-    // the outline is one closed loop on the unit circle, not the staircase of the grid
-    check("With({g = RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})}, With({loops = "
-        + "Cases(g, Line(l_) :> l, Infinity)[[1]], pts = g[[1, 1, 1]]}, {Length(loops), "
-        + "First(loops[[1]]) == Last(loops[[1]]), Max(Abs(Map(Norm, pts[[loops[[1]]]]) - 1)) < 10^-3}))", //
-        "{1,True,True}");
+    // the outline is one closed loop on the unit circle, not the staircase of the grid; a single
+    // loop is one flat list of point indices
+    check("With({g = RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})}, With({loop = "
+        + "Cases(g, Line(l_) :> l, Infinity)[[1]], pts = g[[1, 1, 1]]}, {VectorQ(loop, IntegerQ), "
+        + "First(loop) == Last(loop), Max(Abs(Map(Norm, pts[[loop]]) - 1)) < 10^-3}))", //
+        "{True,True,True}");
     // an annulus has two loops
     check(
         "Length(Cases(RegionPlot(1 < x^2 + y^2 < 3, {x, -2, 2}, {y, -2, 2}), Line(l_) :> l,"
@@ -12025,10 +12027,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Graphics");
     check("{AspectRatio, Frame, Axes} /. Rest(List @@ RegionPlot(x > 0, {x, -2, 2}, {y, -2, 2}))", //
         "{1,True,False}");
-    // one region for each condition; BoundaryStyle -> None leaves the fill alone
+    // one region for each condition, in one GraphicsComplex with all fills before the boundary
+    // lines; BoundaryStyle -> None leaves the fill alone
     check(
         "Count(RegionPlot({x^2 + y^2 < 1, x > 1}, {x, -2, 2}, {y, -2, 2})[[1]], _GraphicsComplex)", //
-        "2");
+        "1");
     check(
         "Cases(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}, BoundaryStyle -> None), _Line,"
             + " Infinity)", //
@@ -18573,11 +18576,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("p = Plot({x^2, 1 - x}, {x, 0, 2}, PlotStyle -> {None, Red}, Filling -> {1 -> Axis}); "
         + "{Count(p, _Line, Infinity), Count(p, _Polygon, Infinity), Count(p, _Invisible, Infinity)}", //
         "{1,1,0}");
-    // the filling between two curves of which one is hidden
+    // the filling between two curves of which one is hidden; the curves cross once, so the area
+    // between them is two polygons
     check(
         "Count(Plot({Sin(x), Cos(x), x/3}, {x, 0, 2}, PlotStyle -> {Automatic, None, Automatic}, "
             + "Filling -> {1 -> {2}}), _Line | _Polygon, Infinity)", //
-        "3");
+        "4");
   }
 
   @Test
@@ -30053,6 +30057,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // a fraction with a denominator beyond 53 bits is rounded once
+    check("N(1/10^40)", //
+        "1.*10^-40");
+    check("N(-7/10^22)", //
+        "-7.*10^-22");
     // a machine number stays one inside N(expr, p); a longer literal keeps its own digits
     check("{N(2.25, 30), Precision(N(2.25, 30)), Precision(N(3/7 + 0.5, 30))}", //
         "{2.25,16,16}");

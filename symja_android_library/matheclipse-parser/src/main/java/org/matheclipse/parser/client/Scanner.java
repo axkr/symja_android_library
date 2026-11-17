@@ -385,6 +385,9 @@ public abstract class Scanner {
   /** The last determined operator string */
   protected String fOperatorString;
 
+  /** The position in the input where {@link #fOperatorString} starts. */
+  protected int fOperatorStartPosition;
+
   /** The text between the delimiters of the box escape which was scanned last. */
   protected String fBoxText;
 

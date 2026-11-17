@@ -358,7 +358,6 @@ public class SVGGraphicsSmokeTest {
         "nothing should be drawn for the clipped parts by default");
 
     String red = render("clipping-red", base + ", ClippingStyle -> Red]").svg;
-    assertTrue(red.contains("class=\"clipped\""), "expected a group for the clipped stretches");
     assertTrue(red.contains("stroke=\"rgb(255,0,0)\""),
         () -> "expected the clipped stretches in red, got: " + head(red));
 

@@ -776,6 +776,12 @@ public class ParametricPlot extends Plot {
   }
 
   @Override
+  protected boolean clipsCurvesToPlotRange() {
+    // a PlotRange of a curve in the plane is not the vertical range of a function
+    return false;
+  }
+
+  @Override
   public int status() {
     return ImplementationStatus.EXPERIMENTAL;
   }

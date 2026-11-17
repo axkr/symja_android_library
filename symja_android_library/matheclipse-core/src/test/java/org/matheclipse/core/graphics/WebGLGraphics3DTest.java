@@ -214,15 +214,19 @@ public class WebGLGraphics3DTest {
 
   /**
    * A plot of one surface is that surface's GraphicsComplex, as Mathematica writes it, so
-   * First(plot) can be moved or rotated into another scene. Several surfaces stay a list.
+   * First(plot) can be moved or rotated into another scene. Several surfaces stay a list, and so
+   * does the surface of a region.
    */
   @Test
   public void oneSurfaceIsItsGraphicsComplex() {
     for (String plot : new String[] {"Plot3D[x*y,{x,0,1},{y,0,1},PlotPoints->3]",
-        "ParametricPlot3D[{u,v,u},{u,0,1},{v,0,1},PlotPoints->3]",
-        "RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, {z, -1, 1}]"}) {
+        "ParametricPlot3D[{u,v,u},{u,0,1},{v,0,1},PlotPoints->3]"}) {
       assertEquals("GraphicsComplex", evaluator.eval("Head[First[" + plot + "]]").toString(), plot);
     }
+    // the surface of a region stays in a list of primitives
+    assertEquals("{GraphicsComplex}", evaluator
+        .eval("Head /@ First[RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, {z, -1, 1}]]")
+        .toString());
     assertEquals("{GraphicsComplex,GraphicsComplex}",
         evaluator
             .eval(

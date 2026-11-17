@@ -63,6 +63,306 @@ public class CurveFitterFunctions {
   }
 
   /**
+   * The constraints <code>cons</code> of a model <code>{form, cons}</code> on its parameters.
+   *
+   * <p>
+   * A bound of a single parameter, <code>q &lt; 1</code> or <code>0 &lt;= a &lt;= 2</code>, is
+   * kept by fitting an unbounded parameter <code>s</code> instead, which the bounds are a smooth
+   * function of: <code>q == 2-Sqrt(1+s^2)</code> takes every value up to <code>1</code>. Every
+   * other inequality, like <code>a + b &lt; 1</code>, adds the residual
+   * <code>weight*Max(0, a+b-1)</code> to the fit, with a weight which grows until the result
+   * keeps the inequality; what is left outside is moved back to the boundary on the line to the
+   * start. Equations and other conditions are not supported.
+   */
+  static final class ParameterConstraints {
+    /** The halvings of a step which leaves the region of the constraints. */
+    private static final int MAX_STEP_HALVINGS = 40;
+
+    private final IAST parameters;
+
+    /** The lower bounds, <code>-Infinity</code> if a parameter has none. */
+    private final double[] lower;
+
+    /** The upper bounds, <code>Infinity</code> if a parameter has none. */
+    private final double[] upper;
+
+    /** The constraints which are no bounds of a single parameter. */
+    private final IASTAppendable others;
+
+    private ParameterConstraints(IAST parameters) {
+      this.parameters = parameters;
+      final int n = parameters.argSize();
+      this.lower = new double[n];
+      this.upper = new double[n];
+      Arrays.fill(lower, Double.NEGATIVE_INFINITY);
+      Arrays.fill(upper, Double.POSITIVE_INFINITY);
+      this.others = F.ListAlloc();
+    }
+
+    /**
+     * The constraints <code>cons</code> on the <code>parameters</code>.
+     *
+     * @return <code>null</code> if a constraint isn't a relation of the parameters or the bounds
+     *         leave no value of a parameter
+     */
+    static ParameterConstraints of(IExpr constraints, IAST parameters, EvalEngine engine) {
+      ParameterConstraints result = new ParameterConstraints(parameters);
+      if (!result.add(constraints, engine)) {
+        return null;
+      }
+      for (int i = 0; i < result.lower.length; i++) {
+        if (!(result.lower[i] < result.upper[i])) {
+          return null;
+        }
+      }
+      return result;
+    }
+
+    private boolean add(IExpr constraint, EvalEngine engine) {
+      if (constraint.isTrue()) {
+        return true;
+      }
+      if (constraint.isAnd() || constraint.isList()) {
+        for (IExpr arg : (IAST) constraint) {
+          if (!add(arg, engine)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      if (constraint.isAST(S.Inequality) && constraint.argSize() >= 3
+          && constraint.argSize() % 2 == 1) {
+        IAST inequality = (IAST) constraint;
+        for (int i = 1; i + 2 <= inequality.argSize(); i += 2) {
+          IExpr relation = inequality.get(i + 1);
+          if (!(relation.isSymbol() && addRelation((ISymbol) relation, inequality.get(i),
+              inequality.get(i + 2), engine))) {
+            return false;
+          }
+        }
+        return true;
+      }
+      if ((constraint.isAST(S.Less) || constraint.isAST(S.LessEqual) || constraint.isAST(S.Greater)
+          || constraint.isAST(S.GreaterEqual)) && constraint.argSize() >= 2) {
+        IAST relation = (IAST) constraint;
+        for (int i = 1; i < relation.argSize(); i++) {
+          if (!addRelation((ISymbol) relation.head(), relation.get(i), relation.get(i + 1),
+              engine)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      // an equation or another condition is not supported
+      return false;
+    }
+
+    /** <code>lhs relation rhs</code>, a bound if one side is a parameter and the other a number. */
+    private boolean addRelation(ISymbol relation, IExpr lhs, IExpr rhs, EvalEngine engine) {
+      final boolean less = relation == S.Less || relation == S.LessEqual;
+      final boolean greater = relation == S.Greater || relation == S.GreaterEqual;
+      if (!less && !greater) {
+        return false;
+      }
+      int index = parameters.indexOf(lhs);
+      IExpr bound = rhs;
+      boolean isUpper = less;
+      if (index < 0) {
+        index = parameters.indexOf(rhs);
+        bound = lhs;
+        isUpper = greater;
+      }
+      if (index > 0 && bound.isRealResult()) {
+        double value = engine.evalDouble(bound);
+        if (!Double.isNaN(value)) {
+          if (isUpper) {
+            upper[index - 1] = Math.min(upper[index - 1], value);
+          } else {
+            lower[index - 1] = Math.max(lower[index - 1], value);
+          }
+          return true;
+        }
+      }
+      return addOther(less ? F.Subtract(lhs, rhs) : F.Subtract(rhs, lhs));
+    }
+
+    /**
+     * A constraint <code>excess &lt;= 0</code>, which is evaluated at the points of the fit.
+     *
+     * @return <code>false</code> if <code>excess</code> depends on more than the parameters
+     */
+    private boolean addOther(IExpr excess) {
+      if (!excess.isFree(x -> x.isSymbol() && !x.isBuiltInSymbol() && !x.isConstantAttribute()
+          && !parameters.contains(x), true)) {
+        return false;
+      }
+      others.append(excess);
+      return true;
+    }
+
+    /** The value of parameter <code>i</code> for the unbounded value <code>s</code>. */
+    private double external(int i, double s) {
+      final double lo = lower[i];
+      final double hi = upper[i];
+      if (lo == Double.NEGATIVE_INFINITY) {
+        return hi == Double.POSITIVE_INFINITY ? s : hi + 1.0 - Math.sqrt(s * s + 1.0);
+      }
+      if (hi == Double.POSITIVE_INFINITY) {
+        return lo - 1.0 + Math.sqrt(s * s + 1.0);
+      }
+      return lo + 0.5 * (hi - lo) * (Math.sin(s) + 1.0);
+    }
+
+    /** The derivative of {@link #external(int, double)} by <code>s</code>. */
+    private double derivative(int i, double s) {
+      final double lo = lower[i];
+      final double hi = upper[i];
+      if (lo == Double.NEGATIVE_INFINITY) {
+        return hi == Double.POSITIVE_INFINITY ? 1.0 : -s / Math.sqrt(s * s + 1.0);
+      }
+      if (hi == Double.POSITIVE_INFINITY) {
+        return s / Math.sqrt(s * s + 1.0);
+      }
+      return 0.5 * (hi - lo) * Math.cos(s);
+    }
+
+    /**
+     * The unbounded value of parameter <code>i</code> with the value <code>p</code>. A value on or
+     * beyond a bound is moved inside first, where the parameter can still move both ways.
+     */
+    private double internal(int i, double p) {
+      final double lo = lower[i];
+      final double hi = upper[i];
+      if (lo == Double.NEGATIVE_INFINITY && hi == Double.POSITIVE_INFINITY) {
+        return p;
+      }
+      if (lo == Double.NEGATIVE_INFINITY || hi == Double.POSITIVE_INFINITY) {
+        final double bound = lo == Double.NEGATIVE_INFINITY ? hi : lo;
+        double distance = Math.abs(p - bound);
+        if (!(lo == Double.NEGATIVE_INFINITY ? p < hi : p > lo)) {
+          distance = 0.1 * Math.max(1.0, Math.abs(bound));
+        }
+        // the inverse of distance == Sqrt(1+s^2)-1
+        return Math.sqrt(distance * (distance + 2.0));
+      }
+      double t = 2.0 * (p - lo) / (hi - lo) - 1.0;
+      if (!(t > -1.0 && t < 1.0)) {
+        t = t > 0.0 ? 0.9 : -0.9;
+      }
+      return Math.asin(t);
+    }
+
+    double[] toExternal(double[] s) {
+      final double[] p = new double[s.length];
+      for (int i = 0; i < s.length; i++) {
+        p[i] = external(i, s[i]);
+      }
+      return p;
+    }
+
+    double[] toInternal(double[] p) {
+      final double[] s = new double[p.length];
+      for (int i = 0; i < p.length; i++) {
+        s[i] = internal(i, p[i]);
+      }
+      return s;
+    }
+
+    /** The derivatives of the parameters by their unbounded values. */
+    double[] derivatives(double[] s) {
+      final double[] d = new double[s.length];
+      for (int i = 0; i < s.length; i++) {
+        d[i] = derivative(i, s[i]);
+      }
+      return d;
+    }
+
+    /** Whether the constraints which are no bounds hold for the parameter values <code>p</code>. */
+    boolean holds(double[] p, EvalEngine engine) {
+      for (double excess : excesses(p, engine)) {
+        if (!(excess <= 0.0)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * The values <code>g(p)</code> of the constraints <code>g &lt;= 0</code> which are no bounds,
+     * <code>NaN</code> for a value which isn't a real number.
+     */
+    double[] excesses(double[] p, EvalEngine engine) {
+      final double[] result = new double[others.argSize()];
+      if (result.length == 0) {
+        return result;
+      }
+      IASTAppendable rules = F.ListAlloc(p.length);
+      for (int i = 0; i < p.length; i++) {
+        rules.append(F.Rule(parameters.get(i + 1), F.num(p[i])));
+      }
+      for (int k = 0; k < result.length; k++) {
+        result[k] = F.subst(others.get(k + 1), rules).evalfNaN();
+      }
+      return result;
+    }
+
+    /** The number of constraints which are no bounds. */
+    int othersSize() {
+      return others.argSize();
+    }
+
+    /**
+     * The bound which each parameter of <code>p</code> has reached, <code>NaN</code> for a
+     * parameter which is inside its bounds. The smooth function of the unbounded value has the
+     * derivative 0 at a bound, where the fit only creeps towards it.
+     */
+    double[] reachedBounds(double[] p) {
+      final double[] result = new double[p.length];
+      for (int i = 0; i < p.length; i++) {
+        result[i] = Double.NaN;
+        for (double bound : new double[] {lower[i], upper[i]}) {
+          if (Double.isFinite(bound)
+              && Math.abs(p[i] - bound) <= BOUND_REACHED * Math.max(1.0, Math.abs(bound))) {
+            result[i] = bound;
+          }
+        }
+      }
+      return result;
+    }
+
+    /** The relative distance to a bound, which counts as reaching it. */
+    private static final double BOUND_REACHED = 1.0e-5;
+
+    /**
+     * The point <code>s</code> of unbounded values, or the furthest point towards it from
+     * <code>valid</code> where the constraints hold.
+     */
+    double[] restrict(double[] s, double[] valid, EvalEngine engine) {
+      if (holds(toExternal(s), engine)) {
+        return s;
+      }
+      double lo = 0.0;
+      double hi = 1.0;
+      final double[] point = new double[s.length];
+      for (int k = 0; k < MAX_STEP_HALVINGS; k++) {
+        final double mid = 0.5 * (lo + hi);
+        for (int i = 0; i < s.length; i++) {
+          point[i] = valid[i] + mid * (s[i] - valid[i]);
+        }
+        if (holds(toExternal(point), engine)) {
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      for (int i = 0; i < s.length; i++) {
+        point[i] = valid[i] + lo * (s[i] - valid[i]);
+      }
+      return point;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -285,7 +585,174 @@ public class CurveFitterFunctions {
      * The model <code>{form}</code> is the model <code>form</code> without constraints.
      */
     protected static IExpr modelForm(IExpr model) {
-      return model.isList1() ? model.first() : model;
+      return model.isList() && model.argSize() >= 1 ? model.first() : model;
+    }
+
+    /**
+     * The constraints <code>cons</code> of the model <code>{form, cons}</code>.
+     *
+     * @return {@link F#NIL} if the model has no constraints
+     */
+    protected static @AllowNIL IExpr modelConstraints(IExpr model) {
+      if (!model.isList() || model.argSize() < 2) {
+        return F.NIL;
+      }
+      return model.argSize() == 2 ? model.second() : ((IAST) model).rest().setAtCopy(0, S.And);
+    }
+
+    /**
+     * Fit the model with the constraints on its parameters.
+     *
+     * @return <code>null</code> if the constraints aren't relations of the parameters, the data
+     *         are no rows of numbers, or the constraints don't hold at the start
+     */
+    static double[] fitConstrained(IAST data, IExpr function, IExpr constraints, IAST symbols,
+        IAST variables, double[] initialGuess, EvalEngine engine) {
+      IASTAppendable equations = F.ListAlloc();
+      IASTAppendable relations = F.ListAlloc();
+      collectConstraints(constraints, equations, relations);
+      if (equations.argSize() > 0) {
+        return fitWithEquations(data, function, equations, relations, symbols, variables,
+            initialGuess, engine);
+      }
+      ParameterConstraints parameterConstraints =
+          ParameterConstraints.of(constraints, symbols, engine);
+      if (parameterConstraints == null) {
+        return null;
+      }
+      IAST rows = Fit.buildDataMatrix(data, variables.argSize());
+      if (rows.isNIL()) {
+        return null;
+      }
+      double[] values = fitMultivariate(rows, function, symbols, variables, initialGuess,
+          parameterConstraints, engine);
+      if (values == null) {
+        return null;
+      }
+      // the parameters which reached a bound are set to it, and the others fitted once more
+      final double[] reached = parameterConstraints.reachedBounds(values);
+      IASTAppendable fixed = F.ListAlloc();
+      IASTAppendable free = F.ListAlloc();
+      int[] freeIndex = new int[values.length];
+      for (int i = 0; i < values.length; i++) {
+        if (Double.isNaN(reached[i])) {
+          freeIndex[free.argSize()] = i;
+          free.append(symbols.get(i + 1));
+        } else {
+          fixed.append(F.Rule(symbols.get(i + 1), F.num(reached[i])));
+        }
+      }
+      if (fixed.argSize() == 0) {
+        return values;
+      }
+      double[] polished = values.clone();
+      for (int i = 0; i < values.length; i++) {
+        if (!Double.isNaN(reached[i])) {
+          polished[i] = reached[i];
+        }
+      }
+      if (free.argSize() > 0) {
+        ParameterConstraints freeConstraints =
+            ParameterConstraints.of(F.subst(constraints, fixed), free, engine);
+        if (freeConstraints == null) {
+          return values;
+        }
+        double[] freeGuess = new double[free.argSize()];
+        for (int k = 0; k < freeGuess.length; k++) {
+          freeGuess[k] = values[freeIndex[k]];
+        }
+        double[] freeValues = fitMultivariate(rows, F.subst(function, fixed), free, variables,
+            freeGuess, freeConstraints, engine);
+        if (freeValues == null) {
+          return values;
+        }
+        for (int k = 0; k < freeValues.length; k++) {
+          polished[freeIndex[k]] = freeValues[k];
+        }
+      }
+      return parameterConstraints.holds(polished, engine) ? polished : values;
+    }
+
+    /** Split the constraints into the equations and the other relations. */
+    private static void collectConstraints(IExpr constraints, IASTAppendable equations,
+        IASTAppendable relations) {
+      if (constraints.isAnd() || constraints.isList()) {
+        for (IExpr arg : (IAST) constraints) {
+          collectConstraints(arg, equations, relations);
+        }
+      } else if (constraints.isEqual()) {
+        equations.append(constraints);
+      } else if (!constraints.isTrue()) {
+        relations.append(constraints);
+      }
+    }
+
+    /**
+     * Fit the model with equations between its parameters: the equations are solved for some of
+     * the parameters, which are replaced in the model and the other constraints, the remaining
+     * parameters are fitted, and the eliminated ones follow from them.
+     *
+     * @return <code>null</code> if the equations aren't solved for parameters or the fit fails
+     */
+    private static double[] fitWithEquations(IAST data, IExpr function, IAST equations,
+        IAST relations, IAST symbols, IAST variables, double[] initialGuess,
+        EvalEngine engine) {
+      IExpr solutions = engine.evalQuiet(F.Solve(equations, symbols));
+      if (!solutions.isListOfLists() || solutions.argSize() < 1) {
+        return null;
+      }
+      IAST rules = (IAST) solutions.first();
+      IASTAppendable free = F.ListAlloc();
+      IASTAppendable freeGuess = F.ListAlloc();
+      for (int i = 1; i < symbols.size(); i++) {
+        final IExpr symbol = symbols.get(i);
+        if (!rules.exists(rule -> rule.isRuleAST() && rule.first().equals(symbol))) {
+          free.append(symbol);
+          freeGuess.append(F.num(initialGuess[i - 1]));
+        }
+      }
+      if (!rules.forAll(rule -> rule.isRuleAST() && rule.second().isFree(
+          x -> symbols.contains(x) && !free.contains(x), true))) {
+        return null;
+      }
+      double[] freeValues = new double[0];
+      if (free.argSize() > 0) {
+        IExpr freeFunction = engine.evaluate(F.subst(function, rules));
+        double[] guess = freeGuess.toDoubleVector();
+        if (relations.argSize() > 0) {
+          IExpr freeConstraints = engine.evaluate(F.subst(relations.setAtCopy(0, S.And), rules));
+          freeValues = fitConstrained(data, freeFunction, freeConstraints, free, variables, guess,
+              engine);
+        } else {
+          IAST rows = Fit.buildDataMatrix(data, variables.argSize());
+          freeValues = rows.isNIL() ? null
+              : fitMultivariate(rows, freeFunction, free, variables, guess, engine);
+        }
+        if (freeValues == null) {
+          return null;
+        }
+      }
+      IASTAppendable freeRules = F.ListAlloc(free.argSize());
+      for (int k = 0; k < freeValues.length; k++) {
+        freeRules.append(F.Rule(free.get(k + 1), F.num(freeValues[k])));
+      }
+      double[] values = new double[symbols.argSize()];
+      for (int i = 1; i < symbols.size(); i++) {
+        final IExpr symbol = symbols.get(i);
+        IExpr value = symbol;
+        for (IExpr rule : rules) {
+          if (rule.first().equals(symbol)) {
+            value = rule.second();
+            break;
+          }
+        }
+        IExpr number = engine.evalN(F.subst(value, freeRules));
+        if (!number.isReal()) {
+          return null;
+        }
+        values[i - 1] = number.evalf();
+      }
+      return values;
     }
 
     /**
@@ -403,6 +870,18 @@ public class CurveFitterFunctions {
      */
     static double[] fitMultivariate(IAST data, IExpr function, IAST symbols,
         IAST variables, double[] initialGuess, EvalEngine engine) {
+      return fitMultivariate(data, function, symbols, variables, initialGuess, null, engine);
+    }
+
+    /**
+     * See {@link #fitMultivariate(IAST, IExpr, IAST, IAST, double[], EvalEngine)}.
+     *
+     * @param constraints the constraints on the parameters, or <code>null</code>
+     * @return <code>null</code> also if the constraints don't hold at the start or the result
+     */
+    static double[] fitMultivariate(IAST data, IExpr function, IAST symbols,
+        IAST variables, double[] initialGuess, ParameterConstraints constraints,
+        EvalEngine engine) {
       final int n = variables.argSize();
       int[] dim = data.isMatrix();
       if (dim == null || dim[1] != n + 1) {
@@ -423,16 +902,35 @@ public class CurveFitterFunctions {
       final IASTAppendable rules = F.ListAlloc(n + parameters);
       variables.forEach(v -> rules.append(F.Rule(v, S.Null)));
       symbols.forEach(p -> rules.append(F.Rule(p, S.Null)));
-      final double[] target = new double[rows.length];
+      // the constraints g <= 0 which are no bounds add the residuals weight*Max(0, g)
+      final int penalties = constraints == null ? 0 : constraints.othersSize();
+      final double[] target = new double[rows.length + penalties];
+      double scale = 0.0;
       for (int i = 0; i < rows.length; i++) {
         target[i] = rows[i][n];
+        scale = Math.max(scale, Math.abs(target[i]));
       }
-      MultivariateJacobianFunction model = point -> {
-        for (int j = 0; j < parameters; j++) {
-          ((IASTMutable) rules.get(n + j + 1)).set(2, F.num(point.getEntry(j)));
+      final double[] weight = {Math.max(1.0, scale)};
+      MultivariateJacobianFunction model = unbounded -> {
+        // the parameters of the model, and their derivatives by the values which are fitted
+        final double[] point;
+        final double[] chain;
+        if (constraints == null) {
+          point = unbounded.toArray();
+          chain = null;
+        } else {
+          point = constraints.toExternal(unbounded.toArray());
+          chain = constraints.derivatives(unbounded.toArray());
         }
-        double[] values = new double[rows.length];
-        double[][] jacobian = new double[rows.length][parameters];
+        for (int j = 0; j < parameters; j++) {
+          ((IASTMutable) rules.get(n + j + 1)).set(2, F.num(point[j]));
+        }
+        double[] values = new double[rows.length + penalties];
+        double[][] jacobian = new double[rows.length + penalties][parameters];
+        if (penalties > 0) {
+          penaltyResiduals(constraints, unbounded.toArray(), weight[0], values, jacobian,
+              rows.length, engine);
+        }
         for (int i = 0; i < rows.length; i++) {
           for (int k = 0; k < n; k++) {
             ((IASTMutable) rules.get(k + 1)).set(2, F.num(rows[i][k]));
@@ -445,7 +943,7 @@ public class CurveFitterFunctions {
             if (!Double.isFinite(jacobian[i][j])) {
               // no derivative which can be evaluated: a central difference
               final IASTMutable rule = (IASTMutable) rules.get(n + j + 1);
-              final double p = point.getEntry(j);
+              final double p = point[j];
               final double h = differenceStep(p);
               rule.set(2, F.num(p + h));
               final double upper = engine.evalDouble(F.subst(fitFunction, rules));
@@ -454,19 +952,81 @@ public class CurveFitterFunctions {
               rule.set(2, F.num(p));
               jacobian[i][j] = (upper - lower) / (2.0 * h);
             }
+            if (chain != null) {
+              jacobian[i][j] *= chain[j];
+            }
           }
         }
+        engine.checkTimeLimit();
         return new Pair<>(new ArrayRealVector(values, false),
             new Array2DRowRealMatrix(jacobian, false));
       };
-      LeastSquaresProblem problem = new LeastSquaresBuilder() //
-          .maxEvaluations(Integer.MAX_VALUE) //
-          .maxIterations(Integer.MAX_VALUE) //
-          .start(initialGuess) //
-          .target(target) //
-          .model(model) //
-          .build();
-      return new LevenbergMarquardtOptimizer().optimize(problem).getPoint().toArray();
+      final double[] start =
+          constraints == null ? initialGuess : constraints.toInternal(initialGuess);
+      double[] result = start;
+      // with constraints which are no bounds the weight of their residuals grows from round to
+      // round, each round starting where the last one ended
+      final int rounds = penalties == 0 ? 1 : PENALTY_ROUNDS;
+      for (int round = 0; round < rounds; round++) {
+        LeastSquaresProblem problem = new LeastSquaresBuilder() //
+            .maxEvaluations(Integer.MAX_VALUE) //
+            .maxIterations(Integer.MAX_VALUE) //
+            .start(result) //
+            .target(target) //
+            .model(model) //
+            .build();
+        result = new LevenbergMarquardtOptimizer().optimize(problem).getPoint().toArray();
+        if (penalties > 0 && constraints.holds(constraints.toExternal(result), engine)) {
+          break;
+        }
+        weight[0] *= PENALTY_GROWTH;
+      }
+      if (constraints == null) {
+        return result;
+      }
+      if (penalties > 0 && !constraints.holds(constraints.toExternal(result), engine)) {
+        // what the weights leave outside of the region: the point of the boundary between the
+        // start and the result
+        if (!constraints.holds(constraints.toExternal(start), engine)) {
+          return null;
+        }
+        result = constraints.restrict(result, start, engine);
+      }
+      result = constraints.toExternal(result);
+      return constraints.holds(result, engine) ? result : null;
+    }
+
+    /** The rounds of a fit with constraints which are no bounds. */
+    private static final int PENALTY_ROUNDS = 6;
+
+    /** The factor of the weight of the constraint residuals from one round to the next. */
+    private static final double PENALTY_GROWTH = 100.0;
+
+    /**
+     * The residuals <code>weight*Max(0, g)</code> of the constraints <code>g &lt;= 0</code> which
+     * are no bounds, and their derivatives by the unbounded parameters, by central differences.
+     *
+     * @param offset the row of the first residual
+     */
+    private static void penaltyResiduals(ParameterConstraints constraints, double[] unbounded,
+        double weight, double[] values, double[][] jacobian, int offset, EvalEngine engine) {
+      final double[] excesses = constraints.excesses(constraints.toExternal(unbounded), engine);
+      for (int k = 0; k < excesses.length; k++) {
+        values[offset + k] = excesses[k] > 0.0 ? weight * excesses[k] : 0.0;
+      }
+      final double[] shifted = unbounded.clone();
+      for (int j = 0; j < unbounded.length; j++) {
+        final double h = differenceStep(unbounded[j]);
+        shifted[j] = unbounded[j] + h;
+        final double[] upper = constraints.excesses(constraints.toExternal(shifted), engine);
+        shifted[j] = unbounded[j] - h;
+        final double[] lower = constraints.excesses(constraints.toExternal(shifted), engine);
+        shifted[j] = unbounded[j];
+        for (int k = 0; k < excesses.length; k++) {
+          jacobian[offset + k][j] =
+              excesses[k] > 0.0 ? weight * (upper[k] - lower[k]) / (2.0 * h) : 0.0;
+        }
+      }
     }
 
     public @AllowNIL IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
@@ -476,10 +1036,12 @@ public class CurveFitterFunctions {
       if (ast.arg1().isList() && ast.arg3().isList() && variables.isPresent()) {
         IAST data = (IAST) ast.arg1();
         IExpr function = modelForm(ast.arg2());
+        IExpr constraints = modelConstraints(ast.arg2());
         IASTAppendable renamed = F.ListAlloc();
         IAST listOfSymbols = renameParameters((IAST) ast.arg3(), renamed);
         if (renamed.argSize() > 0) {
           function = F.subst(function, renamed);
+          constraints = F.subst(constraints, renamed);
         }
 
         double[] initialGuess = new double[listOfSymbols.argSize()];
@@ -498,13 +1060,19 @@ public class CurveFitterFunctions {
           try {
             final IAST symbols = listOfSymbols;
             final IExpr model = function;
-            double[] linear = workingPrecision == S.Automatic
-                ? minimumNormLinearFit(data, model, symbols, variables, engine)
-                : null;
-            final double[] values = linear != null ? linear
-                : variables.argSize() == 1
-                    ? fit(data, model, symbols, variables.arg1(), initialGuess, null, engine)
-                    : fitMultivariate(data, model, symbols, variables, initialGuess, engine);
+            final double[] values;
+            if (constraints.isPresent()) {
+              values = fitConstrained(data, model, constraints, symbols, variables,
+                  initialGuess, engine);
+            } else {
+              double[] linear = workingPrecision == S.Automatic
+                  ? minimumNormLinearFit(data, model, symbols, variables, engine)
+                  : null;
+              values = linear != null ? linear
+                  : variables.argSize() == 1
+                      ? fit(data, model, symbols, variables.arg1(), initialGuess, null, engine)
+                      : fitMultivariate(data, model, symbols, variables, initialGuess, engine);
+            }
             if (values != null) {
               IAST rules =
                   F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
@@ -1472,21 +2040,30 @@ public class CurveFitterFunctions {
       }
       IAST data = (IAST) arg1;
       IExpr function = FindFit.modelForm(ast.arg2());
+      IExpr constraints = FindFit.modelConstraints(ast.arg2());
       IASTAppendable renamed = F.ListAlloc();
       IAST spec = FindFit.renameParameters((IAST) ast.arg3(), renamed);
       if (renamed.argSize() > 0) {
         function = F.subst(function, renamed);
+        constraints = F.subst(constraints, renamed);
       }
       double[] initialGuess = new double[spec.argSize()];
       IAST symbols = FindFit.initialGuess(spec, initialGuess);
       if (symbols == null || !symbols.isPresent()) {
         return F.NIL;
       }
+      if (constraints.isPresent()) {
+        // the constrained fit is made to the rows {x1, ..., xn, y}
+        data = Fit.buildDataMatrix(data, variables.argSize());
+        if (data.isNIL()) {
+          return F.NIL;
+        }
+      }
       try {
         double[] values;
         double[][] xs;
         double[] ys;
-        if (variables.argSize() == 1) {
+        if (constraints.isNIL() && variables.argSize() == 1) {
           java.util.List<org.hipparchus.fitting.WeightedObservedPoint> points =
               new java.util.ArrayList<>();
           values = FindFit.fit(data, function, symbols, variables.arg1(), initialGuess, points,
@@ -1499,8 +2076,10 @@ public class CurveFitterFunctions {
           }
         } else {
           // the rows {x1, ..., xn, y}
-          values = FindFit.fitMultivariate(data, function, symbols, variables, initialGuess,
-              engine);
+          values = constraints.isPresent()
+              ? FindFit.fitConstrained(data, function, constraints, symbols, variables,
+                  initialGuess, engine)
+              : FindFit.fitMultivariate(data, function, symbols, variables, initialGuess, engine);
           final int n = variables.argSize();
           double[][] rows = values == null ? null : data.toDoubleMatrix(true);
           if (rows == null) {

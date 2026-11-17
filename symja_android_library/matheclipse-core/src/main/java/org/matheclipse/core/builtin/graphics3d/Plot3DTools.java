@@ -983,6 +983,47 @@ public final class Plot3DTools {
   }
 
   /**
+   * Colour the vertices of a surface by its {@code ColorFunction}.
+   *
+   * <p>
+   * Where every vertex gets the same colour, that colour is the style of the whole surface, and it
+   * may be a directive with an opacity; the vertices get no colours of their own. Otherwise each
+   * vertex gets its colour, reduced to one colour, as the {@code VertexColors} of the complex.
+   *
+   * @param builder the finished surface
+   * @param colors the colouring, built with the sink {@link PlotColorFunction.Sink#DIRECTIVE}
+   * @param tuple the arguments of the colour function at the coordinates of a vertex
+   * @return the colour of every vertex, or {@link F#NIL} if the vertices are coloured one by one
+   *         or there are none
+   */
+  public static IExpr colorVertices(GraphicsComplexBuilder builder, PlotColorFunction colors,
+      java.util.function.Function<double[], double[]> tuple, EvalEngine engine) {
+    int n = builder.vertexCount();
+    if (n == 0) {
+      return F.NIL;
+    }
+    IExpr[] vertexColors = new IExpr[n];
+    boolean uniform = true;
+    for (int v = 0; v < n; v++) {
+      engine.checkTimeLimit();
+      vertexColors[v] = colors.color(tuple.apply(builder.coordinatesOf(v + 1)));
+      uniform &= vertexColors[v].equals(vertexColors[0]);
+    }
+    if (uniform) {
+      return vertexColors[0];
+    }
+    IASTAppendable list = F.ListAlloc(n);
+    for (IExpr color : vertexColors) {
+      // a colour of its own stands as it is; a directive is folded into one colour
+      IExpr flat = org.matheclipse.core.graphics.svg.ColorUtil.parse(color) != null ? color
+          : GraphicsOptions.toColorExpr(color, F.NIL);
+      list.append(flat.isPresent() ? flat : F.RGBColor(F.C0, F.C0, F.C0));
+    }
+    builder.setVertexColors(list);
+    return F.NIL;
+  }
+
+  /**
    * Turn a sampled grid of points into a {@code GraphicsComplex} of quads.
    *
    * <p>

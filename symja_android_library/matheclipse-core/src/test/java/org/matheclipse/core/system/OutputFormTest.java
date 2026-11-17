@@ -124,7 +124,108 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     check("Infix(f(x,y,z))", //
         "x ~f~ y ~f~ z");
     check("Infix(f(x,y,z), \"$~$\")", //
-        "x $~$ y $~$ z");
+        "x$~$y$~$z");
+  }
+
+  @Test
+  public void testInfixIsDisplayWrapper() {
+    // the wrapper stays unevaluated
+    check("Head(Infix({u, v}, \"&\"))", //
+        "Infix");
+    check("InputForm(Infix({u, v, w}, {\"<\", \">\"}))", //
+        "Infix({u,v,w},{\"<\",\">\"})");
+    check("Infix({p*q, r}, \"#\") // FullForm", //
+        "Infix(List(Times(p, q), r), \"#\")");
+    // a list of operators is written as the list it is
+    check("Infix({u, v, w, s}, {\"<\", \">\"})", //
+        "u{<,>}v{<,>}w{<,>}s");
+    // a non-string operator is written as an expression
+    check("Infix({u, v, w}, y^3)", //
+        "uy^3vy^3w");
+    // a single operand is written as it is
+    check("Infix({u}, \"&\")", //
+        "u");
+    check("Infix(g(5, 7), \" : \")", //
+        "5 : 7");
+    // with a precedence an operand which binds less tightly is put in parentheses
+    check("Infix({u + v, w}, \"%\", 400)", //
+        "(u+v)%w");
+    // without a precedence a product, or an operator binding still less tightly, is put in
+    // parentheses
+    check("Infix({u + v, w^2, s*w, s==v}, \"%\")", //
+        "(u+v)%w^2%(s*w)%(s==v)");
+    // a product written as a quotient or with a leading minus sign is not
+    check("Infix({-3*w, u/v, s^(-2)*w, 2*u*v}, \"#\")", //
+        "-3*w#u/v#w/s^2#(2*u*v)");
+    check("Prefix(h(s*w))", //
+        "h @ (s*w)");
+    check("Prefix(h(-w))", //
+        "h @ -w");
+    check("Infix(f(u + v, w))", //
+        "(u+v) ~f~ w");
+    // the row itself is not put in parentheses
+    check("w^Infix({u, v}, \"%\")", //
+        "w^u%v");
+    // a grouping as fourth argument: the wrapper is written as it is
+    check("Infix({u*v, w*s}, \"%\", 400, Left)", //
+        "Infix({u*v,s*w},%,400,Left)");
+    check("Infix({u, v, w}, \"%\", 310, Right)", //
+        "Infix({u,v,w},%,310,Right)");
+    check("y^Infix({u, v}, \"%\", 310)", //
+        "y^(u%v)");
+    // arguments the wrapper can't be shown with
+    check("Infix(u, \"%\")", //
+        "Infix(u,%)");
+    check("Infix({u, v}, \"%\", w)", //
+        "Infix({u,v},%,w)");
+  }
+
+  @Test
+  public void testPrivateUseCharacters() {
+    // the output form shows the character of the same meaning, the input form the name
+    check("\"u\\[ImaginaryI]v\\[ExponentialE]w\\[DifferentialD]\"", //
+        "uⅈvⅇwⅆ");
+    check("InputForm(\"u\\[ImaginaryI]v\")", //
+        "\"u\\[ImaginaryI]v\"");
+    check("ToExpression(ToString(\"u\\[ImaginaryI]v\", InputForm)) == \"u\\[ImaginaryI]v\"", //
+        "True");
+  }
+
+  @Test
+  public void testImpliesNesting() {
+    // an implication on the right of an implication keeps its parentheses
+    check("Implies(u, Implies(v, w))", //
+        "u⇒(v⇒w)");
+    check("Implies(Implies(u, v), w)", //
+        "(u⇒v)⇒w");
+    check("Implies(u, v && w)", //
+        "u⇒v&&w");
+    check("Implies(u, Implies(v, w)) // FullForm", //
+        "Implies(u, Implies(v, w))");
+  }
+
+  @Test
+  public void testPrefixPostfixAreDisplayWrappers() {
+    check("Head(Prefix(g(u)))", //
+        "Prefix");
+    check("Head(Postfix(g(u), \"'\"))", //
+        "Postfix");
+    check("InputForm(Postfix(g(u)))", //
+        "Postfix(g(u))");
+    check("Postfix(g(u+v))", //
+        "u+v // g");
+    check("Prefix(g(u), \"~~\")", //
+        "~~u");
+    check("Prefix(g(u+v), \"%\", 400)", //
+        "%(u+v)");
+    // without a precedence a sum is put in parentheses, except in front of //
+    check("Prefix(g(u+v))", //
+        "g @ (u+v)");
+    check("Postfix(g(u+v), \"'\")", //
+        "(u+v)'");
+    // no single operand
+    check("Prefix(g(u, v))", //
+        "Prefix(g(u,v))");
   }
 
   @Test
@@ -146,21 +247,21 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "a+(b*c)");
 
     check("s=Infix(f(a,b), \"|>\")", //
-        "a |> b");
+        "a|>b");
     check("PrecedenceForm(s, 350)+y", //
-        "y+a |> b");
+        "y+a|>b");
     check("PrecedenceForm(s, 350)*y", //
-        "y*(a |> b)");
+        "y*(a|>b)");
 
     check("PrecedenceForm(s, 500)+y", //
-        "y+a |> b");
+        "y+a|>b");
     check("PrecedenceForm(s, 500)*y", //
-        "y*a |> b");
+        "y*a|>b");
 
     check("PrecedenceForm(s, 1)+y", //
-        "y+(a |> b)");
+        "y+(a|>b)");
     check("PrecedenceForm(s, 1)*y", //
-        "y*(a |> b)");
+        "y*(a|>b)");
   }
 
   @Test
@@ -168,7 +269,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     check("PreFix(f(x))", //
         "f @ x");
     check("PreFix(f(x), \"$-$\")", //
-        "$-$ x");
+        "$-$x");
   }
 
 
@@ -177,7 +278,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     check("PostFix(f(x))", //
         "x // f");
     check("PostFix(f(x), \"$+$\")", //
-        "x $+$");
+        "x$+$");
   }
 
   @Override

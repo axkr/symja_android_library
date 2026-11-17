@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.OperatorFormLayout;
 import org.matheclipse.core.form.TraditionalSumOrder;
 import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.interfaces.Attribute;
@@ -225,6 +226,10 @@ public class BoxesFunctions {
       if (expr.isAST(S.Skeleton, 2)) {
         return F.$str("<<" + expr.first().toString() + ">>");
       }
+      OperatorFormLayout operatorForm = OperatorFormLayout.of(expr);
+      if (operatorForm != null) {
+        return operatorFormBox(operatorForm, expr, precedence, form, engine);
+      }
       if (expr.isAST(S.RawBoxes, 2)) {
         // already boxes: inserted as they are, in every form
         return expr.first();
@@ -254,12 +259,11 @@ public class BoxesFunctions {
         }
       }
       if (form == S.TraditionalForm && expr.isImaginaryUnit()) {
-        // \[ImaginaryI]
-        return F.$str("");
+        return F.$str(TRADITIONAL_IMAGINARY_I);
       }
       if (form == S.TraditionalForm && expr == S.E) {
         // \[ExponentialE]
-        return F.$str("");
+        return F.$str("\uF74D");
       }
       IExpr special = specialSymbolBox(expr);
       if (special.isPresent()) {
@@ -321,6 +325,17 @@ public class BoxesFunctions {
                     standardFormRecursive(function.arg1(), Precedence.NOT, form, engine))),
                 Precedence.NOT, precedence);
           }
+          if (function.isAST(S.Factorial, 2) || function.isAST(S.Factorial2, 2)) {
+            // n! and n!!: an operand which is no atom or function call is put in parentheses
+            return parenthesizeRow(
+                F.RowBox(F.list(
+                    standardFormRecursive(function.arg1(), Precedence.FACTORIAL + 1, form, engine),
+                    F.$str(function.isAST(S.Factorial) ? "!" : "!!"))),
+                Precedence.FACTORIAL, precedence);
+          }
+          if (function.isAST(S.Part) && function.argSize() >= 2) {
+            return partBox(function, form, engine);
+          }
           if (function.head().isSymbol()) {
             StandardFormOperator operator = operatorFor((ISymbol) function.head());
             if (operator != null) {
@@ -360,7 +375,7 @@ public class BoxesFunctions {
       } else if (expr.isSymbol()) {
         return F.$str(expr.toString());
       } else if (expr.isNumber()) {
-        return numberBox((INumber) expr, precedence);
+        return numberBox((INumber) expr, precedence, form);
       }
       return F.$str(expr.toString());
     }
@@ -529,6 +544,17 @@ public class BoxesFunctions {
                 F.list(F.list(standardFormRecursive(function.arg1(), 0, form, engine)),
                     F.list(standardFormRecursive(function.arg2(), 0, form, engine)))),
             F.$str(")")));
+      }
+      if (function.isAST(S.SphericalHarmonicY, 5)) {
+        // Y_l^m(theta, phi): the degree and the order as subscript and superscript of the name
+        IASTAppendable angles = F.ListAlloc(3);
+        angles.append(standardFormRecursive(function.arg3(), 0, form, engine));
+        angles.append(F.$str(","));
+        angles.append(standardFormRecursive(function.arg4(), 0, form, engine));
+        IExpr name = F.ternaryAST3(S.SubsuperscriptBox, F.$str("Y"),
+            standardFormRecursive(function.arg1(), 0, form, engine),
+            standardFormRecursive(function.arg2(), 0, form, engine));
+        return F.RowBox(F.List(name, F.$str("("), F.RowBox(angles), F.$str(")")));
       }
       if (function.isAST(S.Hypergeometric0F1, 3)) {
         return hypergeometricBox(F.CEmptyList, F.list(function.arg1()), function.arg2(), form,
@@ -756,6 +782,84 @@ public class BoxesFunctions {
       return parenthesizeRow(F.RowBox(row), operatorPrecedence, precedence);
     }
 
+    /**
+     * The boxes of the display wrapper <code>Infix</code>, <code>Prefix</code> or
+     * <code>Postfix</code>: <code>InterpretationBox(RowBox({a, "+", b}), Infix({a, b}, "+"),
+     * Editable -&gt; False)</code> for <code>Infix({a, b}, "+")</code>, which reads back as the
+     * wrapper. A string operator is its characters, a single operand its own boxes.
+     */
+    private static IExpr operatorFormBox(OperatorFormLayout layout, IExpr wrapper, int precedence,
+        IExpr form, EvalEngine engine) {
+      IASTAppendable row = F.ListAlloc(layout.pieces.size() + 2);
+      // the operator a ~f~ b has a space only on the outside of its two signs
+      boolean opening = true;
+      for (OperatorFormLayout.Piece piece : layout.pieces) {
+        switch (piece.kind) {
+          case SIGN:
+            if (layout.defaultSign.equals("~")) {
+              if (opening) {
+                row.append(F.$str(" "));
+                row.append(F.$str("~"));
+              } else {
+                row.append(F.$str("~"));
+                row.append(F.$str(" "));
+              }
+              opening = !opening;
+            } else {
+              row.append(F.$str(layout.defaultSign));
+            }
+            break;
+          case OPERATOR:
+            row.append(piece.isText() ? F.$str(piece.expr.toString())
+                : standardFormRecursive(piece.expr, 0, form, engine));
+            break;
+          default:
+            row.append(standardFormRecursive(piece.expr,
+                piece.precedence == Integer.MIN_VALUE ? 0 : piece.precedence, form, engine));
+            break;
+        }
+      }
+      IExpr boxes = F.ternaryAST3(S.InterpretationBox,
+          row.argSize() == 1 ? row.arg1() : F.RowBox(row), wrapper, F.Rule(S.Editable, S.False));
+      if (layout.isParenthesized(precedence)) {
+        return F.RowBox(F.list(F.$str("("), boxes, F.$str(")")));
+      }
+      return boxes;
+    }
+
+    /**
+     * The precedence of the part brackets <code>x[[i]]</code>: they bind more tightly than any
+     * operator.
+     */
+    private static final int PART_PRECEDENCE = 1210;
+
+    /**
+     * The boxes of <code>x[[i, j, ...]]</code>: <code>RowBox({x, "\\[LeftDoubleBracket]", i,
+     * "\\[RightDoubleBracket]"})</code>, several indices as a row separated by commas. An operator
+     * expression <code>x</code> is put in parentheses.
+     */
+    private static IExpr partBox(IAST part, IExpr form, EvalEngine engine) {
+      IExpr indices;
+      if (part.argSize() == 2) {
+        indices = standardFormRecursive(part.arg2(), 0, form, engine);
+      } else {
+        IASTAppendable row = F.ListAlloc(2 * part.argSize());
+        for (int i = 2; i < part.size(); i++) {
+          if (i > 2) {
+            row.append(F.$str(","));
+          }
+          row.append(standardFormRecursive(part.get(i), 0, form, engine));
+        }
+        indices = F.RowBox(row);
+      }
+      IASTAppendable row = F.ListAlloc(4);
+      row.append(standardFormRecursive(part.arg1(), PART_PRECEDENCE, form, engine));
+      row.append(F.$str("\\[LeftDoubleBracket]"));
+      row.append(indices);
+      row.append(F.$str("\\[RightDoubleBracket]"));
+      return F.RowBox(row);
+    }
+
     /** The row in parentheses if its operator binds less tightly than the surrounding one. */
     private static IExpr parenthesizeRow(IExpr row, int rowPrecedence, int precedence) {
       if (precedence > rowPrecedence) {
@@ -858,30 +962,35 @@ public class BoxesFunctions {
     /** The spelling of the imaginary unit in a box, as a saved notebook output spells it. */
     private static final String IMAGINARY_I = "I";
 
+    /** The imaginary unit in a box of the traditional form: <code>\[ImaginaryI]</code>. */
+    private static final String TRADITIONAL_IMAGINARY_I = "\uF74E";
+
     /**
      * A number as it's written in a box: a negative one with its sign in front, a rational as a
      * fraction, an imaginary part followed by <code>I</code> and a machine real with all of its
      * digits and the <code>`</code> which marks its precision - <code>0.8459659909775918`</code>,
-     * as the notebook's saved outputs show it.
+     * as the notebook's saved outputs show it. In the traditional form the imaginary unit is
+     * <code>\[ImaginaryI]</code>.
      */
-    private static IExpr numberBox(INumber number, int precedence) {
+    private static IExpr numberBox(INumber number, int precedence, IExpr form) {
       if (number.isComplex() || number.isComplexNumeric()) {
         INumber re = number.re();
         INumber im = number.im();
         if (re.isZero()) {
           if (im.isNegative()) {
-            return parenthesize(F.RowBox(F.list(F.$str("-"), imaginaryBox(im.negate()))),
+            return parenthesize(F.RowBox(F.list(F.$str("-"), imaginaryBox(im.negate(), form))),
                 Precedence.TIMES, precedence);
           }
-          return imaginaryBox(im);
+          return imaginaryBox(im, form);
         }
-        IExpr sum = F.RowBox(F.list(numberBox(re, Precedence.PLUS),
-            F.$str(im.isNegative() ? "-" : "+"), imaginaryBox(im.isNegative() ? im.negate() : im)));
+        IExpr sum = F.RowBox(F.list(numberBox(re, Precedence.PLUS, form),
+            F.$str(im.isNegative() ? "-" : "+"),
+            imaginaryBox(im.isNegative() ? im.negate() : im, form)));
         return parenthesize(sum, Precedence.PLUS, precedence);
       }
       if (number.isNegative()) {
         // -2 is the row RowBox({"-", "2"}), as the minus is written in front of any other factor
-        IExpr positive = numberBox(number.negate(), Precedence.TIMES);
+        IExpr positive = numberBox(number.negate(), Precedence.TIMES, form);
         return parenthesize(F.RowBox(F.list(F.$str("-"), positive)), Precedence.TIMES, precedence);
       }
       if (number.isRational() && !number.isInteger()) {
@@ -895,11 +1004,12 @@ public class BoxesFunctions {
     }
 
     /** <code>I</code>, <code>2 I</code> or <code>(1/2) I</code> for a positive imaginary part. */
-    private static IExpr imaginaryBox(INumber im) {
+    private static IExpr imaginaryBox(INumber im, IExpr form) {
+      final String unit = form == S.TraditionalForm ? TRADITIONAL_IMAGINARY_I : IMAGINARY_I;
       if (im.isOne()) {
-        return F.$str(IMAGINARY_I);
+        return F.$str(unit);
       }
-      return F.RowBox(F.list(numberBox(im, Precedence.TIMES), F.$str(" "), F.$str(IMAGINARY_I)));
+      return F.RowBox(F.list(numberBox(im, Precedence.TIMES, form), F.$str(" "), F.$str(unit)));
     }
 
     /**
@@ -1264,7 +1374,7 @@ public class BoxesFunctions {
               standardFormRecursive(times.arg2(), Precedence.TIMES, form, engine))));
           start = 3;
         } else {
-          factors.append(numberBox((INumber) coefficient, Precedence.TIMES));
+          factors.append(numberBox((INumber) coefficient, Precedence.TIMES, form));
         }
         for (int i = start; i < times.size(); i++) {
           factors.append(standardFormRecursive(times.get(i),

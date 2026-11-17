@@ -41,6 +41,8 @@ public class ListLinePlot extends ListPlot {
     graphicsOptions.setJoined(true);
     // the size the points of a joined list are marked with, where they are marked at all
     graphicsOptions.setCurveStyleLead(F.list(F.PointSize(F.QQ(7, 360))));
+    // the PlotRange and ClippingStyle of the call cut the lines
+    graphicsOptions.setCallAST(originalAST);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
@@ -53,6 +55,11 @@ public class ListLinePlot extends ListPlot {
     }
 
     return F.NIL;
+  }
+
+  @Override
+  protected boolean clipsCurvesToPlotRange() {
+    return true;
   }
 
   @Override

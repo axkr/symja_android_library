@@ -11,6 +11,75 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFactorialBoxes() {
+    check("ToBoxes(k!) // InputForm", //
+        "RowBox({\"k\",\"!\"})");
+    check("ToBoxes(k!!) // InputForm", //
+        "RowBox({\"k\",\"!!\"})");
+    check("ToBoxes(HoldForm(11!)) // InputForm", //
+        "TagBox(RowBox({\"11\",\"!\"}),HoldForm)");
+    // an operand which is no atom or function call is put in parentheses
+    check("ToBoxes(HoldForm((p - q)!)) // InputForm", //
+        "TagBox(RowBox({RowBox({\"(\",RowBox({\"p\",\"-\",\"q\"}),\")\"}),\"!\"}),HoldForm)");
+    check("ToBoxes(HoldForm((-5)!!)) // InputForm", //
+        "TagBox(RowBox({RowBox({\"(\",RowBox({\"-\",\"5\"}),\")\"}),\"!!\"}),HoldForm)");
+    check("ToBoxes(HoldForm((3!!)!)) // InputForm", //
+        "TagBox(RowBox({RowBox({\"(\",RowBox({\"3\",\"!!\"}),\")\"}),\"!\"}),HoldForm)");
+    check("ToBoxes(HoldForm(g(k)!)) // InputForm", //
+        "TagBox(RowBox({RowBox({\"g\",\"[\",\"k\",\"]\"}),\"!\"}),HoldForm)");
+    check("ToBoxes((k^3)!) // InputForm", //
+        "RowBox({SuperscriptBox(\"k\",\"3\"),\"!\"})");
+  }
+
+  @Test
+  public void testOperatorFormBoxes() {
+    // the display wrappers Infix, Prefix and Postfix are rows of operands and operators in an
+    // InterpretationBox, which reads back as the wrapper
+    check("ToBoxes(Infix({p, q, r}, \"%\")) // InputForm", //
+        "InterpretationBox(RowBox({\"p\",\"%\",\"q\",\"%\",\"r\"}),Infix({p,q,r},\"%\"),Editable->False)");
+    // a list of operators is the list it is
+    check("ToBoxes(Infix({p, q}, {\"<\", \">\"})) // InputForm", //
+        "InterpretationBox(RowBox({\"p\",RowBox({\"{\",RowBox({\"\\\"<\\\"\",\",\",\"\\\">\\\"\"}),\"}\"}),\"q\"}),Infix({p,q},{\"<\",\">\"}),Editable->False)");
+    // the operator ~g~ has a space on its outer sides
+    check("ToBoxes(Infix(g(p, q))) // InputForm", //
+        "InterpretationBox(RowBox({\"p\",\" \",\"~\",\"g\",\"~\",\" \",\"q\"}),Infix(g(p,q)),Editable->False)");
+    check("ToBoxes(Infix({p}, \"%\")) // InputForm", //
+        "InterpretationBox(\"p\",Infix({p},\"%\"),Editable->False)");
+    check("ToBoxes(Prefix(g(p))) // InputForm", //
+        "InterpretationBox(RowBox({\"g\",\"@\",\"p\"}),Prefix(g(p)),Editable->False)");
+    check("ToBoxes(Postfix(g(p), \"'\")) // InputForm", //
+        "InterpretationBox(RowBox({\"p\",\"'\"}),Postfix(g(p),\"'\"),Editable->False)");
+    // an operand which is a sum is put in parentheses
+    check("ToBoxes(Infix({p + q, r}, \"%\")) // InputForm", //
+        "InterpretationBox(RowBox({RowBox({\"(\",RowBox({\"p\",\"+\",\"q\"}),\")\"}),\"%\",\"r\"}),Infix({p + q,r},\"%\"),Editable->False)");
+    // a grouping as fourth argument: the wrapper is boxed as the function it is
+    check("ToBoxes(Infix({p, q}, \"%\", 310, Left)) // InputForm", //
+        "RowBox({\"Infix\",\"[\",RowBox({RowBox({\"{\",RowBox({\"p\",\",\",\"q\"}),\"}\"}),\",\",\"\\\"%\\\"\",\",\",\"310\",\",\",\"Left\"}),\"]\"})");
+  }
+
+  @Test
+  public void testPartBoxes() {
+    // x[[i]] is boxed with the double brackets, several indices as a row
+    check("ToBoxes(Hold(w[[3]])) // InputForm", //
+        "RowBox({\"Hold\",\"[\",RowBox({\"w\",\"\\[LeftDoubleBracket]\",\"3\",\"\\[RightDoubleBracket]\"}),\"]\"})");
+    check("ToBoxes(Hold(w[[3, -2]])) // InputForm", //
+        "RowBox({\"Hold\",\"[\",RowBox({\"w\",\"\\[LeftDoubleBracket]\",RowBox({\"3\",\",\",RowBox({\"-\",\"2\"})}),\"\\[RightDoubleBracket]\"}),\"]\"})");
+    // an operator expression is put in parentheses, a function call is not
+    check("ToBoxes(Hold((u + v)[[k]])) // InputForm", //
+        "RowBox({\"Hold\",\"[\",RowBox({RowBox({\"(\",RowBox({\"u\",\"+\",\"v\"}),\")\"}),\"\\[LeftDoubleBracket]\",\"k\",\"\\[RightDoubleBracket]\"}),\"]\"})");
+    check("ToBoxes(Hold(f(w)[[k]])) // InputForm", //
+        "RowBox({\"Hold\",\"[\",RowBox({RowBox({\"f\",\"[\",\"w\",\"]\"}),\"\\[LeftDoubleBracket]\",\"k\",\"\\[RightDoubleBracket]\"}),\"]\"})");
+    check("ToBoxes(Hold(w[[2]]!)) // InputForm", //
+        "RowBox({\"Hold\",\"[\",RowBox({RowBox({\"w\",\"\\[LeftDoubleBracket]\",\"2\",\"\\[RightDoubleBracket]\"}),\"!\"}),\"]\"})");
+  }
+
+  @Test
+  public void testSphericalHarmonicYTraditionalBoxes() {
+    check("ToBoxes(TraditionalForm(SphericalHarmonicY(j, k, u, v))) // InputForm", //
+        "TagBox(FormBox(RowBox({SubsuperscriptBox(\"Y\",\"j\",\"k\"),\"(\",RowBox({\"u\",\",\",\"v\"}),\")\"}),TraditionalForm),TraditionalForm,Editable->True)");
+  }
+
+  @Test
   public void testMakeBoxesList() {
     check("MakeBoxes[{a,b}]// InputForm", //
         "RowBox({\"{\",RowBox({\"a\",\",\",\"b\"}),\"}\"})");
@@ -196,9 +265,22 @@ public class BoxesTest extends ExprEvaluatorTestCase {
         "TemplateBox({\"\\\"(\\\"\",\"z\",\"\\\")\\\"\"},\"RowDefault\")");
     check("MakeBoxes[Style[z, Bold], TraditionalForm] // InputForm", //
         "StyleBox(\"z\",Bold,StripOnInput->False)");
-    // the imaginary unit is written \[ImaginaryI]
-    check("ToString[MakeBoxes[I, TraditionalForm], InputForm, CharacterEncoding -> \"Unicode\"]",
-        "\"\"");
+    // the imaginary unit is written \[ImaginaryI]: the input form writes the private use character
+    // as its name, unless the encoding is "Unicode"
+    check("ToString[MakeBoxes[I, TraditionalForm], InputForm]", //
+        "\"\\[ImaginaryI]\"");
+    check("ToCharacterCode(ToString[MakeBoxes[I, TraditionalForm], InputForm, CharacterEncoding -> \"Unicode\"])",
+        "{34,63310,34}");
+    check("ToBoxes(TraditionalForm(E^(I*w))) // InputForm", //
+        "TagBox(FormBox(SuperscriptBox(\"\\[ExponentialE]\",RowBox({\"\\[ImaginaryI]\",\" \",\"w\"})),TraditionalForm),TraditionalForm,Editable->True)");
+    // a complex number too
+    check("ToBoxes(TraditionalForm(3*I*w)) // InputForm", //
+        "TagBox(FormBox(RowBox({RowBox({\"3\",\" \",\"\\[ImaginaryI]\"}),\" \",\"w\"}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("ToBoxes(3*I*w) // InputForm", //
+        "RowBox({RowBox({\"3\",\" \",\"I\"}),\" \",\"w\"})");
+    // the output form shows the characters of the same meaning
+    check("ToBoxes(TraditionalForm(E^w))", //
+        "TagBox(FormBox(SuperscriptBox(ⅇ,w),TraditionalForm),TraditionalForm,Editable->True)");
   }
 
   @Test

@@ -985,6 +985,9 @@ public class RootsFunctions {
       }
       if (ePoly.degree(0) >= 3) {
         result = unitPolynomial((int) ePoly.degree(0), ePoly);
+        if (result.isNIL() && ePoly.degree(0) >= SHIFTED_BINOMIAL_DEGREE && varList.argSize() == 1) {
+          result = shiftedBinomialRoots((int) ePoly.degree(0), ePoly, ring);
+        }
         if (result.isPresent()) {
           result = QuarticSolver.sortASTArguments(result);
           return result;
@@ -1074,6 +1077,91 @@ public class RootsFunctions {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * The roots of a polynomial <code>a*(x+s)^n + r</code> of degree <code>n &gt;= 5</code> with
+   * exact numbers <code>a, s, r</code>, in radicals - before a decomposition writes them as nested
+   * radicals of its layers.
+   *
+   * @param polynomial the polynomial
+   * @param variable the variable <code>x</code>
+   * @return the roots or {@link F#NIL} if the polynomial isn't of this form
+   */
+  public static IAST shiftedBinomialRoots(IExpr polynomial, IExpr variable) {
+    try {
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, F.list(variable));
+      ExprPolynomial ePoly = ring.create(polynomial, false, false, false);
+      long degree = ePoly.degree(0);
+      if (degree < SHIFTED_BINOMIAL_DEGREE || degree > Integer.MAX_VALUE / 2) {
+        return F.NIL;
+      }
+      return shiftedBinomialRoots((int) degree, ePoly, ring);
+    } catch (JASConversionException e) {
+      return F.NIL;
+    }
+  }
+
+  /**
+   * The lowest degree of a binomial with a shifted variable which
+   * {@link #shiftedBinomialRoots(int, ExprPolynomial, ExprPolynomialRing)} solves; the quartic
+   * solvers take the lower degrees.
+   */
+  private static final int SHIFTED_BINOMIAL_DEGREE = 5;
+
+  /**
+   * Solve a polynomial <code>a*(x+s)^n + r</code> with exact numbers <code>a, s, r</code> - the
+   * expanded form of a binomial in <code>x+s</code>, like <code>41300*(1+x/3)^13-7</code> - by the
+   * roots of the binomial <code>a*y^n + r</code>, shifted by <code>-s</code>.
+   *
+   * @param n the degree of the polynomial
+   * @param polynomial the polynomial in one variable
+   * @param ring the ring of the polynomial
+   * @return {@link F#NIL} if the polynomial isn't of this form
+   */
+  private static IASTAppendable shiftedBinomialRoots(int n, ExprPolynomial polynomial,
+      ExprPolynomialRing ring) {
+    final IExpr[] coefficients = new IExpr[n + 1];
+    java.util.Arrays.fill(coefficients, F.C0);
+    for (ExprMonomial monomial : polynomial) {
+      IExpr coefficient = monomial.coefficient();
+      if (!coefficient.isNumber() || coefficient.isInexactNumber()) {
+        return F.NIL;
+      }
+      coefficients[(int) monomial.exponent().getVal(0)] = coefficient;
+    }
+    if (coefficients[n - 1].isZero()) {
+      // no shift: a binomial is solved as such, a polynomial with more terms isn't of this form
+      return F.NIL;
+    }
+    final EvalEngine engine = EvalEngine.get();
+    final IExpr a = coefficients[n];
+    // the coefficient of x^(n-1) is a*n*s
+    final IExpr shift = engine.evaluate(F.Divide(coefficients[n - 1], F.Times(a, F.ZZ(n))));
+    for (int k = n - 2; k >= 1; k--) {
+      // the coefficient of x^k is a*Binomial(n,k)*s^(n-k)
+      IExpr expected =
+          engine.evaluate(F.Times(a, F.Binomial(F.ZZ(n), F.ZZ(k)), F.Power(shift, F.ZZ(n - k))));
+      if (!expected.equals(coefficients[k])) {
+        return F.NIL;
+      }
+    }
+    final IExpr rest = engine.evaluate(F.Subtract(coefficients[0], F.Times(a, F.Power(shift, F.ZZ(n)))));
+    if (rest.isZero()) {
+      // the n-fold root -s
+      return F.NIL;
+    }
+    final IExpr variable = ring.getVars().arg1();
+    ExprPolynomial binomial = ring.create(F.Plus(F.Times(a, F.Power(variable, F.ZZ(n))), rest),
+        false, false, false);
+    IASTAppendable roots = unitPolynomial(n, binomial);
+    if (roots.isNIL()) {
+      return F.NIL;
+    }
+    for (int i = 1; i < roots.size(); i++) {
+      roots.set(i, engine.evaluate(F.Subtract(roots.get(i), shift)));
+    }
+    return roots;
   }
 
   /**
@@ -1477,15 +1565,199 @@ public class RootsFunctions {
       }
     }
     try {
+      // the solver's tests are absolute: the variable is scaled so that the roots are of the size
+      // 1 on average, and the coefficients so that the largest is of the size 1. Both factors are
+      // powers of 2, which scale without rounding.
+      int scaleExponent = rootScaleExponent(coefficients);
+      double[] scaled = scaledCoefficients(coefficients, scaleExponent);
+      if (scaled == null) {
+        // the scaling over- or underflows: solve the polynomial as it is
+        scaleExponent = 0;
+        scaled = coefficients;
+      }
       LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
       // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
       // https://stackoverflow.com/q/65960318
-      return solver.solveAllComplex(coefficients, 10_000, 1.0);
+      org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(scaled, 10_000, 1.0);
+      if (roots == null) {
+        return null;
+      }
+      if (scaleExponent != 0) {
+        for (int i = 0; i < roots.length; i++) {
+          roots[i] = new org.hipparchus.complex.Complex(
+              Math.scalb(roots[i].getReal(), scaleExponent),
+              Math.scalb(roots[i].getImaginary(), scaleExponent));
+        }
+      }
+      polishRoots(coefficients, roots);
+      symmetricConjugates(roots);
+      return roots;
     } catch (MathRuntimeException mre) {
       // mre.printStackTrace();
       // org.hipparchus.exception.MathIllegalStateException: maximal count (100,000) exceeded
     }
     return null;
+  }
+
+  /**
+   * The coefficients of the polynomial in <code>y</code> with <code>x == 2^scaleExponent*y</code>,
+   * divided by the power of 2 which makes the largest one of the size 1.
+   *
+   * @return <code>null</code> if a coefficient over- or underflows
+   */
+  private static double[] scaledCoefficients(double[] coefficients, int scaleExponent) {
+    final double[] scaled = new double[coefficients.length];
+    int maxExponent = Integer.MIN_VALUE;
+    for (int k = 0; k < coefficients.length; k++) {
+      scaled[k] = Math.scalb(coefficients[k], k * scaleExponent);
+      if (scaled[k] != 0.0) {
+        maxExponent = Math.max(maxExponent, Math.getExponent(scaled[k]));
+      }
+    }
+    for (int k = 0; k < scaled.length; k++) {
+      if (maxExponent != Integer.MIN_VALUE) {
+        scaled[k] = Math.scalb(scaled[k], -maxExponent);
+      }
+      if (!Double.isFinite(scaled[k]) || (scaled[k] == 0.0) != (coefficients[k] == 0.0)
+          || (scaled[k] != 0.0 && Math.getExponent(scaled[k]) < Double.MIN_EXPONENT)) {
+        return null;
+      }
+    }
+    return scaled;
+  }
+
+  /**
+   * The exponent <code>e</code> of the power of 2 nearest to the geometric mean of the moduli of
+   * the roots: the polynomial in <code>y</code> with <code>x == 2^e*y</code> has roots of the size 1
+   * on average. The roots at <code>0</code> do not count.
+   *
+   * @param coefficients the coefficients, the constant one first
+   * @return <code>0</code> if the polynomial has no nonzero root
+   */
+  private static int rootScaleExponent(double[] coefficients) {
+    int high = coefficients.length - 1;
+    while (high >= 0 && coefficients[high] == 0.0) {
+      high--;
+    }
+    int low = 0;
+    while (low < high && coefficients[low] == 0.0) {
+      low++;
+    }
+    if (high <= low) {
+      return 0;
+    }
+    // the product of the nonzero roots is the quotient of the lowest and the highest coefficient
+    double log2 = (Math.log(Math.abs(coefficients[low])) - Math.log(Math.abs(coefficients[high])))
+        / Math.log(2.0) / (high - low);
+    if (!Double.isFinite(log2)) {
+      return 0;
+    }
+    return (int) Math.round(log2);
+  }
+
+  /** The most Newton steps which <code>polishRoots</code> takes for a root. */
+  private static final int MAX_POLISH_STEPS = 8;
+
+  /**
+   * Improve the roots by Newton steps with the polynomial itself. The roots of the solver are
+   * found one by one in the quotients of the polynomial by the roots found before, and its tests
+   * for convergence are absolute: a small root like <code>10^-12</code> of <code>x-10^-12</code>
+   * came out with only the absolute accuracy of the starting value <code>1</code>. A step is taken
+   * only while it decreases the value of the polynomial and stays closer to its root than to any
+   * other, so that it doesn't jump to a neighbouring root of a cluster.
+   *
+   * @param coefficients the coefficients, the constant one first
+   * @param roots the roots, which are replaced by the improved ones
+   */
+  private static void polishRoots(double[] coefficients, org.hipparchus.complex.Complex[] roots) {
+    final int n = coefficients.length - 1;
+    if (n < 1) {
+      return;
+    }
+    for (int i = 0; i < roots.length; i++) {
+      double nearest = Double.POSITIVE_INFINITY;
+      for (int j = 0; j < roots.length; j++) {
+        if (j != i) {
+          nearest = Math.min(nearest, roots[i].subtract(roots[j]).norm());
+        }
+      }
+      org.hipparchus.complex.Complex z = roots[i];
+      org.hipparchus.complex.Complex[] values = hornerWithDerivative(coefficients, z);
+      double residual = values[0].norm();
+      for (int step = 0; step < MAX_POLISH_STEPS && residual > 0.0; step++) {
+        org.hipparchus.complex.Complex dz = values[0].divide(values[1]);
+        double size = dz.norm();
+        if (!Double.isFinite(size) || size == 0.0 || size >= 0.5 * nearest) {
+          break;
+        }
+        org.hipparchus.complex.Complex next = z.subtract(dz);
+        org.hipparchus.complex.Complex[] nextValues = hornerWithDerivative(coefficients, next);
+        double nextResidual = nextValues[0].norm();
+        if (!(nextResidual < residual)) {
+          break;
+        }
+        z = next;
+        values = nextValues;
+        residual = nextResidual;
+      }
+      roots[i] = z;
+    }
+  }
+
+  /** The relative distance of two roots which are taken as a pair of conjugates. */
+  private static final double CONJUGATE_TOLERANCE = 1.0e-8;
+
+  /**
+   * The non-real roots of a polynomial with real coefficients are pairs of conjugates: the two
+   * approximations of a pair, which were found and improved one by one, get the mean of their
+   * real parts and of the moduli of their imaginary parts.
+   *
+   * @param roots the roots, which are replaced by the symmetric ones
+   */
+  private static void symmetricConjugates(org.hipparchus.complex.Complex[] roots) {
+    final boolean[] paired = new boolean[roots.length];
+    for (int i = 0; i < roots.length; i++) {
+      if (paired[i] || !(roots[i].getImaginary() > 0.0)) {
+        continue;
+      }
+      final org.hipparchus.complex.Complex conjugate = roots[i].conjugate();
+      int partner = -1;
+      double distance = CONJUGATE_TOLERANCE * roots[i].norm();
+      for (int j = 0; j < roots.length; j++) {
+        if (j != i && !paired[j] && roots[j].getImaginary() < 0.0) {
+          double d = roots[j].subtract(conjugate).norm();
+          if (d <= distance) {
+            distance = d;
+            partner = j;
+          }
+        }
+      }
+      if (partner >= 0) {
+        final double re = 0.5 * (roots[i].getReal() + roots[partner].getReal());
+        final double im = 0.5 * (roots[i].getImaginary() - roots[partner].getImaginary());
+        roots[i] = new org.hipparchus.complex.Complex(re, im);
+        roots[partner] = new org.hipparchus.complex.Complex(re, -im);
+        paired[i] = true;
+        paired[partner] = true;
+      }
+    }
+  }
+
+  /**
+   * The value and the derivative of the polynomial at <code>z</code>.
+   *
+   * @param coefficients the coefficients, the constant one first
+   */
+  private static org.hipparchus.complex.Complex[] hornerWithDerivative(double[] coefficients,
+      org.hipparchus.complex.Complex z) {
+    final int n = coefficients.length - 1;
+    org.hipparchus.complex.Complex value = new org.hipparchus.complex.Complex(coefficients[n]);
+    org.hipparchus.complex.Complex derivative = org.hipparchus.complex.Complex.ZERO;
+    for (int k = n - 1; k >= 0; k--) {
+      derivative = derivative.multiply(z).add(value);
+      value = value.multiply(z).add(coefficients[k]);
+    }
+    return new org.hipparchus.complex.Complex[] {value, derivative};
   }
 
   /**

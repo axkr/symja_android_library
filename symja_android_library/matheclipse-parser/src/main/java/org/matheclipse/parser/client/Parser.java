@@ -771,6 +771,7 @@ public class Parser extends Scanner {
     }
     if (lastOperatorPosition > 0) {
       fCurrentPosition = lastOperatorPosition;
+      fOperatorStartPosition = startPosition;
       // Built from the prefix that actually matched - see the note in ExprParser#getOperator().
       fOperatorString =
           new String(fInputString, startPosition, lastOperatorPosition - startPosition);
@@ -1169,7 +1170,9 @@ public class Parser extends Scanner {
    * is how <code>n[#] = a[#]; &amp;</code> is a pure function whose body ends in a semicolon.
    */
   private boolean compoundExpressionEndsHere() {
-    return fToken == TT_OPERATOR && determinePrefixOperator() == null;
+    // a run of prefix operators like !! begins an expression: a; !!b is a; Not(Not(b))
+    return fToken == TT_OPERATOR && determinePrefixOperator() == null
+        && (fOperatorString == null || !isPrefixOperatorRun(fOperatorString));
   }
 
   private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode lhs) {
@@ -1780,13 +1783,69 @@ public class Parser extends Scanner {
         fCurrentChar = '.';
         return getNumber(false);
       }
-      final PrefixOperator prefixOperator = determinePrefixOperator();
+      PrefixOperator prefixOperator = determinePrefixOperator();
+      if (prefixOperator == null) {
+        prefixOperator = leadingPrefixOperator();
+      }
       if (prefixOperator != null) {
         return parsePrefixOperator(prefixOperator);
       }
       throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
     }
     return getPart(min_precedence);
+  }
+
+  /**
+   * The longest leading part of the current operator token which is a prefix operator, for a token
+   * which has no prefix reading of its own but is a run of prefix operators. The longest match
+   * makes <code>!!</code> one token, but in front of an operand it is no <code>Factorial2</code>:
+   * <code>!!a</code> is <code>Not(Not(a))</code>. The scanner continues right after the part which
+   * is used. A token like <code>!=</code>, whose rest is no prefix operator, is not split.
+   *
+   * @return <code>null</code> if the token is no run of prefix operators
+   */
+  private PrefixOperator leadingPrefixOperator() {
+    final String token = fOperatorString;
+    if (token == null || fCurrentPosition - fOperatorStartPosition != token.length()) {
+      return null;
+    }
+    for (int length = token.length() - 1; length > 0; length--) {
+      final String part = token.substring(0, length);
+      final PrefixOperator prefix = prefixOperator(fFactory.getOperatorList(part));
+      if (prefix != null && isPrefixOperatorRun(token.substring(length))) {
+        fCurrentPosition = fOperatorStartPosition + length;
+        fOperatorString = part;
+        fOperList = fFactory.getOperatorList(part);
+        return prefix;
+      }
+    }
+    return null;
+  }
+
+  /** Whether the text is one prefix operator or a run of them. */
+  private boolean isPrefixOperatorRun(final String text) {
+    if (prefixOperator(fFactory.getOperatorList(text)) != null) {
+      return true;
+    }
+    for (int length = text.length() - 1; length > 0; length--) {
+      if (prefixOperator(fFactory.getOperatorList(text.substring(0, length))) != null
+          && isPrefixOperatorRun(text.substring(length))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The prefix reading among the operators of a token, or <code>null</code>. */
+  private static PrefixOperator prefixOperator(final List<Operator> list) {
+    if (list != null) {
+      for (int i = 0; i < list.size(); i++) {
+        if (list.get(i) instanceof PrefixOperator) {
+          return (PrefixOperator) list.get(i);
+        }
+      }
+    }
+    return null;
   }
 
   private final ASTNode parsePrefixOperator(final PrefixOperator prefixOperator) {

@@ -2673,8 +2673,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     // in one direction only - DenseOutputModel.append rejects a model of the opposite direction
     // with a propagation direction mismatch. The way back is integrated first, so that the events
     // on it are acted on first.
+    method.eventStopTime = Double.NaN;
     DenseOutputModel backward =
         (tMin < system.t0) ? propagate(head, system, tMin, method, engine) : null;
+    final double backwardStop = method.eventStopTime;
+    method.eventStopTime = Double.NaN;
     DenseOutputModel forward =
         (tMax > system.t0) ? propagate(head, system, tMax, method, engine) : null;
     if (forward == null && backward == null && (tMin != system.t0 || tMax != system.t0)) {
@@ -2683,8 +2686,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     // Read the domain back from the models rather than from the requested range: an event which
     // stopped the integration leaves the model ending where the event was found, and that shorter
     // interval is the one the solution is actually defined on.
-    double domainMin = (backward != null) ? reachedEnd(backward, tMin) : system.t0;
-    double domainMax = (forward != null) ? reachedEnd(forward, tMax) : system.t0;
+    double domainMin =
+        (backward != null) ? stoppedEnd(reachedEnd(backward, tMin), backwardStop) : system.t0;
+    double domainMax = (forward != null)
+        ? stoppedEnd(reachedEnd(forward, tMax), method.eventStopTime)
+        : system.t0;
 
     final int numberOfFunctions = system.functions.length;
     IASTAppendable solutions = F.ListAlloc(numberOfFunctions);
@@ -2717,6 +2723,19 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return F.list(solutions);
     }
     return numberOfFunctions == 1 ? solutions.arg1() : solutions;
+  }
+
+  /**
+   * The end of the domain: the time of the event which stopped the integration, if the model ends
+   * just after it.
+   *
+   * @param end the final time of the model
+   * @param stop the time of the stopping event, or {@link Double#NaN}
+   */
+  private static double stoppedEnd(double end, double stop) {
+    return Double.isFinite(stop) && Math.abs(end - stop) <= 1.0e-9 * Math.max(1.0, Math.abs(stop))
+        ? stop
+        : end;
   }
 
   /**
@@ -3781,6 +3800,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     /** The most right hand side evaluations, from <code>MaxSteps</code>. */
     int maxEvaluations = MAX_EVALUATIONS;
 
+    /**
+     * The time of the event whose action stopped the last integration, or {@link Double#NaN}. The
+     * integrator ends its last step a little after the root of the event function, where the sign
+     * has certainly changed; the solution ends at the root, the time the action was given.
+     */
+    double eventStopTime = Double.NaN;
+
     /** <code>true</code> if <code>MaxSteps</code> was given. */
     boolean maxStepsGiven = false;
 
@@ -4452,9 +4478,31 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         }
         return;
       }
+      if (isRealValued(condition, system)) {
+        // a real valued expression: the event is where it changes its sign, in either direction
+        detectors.add(new WhenEventDetector(system, engine, condition, false, guard, action,
+            forward, settings));
+        return;
+      }
       // any other condition: the event is where its truth value turns from false to true
       detectors.add(new WhenEventDetector(system, engine, F.If(condition, F.C1, F.CN1), true,
           guard, action, forward, settings));
+    }
+
+    /**
+     * Whether the event <code>condition</code> is an expression of the time or the unknown
+     * functions with a real value, like <code>x(t)+1/2</code>, and no condition with a truth value.
+     */
+    private static boolean isRealValued(IExpr condition, FirstOrderSystem system) {
+      if (!condition.isAST() || condition.isBooleanFunction() || condition.isBooleanFormula()
+          || condition.isComparatorFunction() || condition.isAST(S.Inequality)
+          || condition.isAST(S.Element) || condition.isAST(S.NotElement)
+          || condition.isAST(S.SameQ) || condition.isAST(S.UnsameQ)
+          || condition.head().isPredicateFunctionSymbol() || condition.isList()) {
+        return false;
+      }
+      return !condition.isFree(x -> x.equals(system.timeVar) || (x.isSymbol()
+          && java.util.Arrays.asList(system.functions).contains(x)), true);
     }
 
     /**
@@ -4569,6 +4617,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       boolean[] stop = new boolean[1];
       boolean reset = run(fAction, rules, state.getPrimaryState(), newState, stop);
       if (stop[0]) {
+        fSettings.eventStopTime = t;
         return Action.STOP;
       }
       if (reset) {

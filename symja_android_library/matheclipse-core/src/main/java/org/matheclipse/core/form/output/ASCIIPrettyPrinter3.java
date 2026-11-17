@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.Optional;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.OperatorFormLayout;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -123,6 +124,39 @@ public class ASCIIPrettyPrinter3 {
       // Short only changes how an expression is shown; OutputForm has no page width, so the whole
       // expression is written, as ToString[Short[expr], OutputForm]
       convert(((IAST) expr).arg1(), precedence, caller);
+      return;
+    }
+    OperatorFormLayout layout = OperatorFormLayout.of(expr);
+    if (layout != null) {
+      // the display wrappers Infix, Prefix and Postfix: operands and operators in a row
+      if (caller == PLUS_CALL) {
+        print(" + ");
+      }
+      final boolean parenthesized = layout.isParenthesized(precedence);
+      if (parenthesized) {
+        print("(");
+      }
+      for (OperatorFormLayout.Piece piece : layout.pieces) {
+        switch (piece.kind) {
+          case SIGN:
+            print(" " + layout.defaultSign + " ");
+            break;
+          case OPERATOR:
+            if (piece.isText()) {
+              print(piece.expr.toString());
+            } else {
+              convert(piece.expr, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            }
+            break;
+          default:
+            convert(piece.expr, piece.precedence == Integer.MIN_VALUE ? Precedence.NO_PRECEDENCE
+                : piece.precedence, NO_PLUS_CALL);
+            break;
+        }
+      }
+      if (parenthesized) {
+        print(")");
+      }
       return;
     }
     if (expr.isPlus()) {
