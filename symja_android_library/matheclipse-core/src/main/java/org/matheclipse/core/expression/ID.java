@@ -3677,106 +3677,107 @@ public class ID {
   public final static int VertexOutComponent = 3664;
   public final static int VertexOutDegree = 3665;
   public final static int VertexQ = 3666;
-  public final static int VertexReplace = 3667;
-  public final static int VertexShape = 3668;
-  public final static int VertexShapeFunction = 3669;
-  public final static int VertexSize = 3670;
-  public final static int VertexStyle = 3671;
-  public final static int VertexTextureCoordinates = 3672;
-  public final static int VertexWeight = 3673;
-  public final static int VerticalBar = 3674;
-  public final static int VerticalGauge = 3675;
-  public final static int VerticalSeparator = 3676;
-  public final static int VerticalSlider = 3677;
-  public final static int VerticalTilde = 3678;
-  public final static int ViewAngle = 3679;
-  public final static int ViewCenter = 3680;
-  public final static int ViewMatrix = 3681;
-  public final static int ViewPoint = 3682;
-  public final static int ViewProjection = 3683;
-  public final static int ViewRange = 3684;
-  public final static int ViewVector = 3685;
-  public final static int ViewVertical = 3686;
-  public final static int Volume = 3687;
-  public final static int VonMisesDistribution = 3688;
-  public final static int VoronoiMesh = 3689;
-  public final static int WaitAll = 3690;
-  public final static int WaringYuleDistribution = 3691;
-  public final static int WatershedComponents = 3692;
-  public final static int WatsonUSquareTest = 3693;
-  public final static int WattsStrogatzGraphDistribution = 3694;
-  public final static int WaveletFilterCoefficients = 3695;
-  public final static int WaveletMatrixPlot = 3696;
-  public final static int WaveletPhi = 3697;
-  public final static int WaveletPsi = 3698;
-  public final static int WaveletThreshold = 3699;
-  public final static int WeaklyConnectedComponents = 3700;
-  public final static int WeaklyConnectedGraphQ = 3701;
-  public final static int WeakStationarity = 3702;
-  public final static int WeberE = 3703;
-  public final static int WebImageSearch = 3704;
-  public final static int WebSearch = 3705;
-  public final static int Wedge = 3706;
-  public final static int Wednesday = 3707;
-  public final static int Weekend = 3708;
-  public final static int WeibullDistribution = 3709;
-  public final static int WeierstrassHalfPeriods = 3710;
-  public final static int WeierstrassInvariants = 3711;
-  public final static int WeierstrassP = 3712;
-  public final static int WeierstrassPPrime = 3713;
-  public final static int WeierstrassSigma = 3714;
-  public final static int WeierstrassZeta = 3715;
-  public final static int WeightedAdjacencyGraph = 3716;
-  public final static int WeightedAdjacencyMatrix = 3717;
-  public final static int WeightedData = 3718;
-  public final static int WeightedGraphQ = 3719;
-  public final static int Weights = 3720;
-  public final static int WelchWindow = 3721;
-  public final static int WheelGraph = 3722;
-  public final static int WhenEvent = 3723;
-  public final static int Which = 3724;
-  public final static int While = 3725;
-  public final static int White = 3726;
-  public final static int WhiteCornerBracket = 3727;
-  public final static int WhiteNoiseProcess = 3728;
-  public final static int Whitespace = 3729;
-  public final static int WhitespaceCharacter = 3730;
-  public final static int WhittakerM = 3731;
-  public final static int WhittakerW = 3732;
-  public final static int WienerFilter = 3733;
-  public final static int WienerProcess = 3734;
-  public final static int WignerD = 3735;
-  public final static int WignerSemicircleDistribution = 3736;
-  public final static int WindowSize = 3737;
-  public final static int With = 3738;
-  public final static int Word = 3739;
-  public final static int WordBoundary = 3740;
-  public final static int WordCharacter = 3741;
-  public final static int WordCloud = 3742;
-  public final static int WordOrientation = 3743;
-  public final static int WordSelectionFunction = 3744;
-  public final static int WordSeparators = 3745;
-  public final static int WordSpacings = 3746;
-  public final static int WorkingPrecision = 3747;
-  public final static int Write = 3748;
-  public final static int WriteLine = 3749;
-  public final static int WriteString = 3750;
-  public final static int Wronskian = 3751;
-  public final static int XMLElement = 3752;
-  public final static int XMLObject = 3753;
-  public final static int Xnor = 3754;
-  public final static int Xor = 3755;
-  public final static int XYZColor = 3756;
-  public final static int Yellow = 3757;
-  public final static int Yesterday = 3758;
-  public final static int YuleDissimilarity = 3759;
-  public final static int ZernikeR = 3760;
-  public final static int ZeroSymmetric = 3761;
-  public final static int ZeroTest = 3762;
-  public final static int Zeta = 3763;
-  public final static int ZetaZero = 3764;
-  public final static int ZipfDistribution = 3765;
-  public final static int ZTransform = 3766;
+  public final static int VertexRenderingFunction = 3667;
+  public final static int VertexReplace = 3668;
+  public final static int VertexShape = 3669;
+  public final static int VertexShapeFunction = 3670;
+  public final static int VertexSize = 3671;
+  public final static int VertexStyle = 3672;
+  public final static int VertexTextureCoordinates = 3673;
+  public final static int VertexWeight = 3674;
+  public final static int VerticalBar = 3675;
+  public final static int VerticalGauge = 3676;
+  public final static int VerticalSeparator = 3677;
+  public final static int VerticalSlider = 3678;
+  public final static int VerticalTilde = 3679;
+  public final static int ViewAngle = 3680;
+  public final static int ViewCenter = 3681;
+  public final static int ViewMatrix = 3682;
+  public final static int ViewPoint = 3683;
+  public final static int ViewProjection = 3684;
+  public final static int ViewRange = 3685;
+  public final static int ViewVector = 3686;
+  public final static int ViewVertical = 3687;
+  public final static int Volume = 3688;
+  public final static int VonMisesDistribution = 3689;
+  public final static int VoronoiMesh = 3690;
+  public final static int WaitAll = 3691;
+  public final static int WaringYuleDistribution = 3692;
+  public final static int WatershedComponents = 3693;
+  public final static int WatsonUSquareTest = 3694;
+  public final static int WattsStrogatzGraphDistribution = 3695;
+  public final static int WaveletFilterCoefficients = 3696;
+  public final static int WaveletMatrixPlot = 3697;
+  public final static int WaveletPhi = 3698;
+  public final static int WaveletPsi = 3699;
+  public final static int WaveletThreshold = 3700;
+  public final static int WeaklyConnectedComponents = 3701;
+  public final static int WeaklyConnectedGraphQ = 3702;
+  public final static int WeakStationarity = 3703;
+  public final static int WeberE = 3704;
+  public final static int WebImageSearch = 3705;
+  public final static int WebSearch = 3706;
+  public final static int Wedge = 3707;
+  public final static int Wednesday = 3708;
+  public final static int Weekend = 3709;
+  public final static int WeibullDistribution = 3710;
+  public final static int WeierstrassHalfPeriods = 3711;
+  public final static int WeierstrassInvariants = 3712;
+  public final static int WeierstrassP = 3713;
+  public final static int WeierstrassPPrime = 3714;
+  public final static int WeierstrassSigma = 3715;
+  public final static int WeierstrassZeta = 3716;
+  public final static int WeightedAdjacencyGraph = 3717;
+  public final static int WeightedAdjacencyMatrix = 3718;
+  public final static int WeightedData = 3719;
+  public final static int WeightedGraphQ = 3720;
+  public final static int Weights = 3721;
+  public final static int WelchWindow = 3722;
+  public final static int WheelGraph = 3723;
+  public final static int WhenEvent = 3724;
+  public final static int Which = 3725;
+  public final static int While = 3726;
+  public final static int White = 3727;
+  public final static int WhiteCornerBracket = 3728;
+  public final static int WhiteNoiseProcess = 3729;
+  public final static int Whitespace = 3730;
+  public final static int WhitespaceCharacter = 3731;
+  public final static int WhittakerM = 3732;
+  public final static int WhittakerW = 3733;
+  public final static int WienerFilter = 3734;
+  public final static int WienerProcess = 3735;
+  public final static int WignerD = 3736;
+  public final static int WignerSemicircleDistribution = 3737;
+  public final static int WindowSize = 3738;
+  public final static int With = 3739;
+  public final static int Word = 3740;
+  public final static int WordBoundary = 3741;
+  public final static int WordCharacter = 3742;
+  public final static int WordCloud = 3743;
+  public final static int WordOrientation = 3744;
+  public final static int WordSelectionFunction = 3745;
+  public final static int WordSeparators = 3746;
+  public final static int WordSpacings = 3747;
+  public final static int WorkingPrecision = 3748;
+  public final static int Write = 3749;
+  public final static int WriteLine = 3750;
+  public final static int WriteString = 3751;
+  public final static int Wronskian = 3752;
+  public final static int XMLElement = 3753;
+  public final static int XMLObject = 3754;
+  public final static int Xnor = 3755;
+  public final static int Xor = 3756;
+  public final static int XYZColor = 3757;
+  public final static int Yellow = 3758;
+  public final static int Yesterday = 3759;
+  public final static int YuleDissimilarity = 3760;
+  public final static int ZernikeR = 3761;
+  public final static int ZeroSymmetric = 3762;
+  public final static int ZeroTest = 3763;
+  public final static int Zeta = 3764;
+  public final static int ZetaZero = 3765;
+  public final static int ZipfDistribution = 3766;
+  public final static int ZTransform = 3767;
 
   /**
    * Generated by class: <code>org.matheclipse.core.preprocessor.FunctionIDGenerator
@@ -4716,32 +4717,33 @@ public class ID {
       "VertexIndex", //
       "VertexLabeling", "VertexLabels", "VertexLabelStyle", "VertexList", "VertexNormals",
       "VertexOutComponent", //
-      "VertexOutDegree", "VertexQ", "VertexReplace", "VertexShape", "VertexShapeFunction",
-      "VertexSize", //
-      "VertexStyle", "VertexTextureCoordinates", "VertexWeight", "VerticalBar", "VerticalGauge",
-      "VerticalSeparator", //
-      "VerticalSlider", "VerticalTilde", "ViewAngle", "ViewCenter", "ViewMatrix", "ViewPoint", //
-      "ViewProjection", "ViewRange", "ViewVector", "ViewVertical", "Volume", "VonMisesDistribution", //
-      "VoronoiMesh", "WaitAll", "WaringYuleDistribution", "WatershedComponents",
-      "WatsonUSquareTest", "WattsStrogatzGraphDistribution", //
-      "WaveletFilterCoefficients", "WaveletMatrixPlot", "WaveletPhi", "WaveletPsi",
-      "WaveletThreshold", "WeaklyConnectedComponents", //
-      "WeaklyConnectedGraphQ", "WeakStationarity", "WeberE", "WebImageSearch", "WebSearch", "Wedge", //
-      "Wednesday", "Weekend", "WeibullDistribution", "WeierstrassHalfPeriods",
-      "WeierstrassInvariants", "WeierstrassP", //
-      "WeierstrassPPrime", "WeierstrassSigma", "WeierstrassZeta", "WeightedAdjacencyGraph",
-      "WeightedAdjacencyMatrix", "WeightedData", //
-      "WeightedGraphQ", "Weights", "WelchWindow", "WheelGraph", "WhenEvent", "Which", //
-      "While", "White", "WhiteCornerBracket", "WhiteNoiseProcess", "Whitespace",
-      "WhitespaceCharacter", //
-      "WhittakerM", "WhittakerW", "WienerFilter", "WienerProcess", "WignerD",
-      "WignerSemicircleDistribution", //
-      "WindowSize", "With", "Word", "WordBoundary", "WordCharacter", "WordCloud", //
-      "WordOrientation", "WordSelectionFunction", "WordSeparators", "WordSpacings",
-      "WorkingPrecision", "Write", //
-      "WriteLine", "WriteString", "Wronskian", "XMLElement", "XMLObject", "Xnor", //
-      "Xor", "XYZColor", "Yellow", "Yesterday", "YuleDissimilarity", "ZernikeR", //
-      "ZeroSymmetric", "ZeroTest", "Zeta", "ZetaZero", "ZipfDistribution", "ZTransform"};
+      "VertexOutDegree", "VertexQ", "VertexRenderingFunction", "VertexReplace", "VertexShape",
+      "VertexShapeFunction", //
+      "VertexSize", "VertexStyle", "VertexTextureCoordinates", "VertexWeight", "VerticalBar",
+      "VerticalGauge", //
+      "VerticalSeparator", "VerticalSlider", "VerticalTilde", "ViewAngle", "ViewCenter",
+      "ViewMatrix", //
+      "ViewPoint", "ViewProjection", "ViewRange", "ViewVector", "ViewVertical", "Volume", //
+      "VonMisesDistribution", "VoronoiMesh", "WaitAll", "WaringYuleDistribution",
+      "WatershedComponents", "WatsonUSquareTest", //
+      "WattsStrogatzGraphDistribution", "WaveletFilterCoefficients", "WaveletMatrixPlot",
+      "WaveletPhi", "WaveletPsi", "WaveletThreshold", //
+      "WeaklyConnectedComponents", "WeaklyConnectedGraphQ", "WeakStationarity", "WeberE",
+      "WebImageSearch", "WebSearch", //
+      "Wedge", "Wednesday", "Weekend", "WeibullDistribution", "WeierstrassHalfPeriods",
+      "WeierstrassInvariants", //
+      "WeierstrassP", "WeierstrassPPrime", "WeierstrassSigma", "WeierstrassZeta",
+      "WeightedAdjacencyGraph", "WeightedAdjacencyMatrix", //
+      "WeightedData", "WeightedGraphQ", "Weights", "WelchWindow", "WheelGraph", "WhenEvent", //
+      "Which", "While", "White", "WhiteCornerBracket", "WhiteNoiseProcess", "Whitespace", //
+      "WhitespaceCharacter", "WhittakerM", "WhittakerW", "WienerFilter", "WienerProcess", "WignerD", //
+      "WignerSemicircleDistribution", "WindowSize", "With", "Word", "WordBoundary", "WordCharacter", //
+      "WordCloud", "WordOrientation", "WordSelectionFunction", "WordSeparators", "WordSpacings",
+      "WorkingPrecision", //
+      "Write", "WriteLine", "WriteString", "Wronskian", "XMLElement", "XMLObject", //
+      "Xnor", "Xor", "XYZColor", "Yellow", "Yesterday", "YuleDissimilarity", //
+      "ZernikeR", "ZeroSymmetric", "ZeroTest", "Zeta", "ZetaZero", "ZipfDistribution", //
+      "ZTransform"};
 
   /**
    * Generated by class: <code>org.matheclipse.core.preprocessor.FunctionIDGenerator
@@ -5090,7 +5092,7 @@ public class ID {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //
-      0, 0, 0, 0, 0, 0};
+      0, 0, 0, 0, 0, 0, 0};
 
   public final static Map<String, Integer> STRING_TO_ID_MAP = new TreeMap<String, Integer>();
 

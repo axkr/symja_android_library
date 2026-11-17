@@ -29761,6 +29761,16 @@ public class S {
   public final static IBuiltInSymbol VertexQ = S.initFinalSymbol("VertexQ", ID.VertexQ);
 
   /**
+   * VertexRenderingFunction(x) - TODO describe `VertexRenderingFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexRenderingFunction.md">VertexRenderingFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexRenderingFunction =
+      S.initFinalSymbol("VertexRenderingFunction", ID.VertexRenderingFunction);
+
+  /**
    * VertexReplace(x) - TODO describe `VertexReplace`.
    * 
    * @see <a href=
