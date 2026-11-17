@@ -137,6 +137,10 @@ public class RischNorman {
   private static IExpr integrateInternal(IExpr integrand, IExpr x, EvalEngine engine,
       long deadline) {
     // 1. collect the transcendental kernels
+    // Sec(u)^2 is 1+Tan(u)^2 over a tower with Tan(u): the derivative of Tan(u) and of E^Tan(u)
+    // must be rational in the kernels
+    final Set<IExpr> tangentArgs = tangentArguments(integrand, x);
+    integrand = tangentSquares(integrand, tangentArgs, engine);
     List<IExpr> kernels = collectKernels(integrand, x);
     // exponentials with commensurable exponents are powers of one generator
     Map<IExpr, IExpr[]> members = commonExponentials(kernels, engine);
@@ -160,7 +164,7 @@ public class RischNorman {
     // 3. derivatives of the kernels, expressed in x and the dummies
     IExpr[] derivatives = new IExpr[kernels.size()];
     for (int i = 0; i < kernels.size(); i++) {
-      IExpr d = engine.evaluate(F.D(kernels.get(i), x));
+      IExpr d = tangentSquares(engine.evaluate(F.D(kernels.get(i), x)), tangentArgs, engine);
       d = replaceMembers(replaceKernels(d, kernels, dummies), members, kernels, dummies);
       if (!isRationalIn(d, x, dummies)) {
         return F.NIL;
@@ -181,6 +185,7 @@ public class RischNorman {
 
     // degree bounds per variable
     int[] bounds = new int[dummies.length + 1];
+    int[] tightBounds = new int[dummies.length + 1];
     for (int v = 0; v < bounds.length; v++) {
       IExpr var = varsList.get(v + 1);
       int dn = degree(numer, var, engine);
@@ -188,11 +193,16 @@ public class RischNorman {
       if (dn < 0 || dd < 0) {
         return F.NIL;
       }
-      bounds[v] = Math.max(dn, dd) + 2;
+      final int d = Math.max(dn, dd);
+      bounds[v] = d + 2;
+      tightBounds[v] = v == 0 ? d + 1 : tightBound(kernels.get(v - 1), d);
     }
-    long count = 1;
-    for (int bound : bounds) {
-      count *= (bound + 1);
+    long count = monomialCount(bounds);
+    if (count > MAX_UNKNOWNS) {
+      // the bounds by the way each kind of kernel changes the degree under differentiation: the
+      // derivative of a polynomial in E^u has its degree, the one in Tan(u) a degree more
+      bounds = tightBounds;
+      count = monomialCount(bounds);
       if (count > MAX_UNKNOWNS) {
         return F.NIL;
       }
@@ -387,6 +397,32 @@ public class RischNorman {
     return engine.evaluate(F.Expand(result.oneIdentity0()));
   }
 
+  /**
+   * The degree of the antiderivative's numerator in a kernel, if the integrand has degree
+   * <code>d</code> in it.
+   */
+  private static int tightBound(IExpr kernel, int d) {
+    if (kernel.isPower() && kernel.base().isE()) {
+      return d;
+    }
+    if (kernel.isAST(S.Tan, 2) || kernel.isAST(S.Tanh, 2)) {
+      return Math.max(d - 1, 1);
+    }
+    return d + 1;
+  }
+
+  /** The number of monomials with the exponents <code>0..bounds[v]</code> in each variable. */
+  private static long monomialCount(int[] bounds) {
+    long count = 1;
+    for (int bound : bounds) {
+      count *= (bound + 1);
+      if (count > MAX_UNKNOWNS) {
+        return count;
+      }
+    }
+    return count;
+  }
+
   /** Determine the polynomial degree of <code>expr</code> in <code>var</code>. */
   private static int degree(IExpr expr, IExpr var, EvalEngine engine) {
     IExpr exponent = engine.evaluate(F.Exponent(expr, var));
@@ -495,6 +531,60 @@ public class RischNorman {
       }
     }
     return result;
+  }
+
+  /** The <code>Tan(u)</code> and <code>Tanh(u)</code> with <code>x</code> in <code>u</code>. */
+  private static Set<IExpr> tangentArguments(IExpr expr, IExpr x) {
+    final Set<IExpr> args = new LinkedHashSet<>();
+    // a predicate which never matches visits every subexpression
+    expr.isFree(e -> {
+      if ((e.isAST(S.Tan, 2) || e.isAST(S.Tanh, 2)) && !e.first().isFree(x, true)) {
+        args.add(e);
+      }
+      return false;
+    }, true);
+    return args;
+  }
+
+  /**
+   * Write even powers of <code>Sec(u), Cos(u)</code> as powers of <code>1+Tan(u)^2</code> and
+   * even powers of <code>Sech(u), Cosh(u)</code> as powers of <code>1-Tanh(u)^2</code>, if
+   * <code>Tan(u)</code> or <code>Tanh(u)</code> is in <code>tangents</code>. The squares are even,
+   * so <code>Tan(-u)</code>, which the evaluation may have made of <code>-Tan(u)</code>, serves
+   * too.
+   */
+  private static IExpr tangentSquares(IExpr expr, Set<IExpr> tangents, EvalEngine engine) {
+    if (tangents.isEmpty()) {
+      return expr;
+    }
+    return F.subst(expr, e -> {
+      if (e.isPower() && e.exponent().isInteger() && e.base().isAST1()) {
+        final int n = e.exponent().toIntDefault();
+        if (n == Integer.MIN_VALUE || (n & 1) != 0) {
+          return F.NIL;
+        }
+        final IExpr base = e.base();
+        final IExpr u = base.first();
+        final int sign = base.isAST(S.Sec, 2) || base.isAST(S.Sech, 2) ? 1
+            : base.isAST(S.Cos, 2) || base.isAST(S.Cosh, 2) ? -1 : 0;
+        if (sign == 0) {
+          return F.NIL;
+        }
+        final boolean circular = base.isAST(S.Sec, 2) || base.isAST(S.Cos, 2);
+        IExpr tangent = circular ? F.Tan(u) : F.Tanh(u);
+        if (!tangents.contains(tangent)) {
+          final IExpr minusU = engine.evaluate(F.Negate(u));
+          tangent = circular ? F.Tan(minusU) : F.Tanh(minusU);
+          if (!tangents.contains(tangent)) {
+            return F.NIL;
+          }
+        }
+        final IExpr square =
+            circular ? F.Plus(F.C1, F.Sqr(tangent)) : F.Subtract(F.C1, F.Sqr(tangent));
+        return F.Power(square, F.ZZ(sign * n / 2));
+      }
+      return F.NIL;
+    });
   }
 
   /** Replace each kernel (largest first) by its dummy symbol. */

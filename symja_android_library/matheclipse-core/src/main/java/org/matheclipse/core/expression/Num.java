@@ -2446,7 +2446,8 @@ public class Num implements INum {
         // the error of the number carries on
         return ((ApcomplexNum) that).plus(this);
       }
-      return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
+      return ApcomplexNum
+          .machineResult(apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue()));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -2852,7 +2853,10 @@ public class Num implements INum {
         // the error of the number carries on
         return ((ApcomplexNum) that).times(this);
       }
-      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
+      return ApcomplexNum.machineResult(
+          apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue()),
+          () -> ApcomplexNum.wide(this)
+              .multiply(ApcomplexNum.wide(((ApcomplexNum) that).apcomplexValue())));
     }
     throw new java.lang.ArithmeticException();
   }

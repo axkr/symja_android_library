@@ -1181,6 +1181,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
                 if (whole.isPresent()) {
                   return whole;
                 }
+                // E^(2*x)*(1+2*x)/(2*x+Log(x)) is E^u*u'/u for u=2*x+Log(x), an integral with no
+                // elementary pieces: the derivative of the whole divides it
+                whole = derivativeDividesWhole(fx, x, engine);
+                if (whole.isPresent()) {
+                  return whole;
+                }
               }
               IExpr finished = finishPartialAnswer(rubiResult, fx, x, engine);
               if (finished.isPresent()) {
@@ -1348,7 +1354,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (!fx.isTimes() || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
       return F.NIL;
     }
-    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)) {
+    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)
+        || hasTranscendentalArgument(fx, x)) {
       return F.NIL;
     }
     IExpr expanded = engine.evaluate(F.Expand(F.ExpToTrig(fx)));
@@ -1363,6 +1370,35 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The derivative-divides stage on the whole integrand of a partial answer, at the top level, for
+   * an exponential next to a logarithm, whose product the evaluation splits, and within a quarter of
+   * the budget of the rules, which ran out before.
+   */
+  private static IExpr derivativeDividesWhole(IAST fx, IExpr x, EvalEngine engine) {
+    if (EVAL_DEPTH.get() != 1 || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)
+        || fx.isFree(y -> y.isLog() && !y.isFree(x), true)) {
+      return F.NIL;
+    }
+    final long budget = rubiBudgetMillis(engine);
+    return quietStage(engine, fx, x, "recognising that the derivative divides the integrand",
+        () -> IntegrateTimeBudget.runWithin(() -> DerivativeDivides.integrate(fx, x, engine),
+            budget > 0 ? Math.max(1, budget / 4) : budget));
+  }
+
+  /**
+   * Has <code>fx</code> a trigonometric or hyperbolic function of a trigonometric, hyperbolic or
+   * exponential function of <code>x</code>? Written as exponentials, <code>Cosh(Tan(x))</code>
+   * becomes a tower of exponentials, on which the other stages grind; <code>Sinh(Log(x))</code> or
+   * <code>Sin(1/x)</code> do not.
+   */
+  private static boolean hasTranscendentalArgument(IExpr fx, IExpr x) {
+    return !fx.isFree(y -> (y.isTrigFunction() || y.isHyperbolicFunction()) && y.isAST1()
+        && !y.first().isFree(z -> (z.isTrigFunction() || z.isHyperbolicFunction() || z.isExp())
+            && !z.isFree(x, true), true),
+        true);
+  }
+
+  /**
    * The integral of a product of hyperbolic and trigonometric functions of <code>x</code>, or
    * {@link F#NIL}. The hyperbolic functions are written as exponentials, the expanded sum is
    * integrated term by term and every real exponential <code>E^u</code> of the result is written
@@ -1373,7 +1409,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (fx.isFree(y -> y.isHyperbolicFunction() && !y.isFree(x), true)
-        || fx.isFree(y -> y.isTrigFunction() && !y.isFree(x), true)) {
+        || fx.isFree(y -> y.isTrigFunction() && !y.isFree(x), true)
+        || hasTranscendentalArgument(fx, x)) {
       return F.NIL;
     }
     IExpr exponentials = fx.replaceAll(y -> y.isHyperbolicFunction() && !y.isFree(x)

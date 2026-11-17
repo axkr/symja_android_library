@@ -4,6 +4,7 @@ import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -2001,12 +2002,14 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber plus(final IInexactNumber that) {
-    return sumResult(sum(that.apcomplexValue()), that);
+    return isMachine(that) ? machineResult(sumResult(sum(that.apcomplexValue()), that))
+        : sumResult(sum(that.apcomplexValue()), that);
   }
 
   @Override
   public INumber plus(final INumber that) {
-    return sumResult(sum(that.apcomplexValue()), that);
+    return isMachine(that) ? machineResult(sumResult(sum(that.apcomplexValue()), that))
+        : sumResult(sum(that.apcomplexValue()), that);
   }
 
   /**
@@ -2503,12 +2506,64 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber times(final IInexactNumber that) {
-    return productResult(product(that.apcomplexValue()), that);
+    return isMachine(that)
+        ? machineResult(productResult(product(that.apcomplexValue()), that),
+            () -> wide(fApcomplex).multiply(wide(that)))
+        : productResult(product(that.apcomplexValue()), that);
   }
 
   @Override
   public IInexactNumber times(final INumber that) {
-    return productResult(product(that.apcomplexValue()), that);
+    return isMachine(that)
+        ? machineResult(productResult(product(that.apcomplexValue()), that),
+            () -> wide(fApcomplex).multiply(wide(that)))
+        : productResult(product(that.apcomplexValue()), that);
+  }
+
+  private static boolean isMachine(final INumber operand) {
+    return operand instanceof Num || operand instanceof ComplexNum;
+  }
+
+  /** <code>z</code> with {@link ApfloatNum#MACHINE_ROUNDING_DIGITS} digits, taken as exact. */
+  static Apcomplex wide(final Apcomplex z) {
+    return new Apcomplex(ApfloatNum.wide(z.real()), ApfloatNum.wide(z.imag()));
+  }
+
+  /** A machine number with {@link ApfloatNum#MACHINE_ROUNDING_DIGITS} digits. */
+  static Apcomplex wide(final INumber machine) {
+    return machine instanceof ComplexNum
+        ? new Apcomplex(ApfloatNum.wide(((ComplexNum) machine).getRealPart()),
+            ApfloatNum.wide(((ComplexNum) machine).getImaginaryPart()))
+        : new Apcomplex(ApfloatNum.wide(((Num) machine).getRealPart()));
+  }
+
+  /**
+   * The result of an operation with a machine number: a machine complex number if both parts are
+   * in the double range, like <code>(3.0*10^200+4.0*10^200*I)^2/1.0*10^300</code>; else the
+   * arbitrary precision number.
+   */
+  public static IInexactNumber machineResult(final ApcomplexNum result) {
+    return machineResult(result, () -> result.fApcomplex);
+  }
+
+  /**
+   * See {@link #machineResult(ApcomplexNum)}: rounded from <code>wide</code>, the value of a
+   * product with {@link ApfloatNum#MACHINE_ROUNDING_DIGITS} digits.
+   */
+  public static IInexactNumber machineResult(final ApcomplexNum result,
+      final Supplier<Apcomplex> wide) {
+    if (EvalEngine.get().isArbitraryMode()) {
+      return result;
+    }
+    final Apcomplex value = wide.get();
+    final Apfloat re = value.real();
+    final Apfloat im = value.imag();
+    final double dre = ApfloatNum.nearestDouble(re);
+    final double dim = ApfloatNum.nearestDouble(im);
+    if (ApfloatNum.isMachineValue(dre, re) && ApfloatNum.isMachineValue(dim, im)) {
+      return ComplexNum.valueOf(dre, dim);
+    }
+    return result;
   }
 
   @Override

@@ -36,9 +36,9 @@ a!!b==c	Equal(Times(Factorial2(a), b), c)
 a!!(b!!c)	Factorial2(a)[Times(Factorial2(b), c)]
 a!!-b	Plus(Factorial2(a), Times(-1, b))
 a!!b^2	Times(Factorial2(a), Power(b, 2))
-!!a	!syntax@2: Operator: !! is no prefix operator.
-!!a+b	!syntax@2: Operator: !! is no prefix operator.
-!!(a+b)	!syntax@2: Operator: !! is no prefix operator.
+!!a	Not(Not(a))
+!!a+b	Not(Not(Plus(a, b)))
+!!(a+b)	Not(Not(Plus(a, b)))
 a!!	Factorial2(a)
 a!!+b	Plus(Factorial2(a), b)
 (a+b)!!	Factorial2(Plus(a, b))

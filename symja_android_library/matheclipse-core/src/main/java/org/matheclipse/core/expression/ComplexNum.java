@@ -1941,7 +1941,8 @@ public class ComplexNum implements IComplexNum {
         // a machine number adds no error
         return acn.plus(this);
       }
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
+      return ApcomplexNum
+          .machineResult(ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn));
     }
     if (that instanceof ApfloatNum) {
       ApfloatNum afn = (ApfloatNum) that;
@@ -2302,7 +2303,9 @@ public class ComplexNum implements IComplexNum {
         // a machine number adds no error
         return ((ApcomplexNum) that).times(this);
       }
-      return apcomplexNumValue().multiply((ApcomplexNum) that);
+      return ApcomplexNum.machineResult(apcomplexNumValue().multiply((ApcomplexNum) that),
+          () -> ApcomplexNum.wide(this)
+              .multiply(ApcomplexNum.wide(((ApcomplexNum) that).apcomplexValue())));
     }
     if (that instanceof ApfloatNum) {
       if (((ApfloatNum) that).isSignificanceTracked()) {
