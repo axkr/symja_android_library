@@ -34120,8 +34120,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "p^q^36893488147419103232");
     check("Power(q,2,65)", //
         "q^36893488147419103232");
+    // a power whose bit length is beyond any number
     check("3^2^65", //
-        "3^36893488147419103232");
+        "Overflow()");
     check("x^(-2)^(-3)", //
         "1/x^(1/8)");
     check("(Sqrt[a])^(1/4)", //

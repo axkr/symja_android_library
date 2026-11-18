@@ -3120,34 +3120,175 @@ public final class Arithmetic {
           return Errors.printMessage(ast.topHead(), "rbase", F.List(base), engine);
         }
       }
-      if (n.equals(F.C0) || n.equals(F.CD0)) {
-        return F.CListC0C0;
+      if (n.isZero()) {
+        return F.list(n, F.C0);
       }
-      IExpr nN = engine.evalN(n);
-      if (!nN.isRealResult()) {
+      if (n.isRational() && base.isRational()) {
+        return exactMantissaExponent((IRational) n, (IRational) base);
+      }
+      if (n instanceof Num && base.isRational() && Double.isFinite(((Num) n).doubleValue())) {
+        return machineMantissaExponent(((Num) n).doubleValue(), (IRational) base);
+      }
+      if (!n.isNumericFunction(true)) {
+        // a symbol is no number which is not real
+        return F.NIL;
+      }
+      if (n.isInexactNumber() && !n.isReal()) {
+        // "The value `1` is not a real number."
+        return Errors.printMessage(ast.topHead(), "realx", F.List(n), engine);
+      }
+      final long workingDigits = n instanceof ApfloatNum
+          ? ((ApfloatNum) n).precision() + GUARD_DIGITS + exponentDigits((ApfloatNum) n)
+          : MACHINE_WORKING_DIGITS;
+      final IExpr nN = n.isInexactNumber() ? n : numericValue(n, workingDigits, engine);
+      if (!nN.isReal()) {
         // "The value `1` is not a real number."
         return Errors.printMessage(ast.topHead(), "realx", F.List(nN), engine);
       }
-      IExpr baseN = engine.evalN(base);
-      if (baseN.isRealResult()) {
-        if (engine.isArbitraryMode()) {
-          Apfloat x = nN.evalReal().apfloatValue();
-          Apfloat b = baseN.evalReal().apfloatValue();
-          long baseExp = ApfloatMath.log(x, b).longValue();
-          IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
-          return F.list(F.Divide(n, F.Power(base, exp)), exp);
-        }
-        double x = nN.evalfNaN();
-        double b = baseN.evalfNaN();
-        if (Double.isNaN(x) || Double.isNaN(b)) {
-          return F.NIL;
-        }
-        long baseExp = (long) (Math.log(x) / Math.log(b));
-        IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
-        return F.list(F.Divide(n, F.Power(base, exp)), exp);
+      final Apfloat b = apfloatOf(numericValue(base, workingDigits, engine), workingDigits);
+      if (b == null) {
+        return F.NIL;
       }
+      final Apfloat x = apfloatOf(nN, workingDigits);
+      if (x == null || x.signum() == 0) {
+        return F.NIL;
+      }
+      final Apfloat[] mantissa = new Apfloat[1];
+      // a number of its own precision is a power of the base if it is one to that precision
+      final long toleranceDigits = n instanceof ApfloatNum ? ((ApfloatNum) n).precision()
+          : MACHINE_WORKING_DIGITS - 5L;
+      final long e = locateExponent(ApfloatMath.abs(x).precision(workingDigits), b,
+          toleranceDigits, mantissa);
+      if (n instanceof ApfloatNum) {
+        Apfloat m = mantissa[0].precision(((ApfloatNum) n).precision());
+        return F.list(F.num(x.signum() < 0 ? m.negate() : m), F.ZZ(e));
+      }
+      if (n instanceof INum) {
+        double m = ApfloatNum.nearestDouble(mantissa[0]);
+        return F.list(F.num(x.signum() < 0 ? -m : m), F.ZZ(e));
+      }
+      final IInteger exp = F.ZZ(e);
+      return F.list(F.Divide(n, F.Power(base, exp)), exp);
+    }
 
-      return F.NIL;
+    /**
+     * <code>{m, e}</code> of a machine number for an exact base: the exponent of the exact value of
+     * the double, the mantissa its exact quotient rounded once to the nearest double.
+     */
+    private static IExpr machineMantissaExponent(double d, IRational b) {
+      final java.math.BigDecimal exact = new java.math.BigDecimal(d);
+      final IRational x = exact.scale() > 0
+          ? F.QQ(exact.unscaledValue(), java.math.BigInteger.TEN.pow(exact.scale())).normalize()
+          : F.ZZ(exact.unscaledValue().multiply(java.math.BigInteger.TEN.pow(-exact.scale())));
+      final IAST result = (IAST) exactMantissaExponent(x, b);
+      final IRational m = (IRational) result.arg1();
+      final double mantissa =
+          ApfloatNum.nearestDouble(new Apfloat(m.toBigNumerator(), MACHINE_WORKING_DIGITS)
+              .divide(new Apfloat(m.toBigDenominator(), MACHINE_WORKING_DIGITS)));
+      return F.list(F.num(mantissa), result.arg2());
+    }
+
+    /** The digits the exponent of a machine number is located with. */
+    private static final long MACHINE_WORKING_DIGITS = 40;
+
+    /** The digits added to the precision of an arbitrary precision number to locate it. */
+    private static final long GUARD_DIGITS = 20;
+
+    /**
+     * The value of <code>expr</code> with <code>digits</code> digits; the precision the evaluation
+     * runs with is left as it was.
+     */
+    private static IExpr numericValue(IExpr expr, long digits, EvalEngine engine) {
+      if (expr.isRational()) {
+        IRational q = (IRational) expr;
+        return F.num(new Apfloat(q.toBigNumerator(), digits)
+            .divide(new Apfloat(q.toBigDenominator(), digits)));
+      }
+      final long precision = engine.getNumericPrecision();
+      final boolean numericMode = engine.isNumericMode();
+      // N(expr, digits) leaves its digits as the number of figures to display
+      final int figures = engine.getSignificantFigures();
+      try {
+        return engine.evaluate(F.N(expr, F.ZZ(digits)));
+      } finally {
+        engine.setNumericMode(numericMode, precision, figures);
+      }
+    }
+
+    /** The decimal digits of the decimal exponent of <code>x</code>. */
+    private static long exponentDigits(ApfloatNum x) {
+      return Long.toString(Math.abs(x.apfloatValue().scale())).length();
+    }
+
+    private static Apfloat apfloatOf(IExpr real, long digits) {
+      if (real instanceof ApfloatNum) {
+        return ((ApfloatNum) real).apfloatValue();
+      }
+      if (real instanceof INum) {
+        return ApfloatNum.apfloatOf(((INum) real).getRealPart(), digits);
+      }
+      return null;
+    }
+
+    /**
+     * The exponent <code>e</code> with <code>b^(e-1) &lt;= x &lt; b^e</code>.
+     *
+     * <p>
+     * A power of the base comes out of the working precision a few units off; a mantissa that
+     * close to <code>1</code> is a power and is taken as <code>1/b</code>.
+     *
+     * @param x a positive number
+     * @param b a base greater than 1
+     * @param toleranceDigits a mantissa closer to <code>1</code> than
+     *        <code>10^(-toleranceDigits)</code> is taken as <code>1</code>
+     * @param mantissa receives <code>x/b^e</code>
+     */
+    private static long locateExponent(Apfloat x, Apfloat b, long toleranceDigits,
+        Apfloat[] mantissa) {
+      long e = ApfloatMath.floor(ApfloatMath.log(x).divide(ApfloatMath.log(b))).longValue() + 1L;
+      Apfloat m = x.divide(ApfloatMath.pow(b, e));
+      final Apfloat almostOne =
+          new Apfloat(1).subtract(ApfloatMath.scale(new Apfloat(1), -Math.max(1L, toleranceDigits)));
+      if (m.compareTo(almostOne) >= 0) {
+        m = m.divide(b);
+        e++;
+      } else if (m.multiply(b).compareTo(almostOne) < 0) {
+        m = m.multiply(b);
+        e--;
+      }
+      if (m.multiply(b).compareTo(almostOne) >= 0 && m.multiply(b).compareTo(new Apfloat(1)) < 0) {
+        // a power of the base just below 1/b
+        m = new Apfloat(1).divide(b);
+      }
+      mantissa[0] = m;
+      return e;
+    }
+
+    /** <code>{x/b^e, e}</code> with <code>b^(e-1) &lt;= |x| &lt; b^e</code>, exactly. */
+    private static IExpr exactMantissaExponent(IRational x, IRational b) {
+      final IRational ax = x.abs();
+      long e = (long) Math.floor(logAbs(ax) / logAbs(b)) + 1L;
+      // the estimate is off by at most a step where |x| is close to a power of the base
+      while (ax.isGE(power(b, e))) {
+        e++;
+      }
+      while (ax.isLT(power(b, e - 1L))) {
+        e--;
+      }
+      return F.list(x.divideBy(power(b, e)), F.ZZ(e));
+    }
+
+    private static IRational power(IRational b, long e) {
+      return e >= 0L ? b.powerRational(e) : F.C1.divideBy(b.powerRational(-e));
+    }
+
+    private static double logAbs(IRational r) {
+      return log(r.toBigNumerator().abs()) - log(r.toBigDenominator());
+    }
+
+    private static double log(java.math.BigInteger n) {
+      final int shift = Math.max(0, n.bitLength() - 1000);
+      return Math.log(n.shiftRight(shift).doubleValue()) + shift * Math.log(2.0);
     }
 
     @Override
@@ -4396,18 +4537,34 @@ public final class Arithmetic {
       if (exponent.isMinusOne()) {
         return base.inverse();
       }
-      if (exponent.isNumIntValue()) {
-        return base.pow(exponent);
+      try {
+        if (exponent.isNumIntValue()) {
+          return inRange(base.pow(exponent), base);
+        }
+        if (base.isNegative()) {
+          ApcomplexNum b = base.apcomplexNumValue();
+          ApcomplexNum e = exponent.apcomplexNumValue();
+          return b.pow(e);
+        }
+        return inRange(base.pow(exponent), base);
+      } catch (OverflowException oex) {
+        // beyond the range of the exponent of an arbitrary precision number
+        return outOfRange(true);
       }
-      if (base.isNegative()) {
-        ApcomplexNum b = base.apcomplexNumValue();
-        ApcomplexNum e = exponent.apcomplexNumValue();
-        return b.pow(e);
-      }
-
-      return base.pow(exponent);
     }
     // CPD-ON
+
+    /**
+     * <code>Underflow()</code> for a power of a number other than zero which came out as an exact
+     * zero: its magnitude is below the range of the exponent of an arbitrary precision number.
+     */
+    private static IExpr inRange(INum power, ApfloatNum base) {
+      if (power.isZero() && !base.isZero() && power instanceof ApfloatNum
+          && ((ApfloatNum) power).apfloatValue().precision() == org.apfloat.Apfloat.INFINITE) {
+        return outOfRange(false);
+      }
+      return power;
+    }
 
     /**
      * A real arbitrary precision result of an operation of <code>bignum</code> with a machine
@@ -4519,10 +4676,21 @@ public final class Arithmetic {
      */
     public static @AllowNIL IExpr machineIntegerPower(final Num base, final IInteger exponent) {
       final double x = base.doubleValue();
-      final long n = exponent.toLongDefault();
-      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2 || x == 0.0
-          || !Double.isFinite(x)) {
+      if (x == 0.0 || !Double.isFinite(x)) {
         return F.NIL;
+      }
+      final long n = exponent.toLongDefault();
+      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2) {
+        if (Math.abs(x) == 1.0) {
+          // the parity of the exponent decides, not its rounding to a double
+          return F.num(x > 0.0 || exponent.isEven() ? 1.0 : -1.0);
+        }
+        if (Math.abs(Math.log(Math.abs(x)) * exponent.doubleValue()) < MAX_POWER_LOG) {
+          // a base next to 1: an ordinary number beyond the double range, for the general path
+          return F.NIL;
+        }
+        // the exponent of the power is beyond any number, small or large
+        return outOfRange(true);
       }
       // Abs(Log2(x)) is at most Abs(Math.getExponent(x)) + 1: a power whose binary exponent stays
       // far inside the double range needs no Math.pow
@@ -4546,6 +4714,12 @@ public final class Arithmetic {
         return F.NIL;
       }
     }
+
+    /**
+     * A bound of <code>Abs(Log(x^n))</code> far inside the range of the exponent of an arbitrary
+     * precision number.
+     */
+    private static final double MAX_POWER_LOG = 1.0e15;
 
     /**
      * The bits of <code>x^n</code>, taken by binary powering: a power inside the double range is a
@@ -4997,6 +5171,11 @@ public final class Arithmetic {
       }
       // exponent is integer
       IInteger exp = exponent.numerator();
+      if (isBeyondAnyBitLength(
+          Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()), exp)) {
+        // a proper fraction to a positive power is tiny, its reciprocal huge
+        return outOfRange(base.abs().isGT(F.C1) == exp.isPositive());
+      }
       // the squarings of a huge power can't be interrupted: refuse it before they start
       BigIntegerLimitExceeded.checkPower(
           Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()),
@@ -5022,10 +5201,48 @@ public final class Arithmetic {
         // all other cases see e2ObjArg
         return F.NIL;
       }
+      if (isBeyondAnyBitLength(base.bitLength(), exponent)) {
+        return outOfRange(exponent.isPositive());
+      }
       // may throw ArithmeticException
       long n = exponent.toLong();
       BigIntegerLimitExceeded.checkPower(base.bitLength(), n);
       return base.power(n);
+    }
+
+    /**
+     * Is the bit length of <code>b^n</code>, for a base of <code>bits</code> bits, beyond the range
+     * of a <code>long</code>? No memory holds such a number.
+     */
+    private static boolean isBeyondAnyBitLength(long bits, IInteger n) {
+      return bits > 1L && n.toBigNumerator().abs().multiply(java.math.BigInteger.valueOf(bits - 1L))
+          .bitLength() >= Long.SIZE - 1;
+    }
+
+    /**
+     * The product of <code>Underflow()</code> and an inexact number: the zero of the number's
+     * precision, <code>0.0</code> for a machine number.
+     */
+    private static IExpr underflowTimes(INumber factor) {
+      if (factor instanceof Num || factor instanceof ComplexNum) {
+        return F.CD0;
+      }
+      return factor.subtract(factor);
+    }
+
+    /**
+     * <code>Overflow()</code> with the message <code>General::ovfl</code> for a huge power,
+     * <code>Underflow()</code> with <code>General::unfl</code> for a tiny one.
+     */
+    private static IExpr outOfRange(boolean huge) {
+      if (huge) {
+        // Overflow occurred in computation.
+        Errors.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+        return F.Overflow();
+      }
+      // Underflow occurred in computation.
+      Errors.printMessage(S.General, "unfl", F.List(), EvalEngine.get());
+      return F.Underflow();
     }
 
     /**
@@ -8011,6 +8228,9 @@ public final class Arithmetic {
           case ID.Underflow:
             if (arg1.isUnderflow()) {
               if (arg2.isNumericFunction()) {
+                // a factor below the range of numbers: an inexact product is zero
+                if (arg2.isInexactNumber())
+                  return Arithmetic.Power.underflowTimes((INumber) arg2);
                 if (EvalEngine.get().isNumericMode())
                   return F.CD0;
                 return arg1;
@@ -8091,6 +8311,9 @@ public final class Arithmetic {
           case ID.Underflow:
             if (arg2.isUnderflow()) {
               if (arg1.isNumericFunction()) {
+                // a factor below the range of numbers: an inexact product is zero
+                if (arg1.isInexactNumber())
+                  return Arithmetic.Power.underflowTimes((INumber) arg1);
                 if (EvalEngine.get().isNumericMode())
                   return F.CD0;
                 return arg2;

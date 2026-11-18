@@ -1257,9 +1257,25 @@ public class ExpTrigsFunctions {
   private static final class ArcSinh extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
 
+    /**
+     * The inverse hyperbolic sine of a <code>double</code> as
+     * <code>Log1p(|x|+x^2/(1+Sqrt(1+x^2)))</code>, which is off by at most one unit in the last
+     * place, where <code>FastMath.asinh()</code> is off by two for some arguments and by one for
+     * <code>0.3</code>.
+     */
+    private static double asinh(double x) {
+      final double ax = Math.abs(x);
+      if (!(ax <= 1.0e8)) {
+        // 1/(4*x^2) is below the last digit of Log(2*x); NaN and infinities pass through
+        return Double.isFinite(x) ? Math.copySign(Math.log(ax) + Math.log(2.0), x)
+            : FastMath.asinh(x);
+      }
+      return Math.copySign(Math.log1p(ax + ax * ax / (1.0 + Math.sqrt(1.0 + ax * ax))), x);
+    }
+
     @Override
     public double applyAsDouble(double operand) {
-      return FastMath.asinh(operand);
+      return asinh(operand);
     }
 
     @Override
@@ -1274,7 +1290,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = FastMath.asinh(arg1);
+      double val = asinh(arg1);
       return F.num(val);
     }
 
@@ -1288,7 +1304,7 @@ public class ExpTrigsFunctions {
       if (size != 1) {
         throw new UnsupportedOperationException();
       }
-      return FastMath.asinh(stack[top]);
+      return asinh(stack[top]);
     }
 
     @Override

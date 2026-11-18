@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -353,48 +354,112 @@ public class RischNorman {
   }
 
   /**
-   * The numerator of a sum of rational functions over a common multiple of the denominators of
-   * its terms, multiplied out. Each term is put over its own denominator, which is cheap for the
-   * small terms of the ansatz derivative; <code>Together</code> of the whole sum takes the gcd of
-   * polynomials in all the unknowns of the ansatz and needed seconds for 17 of them. The
-   * numerator over a multiple of the lowest denominator has the same zeros in the unknowns.
+   * The numerator of a rational function over a common multiple of the denominators of its parts,
+   * multiplied out. The numerator over a multiple of the lowest denominator has the same zeros in
+   * the unknowns, so no gcd is cancelled: <code>Together</code> takes the gcd of polynomials in all
+   * the unknowns of the ansatz, which needed seconds for 17 of them and exhausted the memory for a
+   * tower with an inverse tangent.
    *
    * @return {@link F#NIL} if the deadline passed
    */
   private static IExpr clearedNumerator(IExpr sum, EvalEngine engine, long deadline) {
-    IAST terms = sum.isPlus() ? (IAST) sum : F.List(sum);
-    List<IExpr> numerators = new ArrayList<>(terms.argSize());
-    List<IExpr> denominators = new ArrayList<>(terms.argSize());
-    // distinct denominators, the index of each term's one
-    List<IExpr> distinct = new ArrayList<>();
-    int[] index = new int[terms.argSize()];
-    for (int i = 1; i < terms.size(); i++) {
-      if (System.currentTimeMillis() > deadline) {
-        return F.NIL;
-      }
-      IExpr together = engine.evaluate(F.Together(terms.get(i)));
-      numerators.add(engine.evaluate(F.Numerator(together)));
-      IExpr denominator = engine.evaluate(F.Expand(F.Denominator(together)));
-      denominators.add(denominator);
-      int k = distinct.indexOf(denominator);
-      if (k < 0) {
-        k = distinct.size();
-        distinct.add(denominator);
-      }
-      index[i - 1] = k;
+    Fraction fraction = Fraction.of(sum, deadline);
+    if (fraction == null) {
+      return F.NIL;
     }
-    IASTAppendable result = F.PlusAlloc(numerators.size());
-    for (int i = 0; i < numerators.size(); i++) {
-      IASTAppendable product = F.TimesAlloc(distinct.size());
-      product.append(numerators.get(i));
-      for (int k = 0; k < distinct.size(); k++) {
-        if (k != index[i]) {
-          product.append(distinct.get(k));
+    return engine.evaluate(F.Expand(fraction.numerator));
+  }
+
+  /**
+   * A numerator over a denominator kept as its factors and their exponents. A sum is put over the
+   * least common multiple of the factors of its terms, compared by their form.
+   */
+  private static final class Fraction {
+    final IExpr numerator;
+    final Map<IExpr, Integer> denominator;
+
+    private Fraction(IExpr numerator, Map<IExpr, Integer> denominator) {
+      this.numerator = numerator;
+      this.denominator = denominator;
+    }
+
+    /** @return <code>null</code> if the deadline passed */
+    static Fraction of(IExpr expr, long deadline) {
+      if (System.currentTimeMillis() > deadline) {
+        return null;
+      }
+      if (expr.isPlus()) {
+        IAST plus = (IAST) expr;
+        List<Fraction> terms = new ArrayList<>(plus.argSize());
+        Map<IExpr, Integer> lcm = new LinkedHashMap<>();
+        for (IExpr term : plus) {
+          Fraction fraction = of(term, deadline);
+          if (fraction == null) {
+            return null;
+          }
+          terms.add(fraction);
+          fraction.denominator.forEach((base, exponent) -> lcm.merge(base, exponent, Math::max));
+        }
+        IASTAppendable numerator = F.PlusAlloc(terms.size());
+        for (Fraction fraction : terms) {
+          IASTAppendable product = F.TimesAlloc(lcm.size() + 1);
+          product.append(fraction.numerator);
+          lcm.forEach((base, exponent) -> appendPower(product, base,
+              exponent - fraction.denominator.getOrDefault(base, 0)));
+          numerator.append(product.oneIdentity1());
+        }
+        return new Fraction(numerator.oneIdentity0(), lcm);
+      }
+      if (expr.isTimes()) {
+        IAST times = (IAST) expr;
+        IASTAppendable numerator = F.TimesAlloc(times.argSize());
+        Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+        for (IExpr factor : times) {
+          Fraction fraction = of(factor, deadline);
+          if (fraction == null) {
+            return null;
+          }
+          numerator.append(fraction.numerator);
+          fraction.denominator
+              .forEach((base, exponent) -> denominator.merge(base, exponent, Integer::sum));
+        }
+        return new Fraction(numerator.oneIdentity1(), denominator);
+      }
+      if (expr.isPower() && expr.exponent().isInteger()) {
+        final int k = expr.exponent().toIntDefault();
+        if (k != Integer.MIN_VALUE && k != 0) {
+          Fraction base = of(expr.base(), deadline);
+          if (base == null) {
+            return null;
+          }
+          final int n = Math.abs(k);
+          if (k > 0) {
+            Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+            base.denominator.forEach((b, exponent) -> denominator.put(b, exponent * n));
+            return new Fraction(F.Power(base.numerator, F.ZZ(n)), denominator);
+          }
+          // the reciprocal: the factors of the denominator come up, the numerator goes down
+          IASTAppendable numerator = F.TimesAlloc(base.denominator.size() + 1);
+          numerator.append(F.C1);
+          base.denominator.forEach((b, exponent) -> appendPower(numerator, b, exponent * n));
+          Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+          for (IExpr factor : base.numerator.isTimes() ? (IAST) base.numerator
+              : F.List(base.numerator)) {
+            denominator.merge(factor, n, Integer::sum);
+          }
+          return new Fraction(numerator.oneIdentity1(), denominator);
         }
       }
-      result.append(product.oneIdentity1());
+      return new Fraction(expr, new LinkedHashMap<>());
     }
-    return engine.evaluate(F.Expand(result.oneIdentity0()));
+
+    private static void appendPower(IASTAppendable product, IExpr base, int exponent) {
+      if (exponent == 1) {
+        product.append(base);
+      } else if (exponent > 1) {
+        product.append(F.Power(base, F.ZZ(exponent)));
+      }
+    }
   }
 
   /**
@@ -689,7 +754,11 @@ public class RischNorman {
     if (ast.argSize() != 1 || ast.arg1().isFree(x, true)) {
       return false;
     }
+    // an inverse tangent is a logarithmic kernel: its derivative u'/(1+u^2) or u'/(1-u^2) is
+    // rational in the kernels of u
     return ast.head() == S.Log || ast.head() == S.Tan || ast.head() == S.Tanh || ast.head() == S.Sin
-        || ast.head() == S.Cos || ast.head() == S.Sinh || ast.head() == S.Cosh;
+        || ast.head() == S.Cos || ast.head() == S.Sinh || ast.head() == S.Cosh
+        || ast.head() == S.ArcTan || ast.head() == S.ArcCot || ast.head() == S.ArcTanh
+        || ast.head() == S.ArcCoth;
   }
 }

@@ -435,6 +435,12 @@ public final class PlusOp {
           evaled = true;
           return F.NIL;
         }
+        if (numberValue.isUnderflow() && arg.isInexactNumber()) {
+          // an inexact term absorbs a magnitude below its last digit
+          numberValue = arg;
+          evaled = true;
+          return F.NIL;
+        }
         return F.NIL;
       } else if (arg.isQuantity()) {
         if (numberValue.isNIL()) {
@@ -639,7 +645,8 @@ public final class PlusOp {
                   }
                   numberValue = arg;
                   return F.NIL;
-                } else if (numberValue.isOverflow()) {
+                } else if (numberValue.isOverflow() || numberValue.isInexactNumber()) {
+                  // an inexact term absorbs a magnitude below its last digit
                   evaled = true;
                   return F.NIL;
                 } else if (EvalEngine.get().isNumericMode()) {

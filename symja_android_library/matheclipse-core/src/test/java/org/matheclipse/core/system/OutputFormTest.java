@@ -374,8 +374,9 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     ExprEvaluator evaluator = new ExprEvaluator();
     OutputFormFactory outputFormFactory = OutputFormFactory.get(true, false);
 
-    // the exponent is a single number, however many operators its printed form takes
-    IExpr exponent = evaluator.eval("2^N(1.5*10^30, 30)");
+    // the exponent is a single number, however many operators its printed form takes; the power
+    // itself is beyond any number and evaluates to Overflow(), so it is built unevaluated
+    IExpr exponent = F.Power(F.num(2.0), evaluator.eval("N(1.5*10^30, 30)"));
     assertEquals(exponent.fullFormString(), "Power(2.0`, 1.5`16*^30)");
     assertEquals(outputFormFactory.toString(exponent), "2.0^(1.500000000000000*10^30)");
 
