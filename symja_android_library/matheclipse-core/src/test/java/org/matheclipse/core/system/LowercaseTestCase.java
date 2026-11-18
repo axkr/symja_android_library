@@ -4474,8 +4474,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // ContinuedFraction(Pi,-20).
     check("ContinuedFraction(9/22)", //
         "{0,2,2,4}");
-    check("ContinuedFraction(9.0/22)", //
-        "{0,2,2,3,1}");
+    check("ContinuedFraction(0.3)", //
+        "{0,3}");
     check("ContinuedFraction(-19/10)", //
         "{-1,-1,-9}");
     check("ContinuedFraction(7283752929681393 / 4096)", //
@@ -4579,11 +4579,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,{1,1,1,1,6}}");
 
     check("ContinuedFraction(0.753)", //
-        "{0,1,3,20,1,1,2,1,1}");
+        "{0,1,3,20,1,1,2}");
     check("ContinuedFraction(0.55)", //
         "{0,1,1,4,2}");
     check("ContinuedFraction(-0.753)", //
-        "{0,-1,-3,-20,-1,-1,-2,-1,-1}");
+        "{0,-1,-3,-20,-1,-1,-2}");
     check("ContinuedFraction(-0.55)", //
         "{0,-1,-1,-4,-2}");
     check("ContinuedFraction(Pi,30)", //
@@ -8119,6 +8119,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2*Pi)*Gamma(3/4)^2)");
     check("EllipticE(Pi/2, m)", //
         "EllipticE(m)");
+    // a multiple of a quarter period
+    check("EllipticE(-5*Pi/2, 2/7)", //
+        "-5*EllipticE(2/7)");
+    check("EllipticE(2*Pi, q)", //
+        "4*EllipticE(q)");
     check("EllipticE(5/4,1)", //
         "Sin(5/4)");
     check("EllipticE(0.4)", //
@@ -15817,12 +15822,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testContinuedFractionArbitraryPrecision() {
     // the precision limits the number of terms
-    check("ContinuedFraction(N(Sqrt(7), 30))", //
-        "{2,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,\n"
-            + "4,1,1,1,4,1,1,1,4}");
-    check("ContinuedFraction(N(GoldenRatio, 20))", //
-        "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,\n"
-            + "1,1,1,1,1,1,1}");
+    check("c=ContinuedFraction(N(Sqrt(7), 30)); {Length(c), c == Join({2}, Take(Flatten(Table({1,1,1,4}, {13})), 49))}", //
+        "{50,True}");
+    check("c=ContinuedFraction(N(GoldenRatio, 20)); {Length(c), Union(c)}", //
+        "{48,{1}}");
     check("Convergents({1,2,3,4,5})", //
         "{1,3/2,10/7,43/30,225/157}");
     check(
@@ -17603,6 +17606,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FromContinuedFraction(ContinuedFraction(5/11-2*Sqrt(15)/9)) == 5/11-2*Sqrt(15)/9 // Simplify", //
         "True");
+  }
+
+  @Test
+  public void testContinuedFractionAlgebraicOfDegreeTwo() {
+    // a quadratic irrational in another form than a + b*Sqrt(d) is read from its minimal polynomial
+    check("ContinuedFraction(GoldenRatio^3)", //
+        "{4,{4}}");
+    check("ContinuedFraction(1/GoldenRatio^2)", //
+        "{0,2,{1}}");
+    check("ContinuedFraction(GoldenRatio^3, 5)", //
+        "{4,4,4,4,4}");
+    check("ContinuedFraction(Sqrt(3+2*Sqrt(2)))", //
+        "{2,{2}}");
+    check("ContinuedFraction(Root(#^2-3*#-5&,2))", //
+        "{4,{5}}");
+    check("ContinuedFraction(Root(#^2-3*#-5&,1))", //
+        "{-1,{-5}}");
+    // an integer which is not written as one
+    check("ContinuedFraction(Log(64)/Log(4))", //
+        "{3}");
+  }
+
+  @Test
+  public void testMinimalPolynomialOverAnExtension() {
+    // the characteristic polynomial of an element of Q(a)
+    check("MinimalPolynomial(Sqrt(5) - 2, z, Extension -> Sqrt(5))", //
+        "-1+4*z+z^2");
+    check("MinimalPolynomial(Sqrt(3), z, Extension -> 3^(1/4))", //
+        "9-6*z^2+z^4");
+    check("MinimalPolynomial(7, z, Extension -> Sqrt(5))", //
+        "(7-z)^2");
+    // an element of another field
+    check("MinimalPolynomial(Sqrt(5), z, Extension -> Sqrt(7))", //
+        "MinimalPolynomial(Sqrt(5),z,Extension->Sqrt(7))");
+  }
+
+  @Test
+  public void testContinuedFractionToMachinePrecision() {
+    // an exact number without a period has no complete expansion: the number of terms is needed
+    check("ContinuedFraction(Pi^3)", //
+        "ContinuedFraction(Pi^3)");
+    check("ContinuedFraction(3^(1/4)+2)", //
+        "ContinuedFraction(2+3^(1/4))");
+    check("ContinuedFraction(Pi^3, 12)", //
+        "{31,159,3,7,1,13,2,1,3,1,12,2}");
+    // a machine number gives the terms which all the reals that round to it have
+    check("ContinuedFraction(Sqrt(3.0))", //
+        "{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1}");
+    check("ContinuedFraction(Sqrt(5.0))", //
+        "{2,4,4,4,4,4,4,4,4,4,4,4,4}");
+    check("ContinuedFraction(0.625)", //
+        "{0,1,1,1}");
+    check("ContinuedFraction(-0.625)", //
+        "{0,-1,-1,-1}");
+    // an integer which the interval reaches over is a term only if the number lies above it
+    check("ContinuedFraction(0.375)", //
+        "{0,2,1}");
+    check("ContinuedFraction(0.35)", //
+        "{0,2,1,6}");
+    // an arbitrary precision number stands for the numbers which round to its binary mantissa
+    check("ContinuedFraction(N(E, 25))", //
+        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,14,1,1,16,1,1,18,1,1}");
+    check("Length(ContinuedFraction(N(Sqrt(11), 35)))", //
+        "27");
+    // not even the integer part of a large machine number is certain
+    check("ContinuedFraction(3.0*10^200)", //
+        "ContinuedFraction(3.*10^200)");
+    check("ContinuedFraction(N(GoldenRatio^3))", //
+        "{4,4,4,4,4,4,4,4,4,4,4,4,4}");
+
   }
 
   @Test
@@ -29418,6 +29491,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("MinimalPolynomial(2 - 5^(1/3) - 5^(2/3), x)", //
         "52-3*x-6*x^2+x^3");
+  }
+
+  @Test
+  public void testMinimalPolynomialAtAnExpression() {
+    // a second argument which is no symbol is substituted into the polynomial
+    check("MinimalPolynomial(Sqrt(5), 2)", //
+        "-1");
+    check("MinimalPolynomial(Sqrt(3), 2*w)", //
+        "-3+4*w^2");
+    check("MinimalPolynomial(1+Sqrt(3), g(u))", //
+        "-2-2*g(u)+g(u)^2");
+    check("MinimalPolynomial(Sqrt(7), {1, v-1})", //
+        "{-6,-7+(1-v)^2}");
+    check("MinimalPolynomial(GoldenRatio^2, t)", //
+        "1-3*t+t^2");
+    check("s = Root(#^3 - 2*# - 5 &, 1); MinimalPolynomial(s, s) === -5 - 2*s + s^3", //
+        "True");
   }
 
   @Test

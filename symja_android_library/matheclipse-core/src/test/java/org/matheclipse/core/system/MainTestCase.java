@@ -3320,7 +3320,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("FromContinuedFraction({2,1,4,3})", //
         "45/16");
     check("ContinuedFraction(0.753)", //
-        "{0,1,3,20,1,1,2,1,1}");
+        "{0,1,3,20,1,1,2}");
     check("FromContinuedFraction({0.0,1.0,3.0,20.0,1.0,1.0,2.0,1.0,1.0})", //
         "0.753");
     check("FromContinuedFraction({0,1,3,20,1,1,2,1,1})", //

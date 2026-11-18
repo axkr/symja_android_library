@@ -657,8 +657,9 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTeXFormRow() {
+    // a row stays a row, so its elements are typeset with the separator between them
     check("TeXForm(Row({1,2,3,4}, \", \"))", //
-        "\\textnormal{1, 2, 3, 4}");
+        "1\\textnormal{, }2\\textnormal{, }3\\textnormal{, }4");
   }
 
   @Test

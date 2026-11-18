@@ -305,9 +305,12 @@ public class SvgGraphics2D {
         : new double[][] {{b.xMin, b.xMax}, {b.yMin, b.yMax}};
     double[][] option = renderer.options.plotRange;
     if (option != null) {
+      // end by end: an All or Automatic end of a given range is the end of the content
       for (int axis = 0; axis < 2; axis++) {
-        if (!Double.isNaN(option[axis][0]) && !Double.isNaN(option[axis][1])) {
-          range[axis] = option[axis].clone();
+        for (int side = 0; side < 2; side++) {
+          if (!Double.isNaN(option[axis][side])) {
+            range[axis][side] = option[axis][side];
+          }
         }
       }
     }

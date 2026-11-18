@@ -612,6 +612,31 @@ public class GraphicsOptions {
   }
 
   /**
+   * The pair <code>{min, max}</code> with both ends as machine numbers if both are numeric, else
+   * the pair as it is: an <code>All</code> or <code>Automatic</code> end stays open.
+   */
+  public static IExpr numericRangePair(IExpr pair) {
+    if (Double.isFinite(pair.first().evalfNaN()) && Double.isFinite(pair.second().evalfNaN())) {
+      return F.list(F.num(pair.first().evalf()), F.num(pair.second().evalf()));
+    }
+    return pair;
+  }
+
+  /**
+   * Whether a two dimensional <code>PlotRange -&gt; {a, b}</code> is the range of the vertical
+   * axis alone: neither entry is a list and at least one is a number. The other entry may be
+   * <code>All</code>, <code>Automatic</code> or <code>Full</code>, which leaves that end of the
+   * range to the content. A pair of two such names is <code>{xspec, yspec}</code>.
+   */
+  public static boolean isVerticalRangePair(IExpr plotRange) {
+    if (!plotRange.isList2() || plotRange.first().isList() || plotRange.second().isList()) {
+      return false;
+    }
+    return Double.isFinite(plotRange.first().evalfNaN())
+        || Double.isFinite(plotRange.second().evalfNaN());
+  }
+
+  /**
    * A {@code Raster} covering the rectangle from {@code (x0, y0)} to {@code (x1, y1)}, painted from
    * a grid of colours given with the top row first.
    *

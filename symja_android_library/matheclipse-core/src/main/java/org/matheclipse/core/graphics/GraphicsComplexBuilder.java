@@ -300,8 +300,19 @@ public class GraphicsComplexBuilder {
    * joined where they meet. A closed rim returns to its first vertex.
    */
   public List<int[]> openEdgeLoops() {
+    return joinEdges(openEdges());
+  }
+
+  /**
+   * Edges given as pairs <code>{a, b}</code> of vertex numbers, joined into curves where they meet:
+   * a curve with ends is traced from one of them, a closed one returns to its first vertex.
+   *
+   * @param edges the list of edges
+   * @return the curves as lists of vertex numbers
+   */
+  public static List<int[]> joinEdges(IAST edges) {
     Map<Integer, List<Integer>> neighbours = new LinkedHashMap<>();
-    for (IExpr edge : openEdges()) {
+    for (IExpr edge : edges) {
       int a = edge.first().toIntDefault();
       int b = edge.second().toIntDefault();
       neighbours.computeIfAbsent(a, k -> new ArrayList<>(2)).add(b);

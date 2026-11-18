@@ -320,4 +320,153 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
         + "c = VertexColors /. Rest(List @@ l); Round({First(c)[[1]], Last(c)[[1]]}, 0.01)", //
         "{0.0,1.0}");
   }
+
+  @Test
+  public void testPlotRangeWithOpenEnds() {
+    // a bare pair with a number is the vertical range; its All or Automatic end is the data's
+    check("PlotRange(Graphics(Line({{1, -2}, {4, 6}}), PlotRange -> {0.5, All}))", //
+        "{{1.0,4.0},{0.5,6.0}}");
+    check("PlotRange(Graphics(Line({{1, -2}, {4, 6}}), PlotRange -> {Automatic, 3}))", //
+        "{{1.0,4.0},{-2.0,3.0}}");
+    // each end of {xspec, yspec} on its own
+    check("PlotRange(Graphics(Line({{1, -2}, {4, 6}}), PlotRange -> {{2, All}, {Automatic, 3}}))", //
+        "{{2.0,4.0},{-2.0,3.0}}");
+    // a plot keeps its iterator range in x and fills the open end of y from what it drew
+    check("Round(PlotRange(Plot(2*x - 3, {x, 0, 3}, PlotRange -> {-1, All})), 0.01)", //
+        "{{0.0,3.0},{-1.0,3.0}}");
+    check("Round(PlotRange(Plot(2*x - 3, {x, 0, 3}, PlotRange -> {Automatic, 1})), 0.01)", //
+        "{{0.0,3.0},{-3.0,1.0}}");
+    // the curve is cut at the numeric end only
+    check("MinMax(Cases(Plot(2*x - 3, {x, 0, 3}, PlotRange -> {-1, All}), "
+        + "Line(p_) :> p[[All, 2]], Infinity))", //
+        "{-1.0,3.0}");
+    // the open end gets the padding of an automatic range, the given end none
+    check("PlotRangePadding /. Options(Plot(2*x - 3, {x, 0, 3}, PlotRange -> {-1, All}))", //
+        "{Scaled(0.02),{Automatic,Scaled(0.02)}}");
+    check("PlotRange /. Options(ListPlot({3, 1, 5, 2}, PlotRange -> {2, All}))", //
+        "{{0.0,4.0},{2.0,5.0}}");
+    // a combined picture keeps the partial range of its first graphic
+    check("Round(PlotRange(Show(Graphics(Line({{0, 2}, {3, 5}}), PlotRange -> {All, 4}), "
+        + "Graphics(Line({{1, -1}, {6, 3}})))), 0.01)", //
+        "{{0.0,6.0},{-1.0,4.0}}");
+  }
+
+  @Test
+  public void testPlot3DMeshLevels() {
+    // Mesh -> {xspec, yspec}: lines at the given x values, None for y; one line per level
+    check("g = Plot3D(x + y^2, {x, -1, 2}, {y, 0, 3}, Mesh -> {{0.25, 1.5}, None}, "
+        + "BoundaryStyle -> None, MeshStyle -> Red); pts = First(Cases(g, "
+        + "GraphicsComplex(p_, ___) :> p, Infinity)); "
+        + "{Length(Cases(g, _Line, Infinity)), Union(Round(Flatten(Cases(g, {Red, l__Line} "
+        + ":> pts[[Flatten({l}[[All, 1]]), 1]], Infinity)), 0.001))}", //
+        "{2,{0.25,1.5}}");
+    // a count in a slot spaces that many lines evenly, None in both draws no mesh at all
+    check("g = Plot3D(x + y^2, {x, -1, 2}, {y, 0, 3}, Mesh -> {None, 2}, BoundaryStyle -> None); "
+        + "pts = First(Cases(g, GraphicsComplex(p_, ___) :> p, Infinity)); "
+        + "Union(Round(Flatten(Cases(g, Line(s_, ___) :> pts[[Flatten(s), 2]], "
+        + "Infinity)), 0.001))", //
+        "{1.0,2.0}");
+    check("Cases(Plot3D(x + y^2, {x, -1, 2}, {y, 0, 3}, Mesh -> {None, None}, "
+        + "BoundaryStyle -> None), _Line, Infinity)", //
+        "{}");
+  }
+
+  @Test
+  public void testRevolutionPlot3DOptionsAndProfiles() {
+    // a single number is the box it stands for, with the number as it was given
+    check("PlotRange /. Options(RevolutionPlot3D(t^2, {t, 0, 2}, PlotRange -> 3))", //
+        "{{-3,3},{-3,3},{-3,3}}");
+    // a list of one element profiles is one surface each, each in its own colour
+    check("g = RevolutionPlot3D({{t^2}, {1 - t}, {3*t}, {Sqrt(t)}}, {t, 0, 1}); "
+        + "{Length(Cases(g, _GraphicsComplex, Infinity)), "
+        + "Length(Union(Cases(g, _RGBColor, Infinity)))}", //
+        "{4,4}");
+  }
+
+  @Test
+  public void testSurfacePlotRangeForAllAxes() {
+    check("PlotRange /. Options(RevolutionPlot3D(1 + t, {t, 0, 1}, PlotRange -> 7/2))", //
+        "{{-7/2,7/2},{-7/2,7/2},{-7/2,7/2}}");
+    // a bare pair is the range of each of the three axes
+    check("PlotRange /. Options(RevolutionPlot3D(1 + t, {t, 0, 1}, PlotRange -> {-3, 4}))", //
+        "{{-3,4},{-3,4},{-3,4}}");
+    check("PlotRange /. Options(ParametricPlot3D({u, v, u*v}, {u, 0, 1}, {v, 0, 1}, "
+        + "PlotRange -> {0, 1.5}))", //
+        "{{0,1.5},{0,1.5},{0,1.5}}");
+    check("PlotRange /. Options(SphericalPlot3D(2, {t, 0, Pi}, {p, 0, 2*Pi}, PlotRange -> 1.25))", //
+        "{{-1.25,1.25},{-1.25,1.25},{-1.25,1.25}}");
+  }
+
+  @Test
+  public void testPlotScalarPlotRangeIsVertical() {
+    // a single number is the vertical range; the horizontal one stays the iterator range
+    check("Round(PlotRange(Plot(3*x - 2, {x, 0, 4}, PlotRange -> 5)), 0.01)", //
+        "{{0.0,4.0},{-5.0,5.0}}");
+    check("PlotRange /. Options(Plot(Cos(x), {x, 1, 2}, PlotRange -> 1/4))", //
+        "{{1.0,2.0},{-0.25,0.25}}");
+    // the curve is cut at that range
+    check("Max(Abs(Cases(Plot(3*x - 2, {x, 0, 4}, PlotRange -> 5), Line(p_) :> p[[All, 2]], "
+        + "Infinity))) <= 5.0", //
+        "True");
+    // a graphic keeps a single number for both axes
+    check("PlotRange(Graphics(Line({{0, 0}, {7, 1}}), PlotRange -> 3))", //
+        "{{-3.0,3.0},{-3.0,3.0}}");
+  }
+
+  @Test
+  public void testShowTakesThePlotRangeOfTheFirstGraphic() {
+    // a later graphic's range is ignored
+    check("Round(PlotRange(Show(Graphics(Line({{-2, 1}, {3, 6}})), "
+        + "Graphics(Line({{1, -3}, {5, 4}}), PlotRange -> {{0, 1}, {0, 1}}))), 0.01)", //
+        "{{-2.0,5.0},{-3.0,6.0}}");
+    // the first graphic's own range applies
+    check("Round(PlotRange(Show(Graphics(Line({{-2, 1}, {3, 6}}), PlotRange -> {2, All}), "
+        + "Graphics(Line({{1, -3}, {5, 4}})))), 0.01)", //
+        "{{-2.0,5.0},{2.0,6.0}}");
+    // a range given to Show wins over both
+    check("Round(PlotRange(Show(Graphics(Line({{-2, 1}, {3, 6}}), PlotRange -> {2, All}), "
+        + "Graphics(Line({{1, -3}, {5, 4}})), PlotRange -> {{0, 4}, {-1, 3}})), 0.01)", //
+        "{{0.0,4.0},{-1.0,3.0}}");
+    // other options of a later graphic still apply where the first has none
+    check("Options(Show(Graphics(Line({{0, 0}, {1, 1}})), "
+        + "Graphics(Point({0, 1}), Axes -> True, PlotRange -> 9)))", //
+        "{Axes->True}");
+  }
+
+  @Test
+  public void testMeshCurvesAreOneLineEach() {
+    // Mesh -> n is n lines in each direction inside the range, each a Line of its own, and the rim
+    check("Length(Cases(Plot3D(x*y, {x, 1, 4}, {y, -1, 1}, Mesh -> 3), _Line, Infinity))", //
+        "7");
+    check("g = Plot3D(x - y, {x, 0, 3}, {y, 0, 3}, Mesh -> 1, BoundaryStyle -> None); "
+        + "pts = First(Cases(g, GraphicsComplex(p_, ___) :> p, Infinity)); "
+        + "Map(Round(({Min(#), Max(#)} &) /@ Transpose(pts[[First(#), {1, 2}]]), 0.001) &, "
+        + "Cases(g, _Line, Infinity))", //
+        "{{{1.5,1.5},{0.0,3.0}},{{0.0,3.0},{1.5,1.5}}}");
+    check("Length(Cases(Plot3D(x*y, {x, 1, 4}, {y, -1, 1}, Mesh -> {{2, 3}, {0}}), _Line, "
+        + "Infinity))", //
+        "4");
+    // a level of a mesh function which crosses the surface twice is two curves
+    check("Length(Cases(Plot3D(x^2 + y^2, {x, -2, 2}, {y, 0, 1}, MeshFunctions -> {#1 &}, "
+        + "Mesh -> {{-1, 1}}, BoundaryStyle -> None), _Line, Infinity))", //
+        "2");
+    // scattered points: levels of x and y across the triangles, and the rim
+    check("Length(Cases(ListPlot3D({{0, 0, 1}, {3, 0, 2}, {0, 3, 0}, {3, 3, 1}, {1, 2, 2}}, "
+        + "Mesh -> 1), _Line, Infinity))", //
+        "3");
+    check("Length(Cases(ListPlot3D({{0, 0, 1}, {3, 0, 2}, {0, 3, 0}, {3, 3, 1}, {1, 2, 2}}, "
+        + "Mesh -> {{1.5}}, MeshFunctions -> {#1 + #2 &}, BoundaryStyle -> None), _Line, "
+        + "Infinity))", //
+        "1");
+    check("Length(Cases(ListPlot3D({{0, 0, 1}, {3, 0, 2}, {0, 3, 0}, {3, 3, 1}}, "
+        + "Mesh -> None), _Line, Infinity))", //
+        "1");
+    // an array of heights: the same levels of x and y, not the lines of its grid
+    check("g = ListPlot3D({{1, 2, 3, 2}, {2, 3, 1, 0}, {0, 1, 2, 3}}, Mesh -> 2, "
+        + "BoundaryStyle -> None); pts = First(Cases(g, GraphicsComplex(p_, ___) :> p, "
+        + "Infinity)); Map(Round(({Min(#), Max(#)} &) /@ Transpose(pts[[First(#), {1, 2}]]), "
+        + "0.001) &, Cases(g, _Line, Infinity))", //
+        "{{{2.0,2.0},{1.0,3.0}},{{3.0,3.0},{1.0,3.0}},{{1.0,4.0},{1.667,1.667}},"
+            + "{{1.0,4.0},{2.333,2.333}}}");
+  }
 }

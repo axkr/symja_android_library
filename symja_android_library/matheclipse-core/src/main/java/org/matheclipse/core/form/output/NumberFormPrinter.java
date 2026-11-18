@@ -129,14 +129,13 @@ public class NumberFormPrinter {
   }
 
   /**
-   * Join the three lines, dropping the blank ones above and below and the field padding in front
-   * of the number.
+   * Join the three lines, dropping the blank ones above and below. The field padding in front of
+   * the number is part of the field and stays.
    */
   private static String join(String[] lines) {
     String[] trimmed = new String[lines.length];
     int first = -1;
     int last = -1;
-    int indent = Integer.MAX_VALUE;
     for (int i = 0; i < lines.length; i++) {
       trimmed[i] = rtrim(lines[i]);
       if (!trimmed[i].isEmpty()) {
@@ -144,7 +143,6 @@ public class NumberFormPrinter {
           first = i;
         }
         last = i;
-        indent = Math.min(indent, trimmed[i].length() - ltrim(trimmed[i]).length());
       }
     }
     if (first < 0) {
@@ -155,7 +153,7 @@ public class NumberFormPrinter {
       if (i > first) {
         buf.append('\n');
       }
-      buf.append(trimmed[i].length() < indent ? "" : trimmed[i].substring(indent));
+      buf.append(trimmed[i]);
     }
     return buf.toString();
   }
@@ -166,13 +164,5 @@ public class NumberFormPrinter {
       end--;
     }
     return line.substring(0, end);
-  }
-
-  private static String ltrim(String line) {
-    int start = 0;
-    while (start < line.length() && line.charAt(start) == ' ') {
-      start++;
-    }
-    return line.substring(start);
   }
 }

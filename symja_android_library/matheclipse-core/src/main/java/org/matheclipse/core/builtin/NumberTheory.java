@@ -14,6 +14,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
+import org.hipparchus.fraction.BigFraction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,7 +37,6 @@ import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -1448,6 +1448,15 @@ public final class NumberTheory {
       }
 
       IExpr[] surd = quadraticSurd(arg1);
+      if (surd == null && !arg1.isRational() && isExactNumber(arg1)) {
+        // GoldenRatio^2, a Root object or a nested radical of degree two is written a + b*Sqrt(d)
+        IExpr reduced = quadraticNormalForm(arg1, engine);
+        if (reduced.isRational()) {
+          arg1 = reduced;
+        } else if (reduced.isPresent()) {
+          surd = quadraticSurd(reduced);
+        }
+      }
       if (surd != null) {
         return continuedFractionQuadratic((IRational) surd[0], (IRational) surd[1],
             ((IInteger) surd[2]).toBigNumerator(), maxNTerms, engine);
@@ -1480,6 +1489,15 @@ public final class NumberTheory {
           }
           num = value;
         } else {
+          if (isExactNumber(arg1)) {
+            if (radicalDegreeBound(arg1) > MAX_RADICAL_DEGREE) {
+              // too many radicals to find out whether the number is a quadratic irrational
+              return F.NIL;
+            }
+            // an exact irrational which is no quadratic irrational has infinitely many terms
+            // without a period
+            return Errors.printMessage(S.ContinuedFraction, "noterms", F.list(arg1), engine);
+          }
           num = engine.evalN(arg1);
         }
 
@@ -1496,7 +1514,7 @@ public final class NumberTheory {
         if (isNegative) {
           numerator = numerator.negate();
         }
-        return rationalToContinuedFraction(numerator, denominator, isNegative, maxNTerms, false);
+        return rationalToContinuedFraction(numerator, denominator, isNegative, maxNTerms);
       }
 
       return F.NIL;
@@ -1532,8 +1550,10 @@ public final class NumberTheory {
 
     /**
      * The terms of the continued fraction which all numbers in the interval of uncertainty of an
-     * arbitrary precision number share: the value <code>x</code> stands for the numbers within
-     * <code>|x|*10^(-precision)</code>, and at least within one unit of its last digit.
+     * arbitrary precision number share: a number of <code>precision</code> decimal digits stands
+     * for the numbers which round to the same binary mantissa of
+     * <code>Ceiling(precision*Log2(10))</code> bits, see {@link #intervalContinuedFraction(
+     * BigFraction, BigFraction, boolean, EvalEngine)}.
      *
      * @param value the number, possibly with guard digits beyond <code>precision</code>
      * @param precision the number of significant decimal digits
@@ -1544,35 +1564,31 @@ public final class NumberTheory {
       if (x.signum() == 0) {
         return F.list(F.C0);
       }
-      java.math.BigDecimal radius = x.movePointLeft((int) precision);
-      java.math.BigDecimal ulp = x.ulp();
-      if (ulp.compareTo(radius) > 0) {
-        radius = ulp;
+      BigInteger[] fraction = toFraction(x);
+      BigFraction exact = new BigFraction(fraction[0], fraction[1]);
+      // the binary mantissa: exact = m * 2^e with an integer m of `bits` bits
+      int bits = (int) Math.ceil(precision * Math.log(10.0) / Math.log(2.0));
+      int exponent = fraction[0].bitLength() - fraction[1].bitLength();
+      // Floor(Log2(exact)): the bit lengths may give one more
+      if ((exponent >= 0 ? fraction[0].compareTo(fraction[1].shiftLeft(exponent))
+          : fraction[0].shiftLeft(-exponent).compareTo(fraction[1])) < 0) {
+        exponent--;
       }
-      BigInteger[] lo = toFraction(x.subtract(radius));
-      BigInteger[] hi = toFraction(x.add(radius));
-      IASTAppendable continuedFractionList = F.ListAlloc(10);
-      while (lo[1].signum() != 0 && hi[1].signum() != 0) {
-        BigInteger[] qrLo = lo[0].divideAndRemainder(lo[1]);
-        BigInteger[] qrHi = hi[0].divideAndRemainder(hi[1]);
-        if (!qrLo[0].equals(qrHi[0])) {
-          break;
-        }
-        continuedFractionList.append(F.ZZ(isNegative ? qrLo[0].negate() : qrLo[0]));
-        if (qrLo[1].signum() == 0 || qrHi[1].signum() == 0) {
-          break;
-        }
-        // the reciprocals of the remainders swap the ends of the interval
-        BigInteger[] nextLo = new BigInteger[] {hi[1], qrHi[1]};
-        hi = new BigInteger[] {lo[1], qrLo[1]};
-        lo = nextLo;
+      int shift = bits - 1 - exponent;
+      BigFraction scale = shift >= 0 ? new BigFraction(BigInteger.ONE.shiftLeft(shift))
+          : new BigFraction(BigInteger.ONE, BigInteger.ONE.shiftLeft(-shift));
+      BigFraction scaled = exact.multiply(scale);
+      // round half up to the mantissa
+      BigInteger mantissa = floor(scaled.add(new BigFraction(1, 2)));
+      BigFraction center = new BigFraction(mantissa).divide(scale);
+      BigFraction halfUlp = new BigFraction(1, 2).divide(scale);
+      IAST terms = intervalContinuedFraction(center, halfUlp, isNegative, EvalEngine.get());
+      if (terms.isPresent()) {
+        return terms;
       }
-      if (continuedFractionList.isEmpty()) {
-        // an interval around an integer
-        BigInteger integer = x.setScale(0, java.math.RoundingMode.HALF_EVEN).toBigInteger();
-        continuedFractionList.append(F.ZZ(isNegative ? integer.negate() : integer));
-      }
-      return continuedFractionList;
+      // an interval around an integer
+      BigInteger integer = x.setScale(0, java.math.RoundingMode.HALF_EVEN).toBigInteger();
+      return F.list(F.ZZ(isNegative ? integer.negate() : integer));
     }
 
     /** The numerator and denominator of a non-negative decimal number. */
@@ -1583,11 +1599,9 @@ public final class NumberTheory {
       return new BigInteger[] {decimal.unscaledValue(), BigInteger.TEN.pow(decimal.scale())};
     }
 
-    private static IAST realToContinuedFraction(INum value, int precision, EvalEngine engine) {
+    private static @AllowNIL IAST realToContinuedFraction(INum value, int precision,
+        EvalEngine engine) {
       double doubleValue = value.getRealPart();
-      if (value.isNumIntValue()) {
-        return F.list(F.ZZ((int) Math.rint(doubleValue)));
-      }
       if (Double.isInfinite(doubleValue)) {
         // an infinity has no continued fraction expansion to give.
         // BigFraction refuses it with "cannot convert infinite value", which used to escape.
@@ -1596,17 +1610,256 @@ public final class NumberTheory {
       if (Double.isNaN(doubleValue)) {
         return F.NIL;
       }
-      boolean isNegative = doubleValue < 0;
-      if (isNegative) {
-        doubleValue = Math.abs(doubleValue);
+      if (precision == Integer.MAX_VALUE) {
+        return machineContinuedFraction(doubleValue, engine);
       }
-      final BigFraction numeratorDenominator = new BigFraction(doubleValue);
-      return rationalToContinuedFraction(numeratorDenominator.getNumerator(),
-          numeratorDenominator.getDenominator(), isNegative, precision, true);
+      if (value.isNumIntValue()) {
+        // a large machine integer like 1.0*10^300 is beyond the int range
+        return F.list(F.ZZ(new java.math.BigDecimal(Math.rint(doubleValue)).toBigInteger()));
+      }
+      // the binary value of the machine number is expanded up to its first convergent which rounds
+      // to the same machine number: the terms after it depend on the rounding of the last bit
+      return continuedFractionToTolerance(new java.math.BigDecimal(doubleValue),
+          machineTolerance(doubleValue), precision, engine);
+    }
+
+    /**
+     * The terms of the continued fraction which every real number that rounds to the machine number
+     * <code>value</code> has, see {@link #intervalContinuedFraction(BigFraction, BigFraction,
+     * boolean, EvalEngine)}.
+     *
+     * @return {@link F#NIL} if not even the integer part is certain, as for <code>1.0*10^300</code>
+     */
+    private static @AllowNIL IAST machineContinuedFraction(double value, EvalEngine engine) {
+      return intervalContinuedFraction(new BigFraction(Math.abs(value)),
+          new BigFraction(Math.ulp(value)).divide(2), value < 0.0, engine);
+    }
+
+    /**
+     * The terms of the continued fraction which every real number in
+     * <code>center +- halfWidth</code> has: the expansions of the ends of the interval agree in
+     * them. Where the interval reaches over an integer, that integer is the last term if
+     * <code>center</code> lies above it - <code>0.55</code> is <code>{0, 1, 1, 4, 2}</code> - but
+     * not if it lies on it or below: <code>0.75</code> is <code>{0, 1}</code>.
+     *
+     * @param center the absolute value of the number
+     * @param isNegative if <code>true</code> the terms are negated
+     * @return {@link F#NIL} if not even the integer part is certain
+     */
+    private static @AllowNIL IAST intervalContinuedFraction(BigFraction center,
+        BigFraction halfWidth, boolean isNegative, EvalEngine engine) {
+      BigFraction low = center.subtract(halfWidth);
+      BigFraction high = center.add(halfWidth);
+      IASTAppendable terms = F.ListAlloc(24);
+      while (true) {
+        engine.checkTimeLimit();
+        BigInteger lowTerm = floor(low);
+        BigInteger highTerm = floor(high);
+        if (!lowTerm.equals(highTerm)) {
+          if (floor(center).equals(highTerm) && center.compareTo(new BigFraction(highTerm)) > 0) {
+            terms.append(F.ZZ(isNegative ? highTerm.negate() : highTerm));
+          }
+          break;
+        }
+        terms.append(F.ZZ(isNegative ? lowTerm.negate() : lowTerm));
+        BigFraction term = new BigFraction(lowTerm);
+        low = low.subtract(term);
+        high = high.subtract(term);
+        center = center.subtract(term);
+        if (low.signum() <= 0 || center.signum() == 0) {
+          break;
+        }
+        BigFraction reciprocalOfLow = low.reciprocal();
+        low = high.reciprocal();
+        high = reciprocalOfLow;
+        center = center.reciprocal();
+      }
+      return terms.argSize() == 0 ? F.NIL : terms;
+    }
+
+    /** <code>Floor(x)</code> of a fraction. */
+    private static BigInteger floor(BigFraction x) {
+      BigInteger[] quotientRemainder = x.getNumerator().divideAndRemainder(x.getDenominator());
+      return quotientRemainder[1].signum() < 0 ? quotientRemainder[0].subtract(BigInteger.ONE)
+          : quotientRemainder[0];
+    }
+
+    /** Half a unit in the last place of a machine number, as an exact decimal. */
+    private static java.math.BigDecimal machineTolerance(double value) {
+      return new java.math.BigDecimal(Math.ulp(value)).divide(java.math.BigDecimal.valueOf(2));
+    }
+
+    /**
+     * The terms of the continued fraction of the exact decimal <code>x</code> up to the first
+     * convergent <code>p/q</code> with <code>|x - p/q| &lt;= tolerance</code>, or to the end of the
+     * expansion. The terms of a negative <code>x</code> are the negated terms of <code>-x</code>.
+     *
+     * @param maxTerms the largest number of terms
+     */
+    private static IAST continuedFractionToTolerance(java.math.BigDecimal x,
+        java.math.BigDecimal tolerance, int maxTerms, EvalEngine engine) {
+      final boolean isNegative = x.signum() < 0;
+      BigInteger[] fraction = toFraction(x.abs());
+      final BigInteger xNumerator = fraction[0];
+      final BigInteger xDenominator = fraction[1];
+      BigInteger[] toleranceFraction = toFraction(tolerance);
+      // |x - p/q| <= tolerance is
+      // |xNumerator*q - p*xDenominator| * toleranceDenominator <= scaledNumerator * q
+      final BigInteger scaledNumerator = toleranceFraction[0].multiply(xDenominator);
+      final BigInteger toleranceDenominator = toleranceFraction[1];
+      BigInteger numerator = xNumerator;
+      BigInteger denominator = xDenominator;
+      // the convergents p(n-1)/q(n-1) and p(n-2)/q(n-2)
+      BigInteger p1 = BigInteger.ONE;
+      BigInteger q1 = BigInteger.ZERO;
+      BigInteger p2 = BigInteger.ZERO;
+      BigInteger q2 = BigInteger.ONE;
+      IASTAppendable continuedFractionList = F.ListAlloc(10);
+      while (continuedFractionList.argSize() < maxTerms) {
+        engine.checkTimeLimit();
+        BigInteger[] quotientRemainder = numerator.divideAndRemainder(denominator);
+        BigInteger term = quotientRemainder[0];
+        continuedFractionList.append(F.ZZ(isNegative ? term.negate() : term));
+        if (quotientRemainder[1].signum() == 0) {
+          break;
+        }
+        BigInteger p = term.multiply(p1).add(p2);
+        BigInteger q = term.multiply(q1).add(q2);
+        p2 = p1;
+        q2 = q1;
+        p1 = p;
+        q1 = q;
+        BigInteger error = xNumerator.multiply(q).subtract(p.multiply(xDenominator)).abs();
+        if (error.multiply(toleranceDenominator).compareTo(scaledNumerator.multiply(q)) <= 0) {
+          break;
+        }
+        numerator = denominator;
+        denominator = quotientRemainder[1];
+      }
+      return continuedFractionList;
+    }
+
+    /** Test if <code>x</code> is a numeric expression without an inexact number in it. */
+    private static boolean isExactNumber(IExpr x) {
+      return x.isNumericFunction(true) && x.isFree(y -> y.isInexactNumber(), true);
+    }
+
+    /**
+     * The largest product of the orders of the radicals of an algebraic number for which its
+     * minimal polynomial is computed to see whether it is of degree two.
+     */
+    private static final int MAX_RADICAL_DEGREE = 8;
+
+    /**
+     * An algebraic number of degree at most two written as a rational or as
+     * <code>a + b*Sqrt(d)</code>: the root of its minimal polynomial which has the value of
+     * <code>x</code>.
+     *
+     * @return {@link F#NIL} if <code>x</code> is no real algebraic number of degree at most two, or
+     *         if its minimal polynomial would take too long
+     */
+    @AllowNIL
+    private static IExpr quadraticNormalForm(IExpr x, EvalEngine engine) {
+      if (radicalDegreeBound(x) > MAX_RADICAL_DEGREE) {
+        return F.NIL;
+      }
+      IRational[] coefficients =
+          org.matheclipse.core.numbertheory.NumberFieldUtils.minimalPolynomialCoefficients(x,
+              engine);
+      if (coefficients == null) {
+        return F.NIL;
+      }
+      if (coefficients.length == 2) {
+        // x + c
+        return coefficients[0].negate();
+      }
+      if (coefficients.length != 3) {
+        return F.NIL;
+      }
+      // x^2 + b*x + c has the roots -b/2 +/- Sqrt(b^2/4 - c)
+      IRational center = coefficients[1].multiply(F.CN1D2);
+      IRational radicand = center.multiply(center).subtract(coefficients[0]);
+      if (radicand.isNegative() || radicand.isZero()) {
+        return F.NIL;
+      }
+      // the sign of x - center, from a value of x precise enough to tell the two roots apart
+      double distance = Math.sqrt(radicand.doubleValue());
+      double magnitude = Math.abs(center.doubleValue()) + distance;
+      if (!(distance > 0.0) || !Double.isFinite(magnitude)) {
+        return F.NIL;
+      }
+      long digits = org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 10L
+          + Math.max(0L, (long) Math.ceil(Math.log10(magnitude / distance)));
+      if (digits > Config.MAX_PRECISION_APFLOAT) {
+        return F.NIL;
+      }
+      IExpr difference = engine.evalN(F.Subtract(x, center), digits);
+      if (!difference.isReal() || difference.isZero()) {
+        return F.NIL;
+      }
+      IExpr root = F.Sqrt(radicand);
+      return engine.evaluate(
+          F.Plus(center, ((IReal) difference).isNegative() ? F.Negate(root) : root));
+    }
+
+    /**
+     * An upper bound of the degree of the algebraic number <code>expr</code>: the product over the
+     * distinct radicands of the least common multiple of the orders of their radicals, with
+     * <code>GoldenRatio</code> a square root and a <code>Root</code> object of the degree of its
+     * polynomial. <code>Sqrt(2)</code> and <code>2^(1/4)</code> together count <code>4</code>, the
+     * degree of the field they generate.
+     */
+    private static long radicalDegreeBound(IExpr expr) {
+      java.util.Map<IExpr, Long> orders = new java.util.HashMap<IExpr, Long>();
+      long bound = radicalOrders(expr, orders);
+      for (long order : orders.values()) {
+        bound = Math.min(Integer.MAX_VALUE, bound * order);
+      }
+      return bound;
+    }
+
+    /**
+     * Collect the orders of the radicals in <code>expr</code> by radicand into <code>orders</code>
+     * as least common multiples.
+     *
+     * @return the product of the degrees of the other algebraic parts: <code>GoldenRatio</code>
+     *         and <code>Root</code> objects
+     */
+    private static long radicalOrders(IExpr expr, java.util.Map<IExpr, Long> orders) {
+      if (expr == S.GoldenRatio) {
+        // (1 + Sqrt(5))/2
+        orders.merge(F.C5, 2L, org.hipparchus.util.ArithmeticUtils::lcm);
+        return 1L;
+      }
+      if (!expr.isAST()) {
+        return 1L;
+      }
+      if (expr.isAST(S.Root, 3, 4)) {
+        if (!expr.first().isFunction()) {
+          return 1L;
+        }
+        IExpr[] coefficients =
+            org.matheclipse.core.reflection.system.Root.polynomialCoefficients(
+                expr.first().first());
+        return coefficients == null ? Integer.MAX_VALUE : Math.max(1, coefficients.length - 1);
+      }
+      if (expr.isPower() && expr.exponent().isRational() && !expr.exponent().isInteger()) {
+        long order = ((IRational) expr.exponent()).denominator().toLongDefault();
+        if (order <= 0 || order > MAX_RADICAL_DEGREE) {
+          return Integer.MAX_VALUE;
+        }
+        orders.merge(expr.base(), order, org.hipparchus.util.ArithmeticUtils::lcm);
+        return radicalOrders(expr.base(), orders);
+      }
+      long bound = 1L;
+      for (IExpr arg : (IAST) expr) {
+        bound = Math.min(Integer.MAX_VALUE, bound * radicalOrders(arg, orders));
+      }
+      return bound;
     }
 
     private static IAST rationalToContinuedFraction(BigInteger numerator, BigInteger denominator,
-        boolean isNegative, int iterationLimit, boolean checkNumericZero) {
+        boolean isNegative, int iterationLimit) {
       IASTAppendable continuedFractionList;
       if (denominator.equals(BigInteger.ONE)) {
         continuedFractionList = F.ListAlloc(1);
@@ -1625,10 +1878,6 @@ public final class NumberTheory {
           denominator = divideAndRemainder[1];
           if (denominator.equals(BigInteger.ONE)) {
             continuedFractionList.append(isNegative ? F.ZZ(numerator.negate()) : F.ZZ(numerator));
-          }
-          if (checkNumericZero && F.isZero(denominator.doubleValue() / numerator.doubleValue(),
-              Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            break;
           }
         }
       }

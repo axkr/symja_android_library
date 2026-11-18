@@ -105,11 +105,17 @@ public class ArcLength extends AbstractFunctionEvaluator {
     if (reg.argSize() >= 3) {
       IExpr theta = reg.arg3();
       if (theta.isList2()) {
-        IExpr t1 = ((IAST) theta).arg1();
-        IExpr t2 = ((IAST) theta).arg2();
+        // a range which runs backwards is the same arc as the range running forwards
+        IAST angles = RegionPrimitives.orderedAngles((IAST) theta, engine);
+        IExpr t1 = angles.arg1();
+        IExpr t2 = angles.arg2();
 
-        // Construct the piecewise bounds using UnitStep
         IExpr dtAbs = engine.evaluate(F.Abs(F.Subtract(t2, t1)));
+        if (engine.evaluate(F.GreaterEqual(dtAbs, F.C2Pi)).isTrue()) {
+          // an arc of a full turn or more is the whole curve, which is counted once
+          return RegionPrimitives.ellipsePerimeter(r, engine);
+        }
+        // Construct the piecewise bounds using UnitStep
         IExpr step1 = engine.evaluate(F.UnitStep(F.Subtract(F.Times(F.C2, S.Pi), dtAbs)));
         IExpr step2 = engine.evaluate(F.UnitStep(F.Plus(F.Times(F.CN2, S.Pi), dtAbs)));
 

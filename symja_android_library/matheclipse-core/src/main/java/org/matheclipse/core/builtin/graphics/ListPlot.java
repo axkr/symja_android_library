@@ -181,18 +181,81 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    */
   protected static IExpr withPlotRange(IExpr graphics, IAST originalAST, IExpr xRange,
       boolean xResolved, IExpr yRange, boolean yResolved) {
+    return withPlotRange(graphics, originalAST, xRange,
+        xResolved ? RESOLVED_AXIS_PADDING : S.Automatic, yRange,
+        yResolved ? RESOLVED_AXIS_PADDING : S.Automatic);
+  }
+
+  /**
+   * The plot with <code>PlotRange -&gt; {xRange, yRange}</code> and, unless the call gave a
+   * <code>PlotRangePadding</code>, the padding of each axis: <code>Automatic</code>, or for each
+   * end the plot settled on itself the padding of an automatic range.
+   */
+  protected static IExpr withPlotRange(IExpr graphics, IAST originalAST, IExpr xRange,
+      IExpr xPadding, IExpr yRange, IExpr yPadding) {
     IAST plot = innerGraphics(graphics);
     if (plot.isNIL()) {
       return graphics;
     }
     IAST resolved = withOption(plot, S.PlotRange, F.list(xRange, yRange));
     IExpr padding = GraphicsOptions.optionValue(originalAST, S.PlotRangePadding, S.Automatic);
-    if (padding.isAutomatic() && (xResolved || yResolved)) {
-      resolved = withOption(resolved, S.PlotRangePadding,
-          F.list(xResolved ? RESOLVED_AXIS_PADDING : S.Automatic,
-              yResolved ? RESOLVED_AXIS_PADDING : S.Automatic));
+    if (padding.isAutomatic() && (!xPadding.isAutomatic() || !yPadding.isAutomatic())) {
+      resolved = withOption(resolved, S.PlotRangePadding, F.list(xPadding, yPadding));
     }
     return graphics.isAST(S.Legended, 3) ? ((IAST) graphics).setAtCopy(1, resolved) : resolved;
+  }
+
+  /**
+   * The padding of an axis given as <code>spec</code> whose range the plot settled on as
+   * <code>range</code>: an end the call left open (<code>All</code>, <code>Automatic</code>,
+   * <code>Full</code>) gets the padding of an automatic range, an end given as a number none.
+   */
+  protected static IExpr resolvedAxisPadding(IExpr spec, IExpr range) {
+    if (!range.isList2() || range == spec) {
+      return S.Automatic;
+    }
+    if (!spec.isList2()) {
+      return RESOLVED_AXIS_PADDING;
+    }
+    boolean lowOpen = !Double.isFinite(spec.first().evalfNaN());
+    boolean highOpen = !Double.isFinite(spec.second().evalfNaN());
+    if (lowOpen && highOpen) {
+      return RESOLVED_AXIS_PADDING;
+    }
+    if (!lowOpen && !highOpen) {
+      return S.Automatic;
+    }
+    return F.list(lowOpen ? RESOLVED_AXIS_PADDING : S.Automatic,
+        highOpen ? RESOLVED_AXIS_PADDING : S.Automatic);
+  }
+
+  /**
+   * The range <code>{min, max}</code> of an axis given as the pair <code>spec</code>, whose ends
+   * are numbers or <code>All, Automatic, Full</code>: a number as a machine number, an open end
+   * from <code>automatic</code> (for <code>Automatic</code>) or <code>all</code> (for the others).
+   *
+   * @param automatic the automatic range of the axis, or <code>null</code>
+   * @param all the whole range of the content of the axis, or <code>null</code>
+   * @return the pair itself if it has no open end or an open end cannot be resolved
+   */
+  protected static IExpr resolveRangeEnds(IAST spec, double[] automatic, double[] all) {
+    if (Double.isFinite(spec.first().evalfNaN()) && Double.isFinite(spec.second().evalfNaN())) {
+      return spec;
+    }
+    double[] ends = new double[2];
+    for (int side = 0; side < 2; side++) {
+      IExpr end = spec.get(side + 1);
+      double value = end.evalfNaN();
+      if (!Double.isFinite(value)) {
+        double[] source = end == S.Automatic ? automatic : all;
+        if (source == null) {
+          return spec;
+        }
+        value = source[side];
+      }
+      ends[side] = value;
+    }
+    return F.list(F.num(ends[0]), F.num(ends[1]));
   }
 
   /**
@@ -270,11 +333,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plotRange == S.Automatic || plotRange == S.All) {
       xSpec = plotRange;
       ySpec = plotRange;
-    } else if (plotRange.isList2() && Double.isFinite(plotRange.first().evalfNaN())
-        && Double.isFinite(plotRange.second().evalfNaN())) {
-      // {ymin, ymax} constrains the y axis only
+    } else if (GraphicsOptions.isVerticalRangePair(plotRange)) {
+      // {ymin, ymax} constrains the y axis only; an All or Automatic end is resolved below
       xSpec = S.Automatic;
-      ySpec = F.list(F.num(plotRange.first().evalf()), F.num(plotRange.second().evalf()));
+      ySpec = GraphicsOptions.numericRangePair(plotRange);
     } else if (plotRange.isList2()) {
       xSpec = plotRange.first() == S.Full ? S.Automatic : plotRange.first();
       ySpec = plotRange.second() == S.Full ? S.Automatic : plotRange.second();
@@ -283,7 +345,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     boolean xAuto = xSpec == S.Automatic || xSpec == S.All;
     boolean yAuto = ySpec == S.Automatic || ySpec == S.All;
-    if (!xAuto && !yAuto) {
+    boolean xOpen = xSpec.isList2() && !isClosedRange(xSpec);
+    boolean yOpen = ySpec.isList2() && !isClosedRange(ySpec);
+    if (!xAuto && !yAuto && !xOpen && !yOpen) {
       return graphics;
     }
     // outliers of y are dropped from an automatic range only
@@ -301,7 +365,36 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     IExpr yRange =
         yAuto ? listAxisRange(drawn[1][0], drawn[1][1], 0.5, 1.0 / 18.0) : ySpec;
-    return withPlotRange(graphics, originalAST, xRange, xAuto, yRange, yAuto);
+    if (xOpen || yOpen) {
+      double[][] all = org.matheclipse.core.graphics.svg.SvgGraphics2D
+          .plotRange(withOption(plot, S.PlotRange, S.All));
+      if (all != null) {
+        if (xOpen) {
+          double[] automatic = rangeValues(valueData
+              ? F.list(F.num(Math.min(0.0, drawn[0][0])), F.num(drawn[0][1]))
+              : listAxisRange(drawn[0][0], drawn[0][1], 1.0 / 6.0, 1.0 / 48.0));
+          xRange = resolveRangeEnds((IAST) xSpec, automatic, all[0]);
+        }
+        if (yOpen) {
+          double[] automatic =
+              rangeValues(listAxisRange(drawn[1][0], drawn[1][1], 0.5, 1.0 / 18.0));
+          yRange = resolveRangeEnds((IAST) ySpec, automatic, all[1]);
+        }
+      }
+    }
+    return withPlotRange(graphics, originalAST, xRange,
+        xAuto ? RESOLVED_AXIS_PADDING : resolvedAxisPadding(xSpec, xRange), yRange,
+        yAuto ? RESOLVED_AXIS_PADDING : resolvedAxisPadding(ySpec, yRange));
+  }
+
+  /** Whether both ends of the pair <code>range</code> are numbers. */
+  private static boolean isClosedRange(IExpr range) {
+    return Double.isFinite(range.first().evalfNaN()) && Double.isFinite(range.second().evalfNaN());
+  }
+
+  /** The ends of the pair of numbers <code>range</code>. */
+  private static double[] rangeValues(IAST range) {
+    return new double[] {range.first().evalf(), range.second().evalf()};
   }
 
   /** Whether an axis scaling leaves the coordinates as they are. */

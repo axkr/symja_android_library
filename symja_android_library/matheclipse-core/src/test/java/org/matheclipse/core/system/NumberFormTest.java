@@ -222,8 +222,8 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
   public void testNumberFormOptions() {
     check("ToString(NumberForm(1234.5, NumberPoint -> \",\"))", "1234,5");
     check("ToString(NumberForm(1234.5678, 6, NumberPoint -> \",\"))", "1234,57");
-    check("ToString(PaddedForm(1.5, 5, NumberPoint -> \",\"))", "1,5");
-    check("ToString(NumberForm(12.3, {5, 3}, NumberPadding -> {\" \", \"0\"}))", "12.300");
+    check("ToString(PaddedForm(1.5, 5, NumberPoint -> \",\"))", "    1,5");
+    check("ToString(NumberForm(12.3, {5, 3}, NumberPadding -> {\" \", \"0\"}))", " 12.300");
     check("ToString(NumberForm(12.3, {8, 3}, NumberPadding -> {\"*\", \"0\"}))", "****12.300");
     check("ToString(PaddedForm(123, 6, NumberPadding -> \"0\"))", "0000123");
     check("ToString(PaddedForm(-123, 6, NumberPadding -> \"0\"))", "000-123");
@@ -232,20 +232,20 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
         "ToString(NumberForm(-12.3, {6, 2}, SignPadding -> True, NumberPadding -> {\"0\", \"0\"}))",
         "-0012.30");
     check("ToString(PaddedForm(-123, 6, NumberPadding -> \"0\", SignPadding -> True))", "-000123");
-    check("ToString(PaddedForm(123, 6, NumberSigns -> {\"\", \"+\"}))", "+123");
+    check("ToString(PaddedForm(123, 6, NumberSigns -> {\"\", \"+\"}))", "   +123");
     check("ToString(NumberForm(-1234.5, {6, 1}, NumberSigns -> {\"n\", \"p\"}))", "n1234.5");
     check("ToString(AccountingForm(-12.3, NumberSigns -> {\"<\", \">\"}))", "<12.3");
-    check("ToString(PaddedForm(123456, 8, DigitBlock -> 3))", "123,456");
+    check("ToString(PaddedForm(123456, 8, DigitBlock -> 3))", "    123,456");
     check("ToString(PaddedForm(123456, 10, DigitBlock -> 2, NumberSeparator -> \"'\"))",
-        "12'34'56");
+        "       12'34'56");
     check("ToString(NumberForm(1234.5678, {8, 4}, DigitBlock -> 2))", "12,34.5678");
     check(
         "ToString(NumberForm(1234.5678, {8, 4}, DigitBlock -> 3, NumberSeparator -> {\"'\", \"_\"}))",
         "1'234.567_8");
     check("ToString(AccountingForm(-12.3, {5, 2}))", "(12.3)");
     check("ToString(AccountingForm(12.345, {5, 2}))", "12.35");
-    check("ToString(AccountingForm(12.3, {6, 3}, NumberPadding -> {\" \", \"0\"}))", "12.3000");
-    check("ToString(AccountingForm(-12.3, {6, 2}, NumberPadding -> {\" \", \"0\"}))", "(12.3)0");
+    check("ToString(AccountingForm(12.3, {6, 3}, NumberPadding -> {\" \", \"0\"}))", "  12.3000");
+    check("ToString(AccountingForm(-12.3, {6, 2}, NumberPadding -> {\" \", \"0\"}))", "  (12.3)0");
     check("ToString(AccountingForm({-1.5, 2.5}))", "{(1.5),2.5}");
     check("ToString(NumberForm(Pi, 5))", "Pi");
     check("ToString(NumberForm(x + y, 3))", "x+y");
@@ -253,11 +253,53 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
     check("ToString(NumberForm(1.5 + 2.5 I, 3))", "1.5+2.5*I");
     check("ToString(PaddedForm(Pi, 5))", "Pi");
     check("ToString(NumberForm(3/4))", "3\n-\n4");
-    check("ToString(PaddedForm(1234.5678, 3))", "1230.");
+    check("ToString(PaddedForm(1234.5678, 3))", " 1230.");
     check("ToString(ScientificForm(1234.5, NumberPoint -> \",\"))", "           3\n1,2345 × 10");
     check("ToString(EngineeringForm(1234.5, NumberPoint -> \",\"))", "           3\n1,2345 × 10");
     check("ToString(ScientificForm(1234567.8, 8, DigitBlock -> 3))", "              6\n1.2345678 × 10");
     check("ToString(NumberForm(1234567.8, 8, DigitBlock -> 3, NumberPoint -> \",\"))",
         "              6\n1,2345678 × 10");
+  }
+
+  @Test
+  public void testSignColumnIsAsWideAsTheLongestSign() {
+    // no signs: no sign column
+    check("ToString(NumberForm(7.25, {4, 2}, NumberSigns -> {\"\", \"\"}, NumberPadding -> {\"0\", \"0\"}))", //
+        "07.25");
+    // the negative sign fills its column, the padding goes in front of it
+    check("ToString(NumberForm(-7.25, {5, 3}, NumberSigns -> {\"neg\", \"\"}, NumberPadding -> {\"_\", \"~\"}))", //
+        "_neg7.25~");
+    check("ToString(NumberForm(7.25, {5, 3}, NumberSigns -> {\"neg\", \"\"}, NumberPadding -> {\"_\", \"~\"}))", //
+        "____7.25~");
+    // the padding of a field stays in front of the number
+    check("ToString(PaddedForm(7.25, {4, 2}))", //
+        "  7.25");
+    check("ToString(PaddedForm(-7.25, {4, 2}))", //
+        " -7.25");
+    // without a number of fraction digits the field holds the digits shown
+    check("ToString(PaddedForm(2.25, 6))", //
+        "    2.25");
+    // the padding takes the place of digit block separators too
+    check("ToString(PaddedForm(7654321, 9, DigitBlock -> 3))", //
+        "   7,654,321");
+    // no right padding: no zeros either
+    check("ToString(NumberForm(6.5, {5, 3}, NumberPadding -> {\"\", \"\"}))", //
+        "6.5");
+    // a scientific form has no right padding: the zeros of the rounding are not shown, a padding
+    // character takes their place
+    check("ToString(ScientificForm(3400.0, {4, 2}))", //
+        "        3\n3.4 \u00d7 10");
+    check("ToString(ScientificForm(3400.0, {4, 2}, NumberPadding -> {\"\", \"*\"}))", //
+        "         3\n3.4* \u00d7 10");
+    // the field padding stays in front of both lines
+    check("ToString(PaddedForm(-2.5*10^30, 5))", //
+        "            30\n   -2.5 \u00d7 10");
+    // an accounting entry pads on both sides of its parentheses
+    check("ToString(AccountingForm(-31.4, {7, 3}, NumberPadding -> {\"0\", \"0\"}))", //
+        "00(31.4)00");
+    check("ToString(AccountingForm(-31.4, {7, 3}, NumberPadding -> {\"0\", \"0\"}, SignPadding -> True))", //
+        "(0031.400)");
+    check("ToString(AccountingForm(31.4, {7, 3}, NumberPadding -> {\"0\", \"0\"}, SignPadding -> True))", //
+        "00031.4000");
   }
 }

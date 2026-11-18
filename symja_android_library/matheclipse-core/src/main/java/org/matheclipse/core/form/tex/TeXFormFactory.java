@@ -1185,6 +1185,34 @@ public class TeXFormFactory {
     }
   }
 
+  /**
+   * <code>Row({e1, e2, ...})</code> and <code>Row({e1, e2, ...}, separator)</code>: the elements
+   * side by side, with the separator between them; style options at the end don't change the
+   * text.
+   */
+  private static final class Row extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      int args = f.argSize();
+      while (args > 1 && f.get(args).isRuleAST()) {
+        args--;
+      }
+      if (args < 1 || args > 2 || !f.arg1().isList()) {
+        return false;
+      }
+      IAST items = (IAST) f.arg1();
+      for (int i = 1; i < items.size(); i++) {
+        if (i > 1 && args == 2) {
+          fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+        }
+        fFactory.convertInternal(buffer, items.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      }
+      return true;
+    }
+  }
+
   private static final class Style extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -2797,6 +2825,7 @@ public class TeXFormFactory {
     initTeXConverter(S.SphericalBesselY, new BinaryFunction("y_", "(", ")"));
     initTeXConverter(S.SphericalHarmonicY, new SphericalHarmonicY());
     initTeXConverter(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
+    initTeXConverter(S.Row, new Row());
     initTeXConverter(S.Style, new Style());
     initTeXConverter(S.Subscript, new Subscript());
     initTeXConverter(S.C, new C());

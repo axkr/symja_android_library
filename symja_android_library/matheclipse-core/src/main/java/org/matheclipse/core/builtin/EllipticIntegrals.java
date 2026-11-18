@@ -679,6 +679,16 @@ public class EllipticIntegrals {
         return F.EllipticE(m);
       // CPD-OFF closed-form special values per function
       }
+      // CPD-ON
+      IRational halfTurns = z == S.Pi ? F.C2
+          : z.isTimes() && z.argSize() == 2 && z.second() == S.Pi && z.first().isRational()
+              ? ((IRational) z.first()).multiply(F.C2).normalize()
+              : null;
+      if (halfTurns != null && halfTurns.isInteger()) {
+        // EllipticE(k*Pi/2, m) = k*EllipticE(m) /; IntegerQ(k)
+        return F.Times(halfTurns, F.EllipticE(m));
+      }
+      // CPD-OFF closed-form special values per function
 
       if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {

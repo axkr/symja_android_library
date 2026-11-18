@@ -162,7 +162,7 @@ public class WebGLGraphics3DTest {
       assertEquals("1",
           evaluator
               .eval("Length[Cases[meshPlot, {GrayLevel[0], "
-                  + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]")
+                  + "Line[{__Integer}, VertexColors -> None] ..}, Infinity]]")
               .toString(),
           plot + ": one indexed group of mesh segments");
       assertEquals("0",
@@ -496,7 +496,7 @@ public class WebGLGraphics3DTest {
    */
   /**
    * A triangulated point cloud has no grid lines to thin out, so its mesh is every triangle edge
-   * once; {@code Mesh -> None} leaves the surface bare, and {@code MeshStyle} colours the edges.
+   * once; {@code Mesh -> None} leaves only the outline, and {@code MeshStyle} colours the edges.
    */
   @Test
   public void listPlot3DPointCloudMeshIsItsTriangleEdges() {
@@ -505,7 +505,10 @@ public class WebGLGraphics3DTest {
     assertNotNull(element(meshed, "Polygon"), "no surface");
     JsonNode line = element(meshed, "Line");
     assertNotNull(line, "the default mesh draws the triangulation");
-    assertEquals(0, count(scene(cloud + ", Mesh -> None]"), "Line"), "Mesh -> None draws no edges");
+    assertEquals(1, count(scene(cloud + ", Mesh -> None]"), "Line"),
+        "Mesh -> None draws no edges, only the outline");
+    assertEquals(0, count(scene(cloud + ", Mesh -> None, BoundaryStyle -> None]"), "Line"),
+        "without the outline the surface is bare");
     JsonNode red = element(scene(cloud + ", MeshStyle -> Red]"), "Line");
     assertNotNull(red);
     assertFalse(line.get("color").equals(red.get("color")), "MeshStyle colours the edges");

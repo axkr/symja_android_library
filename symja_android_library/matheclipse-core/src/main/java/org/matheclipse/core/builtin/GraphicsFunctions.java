@@ -337,14 +337,17 @@ public class GraphicsFunctions {
         return graphics.arg1();
       }
       IASTAppendable primitives = F.ListAlloc(graphics.argSize());
+      boolean first = true;
       for (IExpr g : graphics) {
         if (((IAST) g).argSize() > 0) {
           // an empty Graphics() or Graphics3D() adds no primitives
           primitives.append(((IAST) g).arg1());
         }
         for (int i = 2; i < ((IAST) g).size(); i++) {
-          addOptions(((IAST) g).get(i), options);
+          // the range comes from the first graphic only; a later one does not narrow or fix it
+          addOptions(((IAST) g).get(i), options, !first);
         }
+        first = false;
       }
       IASTAppendable result = F.ast(head, options.argSize() + 1);
       result.append(primitives);
@@ -402,13 +405,19 @@ public class GraphicsFunctions {
       return false;
     }
 
-    /** An option of a graphic - a rule, or a list of them - added in order. */
-    private static void addOptions(IExpr option, IASTAppendable options) {
+    /**
+     * An option of a graphic - a rule, or a list of them - added in order.
+     *
+     * @param skipPlotRange whether a <code>PlotRange</code> rule is left out
+     */
+    private static void addOptions(IExpr option, IASTAppendable options, boolean skipPlotRange) {
       if (option.isRuleAST()) {
-        options.append(option);
+        if (!skipPlotRange || option.first() != S.PlotRange) {
+          options.append(option);
+        }
       } else if (option.isList()) {
         for (IExpr rule : (IAST) option) {
-          addOptions(rule, options);
+          addOptions(rule, options, skipPlotRange);
         }
       }
     }

@@ -16,7 +16,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * the full width of its slot. The bandwidth is Silverman's rule of thumb. <code>ChartStyle</code>,
  * <code>ChartLabels</code> and <code>ChartLegends</code> are read as for the other charts.
  * <code>ChartElementFunction -> "Quantile"</code> or <code>"Density"</code> draws a framed column
- * per dataset instead, laid out like the boxes of a <code>BoxWhiskerChart</code>.
+ * per dataset instead, laid out like the boxes of a <code>BoxWhiskerChart</code>;
+ * <code>"HistogramDensity"</code> draws every dataset as a histogram turned on its side.
  */
 public class DistributionChart extends AbstractChart {
 
@@ -66,6 +67,9 @@ public class DistributionChart extends AbstractChart {
     if (columns) {
       return columnChart(values, elementFunction.isString("Quantile"), chartStyle, chartLabels,
           graphicsOptions, originalAST, ast, engine);
+    }
+    if (elementFunction.isString("HistogramDensity")) {
+      return histogramChart(values, chartStyle, chartLabels, graphicsOptions, ast, engine);
     }
 
     // the densities on a grid over the values of each dataset, widened by the bandwidth
@@ -118,13 +122,89 @@ public class DistributionChart extends AbstractChart {
       group.append(F.EdgeForm(F.GrayLevel(F.num(0.5))));
       group.append(F.Polygon(outline));
       primitives.append(group);
-      if (chartLabels.isList() && i < chartLabels.argSize()) {
-        primitives.append(F.list(F.GrayLevel(F.C0),
-            F.Text(chartLabels.getAt(i + 1), F.list(F.num(x), F.num(yMin)), F.list(F.C0, F.C1))));
-      }
+      appendLabel(primitives, chartLabels, i, x, yMin);
     }
     graphicsOptions.setBoundingBox(new double[] {0.5, values.length + 0.5, yMin, yMax});
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /**
+   * The chart of <code>ChartElementFunction -> "HistogramDensity"</code>: every dataset is a
+   * histogram turned on its side, its bins along the values, each bin a rectangle centred on the
+   * dataset's position whose width is proportional to the density of the values in it, so an
+   * empty bin is a rectangle of no width. The bins are chosen as a <code>Histogram</code> chooses
+   * them; the densest bin of all the datasets has the full width of its slot.
+   */
+  private IExpr histogramChart(double[][] values, IExpr chartStyle, IExpr chartLabels,
+      GraphicsOptions graphicsOptions, IAST ast, EvalEngine engine) {
+    int n = values.length;
+    double[][] edges = new double[n][];
+    double[][] density = new double[n][];
+    double largest = 0.0;
+    double yMin = Double.POSITIVE_INFINITY;
+    double yMax = Double.NEGATIVE_INFINITY;
+    for (int i = 0; i < n; i++) {
+      double[] data = values[i];
+      double min = Double.POSITIVE_INFINITY;
+      double max = Double.NEGATIVE_INFINITY;
+      boolean integerData = true;
+      for (double v : data) {
+        min = Math.min(min, v);
+        max = Math.max(max, v);
+        integerData &= v == Math.rint(v);
+      }
+      double width = Histogram.binWidth(data, min, max);
+      double origin = Histogram.binOrigin(min, width, integerData);
+      // bins are closed below and open above, so the largest value starts a bin of its own when
+      // it lies on an edge
+      int bins = Math.max(1, (int) Math.floor((max - origin) / width) + 1);
+      edges[i] = new double[bins + 1];
+      for (int k = 0; k <= bins; k++) {
+        edges[i][k] = origin + k * width;
+      }
+      density[i] = new double[bins];
+      for (double v : data) {
+        engine.checkTimeLimit();
+        int k = Math.max(0, Math.min(bins - 1, (int) Math.floor((v - origin) / width)));
+        density[i][k] += 1.0;
+      }
+      for (int k = 0; k < bins; k++) {
+        density[i][k] /= data.length * width;
+        largest = Math.max(largest, density[i][k]);
+      }
+      yMin = Math.min(yMin, edges[i][0]);
+      yMax = Math.max(yMax, edges[i][bins]);
+    }
+
+    IASTAppendable primitives = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      double x = i + 1.0;
+      IASTAppendable group = F.ListAlloc(density[i].length + 2);
+      group.append(violinFill(chartStyle, i));
+      group.append(F.EdgeForm(F.GrayLevel(F.num(0.5))));
+      for (int k = 0; k < density[i].length; k++) {
+        // an empty bin is drawn too, as a rectangle of no width
+        double half = HALF_WIDTH * density[i][k] / largest;
+        group.append(F.Rectangle(F.list(F.num(x - half), F.num(edges[i][k])),
+            F.list(F.num(x + half), F.num(edges[i][k + 1]))));
+      }
+      primitives.append(group);
+      appendLabel(primitives, chartLabels, i, x, yMin);
+    }
+    graphicsOptions.setBoundingBox(new double[] {0.5, n + 0.5, yMin, yMax});
+    return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /**
+   * Append the label of dataset <code>i</code> (counted from 0), if <code>chartLabels</code> has
+   * one, below its element at <code>x</code>.
+   */
+  private static void appendLabel(IASTAppendable primitives, IExpr chartLabels, int i, double x,
+      double yMin) {
+    if (chartLabels.isList() && i < chartLabels.argSize()) {
+      primitives.append(F.list(F.GrayLevel(F.C0),
+          F.Text(chartLabels.getAt(i + 1), F.list(F.num(x), F.num(yMin)), F.list(F.C0, F.C1))));
+    }
   }
 
   /** The fill of the violin of dataset <code>i</code> (counted from 0). */

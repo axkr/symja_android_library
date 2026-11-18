@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.PrefixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 
 /** ASCII pretty printer which tries to create a pretty printer ASCII form on 3 lines. */
@@ -187,6 +188,41 @@ public class ASCIIPrettyPrinter3 {
         // a run of elements left out
         print("<<" + ast.arg1().toString() + ">>");
         return;
+      }
+      if (head == S.Row && ast.argSize() >= 1 && ast.arg1().isList()) {
+        // the elements side by side with the optional separator between them; style options at
+        // the end don't change the text
+        int args = ast.argSize();
+        while (args > 1 && ast.get(args).isRuleAST()) {
+          args--;
+        }
+        if (args <= 2) {
+          IAST row = (IAST) ast.arg1();
+          for (int i = 1; i < row.size(); i++) {
+            if (i > 1 && args == 2) {
+              convert(ast.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            }
+            convert(row.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          }
+          return;
+        }
+      }
+      if (head == S.PlusMinus && ast.isAST1()) {
+        Operator operator = OutputFormFactory.getOperator(head, 1);
+        if (operator instanceof PrefixOperator) {
+          // ±x: the sign is written in front of its operand
+          int own = operator.getPrecedence();
+          if (own < precedence) {
+            print("(");
+          }
+          print(operator.getOperatorString());
+          // a sum as operand is bracketed: ±(a + b)
+          convert(ast.arg1(), own + 1, NO_PLUS_CALL);
+          if (own < precedence) {
+            print(")");
+          }
+          return;
+        }
       }
       if (head != S.List && ast.argSize() >= 2) {
         Operator operator = OutputFormFactory.getOperator(head, ast.argSize());

@@ -28,6 +28,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
+import org.matheclipse.parser.client.operator.PrefixOperator;
 
 public class BoxesFunctions {
   /**
@@ -75,6 +76,13 @@ public class BoxesFunctions {
     private static Map<ISymbol, StandardFormOperator> OPERATOR_MAP =
         new IdentityHashMap<ISymbol, StandardFormOperator>();
 
+    /**
+     * The prefix readings of the heads in {@link #OPERATOR_MAP} which are prefix operators too, for
+     * a call with one argument.
+     */
+    private static Map<ISymbol, StandardFormOperator> PREFIX_OPERATOR_MAP =
+        new IdentityHashMap<ISymbol, StandardFormOperator>();
+
     private static class StandardFormOperator {
       protected int fPrecedence;
       protected String fOperator;
@@ -102,6 +110,10 @@ public class BoxesFunctions {
             // a && b || c is written (a && b) || c
             row.append(F.RowBox(F.list(F.$str("("),
                 standardFormRecursive(arg, 0, form, engine), F.$str(")"))));
+          } else if (arg.isPlus() && fPrecedence == Precedence.PLUS) {
+            // an operator as tight as a sum, like a +- b, writes a sum operand in parentheses:
+            // (a + b) +- c
+            row.append(standardFormRecursive(arg, fPrecedence + 1, form, engine));
           } else {
             row.append(standardFormRecursive(arg, fPrecedence, form, engine));
           }
@@ -338,6 +350,15 @@ public class BoxesFunctions {
           }
           if (function.head().isSymbol()) {
             StandardFormOperator operator = operatorFor((ISymbol) function.head());
+            StandardFormOperator prefix =
+                operator == null ? null : PREFIX_OPERATOR_MAP.get(function.head());
+            if (prefix != null && function.argSize() == 1) {
+              // ±a: the operand of a lower precedence in parentheses
+              return parenthesizeRow(
+                  F.RowBox(F.list(F.$str(prefix.fOperator), standardFormRecursive(function.arg1(),
+                      prefix.fPrecedence + 1, form, engine))),
+                  prefix.fPrecedence, precedence);
+            }
             if (operator != null) {
               IASTAppendable argsList = F.ListAlloc(function.size());
               if (operator.convert(argsList, function, precedence, form, engine)) {
@@ -456,6 +477,9 @@ public class BoxesFunctions {
     private static final ISymbol GRID_BOX_ITEM_SIZE = S.initFinalHiddenSymbol("GridBoxItemSize");
 
     private static final ISymbol GRID_BOX_FRAME = S.initFinalHiddenSymbol("GridBoxFrame");
+
+    /** The name of the option of a <code>GridBox</code> which draws lines between its cells. */
+    private static final ISymbol GRID_BOX_DIVIDERS = S.initFinalHiddenSymbol("GridBoxDividers");
 
     /** <code>{"Columns" -> {{value}}, "Rows" -> {{value}}}</code> */
     private static IAST columnsAndRows(IExpr value) {
@@ -1152,6 +1176,39 @@ public class BoxesFunctions {
         }
         return F.binaryAST2(S.TemplateBox, boxes, F.$str("RowDefault"));
       }
+      if (ast.isAST(S.Row, 3) && ast.arg1().isList()) {
+        // Row({e1, e2, ...}, s): a string separator as it is drawn and as it was written, any other
+        // separator as its box, then the boxes of the elements
+        IAST elements = (IAST) ast.arg1();
+        IExpr separator = ast.arg2();
+        IASTAppendable boxes = F.ListAlloc(elements.argSize() + 2);
+        if (separator.isString()) {
+          boxes.append(F.$str(separator.toString()));
+          boxes.append(F.$str(quotedString(separator.toString())));
+        } else {
+          boxes.append(standardFormRecursive(separator, 0, form, engine));
+        }
+        for (int i = 1; i < elements.size(); i++) {
+          boxes.append(standardFormRecursive(elements.get(i), 0, form, engine));
+        }
+        return F.binaryAST2(S.TemplateBox, boxes,
+            F.$str(separator.isString() ? "RowWithSeparators" : "RowWithSeparator"));
+      }
+      if (ast.isAST(S.TransformationFunction, 2) && ast.arg1().isMatrix() != null) {
+        // the matrix in parentheses, with a line before the last column and the last row which
+        // separates the translation from the linear part
+        IAST dividers = F.List(F.Rule(F.$str("Columns"), F.list(F.list(S.False))),
+            F.Rule(F.$str("ColumnsIndexed"), F.list(F.Rule(F.CN2, S.True))),
+            F.Rule(F.$str("Rows"), F.list(F.list(S.False))),
+            F.Rule(F.$str("RowsIndexed"), F.list(F.Rule(F.CN2, S.True))));
+        IAST grid = F.quaternary(S.GridBox, gridRows((IAST) ast.arg1(), true, form, engine),
+            F.Rule(S.AutoDelete, S.False), F.Rule(GRID_BOX_DIVIDERS, dividers),
+            F.Rule(GRID_BOX_ITEM_SIZE, columnsAndRows(S.Automatic)));
+        // the grid is tagged with the identity, as a matrix in MatrixForm
+        IAST tagged = F.binaryAST2(S.TagBox, grid, F.Function(F.Slot1));
+        return F.RowBox(F.List(standardFormRecursive(ast.head(), precedence, form, engine),
+            F.$str("["), F.RowBox(F.list(F.$str("("), tagged, F.$str(")"))), F.$str("]")));
+      }
       // a Grid with options: the options go into the grid box
       final boolean gridWithOptions =
           ast.isAST(S.Grid) && ast.argSize() >= 2 && ast.forAll(x -> x.isRuleAST(), 2);
@@ -1163,20 +1220,7 @@ public class BoxesFunctions {
           if (!matrix && ast.isAST(S.Grid)) {
             return F.NIL;
           }
-          IASTAppendable gridRows = F.ListAlloc(rows.size());
-          for (int i = 1; i < rows.size(); i++) {
-            IExpr row = rows.get(i);
-            IASTAppendable gridRow = F.ListAlloc(row.size());
-            if (matrix) {
-              for (int j = 1; j < row.size(); j++) {
-                gridRow.append(standardFormRecursive(((IAST) row).get(j), 0, form, engine));
-              }
-            } else {
-              // a flat list is a table of one column
-              gridRow.append(standardFormRecursive(row, 0, form, engine));
-            }
-            gridRows.append(gridRow);
-          }
+          IAST gridRows = gridRows(rows, matrix, form, engine);
           if (ast.isAST(S.Grid)) {
             // the tag keeps the Grid for the way back from the boxes
             IASTAppendable gridBox = F.ast(S.GridBox, ast.argSize() + 3);
@@ -1199,6 +1243,30 @@ public class BoxesFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The rows of the boxes of the entries of a table, the first argument of a
+     * <code>GridBox</code>.
+     *
+     * @param matrix <code>true</code> if the rows are lists of entries, <code>false</code> for a
+     *        flat list, which is a table of one column
+     */
+    private static IAST gridRows(IAST rows, boolean matrix, IExpr form, EvalEngine engine) {
+      IASTAppendable gridRows = F.ListAlloc(rows.size());
+      for (int i = 1; i < rows.size(); i++) {
+        IExpr row = rows.get(i);
+        IASTAppendable gridRow = F.ListAlloc(row.size());
+        if (matrix) {
+          for (int j = 1; j < row.size(); j++) {
+            gridRow.append(standardFormRecursive(((IAST) row).get(j), 0, form, engine));
+          }
+        } else {
+          gridRow.append(standardFormRecursive(row, 0, form, engine));
+        }
+        gridRows.append(gridRow);
+      }
+      return gridRows;
     }
 
     /**
@@ -1255,16 +1323,23 @@ public class BoxesFunctions {
       for (Map.Entry<String, Operator> entry : ASTNodeFactory.MMA_STYLE_FACTORY
           .getIdentifier2OperatorMap().entrySet()) {
         Operator operator = entry.getValue();
+        if (operator instanceof PrefixOperator) {
+          // an operator which is prefix and infix with the same spelling, like PlusMinus, is
+          // written as a prefix with one argument and as an infix with more, as in the output form
+          Operator infix = sameSpellingInfix(entry.getKey(), operator);
+          ISymbol head = infix == null ? null : systemSymbol(operator.getFunctionName());
+          if (head != null && !OPERATOR_MAP.containsKey(head)) {
+            OPERATOR_MAP.put(head,
+                new StandardFormOperator(infix.getPrecedence(), infix.getOperatorString()));
+            PREFIX_OPERATOR_MAP.put(head,
+                new StandardFormOperator(operator.getPrecedence(), operator.getOperatorString()));
+          }
+          continue;
+        }
         if (!(operator instanceof InfixOperator)) {
           continue;
         }
-        // the System` context is keyed by the name as the parser spells it, which is lower case in
-        // relaxed mode; the symbol the two names find is one and the same object
-        String name = operator.getFunctionName();
-        ISymbol head = Context.SYSTEM.get(name);
-        if (head == null) {
-          head = Context.SYSTEM.get(name.toLowerCase(java.util.Locale.ENGLISH));
-        }
+        ISymbol head = systemSymbol(operator.getFunctionName());
         // Plus, Times and Power are written as sums, fractions and superscripts rather than as
         // plain infix, and are answered before this map is asked
         if (head == null || head == S.Plus || head == S.Times || head == S.Power
@@ -1275,6 +1350,34 @@ public class BoxesFunctions {
             new StandardFormOperator(operator.getPrecedence(), operator.getOperatorString()));
       }
       operatorsImported = true;
+    }
+
+    /**
+     * The built-in symbol of an operator's function name. The System` context is keyed by the name
+     * as the parser spells it, which is lower case in relaxed mode; the symbol the two names find
+     * is one and the same object.
+     */
+    private static ISymbol systemSymbol(String name) {
+      ISymbol head = Context.SYSTEM.get(name);
+      if (head == null) {
+        head = Context.SYSTEM.get(name.toLowerCase(java.util.Locale.ENGLISH));
+      }
+      return head;
+    }
+
+    /** The infix reading of a head which is spelled like its prefix reading, or null. */
+    private static Operator sameSpellingInfix(String headName, Operator prefix) {
+      java.util.List<Operator> readings =
+          ASTNodeFactory.MMA_STYLE_FACTORY.getOperatorsByHead(headName);
+      if (readings != null) {
+        for (Operator reading : readings) {
+          if (reading instanceof InfixOperator
+              && reading.getOperatorString().equals(prefix.getOperatorString())) {
+            return reading;
+          }
+        }
+      }
+      return null;
     }
 
     /**

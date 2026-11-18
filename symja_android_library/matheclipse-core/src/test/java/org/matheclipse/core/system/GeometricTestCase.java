@@ -1135,6 +1135,74 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReversedAngleRangeSectors() {
+    // a range which runs backwards is the same sector as the range running forwards
+    check("RegionMeasure(Disk({1,1}, 3, {2*Pi/3, Pi/3}))", //
+        "3/2*Pi");
+    check("RegionMeasure(Disk({1,1}, 3, {Pi/3, 2*Pi/3}))", //
+        "3/2*Pi");
+    check("Area(Disk({0,0}, 2, {Pi/2, 0}))", //
+        "Pi");
+    check("RegionMeasure(Disk({0,0}, {2,5}, {Pi/2, 0}))", //
+        "5/2*Pi");
+    check("Perimeter(Disk({0,0}, 2, {Pi/2, 0}))", //
+        "4+Pi");
+    check("Perimeter(Disk({0,0}, 2, {0, Pi/2}))", //
+        "4+Pi");
+    check("RegionCentroid(Disk({0,0}, 2, {Pi/2, 0}))", //
+        "{8/(3*Pi),8/(3*Pi)}");
+    check("RegionCentroid(Disk({0,0}, 2, {0, Pi/2}))", //
+        "{8/(3*Pi),8/(3*Pi)}");
+    check("RegionMember(Disk({0,0}, 2, {Pi/2, 0}), {1/3,1/3})", //
+        "True");
+    check("RegionMember(Disk({0,0}, 2, {Pi/2, 0}), {-1/3,1/3})", //
+        "False");
+
+    // arcs
+    check("ArcLength(Circle({0,0}, 2, {Pi/2, 0}))", //
+        "Pi");
+    check("RegionMeasure(Circle({0,0}, 2, {Pi/2, 0}))", //
+        "Pi");
+    check("RegionCentroid(Circle({0,0}, 2, {Pi/2, 0}))", //
+        "{4/Pi,4/Pi}");
+    // an elliptical arc which runs backwards has a positive length
+    check("ArcLength(Circle({0,0}, {3,5}, {Pi/2, 0})) - ArcLength(Circle({0,0}, {3,5}, {0, Pi/2}))", //
+        "0");
+    check("N(ArcLength(Circle({0,0}, {3,5}, {Pi/2, 0})) - 5*EllipticE(16/25))", //
+        "0.0");
+
+    // annulus sectors
+    check("RegionMeasure(Annulus({0,0}, {2,3}, {Pi/2, 0}))", //
+        "5/4*Pi");
+    check("RegionCentroid(Annulus({0,0}, {2,3}, {Pi/2, 0}))", //
+        "{76/(15*Pi),76/(15*Pi)}");
+  }
+
+  @Test
+  public void testFullTurnSectors() {
+    // a full turn or more is the whole disk or circle, counted once
+    check("ArcLength(Circle({0,0}, 3, {0, 2*Pi}))", //
+        "6*Pi");
+    check("ArcLength(Circle({0,0}, 3, {2*Pi, 0}))", //
+        "6*Pi");
+    check("Perimeter(Disk({0,0}, 3, {0, 2*Pi}))", //
+        "6*Pi");
+    check("RegionCentroid(Disk({4,5}, 3, {0, 5*Pi/2}))", //
+        "{4,5}");
+    check("Area(Annulus({0,0}, {2,3}, {0, 8}))", //
+        "5*Pi");
+    check("Perimeter(Annulus({0,0}, {2,3}, {0, 8}))", //
+        "10*Pi");
+    check("RegionCentroid(Annulus({4,5}, {2,3}, {0, 8}))", //
+        "{4,5}");
+    // the centroid of an elliptical arc and of a symbolic sector is left unevaluated
+    check("RegionCentroid(Circle({0,0}, {3,5}, {0, Pi/2}))", //
+        "RegionCentroid(Circle({0,0},{3,5},{0,Pi/2}))");
+    check("RegionCentroid(Disk({0,0}, s, {p, q}))", //
+        "RegionCentroid(Disk({0,0},s,{p,q}))");
+  }
+
+  @Test
   public void testRegionMemberFormulaRegions() {
     // ImplicitRegion is defined by its condition, so membership is that condition with the
     // coordinates substituted

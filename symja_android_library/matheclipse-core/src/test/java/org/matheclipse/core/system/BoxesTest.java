@@ -337,4 +337,81 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToBoxes(TableForm({{u, v}}))", //
         "GridBox({{u,v}})");
   }
+
+  @Test
+  public void testPlusMinusIsWrittenAsAnOperator() {
+    // infix with two or more arguments and prefix with one, as in the output form
+    check("InputForm(ToBoxes(PlusMinus(p, q)))", //
+        "RowBox({\"p\",\"±\",\"q\"})");
+    check("ToBoxes(PlusMinus(p, q, 3))", //
+        "RowBox({p,±,q,±,3})");
+    check("InputForm(ToBoxes(PlusMinus(w)))", //
+        "RowBox({\"±\",\"w\"})");
+    // an operand of a lower precedence is put in parentheses
+    check("ToBoxes(PlusMinus(u - v))", //
+        "RowBox({±,RowBox({(,RowBox({u,-,v}),)})})");
+    check("ToBoxes(PlusMinus(2*w)^3)", //
+        "SuperscriptBox(RowBox({(,RowBox({±,RowBox({2, ,w})}),)}),3)");
+    // a sum binds as tightly as the operator and is put in parentheses too
+    check("ToBoxes(PlusMinus(a + 2, 5*c))", //
+        "RowBox({RowBox({(,RowBox({2,+,a}),)}),±,RowBox({5, ,c})})");
+    check("ToBoxes(TraditionalForm(PlusMinus(p, q)))", //
+        "TagBox(FormBox(RowBox({p,±,q}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("OutputForm(PlusMinus(p, q))", //
+        "p ± q");
+    check("PlusMinus(w)", //
+        "±w");
+    // the prefix form in OutputForm and InputForm
+    check("OutputForm(PlusMinus(k))", //
+        "±k");
+    check("OutputForm(m + PlusMinus(k))", //
+        "m + ±k");
+    check("InputForm(PlusMinus(k))", //
+        "±k");
+  }
+
+  @Test
+  public void testRowWithSeparatorsTemplate() {
+    // the separator as it is drawn and as it was written, then the boxes of the elements
+    check("ToBoxes(Row({k, 7}, \":\")) // InputForm", //
+        "TemplateBox({\":\",\"\\\":\\\"\",\"k\",\"7\"},\"RowWithSeparators\")");
+    check("ToBoxes(Row({k, 7, m}, \"; \")) // InputForm", //
+        "TemplateBox({\"; \",\"\\\"; \\\"\",\"k\",\"7\",\"m\"},\"RowWithSeparators\")");
+    check("ToBoxes(Row({k, 7}, \"\\[Equal]\")) // InputForm", //
+        "TemplateBox({\"\\[Equal]\",\"\\\"\\[Equal]\\\"\",\"k\",\"7\"},\"RowWithSeparators\")");
+    // a separator which is no string is boxed as an expression
+    check("ToBoxes(Row({k, 7}, m)) // InputForm", //
+        "TemplateBox({\"m\",\"k\",\"7\"},\"RowWithSeparator\")");
+    // without a separator the row is the default template
+    check("ToBoxes(Row({k, 7})) // InputForm", //
+        "TemplateBox({\"k\",\"7\"},\"RowDefault\")");
+    // the row stays a row; its text forms join the elements
+    check("Row({k, 7}, \":\") // InputForm", //
+        "Row({k,7},\":\")");
+    check("Row({k, 7}, \":\") // OutputForm", //
+        "k:7");
+    check("Row({k, 7}) // OutputForm", //
+        "k7");
+    check("ToString(Row({k, 7}, \":\"))", //
+        "k:7");
+    check("TeXForm(Row({k, 7}, \":\"))", //
+        "k\\textnormal{:}7");
+    // the text of the template in a picture puts the separator between the elements
+    check("StringCount(ExportString(Grid({{RawBoxes(TemplateBox({\":\", \"\\\":\\\"\", \"k\", \"7\", \"m\"},"
+        + " \"RowWithSeparators\")), 1}}), \"SVG\"), {\"TemplateBox\", \"k:7:m\"})", //
+        "1");
+  }
+
+  @Test
+  public void testTransformationFunctionIsAMatrixWithDividers() {
+    // the matrix in parentheses with a line before the last column and the last row
+    check("InputForm(ToBoxes(TranslationTransform({p, q})))", //
+        "RowBox({\"TransformationFunction\",\"[\",RowBox({\"(\",TagBox(GridBox({{\"1\",\"0\",\"p\"},{\"0\",\"1\",\"q\"},{\"0\",\"0\",\"1\"}},AutoDelete->False,"
+            + "GridBoxDividers->{\"Columns\"->{{False}},\"ColumnsIndexed\"->{-2->True},\"Rows\"->{{False}},\"RowsIndexed\"->{-2->True}},"
+            + "GridBoxItemSize->{\"Columns\"->{{Automatic}},\"Rows\"->{{Automatic}}}),#1&),\")\"}),\"]\"})");
+    check("InputForm(ToBoxes(TranslationTransform({3, -1, r})))", //
+        "RowBox({\"TransformationFunction\",\"[\",RowBox({\"(\",TagBox(GridBox({{\"1\",\"0\",\"0\",\"3\"},{\"0\",\"1\",\"0\",RowBox({\"-\",\"1\"})},{\"0\",\"0\",\"1\",\"r\"},{\"0\",\"0\",\"0\",\"1\"}},AutoDelete->False,"
+            + "GridBoxDividers->{\"Columns\"->{{False}},\"ColumnsIndexed\"->{-2->True},\"Rows\"->{{False}},\"RowsIndexed\"->{-2->True}},"
+            + "GridBoxItemSize->{\"Columns\"->{{Automatic}},\"Rows\"->{{Automatic}}}),#1&),\")\"}),\"]\"})");
+  }
 }

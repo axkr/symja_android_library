@@ -183,6 +183,10 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
   }
 
   private IExpr circleMeasure(IAST reg, EvalEngine engine) {
+    if (reg.argSize() == 3) {
+      // the length of an arc
+      return S.ArcLength.of(engine, reg);
+    }
     IExpr r = F.C1;
     if (reg.argSize() >= 2) {
       r = reg.arg2();
@@ -193,6 +197,10 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
   private IExpr diskMeasure(IAST reg, EvalEngine engine) {
     if (reg.argSize() == 0) {
       return S.Pi;
+    }
+    if (reg.argSize() == 3) {
+      // the area of a sector
+      return S.Area.of(engine, reg);
     }
     IExpr r = F.C1;
     if (reg.argSize() >= 2) {

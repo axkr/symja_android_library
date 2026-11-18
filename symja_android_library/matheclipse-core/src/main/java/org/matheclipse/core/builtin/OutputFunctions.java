@@ -804,10 +804,11 @@ public final class OutputFunctions {
    * <code>Row[{...}, separator]</code>.
    *
    * <p>
-   * With a string separator the row is joined into one string here, because that is a value rather
-   * than a layout. Every other form is a layout object and stays unevaluated for a front end to
-   * lay out; <code>Row[{"moves: ", Dynamic[moves]}]</code>, the usual way to write a live read-out,
-   * is the commonest of them.
+   * A row is a layout object, with or without a separator, and stays unevaluated for a front end to
+   * lay out; its boxes are a <code>RowDefault</code> or <code>RowWithSeparators</code> template and
+   * the text forms write the elements side by side.
+   * <code>Row[{"moves: ", Dynamic[moves]}]</code>, the usual way to write a live read-out, is the
+   * commonest of them.
    */
   private static class Row extends AbstractFunctionEvaluator {
 
@@ -822,21 +823,8 @@ public final class OutputFunctions {
           return Errors.printArgMessage(ast, ARGS_1_2, engine);
         }
       }
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isList() && arg2.isString()) {
-        IAST list = (IAST) arg1;
-        String separator = arg2.toString();
-        StringBuilder buf = new StringBuilder();
-        for (int i = 1; i < list.size(); i++) {
-          buf.append(list.getRule(i).toString());
-          if (i < list.argSize()) {
-            buf.append(separator);
-          }
-        }
-        return F.stringx(buf);
-      }
-
+      // a display wrapper: the row with its separator stays as it is, and only its printed forms
+      // and its boxes join the elements
       return F.NIL;
     }
 
