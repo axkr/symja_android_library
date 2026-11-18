@@ -11570,6 +11570,26 @@ public class S {
   // S.initFinalSymbol("GeoPositionXYZ", ID.GeoPositionXYZ);
 
   /**
+   * GeoPositionENU(x) - TODO describe `GeoPositionENU`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoPositionENU.md">GeoPositionENU
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeoPositionENU =
+      S.initFinalSymbol("GeoPositionENU", ID.GeoPositionENU);
+
+  /**
+   * GeoPositionXYZ(x) - TODO describe `GeoPositionXYZ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoPositionXYZ.md">GeoPositionXYZ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeoPositionXYZ =
+      S.initFinalSymbol("GeoPositionXYZ", ID.GeoPositionXYZ);
+
+  /**
    * GeoProjection(x) - TODO describe `GeoProjection`.
    * 
    * @see <a href=
