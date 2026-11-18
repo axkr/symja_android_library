@@ -502,8 +502,9 @@ public class Plot extends ListPlot {
         continue;
       }
 
-      // Clipping
-      if (curY < yMinMax[0] || curY > yMinMax[1]) {
+      // Clipping: a curve leaving the range is broken there only while jumps are detected; with
+      // Exclusions -> None or an explicit list it runs on, and the range cuts it where it is drawn
+      if (detectJumps && (curY < yMinMax[0] || curY > yMinMax[1])) {
         if (lineList.isPresent()) {
           lineList.append(graphicsOptions.point(curX, curY));
           listOfLines.append(lineList);
