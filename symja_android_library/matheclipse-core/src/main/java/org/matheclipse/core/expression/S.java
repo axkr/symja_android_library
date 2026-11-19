@@ -3992,6 +3992,16 @@ public class S {
 
   public final static IBuiltInSymbol CForm = S.initFinalSymbol("CForm", ID.CForm);
 
+  /**
+   * ChampernowneNumber(x) - TODO describe `ChampernowneNumber`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ChampernowneNumber.md">ChampernowneNumber
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ChampernowneNumber =
+      S.initFinalSymbol("ChampernowneNumber", ID.ChampernowneNumber);
+
   public final static IBuiltInSymbol Character = S.initFinalSymbol("Character", ID.Character);
 
   /**
@@ -6215,6 +6225,16 @@ public class S {
   public final static IBuiltInSymbol CycleGraph = S.initFinalSymbol("CycleGraph", ID.CycleGraph);
 
   /**
+   * CycleIndexPolynomial(x) - TODO describe `CycleIndexPolynomial`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CycleIndexPolynomial.md">CycleIndexPolynomial
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CycleIndexPolynomial =
+      S.initFinalSymbol("CycleIndexPolynomial", ID.CycleIndexPolynomial);
+
+  /**
    * Cycles(a, b) - expression for defining canonical cycles of a permutation.
    * 
    * @see <a href=
@@ -7467,6 +7487,16 @@ public class S {
    */
   public final static IBuiltInSymbol DirichletCondition =
       S.initFinalSymbol("DirichletCondition", ID.DirichletCondition);
+
+  /**
+   * DirichletConvolve(x) - TODO describe `DirichletConvolve`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletConvolve.md">DirichletConvolve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirichletConvolve =
+      S.initFinalSymbol("DirichletConvolve", ID.DirichletConvolve);
 
   /**
    * DirichletEta(x) - `DirichletEta` function returns the Dirichlet eta function.
@@ -19256,6 +19286,15 @@ public class S {
   public final static IBuiltInSymbol Nor = S.initFinalSymbol("Nor", ID.Nor);
 
   /**
+   * NorlundB(x) - TODO describe `NorlundB`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NorlundB.md">NorlundB
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NorlundB = S.initFinalSymbol("NorlundB", ID.NorlundB);
+
+  /**
    * Norm(v) - returns the norm of the vector `v`
    * 
    * @see <a href=
@@ -19969,6 +20008,16 @@ public class S {
   public final static IBuiltInSymbol Number = S.initFinalSymbol("Number", ID.Number);
 
   /**
+   * NumberCompose(x) - TODO describe `NumberCompose`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumberCompose.md">NumberCompose
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberCompose =
+      S.initFinalSymbol("NumberCompose", ID.NumberCompose);
+
+  /**
    * NumberDecompose(x) - TODO describe `NumberDecompose`.
    * 
    * @see <a href=
@@ -19979,6 +20028,16 @@ public class S {
       S.initFinalSymbol("NumberDecompose", ID.NumberDecompose);
 
   public final static IBuiltInSymbol NumberDigit = S.initFinalSymbol("NumberDigit", ID.NumberDigit);
+
+  /**
+   * NumberExpand(x) - TODO describe `NumberExpand`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumberExpand.md">NumberExpand
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NumberExpand =
+      S.initFinalSymbol("NumberExpand", ID.NumberExpand);
 
   /**
    * NumberFieldClassNumber(x) - see the documentation page for details.
@@ -22041,6 +22100,16 @@ public class S {
   public final static IBuiltInSymbol PowerMod = S.initFinalSymbol("PowerMod", ID.PowerMod);
 
   /**
+   * PowerModList(x) - TODO describe `PowerModList`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PowerModList.md">PowerModList
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PowerModList =
+      S.initFinalSymbol("PowerModList", ID.PowerModList);
+
+  /**
    * PowerRange(base) - Generates a list of powers from exponent `1` to `max`. Max is the largest
    * power of '10` less equal `b ase`.
    * 
@@ -22550,6 +22619,24 @@ public class S {
   public final static IBuiltInSymbol PutAppend = S.initFinalSymbol("PutAppend", ID.PutAppend);
 
   public final static IBuiltInSymbol Pyramid = S.initFinalSymbol("Pyramid", ID.Pyramid);
+
+  /**
+   * QBinomial(x) - TODO describe `QBinomial`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QBinomial.md">QBinomial
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol QBinomial = S.initFinalSymbol("QBinomial", ID.QBinomial);
+
+  /**
+   * QFactorial(x) - TODO describe `QFactorial`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QFactorial.md">QFactorial
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol QFactorial = S.initFinalSymbol("QFactorial", ID.QFactorial);
 
   public final static IBuiltInSymbol QPochhammer = S.initFinalSymbol("QPochhammer", ID.QPochhammer);
 
@@ -24270,6 +24357,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol RSolveValue = S.initFinalSymbol("RSolveValue", ID.RSolveValue);
+
+  /**
+   * RudinShapiro(x) - TODO describe `RudinShapiro`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RudinShapiro.md">RudinShapiro
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RudinShapiro =
+      S.initFinalSymbol("RudinShapiro", ID.RudinShapiro);
 
   /**
    * Rule(x, y) - represents a rule replacing `x` with `y`.
@@ -27851,6 +27948,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Throw = S.initFinalSymbol("Throw", ID.Throw);
+
+  /**
+   * ThueMorse(x) - TODO describe `ThueMorse`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ThueMorse.md">ThueMorse
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ThueMorse = S.initFinalSymbol("ThueMorse", ID.ThueMorse);
 
   /**
    * Thumbnail(x) - TODO describe `Thumbnail`.
