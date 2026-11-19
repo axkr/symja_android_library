@@ -1,6 +1,7 @@
 package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -21,6 +22,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * <code>ImageExpr</code> and BoofCV's image types - and the sample range and band order that come
  * with it - is written down once rather than once per built-in.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class BoofCvDependencyTest {
 

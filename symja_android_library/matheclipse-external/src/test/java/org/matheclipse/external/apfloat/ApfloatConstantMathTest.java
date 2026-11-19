@@ -12,6 +12,7 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.InfiniteExpansionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests of {@link ApfloatConstantMath} and of the series of {@link ApcomplexZetaMath} for an
@@ -31,6 +32,7 @@ public class ApfloatConstantMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testCatalan()
     {
         for (long precision : new long[] { 1, 16, 63, 211 })
@@ -66,6 +68,7 @@ public class ApfloatConstantMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testPolylogOfSmallArgument()
     {
         Apfloat twoSevenths = new Aprational(new Apint(2), new Apint(7)).precision(66);

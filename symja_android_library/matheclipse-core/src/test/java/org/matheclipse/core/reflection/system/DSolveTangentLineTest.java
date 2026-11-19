@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * A first order initial value problem whose solution through the point is the tangent line there,
@@ -10,6 +12,7 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class DSolveTangentLineTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLineWithoutGeneralSolution() {
     check("DSolve({y'(x)==2+(y(x)-2*x)^3,y(1)==2},y,x)", //
         "{{y->Function({x},2*x)}}");

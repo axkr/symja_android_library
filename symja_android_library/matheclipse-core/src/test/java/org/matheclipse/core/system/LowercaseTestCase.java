@@ -9095,6 +9095,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorVariablesOnlyInAProduct() {
     // q, r and s occur in every term with the same exponent: a polynomial in p and q*r*s
     check("Factor(4*p^4+13*p^2*q^2*r^2*s^2+9*q^4*r^4*s^4)", //
@@ -22420,6 +22421,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testResidueAtRootOfUnitySpelledTwoWays() {
     // 1-(-1)^(1/3)+(-1)^(2/3) is zero: the point is a pole in both spellings
     check("Chop(N(Residue(1/(1 + w^2 + w^4)^2, {w, (-1)^(1/3)}) "
@@ -22453,6 +22455,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrateWorkingPrecision() {
     check("Precision(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25))", //
         "25");
@@ -22558,6 +22561,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateMeijerAntiderivative() {
     check("Integrate(y^c*BesselJ(m, 2*y), y)", //
         "1/2*y^(1+c+m)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({1/2*(1+c+m)},{1/2*(\n3+c+m),1+m},-y^2)");
@@ -22720,6 +22724,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQLargeParametricPowers() {
     // machine values at the real sample points: exact powers (1+b*y)^(m^2/3) have huge rationals
     check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
@@ -23377,6 +23382,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQRealSegmentOfOneVariable() {
     // not zero for 0<w<1 only, and for 0<w<2 in the second one
     check("Table(PossibleZeroQ(Sqrt((1+1/w)/(1-1/w))*(1-1/w)-Sqrt(1-1/w^2)), {12})//Union", //

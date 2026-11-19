@@ -627,6 +627,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
    * <code>E^(-t)*t^2/2*Hypergeometric2F1(1,2,4,-2*t)</code> over <code>t&gt;0</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testHypergeometricPFQDivergent() {
     checkNumeric("HypergeometricPFQ({1,1,1},{},-0.5)", //
         "0.768630512765972");

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 public class DigitLengthSumTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDigitLengthBlocks() {
     // the block of the terms with d digits sums to (PolyGamma(10^d) - PolyGamma(10^(d-1)))/d^3,
     // and to Log(10)/d^3 beyond the digits
@@ -37,6 +38,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegerOnlyDecline() {
     // the block sums of a self-similar series jump again in the number of digits: no value rather
     // than a wrong one
@@ -100,6 +102,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTailIntegralPrecision() {
     // a tail integral without the working precision isn't used: Log(Sinh(Pi)/Pi)
     check("s = NSum(Log(1 + 1/k^2), {k, 1, Infinity}, WorkingPrecision -> 30); "
@@ -149,6 +152,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselOrderDerivative() {
     // central differences of the order at 50 digits
     check("fd(f_, nu_, z_) := Module({h = 10^-20}, (f(N(nu + h, 50), N(z, 50)) "
@@ -183,6 +187,7 @@ public class DigitLengthSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testReviewFixes() {
     // next to an integer order the connection formula of BesselY cancels digits
     check("fd(f_, nu_, z_) := Module({h = 10^-40}, (f(N(nu + h, 120), N(z, 120)) "

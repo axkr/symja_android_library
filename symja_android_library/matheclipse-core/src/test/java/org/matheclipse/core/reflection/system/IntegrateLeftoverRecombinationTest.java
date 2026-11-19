@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Terms of a sum which stay unintegrated one by one, while their sum has an antiderivative: the
@@ -10,6 +12,7 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class IntegrateLeftoverRecombinationTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLeftoversWithElementarySum() {
     // c*E^(2*t)/(t+E^t*t)+c*E^(3*t)/(t+E^t*t) is c*E^(2*t)/t
     check("Integrate((c*E^(2*t)+c*E^(3*t)+t)/((1+E^t)*t),t)", //

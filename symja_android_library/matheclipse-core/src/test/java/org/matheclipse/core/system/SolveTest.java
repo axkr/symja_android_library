@@ -3003,6 +3003,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIssue914() {
     check("Length(Solve(5==35500*(1+x/4)^(4*7),x))", //
         "28");
@@ -3488,6 +3489,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGoldenRatioRelatedRoots() {
     // Edge Case: x^4 - x^3 - x^2 - x + 1 == 0
     // This symmetric polynomial evaluates to expressions involving Sqrt(5).

@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Integrands over a tower with an exponential of a tangent, and exponential integrals
@@ -28,12 +29,14 @@ public class IntegrateTangentTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testProductOverTangent() {
     check("Integrate(D(Log(2*x)*E^Tan(x+2),x),x)", //
         "E^Tan(2+x)*Log(2*x)");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExponentialOfTangentOverX() {
     // not elementary: an answer without grinding through the stages
     check("TimeConstrained(Integrate(E^Tan(x+2)/x,x),30,$Aborted)", //
@@ -41,6 +44,7 @@ public class IntegrateTangentTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExponentialIntegralOfSplitExponential() {
     // E^(3*x+Log(x)) is x*E^(3*x)
     check("Integrate(E^(3*x)*(1+3*x)/(3*x+Log(x)),x)", //

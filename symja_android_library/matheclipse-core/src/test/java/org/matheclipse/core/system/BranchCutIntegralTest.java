@@ -65,6 +65,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselPowersAtZero() {
     // x^a*BesselY(a,c*x) and x^(-a)*BesselJ(a,c*x) don't vanish at 0
     check("Limit(x^2*BesselY(2,3*x), x -> 0, Direction -> -1)", //
@@ -81,6 +82,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRegularizedHypergeometricEqualParameters() {
     // 1/Gamma(c) of the lower parameter c == b
     check("Hypergeometric2F1Regularized(1/3, 0, 0, z)", //
@@ -157,6 +159,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAppellF1NextToOne() {
     // the singular point 1/x of the Euler integral next to 1
     check("Abs(N(AppellF1(1/2, 1/2, 3/2, 3/2, 1003/1000, -1003/1000), 30) - "
@@ -165,6 +168,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNoRuleInternalsInAnswers() {
     // a substitution into the marker of an integral without a rule isn't an antiderivative
     check("Integrate(Sqrt(x)*Tanh(x), x)", //
@@ -181,6 +185,7 @@ public class BranchCutIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHypergeometric2F1AtInfinity() {
     check("Limit(Hypergeometric2F1(-1/3, 1/2, 2/3, -x^3)/x, x -> Infinity)", //
         "(Gamma(2/3)*Gamma(5/6))/Sqrt(Pi)");

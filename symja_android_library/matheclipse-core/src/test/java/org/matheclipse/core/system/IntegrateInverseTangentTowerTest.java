@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Integrands over a tower with an inverse tangent of an exponential: <code>ArcTan(u)</code> is a
@@ -20,6 +21,7 @@ public class IntegrateInverseTangentTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testWholeIntegrandWithNonElementaryParts() {
     // ArcTan(E^(2*x))^2 alone has no elementary integral, the sum has
     check("Integrate(D(x*ArcTan(E^(2*x))^2,x),x)", //

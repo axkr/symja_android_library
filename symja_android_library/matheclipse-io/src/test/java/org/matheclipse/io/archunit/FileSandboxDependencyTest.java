@@ -1,6 +1,7 @@
 package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -29,6 +30,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * is no user supplied name to resolve. (That they <i>name</i> host directories at all is a
  * separate question for a server, and not one a path resolver can answer.)
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class FileSandboxDependencyTest {
 

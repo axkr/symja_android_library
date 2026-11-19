@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * How often and where the plots sample their functions, and how a few options shape the finished
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testContourPlot3DSamplesOnlyNumbers() {
     // a compiled iteration of a vector argument, which would never settle on symbols, is only
     // evaluated at the sample points

@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaParameter;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -23,6 +24,7 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 /**
  * The {@code F.NIL} contract of the {@link F} builders and of the guard methods.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org")
 public class FNilContractArchTest {
 

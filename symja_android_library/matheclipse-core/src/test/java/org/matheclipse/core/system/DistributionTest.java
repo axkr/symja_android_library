@@ -277,6 +277,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExpectationNumericFallback() {
     // N(Expectation(...)) falls back to NExpectation if there is no symbolic result
     check("N(Expectation(Sin(x), Distributed(x, PoissonDistribution(2))))", //

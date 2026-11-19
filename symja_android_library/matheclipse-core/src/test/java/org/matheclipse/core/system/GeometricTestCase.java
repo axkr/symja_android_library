@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class GeometricTestCase extends ExprEvaluatorTestCase {
 
@@ -1909,6 +1910,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolyhedronDataDual() {
     // the dual is drawn: the polar reciprocal in the sphere through the edge midpoints, here the
     // cube with the edge 1/Sqrt(2) around the octahedron with the edge 1

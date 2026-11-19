@@ -8,6 +8,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests of {@link ApcomplexExpIntegralMath}: the series against the general algorithms of apfloat.
@@ -56,6 +57,7 @@ public class ApcomplexExpIntegralMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testSinIntegral()
     {
         for (Apcomplex z : ARGUMENTS)
@@ -68,6 +70,7 @@ public class ApcomplexExpIntegralMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testSinhIntegral()
     {
         for (Apcomplex z : ARGUMENTS)
@@ -77,6 +80,7 @@ public class ApcomplexExpIntegralMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testCosIntegral()
     {
         for (Apcomplex z : ARGUMENTS)
@@ -86,6 +90,7 @@ public class ApcomplexExpIntegralMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testCoshIntegral()
     {
         for (Apcomplex z : ARGUMENTS)

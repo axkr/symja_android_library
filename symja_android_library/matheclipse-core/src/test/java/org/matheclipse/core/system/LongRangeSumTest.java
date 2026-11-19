@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Sums of a rational summand over a long range in closed form, sums of a polynomial times a power
@@ -34,6 +35,7 @@ public class LongRangeSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLongRangeIrreducibleDenominator() {
     check("FreeQ(Sum(1/(k^3 + 2*k + 3), {k, 1, 10^6}), Sum)", //
         "True");
@@ -104,6 +106,7 @@ public class LongRangeSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNProduct() {
     // the factors are 1 + 10^-13 far out
     check("Abs(NProduct(1 + 1/k^2, {k, 2*10^6 + 1, Infinity}) - 1 - 1/(2*10^6)) < 10^-12", //
@@ -118,6 +121,7 @@ public class LongRangeSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testManyFractions() {
     // exact up to the iteration limit of the tests' engine
     check("HarmonicNumber(300) - HarmonicNumber(299)", //
@@ -132,6 +136,7 @@ public class LongRangeSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSimplifyThreeFactors() {
     // a pair of factors merged into one: the third factor stays once
     check("Simplify(1/(Gamma(1 + Sqrt(3))*Gamma(1 + 2*I)*Gamma(1 - 2*I)))", //

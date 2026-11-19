@@ -17,6 +17,7 @@ import edu.jas.arith.BigRational;
 import edu.jas.gb.GroebnerBaseSeq;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.TermOrderByName;
+import org.junit.jupiter.api.Tag;
 
 /** The lexicographic basis of a zero-dimensional ideal from the graded one. */
 public class GroebnerFGLMTest extends ExprEvaluatorTestCase {
@@ -85,6 +86,7 @@ public class GroebnerFGLMTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTimeConstrainedStopsBuchberger() {
     // a large graded basis over the rationals, which runs for much longer than this limit
     check("vs = {a1,a2,a3,a4,a5,a6,a7}; n = 7; "

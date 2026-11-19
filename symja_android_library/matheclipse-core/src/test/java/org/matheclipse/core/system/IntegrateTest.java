@@ -314,6 +314,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrateIssue1419() {
     check("N(Integrate(x^x, {x, 0, 1}))", //
         "0.783431");
@@ -783,6 +784,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateProductOfLogsOfProportionalLinears() {
     // the substitution d+e*x -> x applies when g+h*x is a multiple of d+e*x, not when only the
     // constant terms are proportional
@@ -1500,6 +1502,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDilogarithmIntegrationByParts() {
     // Symja extension, proposed upstream in RuleBasedIntegration/Rubi#63 by benruijl: an
     // integration-by-parts rule for Int(PolyLog(2,u),x) where u is a rational function whose

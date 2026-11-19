@@ -182,6 +182,7 @@ public class ApcomplexAppellMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testCancellationToZero()
     {
         // the terminating sum cancels completely at the first working precisions: an exact zero is not taken for the value

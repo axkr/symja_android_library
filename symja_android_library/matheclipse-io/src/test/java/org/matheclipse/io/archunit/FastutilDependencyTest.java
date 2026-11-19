@@ -1,6 +1,7 @@
 package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -14,6 +15,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * fastutil, which is why <code>org.matheclipse.io..</code> can be listed here now that the fork has
  * moved out of it.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class FastutilDependencyTest {
 

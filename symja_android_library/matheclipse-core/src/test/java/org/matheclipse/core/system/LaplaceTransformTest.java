@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 public class LaplaceTransformTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformOfSteps() {
     // The second shift theorem: L{f(t)*UnitStep(t-a)} == E^(-a*s)*L{f(t+a)} for a >= 0.
     check("LaplaceTransform(UnitStep(t - Pi), t, s)", //
