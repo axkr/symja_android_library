@@ -1083,6 +1083,71 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testKDistribution() {
+    check("PDF(KDistribution(nu, w), x)", //
+        "Piecewise({{(4*(nu/w)^(1/2*(1+nu))*x^nu*BesselK(-1+nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>\n"
+            + "0}},0)");
+    check("CDF(KDistribution(nu, w), x)", //
+        "Piecewise({{1+(-2*(Sqrt(nu/w)*x)^nu*BesselK(nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>0}},\n"
+            + "0)");
+    check("SurvivalFunction(KDistribution(nu, w), x)", //
+        "Piecewise({{(2*(Sqrt(nu/w)*x)^nu*BesselK(nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>0}},1)");
+    check("Mean(KDistribution(nu, w))", //
+        "(Sqrt(Pi)*Sqrt(w)*Pochhammer(nu,1/2))/(2*Sqrt(nu))");
+    check("Variance(KDistribution(nu, w))", //
+        "w*(1+(-Pi*Pochhammer(nu,1/2)^2)/(4*nu))");
+    check("Moment(KDistribution(nu, w), 3)", //
+        "3/4*Sqrt(Pi)*(w/nu)^(3/2)*Pochhammer(nu,3/2)");
+    // w is the mean square
+    check("Expectation(x^2, x \\[Distributed] KDistribution(nu, w))", //
+        "w");
+    check("CDF(KDistribution(2, 3), x)", //
+        "Piecewise({{1-4/3*x^2*BesselK(2,2*Sqrt(2/3)*x),x>0}},0)");
+    check("Mean(KDistribution(2, 3))", //
+        "3/8*Sqrt(3/2)*Pi");
+    check("Variance(KDistribution(2, 3))", //
+        "3*(1-9/128*Pi^2)");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(KDistribution(2.5, 3), x), {x, 0, Infinity})", //
+        "1.0");
+    check("NIntegrate((x-Mean(KDistribution(2.5, 3)))^4*PDF(KDistribution(2.5, 3), x), "
+        + "{x, 0, Infinity})", //
+        "3.86667");
+    check("N({CentralMoment(KDistribution(2.5, 3), 3), " //
+        + "CentralMoment(KDistribution(2.5, 3), 4)})", //
+        "{0.973729,3.86667}");
+    check("N({Skewness(KDistribution(2.5, 3)), Kurtosis(KDistribution(2.5, 3))})", //
+        "{1.20687,5.14793}");
+    // for nu -> Infinity the limit is the RayleighDistribution
+    check("N({Skewness(KDistribution(10^6, 1)), Kurtosis(KDistribution(10^6, 1))})", //
+        "{0.631113,3.2451}");
+
+    check("PDF(KDistribution(2.5, 3), {0.5, 1.0, 2.0})", //
+        "{0.426539,0.505802,0.268262}");
+    check("CDF(KDistribution(2.5, 3), {-1.0, 0.5, 1.0, 2.0})", //
+        "{0,0.120739,0.365781,0.763937}");
+    check("{PDF(KDistribution(2, 3), 1.5), CDF(KDistribution(2, 3), 1.5)}", //
+        "{0.385516,0.608643}");
+    check("SurvivalFunction(KDistribution(2, 3), 40.0)", //
+        "1.45872*10^-26");
+
+    check("Length(RandomVariate(KDistribution(2, 3), 10))", //
+        "10");
+    check("Abs(Mean(RandomVariate(KDistribution(2, 3), 10^4)^2) - 3) < 0.3", //
+        "True");
+
+    check("DistributionParameterAssumptions(KDistribution(nu, w))", //
+        "nu>0&&w>0");
+    // message: KDistribution: Parameter -2 at position 1 in KDistribution(-2,3) is expected to be
+    // positive.
+    check("PDF(KDistribution(-2, 3), x)", //
+        "PDF(KDistribution(-2,3),x)");
+    check("RandomVariate(KDistribution(2, -3))", //
+        "RandomVariate(KDistribution(2,-3))");
+  }
+
+  @Test
   public void testLogNormalDistribution() {
     check("Mean(LogNormalDistribution(m,d))", //
         "E^(d^2/2+m)");
