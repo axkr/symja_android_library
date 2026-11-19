@@ -447,7 +447,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("N(Sqrt(0.5)^5.0)", //
         "0.176777");
     check("N(Sqrt(0.5)^5.0,50)", //
-        "0.176776695296637");
+        "0.17677669529663695");
 
     check("N(0.5^5.0)", //
         "0.03125");

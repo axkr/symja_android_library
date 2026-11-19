@@ -4351,12 +4351,32 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   static IExpr withNumericValues(IExpr solutions,
       java.util.function.UnaryOperator<IExpr> numeric) {
     if (solutions.isRuleAST()) {
-      return F.Rule(solutions.first(), numeric.apply(solutions.second()));
+      return F.Rule(solutions.first(), numericValue(solutions.second(), numeric));
     }
     if (solutions.isList()) {
       return ((IAST) solutions).map(x -> withNumericValues(x, numeric));
     }
-    return numeric.apply(solutions);
+    return numericValue(solutions, numeric);
+  }
+
+  /**
+   * The numerical value of a solution: the calls of functions without a definition of the system,
+   * like <code>y(1+n)</code> or <code>f(1/3)</code>, stand for unknowns and keep their arguments.
+   */
+  private static IExpr numericValue(IExpr value, java.util.function.UnaryOperator<IExpr> numeric) {
+    final java.util.Map<IExpr, IExpr> unknowns = new java.util.HashMap<>();
+    final IExpr masked = value.replaceAll(x -> x.isAST() && x.head().isSymbol()
+        && !x.head().isBuiltInSymbol() ? unknowns.computeIfAbsent(x, k -> F.Dummy("u")) : F.NIL)
+        .orElse(value);
+    if (unknowns.isEmpty()) {
+      return numeric.apply(value);
+    }
+    final java.util.Map<IExpr, IExpr> calls = new java.util.HashMap<>();
+    unknowns.forEach((call, symbol) -> calls.put(symbol, call));
+    return F.subst(numeric.apply(masked), x -> {
+      final IExpr call = calls.get(x);
+      return call == null ? F.NIL : call;
+    });
   }
 
   /**

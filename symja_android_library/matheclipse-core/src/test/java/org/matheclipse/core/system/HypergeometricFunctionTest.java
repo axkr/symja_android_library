@@ -703,7 +703,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "HypergeometricPFQ({1,1,1},{2,2,2},-3)");
     // message HypergeometricPFQ: general hypergeometric argument currently restricted.
     check("N(HypergeometricPFQ({1,1,1},{2,2,2},-10001))", //
-        "HypergeometricPFQ({1,1,1},{2,2,2},-10001.0)");
+        "HypergeometricPFQ({1.0,1.0,1.0},{2.0,2.0,2.0},-10001.0)");
   }
 
   @Test

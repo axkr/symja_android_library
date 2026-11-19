@@ -376,21 +376,21 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
 
     // the exponent is a single number, however many operators its printed form takes; the power
     // itself is beyond any number and evaluates to Overflow(), so it is built unevaluated
-    IExpr exponent = F.Power(F.num(2.0), evaluator.eval("N(1.5*10^30, 30)"));
+    IExpr exponent = F.Power(F.num(2.0), evaluator.eval("1.5`16*^30"));
     assertEquals(exponent.fullFormString(), "Power(2.0`, 1.5`16*^30)");
     assertEquals(outputFormFactory.toString(exponent), "2.0^(1.500000000000000*10^30)");
 
     // and the same in the base, where dropping them would read as 1.5*(10^30^2)
-    IExpr base = F.Power(evaluator.eval("N(1.5*10^30, 30)"), F.C2);
+    IExpr base = F.Power(evaluator.eval("1.5`16*^30"), F.C2);
     assertEquals(outputFormFactory.toString(base), "(1.500000000000000*10^30)^2");
 
     // Times and Plus bind no tighter than the printed product, and the top level binds nothing,
     // so none of those gain parentheses
-    assertEquals(outputFormFactory.toString(evaluator.eval("x*N(1.5*10^30, 30)")),
+    assertEquals(outputFormFactory.toString(evaluator.eval("x*1.5`16*^30")),
         "1.500000000000000*10^30*x");
-    assertEquals(outputFormFactory.toString(evaluator.eval("x+N(1.5*10^30, 30)")),
+    assertEquals(outputFormFactory.toString(evaluator.eval("x+1.5`16*^30")),
         "1.500000000000000*10^30+x");
-    assertEquals(outputFormFactory.toString(evaluator.eval("N(1.5*10^30, 30)")),
+    assertEquals(outputFormFactory.toString(evaluator.eval("1.5`16*^30")),
         "1.500000000000000*10^30");
   }
 

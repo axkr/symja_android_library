@@ -505,15 +505,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
       } else {
         engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
       }
-      if (expr.isAST()) {
-        // the attributes of a symbol head; a call like Derivative(2)[f][x] has none, its
-        // arguments become numbers even if Derivative holds its own ones
-        final int attributes =
-            expr.head().isSymbol() ? ((ISymbol) expr.head()).getAttributes() : ISymbol.NOATTRIBUTE;
-        expr = engine.evalArgs((IAST) expr, attributes, true).orElse(expr);
-      }
-
-      IExpr result = engine.evalWithoutNumericReset(expr);
+      IExpr result = evalNumeric(expr, engine);
       if (result instanceof ApfloatNum) {
         // out of the double range an arbitrary precision number of machine precision: also
         // below it, N((10^800+1)^(-1/2)) is no 0.0
@@ -532,6 +524,50 @@ public final class N extends AbstractCoreFunctionEvaluator {
       engine.setNumericMode(oldNumericMode);
       engine.setNumericPrecision(oldDigitPrecision);
     }
+  }
+
+  /**
+   * The numeric evaluation of an evaluated expression in the numeric mode of the engine. The
+   * numbers on every level which isn't held become numeric, also inside a call of a symbol without
+   * rules: the engine evaluates the arguments of a head which is no numeric function exactly, and
+   * an evaluated call isn't evaluated again.
+   */
+  private static IExpr evalNumeric(IExpr expr, EvalEngine engine) {
+    return engine.evalWithoutNumericReset(numericArgs(expr, engine));
+  }
+
+  /** The call <code>expr</code> with numerically evaluated arguments, innermost first. */
+  private static IExpr numericArgs(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    final IAST ast = (IAST) expr;
+    // the attributes of a symbol head; a call like Derivative(2)[f][x] has none, its
+    // arguments become numbers even if Derivative holds its own ones
+    final int attributes =
+        ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
+    IASTMutable inner = null;
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (arg.isAST() && !isHeld(attributes, i)) {
+        final IExpr numeric = evalNumeric(arg, engine);
+        if (numeric != arg) {
+          if (inner == null) {
+            inner = ast.copy();
+          }
+          inner.set(i, numeric);
+        }
+      }
+    }
+    final IAST current = inner == null ? ast : inner;
+    return engine.evalArgs(current, attributes, true).orElse(current);
+  }
+
+  /** Test if the attributes hold the <code>i</code>-th argument from evaluation or from N. */
+  private static boolean isHeld(int attributes, int i) {
+    final int held = i == 1 ? ISymbol.HOLDFIRST | ISymbol.NHOLDFIRST
+        : ISymbol.HOLDREST | ISymbol.NHOLDREST;
+    return (attributes & held) != 0;
   }
 
   /**
@@ -575,37 +611,40 @@ public final class N extends AbstractCoreFunctionEvaluator {
     // the numbers of a higher precision of their own are lowered to the precision asked for
     final long oldRequested = engine.setRequestedPrecision(nDigitPrecision);
     try {
-      return convertedZeros(evalN2Requested(expr, nDigitPrecision, engine));
+      return convertedNumbers(evalN2Requested(expr, nDigitPrecision, engine));
     } finally {
       engine.setRequestedPrecision(oldRequested);
     }
   }
 
   /**
-   * The zeros of a result which have neither a precision nor an accuracy are the zeros they were
-   * converted from: an arbitrary precision calculation takes the exact zero and the machine zero
-   * as an arbitrary precision zero, which has no precision of its own. The machine zero stays
-   * <code>0.0</code>, the exact zero stays <code>0</code>.
+   * The numbers of a result which an arbitrary precision calculation took over from machine or
+   * exact numbers, as the numbers they were: a machine value stays a machine number (beyond the
+   * double range an arbitrary precision number of machine precision), and a zero without precision
+   * or accuracy is <code>0.0</code> or the exact <code>0</code>.
    */
-  private static IExpr convertedZeros(IExpr result) {
+  private static IExpr convertedNumbers(IExpr result) {
     if (result.isNumber()) {
-      return convertedZero(result).orElse(result);
+      return convertedNumber(result).orElse(result);
     }
     if (result.isAST()) {
-      return result.replaceAll(x -> x.isNumber() ? convertedZero(x) : F.NIL).orElse(result);
+      return result.replaceAll(x -> x.isNumber() ? convertedNumber(x) : F.NIL).orElse(result);
     }
     return result;
   }
 
   /**
-   * The machine or exact zero of an arbitrary precision zero without precision, else NIL. A complex
-   * zero comes from a machine complex number: the exact complex zero is the integer zero.
+   * The machine or exact number of an arbitrary precision number which stands for one, else NIL. A
+   * complex zero comes from a machine complex number: the exact complex zero is the integer zero.
    */
-  private static IExpr convertedZero(IExpr x) {
+  private static IExpr convertedNumber(IExpr x) {
     if (x instanceof ApfloatNum) {
       final ApfloatNum real = (ApfloatNum) x;
+      if (real.isMachineValue()) {
+        return ApfloatNum.machineOrPromoted(real.apfloatValue());
+      }
       if (real.isZero() && Double.isInfinite(real.precision10())) {
-        return real.isMachineValue() ? F.CD0 : F.C0;
+        return F.C0;
       }
     } else if (x instanceof ApcomplexNum) {
       final ApcomplexNum complex = (ApcomplexNum) x;
@@ -667,13 +706,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
         // a constant like Pi: with guard digits, as in evalExact()
         engine.setNumericMode(true, nPrecision + GUARD_DIGITS, significantFigures);
         try {
-          return toPrecision(engine.evalWithoutNumericReset(expr), nPrecision);
+          return toPrecision(evalNumeric(expr, engine), nPrecision);
         } finally {
           engine.setNumericMode(true, nPrecision, significantFigures);
         }
       }
       // an inexact number in the input has the digits it has: more working digits add none
-      return engine.evalWithoutNumericReset(expr);
+      return evalNumeric(expr, engine);
     }
     if (expr.isNumber() || expr.has(x -> x.isInexactNumber(), true)) {
       // The exact evaluation has left numbers of the precision: the engine has the precision of
@@ -836,7 +875,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
         engine.setMessageShortcut(null);
         engine.setQuietMode(true);
         try {
-          result = engine.evalWithoutNumericReset(exactAt.apply(working));
+          result = evalNumeric(exactAt.apply(working), engine);
           messages = engine.getMessageShortcut() != null;
         } finally {
           engine.setQuietMode(quiet);
@@ -900,7 +939,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
         }
         if (messages && !quiet) {
           // the messages of the last evaluation are wanted: once more, aloud
-          engine.evalWithoutNumericReset(exactAt.apply(belowMachine ? working : precision));
+          evalNumeric(exactAt.apply(belowMachine ? working : precision), engine);
         }
         if (belowMachine) {
           engine.setNumericMode(true, machinePrecision, significantFigures);

@@ -3,11 +3,12 @@ package org.matheclipse.core.system;
 import org.junit.jupiter.api.Test;
 
 /**
- * Zeros in the result of <code>N(expr, precision)</code> above the machine precision: a machine
- * zero of the input stays the machine zero, an exact zero stays exact, and a zero which is left
- * of a cancellation has the accuracy which was reached.
+ * The numbers which <code>N(expr)</code> and <code>N(expr, precision)</code> convert: every number
+ * on a level which isn't held, also inside calls of functions without definitions; a machine number
+ * of the input stays a machine number; a machine zero stays the machine zero, an exact zero stays
+ * exact, and a zero which is left of a cancellation has the accuracy which was reached.
  */
-public class NZeroPrecisionTest extends ExprEvaluatorTestCase {
+public class NNumberConversionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMachineZero() {
@@ -41,5 +42,23 @@ public class NZeroPrecisionTest extends ExprEvaluatorTestCase {
         "0");
     check("Accuracy(N((2+Sqrt(5))^2 - 9 - 4*Sqrt(5), 30)) > 30", //
         "True");
+  }
+
+  @Test
+  public void testNumbersInsideCalls() {
+    check("InputForm(N(w(2/5), 25))", //
+        "w(4`25*^-1)");
+    check("InputForm(N(w(2.5, 0, 1/4), 20))", //
+        "w(2.5`,0,2.5`20*^-1)");
+    check("N(x + w(v(1/4), 3))", //
+        "x+w(v(0.25),3.0)");
+    check("N({w(v(5/8))}, 20)", //
+        "{w(v(0.625))}");
+    // held arguments stay
+    check("N(Hold(1/4), 20)", //
+        "Hold(1/4)");
+    // the calls of unknowns in a solution keep their arguments
+    check("Solve(z == 0.25*w(1/3) + v(k + 1), z)", //
+        "{{z->v(1+k)+0.25*w(1/3)}}");
   }
 }

@@ -30166,7 +30166,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // literals with an exponent: 3.*^1 is 30., rounded once, and inside N with a negative
     // exponent
     check("{3.*^1, 7.*^-19 == 7.*10^-19, N(3.*^1, 25), N(4.75*^-6, 25)}", //
-        "{30.0,True,30,0.00000475}");
+        "{30.0,True,30.0,0.00000475}");
     // below the double range a machine literal is 0.0
     check("{6.*^-500 == 0, Precision(6.*^-500)}", //
         "{True,16}");
