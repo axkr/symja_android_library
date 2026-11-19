@@ -3510,6 +3510,31 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSchurDecomposition() {
+    // a complex matrix: a unitary p and an upper triangular t with the eigenvalues on its diagonal
+    check("m={{1.5+I, 2, -0.5*I}, {0.25, 3-2*I, 1}, {I, 0.75, -1+0.5*I}};" //
+        + "{p,t}=SchurDecomposition(m);" //
+        + "{Chop(p.t.ConjugateTranspose(p)-m), Chop(p.ConjugateTranspose(p)-IdentityMatrix(3))," //
+        + " Chop({t[[2,1]], t[[3,1]], t[[3,2]]})," //
+        + " Chop(Sort(Diagonal(t)) - Sort(Eigenvalues(m)))}", //
+        "{{{0,0,0},{0,0,0},{0,0,0}},{{0,0,0},{0,0,0},{0,0,0}},{0,0,0},{0,0,0}}");
+    check("m={{0.5, 2*I}, {-3*I, 1.25}};" //
+        + "{p,t}=SchurDecomposition(m);" //
+        + "{Chop(p.t.ConjugateTranspose(p)-m), t[[2,1]], Chop(Diagonal(t))}", //
+        "{{{0,0},{0,0}},0.0,{-1.60303,3.35303}}");
+    // the entries below the diagonal are exactly zero
+    check("Last(SchurDecomposition({{1.5+I, 2, -0.5*I}, {0.25, 3-2*I, 1}, {I, 0.75, -1+0.5*I}}))" //
+        + "[[{2,3,3},{1,1,2}]] // Diagonal", //
+        "{0.0,0.0,0.0}");
+    // SchurDecomposition: SchurDecomposition has received a matrix with infinite precision.
+    check("SchurDecomposition({{1+I, 2}, {3, 4}})", //
+        "SchurDecomposition(\n" //
+            + "{{1+I,2},\n" //
+            + " {3,4}})");
+    check("SchurDecomposition({{1.0+I, x}, {3, 4}})", //
+        "SchurDecomposition(\n" //
+            + "{{1.0+I*1.0,x},\n" //
+            + " {3,4}})");
+
     check("m={{2.7, 4.8, 8.1}, {-.6, 0, 0}, {.1, 0, .3}};", //
         "");
     check("{q,t}=SchurDecomposition(m)", //

@@ -41,6 +41,7 @@ import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS2;
+import org.hipparchus.optim.nonlinear.vector.constrained.SQPOption;
 import org.hipparchus.optim.univariate.BrentOptimizer;
 import org.hipparchus.optim.univariate.SearchInterval;
 import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
@@ -621,23 +622,29 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
                 engine);
       }
     }
+    // the constraints an extremum found by the search has to satisfy
+    IASTAppendable feasibility = constraints;
     if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
-      // SQPOptimizerS2 takes no SimpleBounds before Hipparchus PR #455: {x, x0, xmin, xmax}
-      for (int i = 0; specBounds && i < n; i++) {
-        if (!Double.isInfinite(lowerBounds[i])) {
-          constraints.append(F.GreaterEqual(varsList.get(i + 1), F.num(lowerBounds[i])));
-        }
-        if (!Double.isInfinite(upperBounds[i])) {
-          constraints.append(F.LessEqual(varsList.get(i + 1), F.num(upperBounds[i])));
+      // SQPOptimizerS2 takes the bounds {x, x0, xmin, xmax} as SimpleBounds
+      if (specBounds) {
+        feasibility = constraints.copyAppendable();
+        for (int i = 0; i < n; i++) {
+          if (!Double.isInfinite(lowerBounds[i])) {
+            feasibility.append(F.GreaterEqual(varsList.get(i + 1), F.num(lowerBounds[i])));
+          }
+          if (!Double.isInfinite(upperBounds[i])) {
+            feasibility.append(F.LessEqual(varsList.get(i + 1), F.num(upperBounds[i])));
+          }
         }
       }
-      simpleBounds = null;
     } else if (simpleBounds != null && method.equals(POWELL_METHOD)) {
       // Powell is unbounded
       method = CMAES_METHOD;
     }
-    final boolean constrained = constraints.argSize() > 0;
-    if (constrained && method.equals(SEQUENTIAL_QUADRATIC_METHOD)
+    // a constrained search evaluates points outside the feasible region, so neither its best point
+    // nor the unconstrained methods are an answer
+    final boolean constrained = feasibility.argSize() > 0;
+    if (constraints.argSize() > 0 && method.equals(SEQUENTIAL_QUADRATIC_METHOD)
         && !createLinearConstraints(constraints, varsList, engine, optimizationData)
         && !createNonlinearConstraints(constraints, varsList, initialValues, engine,
             optimizationData)) {
@@ -669,7 +676,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     if ((constrained || (automaticMethod && simpleBounds == null)) && result.isList2()
         && result.second().isListOfRules()) {
       IExpr polished =
-          polishInteriorExtremum(function, constraints, (IAST) result, goalType, engine);
+          polishInteriorExtremum(function, feasibility, (IAST) result, goalType, engine);
       if (polished.isPresent()) {
         return polished;
       }
@@ -1874,14 +1881,26 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           twiceDifferentiableFunction.setMaxEval(maxEvaluations);
           twiceDifferentiableFunction
               .setObserver((point, value) -> record(point, maximize ? -value : value));
-          LagrangeSolution lagrangeSolution = optim.optimize( //
-              maxEval, //
-              maxIter, //
-              new ObjectiveFunction(twiceDifferentiableFunction), //
-              GoalType.MINIMIZE, //
-              initialGuess, //
-              optimizationData[0], //
-              optimizationData[1]);
+          List<OptimizationData> data = new ArrayList<OptimizationData>();
+          data.add(maxEval);
+          data.add(maxIter);
+          data.add(new ObjectiveFunction(twiceDifferentiableFunction));
+          data.add(GoalType.MINIMIZE);
+          data.add(initialGuess);
+          for (OptimizationData constraint : optimizationData) {
+            if (constraint != null) {
+              data.add(constraint);
+            }
+          }
+          if (simpleBounds != null) {
+            data.add(simpleBounds);
+          }
+          // the stopping tolerance of Hipparchus 4.0, Hipparchus 4.1 relaxed it to 1e-7
+          SQPOption option = new SQPOption();
+          option.setEps(1.0e-9);
+          data.add(option);
+          LagrangeSolution lagrangeSolution =
+              optim.optimize(data.toArray(new OptimizationData[data.size()]));
           if ((lagrangeSolution != null)) {
             RealVector solutionVector = lagrangeSolution.getX();
             IASTAppendable ruleList = F.mapRange(1, variableList.size(),

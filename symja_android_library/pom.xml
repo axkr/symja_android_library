@@ -284,47 +284,47 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-core</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-filtering</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-geometry</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-stat</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jgrapht</groupId>

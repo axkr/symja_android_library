@@ -141,6 +141,39 @@ public class StatisticsContinousDistribution {
   }
 
   /**
+   * <code>size</code> deviates of the gamma distribution with the shape <code>alpha</code> and the
+   * scale <code>theta</code> (the mean is <code>alpha*theta</code>), drawn by the Marsaglia-Tsang
+   * rejection method from <code>random</code>. For a small shape a variate below the smallest
+   * positive machine number underflows to <code>0.0</code>, as in Mathematica.
+   *
+   * @return <code>null</code> if a parameter isn't a positive finite number
+   */
+  private static double[] gammaVariates(Random random, double alpha, double theta, int size) {
+    if (!(alpha > 0.0 && theta > 0.0 && Double.isFinite(alpha) && Double.isFinite(theta))) {
+      return null;
+    }
+    org.hipparchus.random.GammaGenerator generator = new org.hipparchus.random.GammaGenerator(
+        RandomFunctions.hipparchusGenerator(random), alpha, theta);
+    double[] vector = new double[size];
+    for (int i = 0; i < size; i++) {
+      vector[i] = generator.nextVariate();
+    }
+    return vector;
+  }
+
+  /**
+   * <code>size</code> deviates of the gamma distribution with the shape <code>alpha</code> and the
+   * scale <code>theta</code>, as a vector of machine numbers.
+   *
+   * @return {@link F#NIL} if a parameter isn't a positive finite number
+   */
+  private static @AllowNIL IExpr gammaVariateVector(Random random, double alpha, double theta,
+      int size) {
+    double[] vector = gammaVariates(random, alpha, theta, size);
+    return vector == null ? F.NIL : new ASTRealVector(vector, false);
+  }
+
+  /**
    * The diagonal of the square matrix <code>matrix</code>, for example the variances of a
    * covariance matrix.
    *
@@ -848,14 +881,9 @@ public class StatisticsContinousDistribution {
     @Override
     public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
+        // ChiSquareDistribution(v) is GammaDistribution(v/2, 2)
         double v = dist.arg1().evalfNaN();
-        if (Double.isNaN(v)) {
-          return F.NIL;
-        }
-        RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
-        double[] vector = rdg.nextDeviates(
-            new org.hipparchus.distribution.continuous.ChiSquaredDistribution(v), size);
-        return new ASTRealVector(vector, false);
+        return gammaVariateVector(random, 0.5 * v, 2.0, size);
       }
       return F.NIL;
     }
@@ -1086,8 +1114,23 @@ public class StatisticsContinousDistribution {
    * <a href="PDF.md">PDF</a>, <a href="Quantile.md">Quantile</a>,
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
-  private static final class ErlangDistribution extends AbstractEvaluator
-      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IGeneratingFunction {
+  private static final class ErlangDistribution extends AbstractEvaluator implements ICDF,
+      IContinuousDistribution, IPDF, IStatistics, IGeneratingFunction, IRandomVariate {
+
+    @Override
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        // ErlangDistribution(k, rate) is GammaDistribution(k, 1/rate) for an exact positive
+        // integer k; 3.0 isn't one
+        if (!dist.arg1().isInteger() || !dist.arg1().isPositive()) {
+          return F.NIL;
+        }
+        double k = dist.arg1().evalfNaN();
+        double rate = dist.arg2().evalfNaN();
+        return gammaVariateVector(random, k, 1.0 / rate, size);
+      }
+      return F.NIL;
+    }
 
     @Override
     public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
@@ -1400,11 +1443,12 @@ public class StatisticsContinousDistribution {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
         double rate = dist.arg1().evalfNaN();
-        if (rate > 0.0) {
-          // return F.num(new ExponentialGenerator(rate, random).nextValue());
+        if (rate > 0.0 && Double.isFinite(rate)) {
+          // the Hipparchus distribution takes the mean 1/rate, not the rate
           RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
           double[] vector = rdg.nextDeviates(
-              new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
+              new org.hipparchus.distribution.continuous.ExponentialDistribution(1.0 / rate),
+              size);
           return new ASTRealVector(vector, false);
         }
       }
@@ -2239,6 +2283,25 @@ public class StatisticsContinousDistribution {
             // CPD-OFF generated distribution formulas with matching boilerplate
             org.hipparchus.distribution.continuous.GammaDistribution::new);
       }
+      if (dist.size() == 5) {
+        // GammaDistribution(a, b, g, d) is d + b*Y^(1/g) for Y from GammaDistribution(a, 1)
+        double a = dist.arg1().evalfNaN();
+        double b = dist.arg2().evalfNaN();
+        double g = dist.arg3().evalfNaN();
+        double d = dist.arg4().evalfNaN();
+        if (!(b > 0.0 && g > 0.0 && Double.isFinite(b) && Double.isFinite(g)
+            && Double.isFinite(d))) {
+          return F.NIL;
+        }
+        double[] vector = gammaVariates(random, a, 1.0, size);
+        if (vector == null) {
+          return F.NIL;
+        }
+        for (int i = 0; i < size; i++) {
+          vector[i] = d + b * Math.pow(vector[i], 1.0 / g);
+        }
+        return new ASTRealVector(vector, false);
+      }
       return F.NIL;
     }
 
@@ -2815,6 +2878,7 @@ public class StatisticsContinousDistribution {
       S.LogisticDistribution.setEvaluator(new LogisticDistribution());
       S.LogLogisticDistribution.setEvaluator(new LogLogisticDistribution());
       S.KumaraswamyDistribution.setEvaluator(new KumaraswamyDistribution());
+      S.HalfNormalDistribution.setEvaluator(new HalfNormalDistribution());
       S.MaxwellDistribution.setEvaluator(new MaxwellDistribution());
       S.MoyalDistribution.setEvaluator(new MoyalDistribution());
       S.SechDistribution.setEvaluator(new SechDistribution());
@@ -4025,9 +4089,22 @@ public class StatisticsContinousDistribution {
     @Override
     public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
-        return randomVariate2(random, dist.arg1(), dist.arg2(), size,
-            org.hipparchus.distribution.continuous.NakagamiDistribution::new);
-            // CPD-ON
+        // the same parameters as the Hipparchus generator: the square of a variate is
+        // GammaDistribution(m, w/m)
+        double m = dist.arg1().evalfNaN();
+        double w = dist.arg2().evalfNaN();
+        if (!(m > 0.0 && w > 0.0 && Double.isFinite(m) && Double.isFinite(w))) {
+          return F.NIL;
+        }
+        org.hipparchus.random.NakagamiGenerator generator =
+            new org.hipparchus.random.NakagamiGenerator(
+                RandomFunctions.hipparchusGenerator(random), m, w);
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+          vector[i] = generator.nextVariate();
+        }
+        return new ASTRealVector(vector, false);
+        // CPD-ON
       }
       return F.NIL;
     }
@@ -6323,6 +6400,169 @@ public class StatisticsContinousDistribution {
         // (a^2 - a*b + b^2 - a*c - b*c + c^2)/18
         return F.Divide(F.Plus(F.Sqr(a), F.Times(F.CN1, a, b), F.Sqr(b), F.Times(F.CN1, a, c),
             F.Times(F.CN1, b, c), F.Sqr(c)), F.ZZ(18));
+      }
+      return F.NIL;
+    }
+  }
+
+  /**
+   * <code>HalfNormalDistribution(theta)</code> - the half-normal distribution with the density
+   * <code>2*theta/Pi*Exp(-x^2*theta^2/Pi)</code> for <code>x &gt;= 0</code> and the mean
+   * <code>1/theta</code>: the absolute value of a normal variate with the mean 0 and the standard
+   * deviation <code>Sqrt(Pi/2)/theta</code>.
+   */
+  private static final class HalfNormalDistribution extends AbstractEvaluator implements ICDF,
+      IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+
+    @Override
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr t = dist.arg1();
+        // Piecewise({{Erf((#*t)/Sqrt(Pi)), # > 0}}, 0) &
+        return callFunction(F.Function(F.Piecewise(
+            F.list(F.list(F.Erf(F.Divide(F.Times(F.Slot1, t), F.Sqrt(F.Pi))),
+                F.Greater(F.Slot1, F.C0))),
+            F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      if (dist.isAST1() && m.isInteger() && !m.isNegative()) {
+        int order = m.toIntDefault();
+        if (order >= 0 && order <= 64) {
+          // Sum(Binomial(m, j)*E[X^j]*(-Mean)^(m-j), {j, 0, m})
+          IExpr mean = mean(dist);
+          IASTAppendable sum = F.PlusAlloc(order + 1);
+          for (int j = 0; j <= order; j++) {
+            sum.append(F.Times(F.Binomial(F.ZZ(order), F.ZZ(j)), rawMoment(dist.arg1(), F.ZZ(j)),
+                F.Power(F.Negate(mean), F.ZZ(order - j))));
+          }
+          // a single fraction over t^m, (-1 + Pi/2)/t^2 for m == 2
+          return F.Together(sum);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr t = dist.arg1();
+        // ConditionalExpression(Piecewise({{(Sqrt(Pi)*InverseErf(#))/t, 0 < # < 1},
+        // {0, # <= 0}}, Infinity), 0 <= # <= 1) &
+        return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(
+            F.list(F.Divide(F.Times(F.Sqrt(F.Pi), F.InverseErf(F.Slot1)), t),
+                F.Less(F.C0, F.Slot1, F.C1)),
+            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))), F.oo),
+            F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
+      if (dist.isAST1()) {
+        // (-12 - 4*Pi + 3*Pi^2)/(-2 + Pi)^2
+        return F.Divide(F.Plus(F.ZZ(-12), F.Times(F.CN4, F.Pi), F.Times(F.C3, F.Sqr(F.Pi))),
+            F.Sqr(F.Plus(F.CN2, F.Pi)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr mean(IAST dist) {
+      // 1/t
+      return dist.isAST1() ? F.Power(dist.arg1(), F.CN1) : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr median(IAST dist) {
+      // (Sqrt(Pi)*InverseErf(1/2))/t
+      return dist.isAST1()
+          ? F.Divide(F.Times(F.Sqrt(F.Pi), F.InverseErf(F.C1D2)), dist.arg1())
+          : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
+      if (dist.isAST1() && n.isInteger() && !n.isNegative()) {
+        return rawMoment(dist.arg1(), n);
+      }
+      return F.NIL;
+    }
+
+    /** The <code>n</code>-th raw moment <code>Pi^((n-1)/2)*Gamma((n+1)/2)/t^n</code>. */
+    private static IExpr rawMoment(IExpr t, IExpr n) {
+      return F.Times(F.Power(F.Pi, F.Times(F.C1D2, F.Plus(n, F.CN1))),
+          F.Gamma(F.Times(F.C1D2, F.Plus(n, F.C1))), F.Power(t, F.Negate(n)));
+    }
+
+    @Override
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
+      return dist.isAST1() ? F.Greater(dist.arg1(), F.C0) : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr t = dist.arg1();
+        // Piecewise({{(2*t)/(E^((#^2*t^2)/Pi)*Pi), # > 0}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(
+            F.Divide(F.Times(F.C2, t),
+                F.Times(F.Exp(F.Divide(F.Times(F.Sqr(F.Slot1), F.Sqr(t)), F.Pi)), F.Pi)),
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double t = dist.arg1().evalfNaN();
+        if (t > 0.0 && Double.isFinite(t)) {
+          // the Hipparchus distribution takes the standard deviation Sqrt(Pi/2)/t of the
+          // normal distribution which is folded at 0
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
+          double[] vector = rdg.nextDeviates(
+              new org.hipparchus.distribution.continuous.HalfNormalDistribution(
+                  Math.sqrt(0.5 * Math.PI) / t),
+              size);
+          return new ASTRealVector(vector, false);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public @AllowNIL IExpr skewness(IAST dist) {
+      if (dist.isAST1()) {
+        // (Sqrt(2)*(4 - Pi))/(-2 + Pi)^(3/2)
+        return F.Divide(F.Times(F.CSqrt2, F.Subtract(F.C4, F.Pi)),
+            F.Power(F.Plus(F.CN2, F.Pi), F.QQ(3L, 2L)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr variance(IAST dist) {
+      if (dist.isAST1()) {
+        // (-2 + Pi)/(2*t^2)
+        return F.Divide(F.Plus(F.CN2, F.Pi), F.Times(F.C2, F.Sqr(dist.arg1())));
       }
       return F.NIL;
     }

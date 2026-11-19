@@ -604,6 +604,7 @@ public class Errors {
       "pilist",
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
       "pint", "The value `1` in position `2` must be a non-negative machine sized integer.", //
+      "pintprm", "Parameter `1` at position `2` in `3` is expected to be a positive integer.", //
       "plen", "`1` and `2` should have the same length.", //
       "svars", "Equations may not give solutions for all \"solve\" variables.", //
       "htdrng", "The `1` test is only valid for sample sizes between `2` and `3`.", //
@@ -691,6 +692,7 @@ public class Errors {
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
       "sandbox", "The operation `1` is not allowed in sandbox mode.", //
       "schurf", "`1` has received a matrix with infinite precision.", //
+      "schurn", "`1` has received a matrix with non-numeric elements.", //
       "scl", "The scale function `1` evaluated to a list or zero.", //
       "scl2",
       "The scale function `1` evaluated to a list or zero for one or more of the columns.", //

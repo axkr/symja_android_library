@@ -22,7 +22,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.ComplexSchurTransformer;
-// import org.hipparchus.linear.ComplexSchurTransformer;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
 import org.hipparchus.linear.EigenDecompositionNonSymmetric;
@@ -2219,7 +2218,6 @@ public final class LinearAlgebra {
    * ascending imaginary part.
    */
   private static Complex[] sortedComplexEigenvalues(FieldMatrix<Complex> matrix) {
-    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
     Complex[] values = ComplexSchurTransformer.getEigenvalues(matrix);
     Arrays.sort(values, (a, b) -> Double.compare(b.norm(), a.norm()));
     int start = 0;
@@ -4310,6 +4308,26 @@ public final class LinearAlgebra {
                 return F.list(m1, m2);
               }
             }
+          } else if (decomposesComplexMatrix() && arg1.isList() && ((IAST) arg1)
+              .forAll(row -> ((IAST) row).forAll(x -> x.isNumericFunction(true)))) {
+            if (arg1.isFree(x -> x.isInexactNumber(), false)) {
+              // `1` has received a matrix with infinite precision.
+              return Errors.printMessage(ast.topHead(), "schurf", F.list(ast.topHead()), engine);
+            }
+            FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
+            if (complexMatrix != null) {
+              FieldMatrix<Complex>[] pt = decompose(complexMatrix);
+              IASTAppendable m1 = Convert.complexMatrix2List(pt[0]);
+              if (m1.isPresent()) {
+                IASTAppendable m2 = Convert.complexMatrix2List(pt[1]);
+                if (m2.isPresent()) {
+                  return F.list(m1, m2);
+                }
+              }
+            }
+          } else if (decomposesComplexMatrix() && arg1.isList()) {
+            // `1` has received a matrix with non-numeric elements.
+            return Errors.printMessage(ast.topHead(), "schurn", F.list(ast.topHead()), engine);
           }
         }
       } catch (IndexOutOfBoundsException | ClassCastException e) {
@@ -4332,6 +4350,22 @@ public final class LinearAlgebra {
     protected RealMatrix[] decompose(RealMatrix matrix) {
       HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
       return new RealMatrix[] {hessenbergTransformer.getP(), hessenbergTransformer.getH()};
+    }
+
+    /**
+     * Whether a numeric matrix with complex entries is decomposed by
+     * {@link #decompose(FieldMatrix)}; otherwise it stays unevaluated.
+     */
+    protected boolean decomposesComplexMatrix() {
+      return false;
+    }
+
+    /**
+     * The decomposition of the complex machine matrix <code>matrix</code>, only called if
+     * {@link #decomposesComplexMatrix()} is <code>true</code>.
+     */
+    protected FieldMatrix<Complex>[] decompose(FieldMatrix<Complex> matrix) {
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -8002,6 +8036,29 @@ public final class LinearAlgebra {
     protected RealMatrix[] decompose(RealMatrix matrix) {
       SchurTransformer schurTransformer = new SchurTransformer(matrix);
       return new RealMatrix[] {schurTransformer.getP(), schurTransformer.getT()};
+    }
+
+    @Override
+    protected boolean decomposesComplexMatrix() {
+      return true;
+    }
+
+    /**
+     * The unitary matrix <code>p</code> and the upper triangular matrix <code>t</code> with the
+     * eigenvalues on its diagonal, <code>matrix == p.t.ConjugateTranspose(p)</code>.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected FieldMatrix<Complex>[] decompose(FieldMatrix<Complex> matrix) {
+      ComplexSchurTransformer schurTransformer = new ComplexSchurTransformer(matrix);
+      FieldMatrix<Complex> t = schurTransformer.getT();
+      // the rounding noise the iteration leaves below the diagonal of the triangular matrix
+      for (int i = 1; i < t.getRowDimension(); i++) {
+        for (int j = 0; j < i; j++) {
+          t.setEntry(i, j, Complex.ZERO);
+        }
+      }
+      return new FieldMatrix[] {schurTransformer.getP(), t};
     }
   }
 

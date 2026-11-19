@@ -10375,6 +10375,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x-3)^2+(y-1)^2, " //
         + "{{x, 0, -1, 2},{y,0}}, Method->\"SequentialQuadratic\")], 10^-4)", //
         "{1,{2,1}}");
+    // both bounds active, also for a single variable and together with a constraint
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x-3)^2+(y+1)^2, " //
+        + "{{x, 0, -2, 3/2},{y, 0, -1/2, 2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{5/2,{3/2,-1/2}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMaximum(-(x-3)^2-(y+1)^2, " //
+        + "{{x, 0, -2, 3/2},{y, 0, -1/2, 2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{-5/2,{3/2,-1/2}}");
+    check("Round({#[[1]], x /. #[[2]]} &[FindMinimum((x-3)^2, " //
+        + "{{x, 0, -2, 3/2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{9/4,3/2}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum({(x-3)^2+(y+1)^2, x+y<=0}, " //
+        + "{{x, 0, -2, 3/2},{y, 0}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{5/2,{3/2,-3/2}}");
+    // the interior coordinate of an extremum on a bound
+    check("Abs(y /. Last(FindMinimum(Sin(x)*Cos(y)+x^2/10, {{x, 1, -1, 2}, {y, 1/2, -1, 1}}, " //
+        + "Method->\"SequentialQuadratic\"))) < 10^-7", //
+        "True");
 
     // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' ...
     check("FindMinimum({x+y, x^2+y^2<=1, x!=0}, {{x,0.5},{y,0.5}})", //
@@ -10389,7 +10406,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
         //
-        "{5.07481*10^-12,{x->0.999999,y->0.999997}}");
+        "{4.85272*10^-12,{x->0.999998,y->0.999997}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);

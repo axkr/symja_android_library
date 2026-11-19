@@ -5086,6 +5086,58 @@ public class StatisticsFunctions {
       return false;
     }
 
+    /**
+     * Print the message of the first numeric parameter of <code>dist</code> outside of its range,
+     * with the message head Mathematica uses, for the distributions sampled by the gamma family of
+     * generators: <code>pintprm</code> for the shape of <code>ErlangDistribution</code>, which is
+     * an exact positive integer, else <code>posprm</code>.
+     *
+     * @return <code>true</code> if a message was printed
+     */
+    private static boolean numericParameterMessage(IAST dist, EvalEngine engine) {
+      final ISymbol messageHead;
+      final int[] positive;
+      int integerPosition = 0;
+      if (dist.isAST(S.HalfNormalDistribution, 2)) {
+        messageHead = S.HalfNormalDistribution;
+        positive = new int[] {1};
+      } else if (dist.isAST(S.NakagamiDistribution, 3)) {
+        messageHead = S.NakagamiDistribution;
+        positive = new int[] {1, 2};
+      } else if (dist.isAST(S.ErlangDistribution, 3)) {
+        messageHead = S.ErlangDistribution;
+        integerPosition = 1;
+        positive = new int[] {2};
+      } else if (dist.isAST(S.ChiSquareDistribution, 2)) {
+        messageHead = S.RandomVariate;
+        positive = new int[] {1};
+      } else if (dist.isAST(S.GammaDistribution, 5)) {
+        messageHead = S.GammaDistribution;
+        positive = new int[] {1, 2, 3};
+      } else {
+        return false;
+      }
+      if (integerPosition > 0) {
+        IExpr k = dist.get(integerPosition);
+        if (k.isNumber() && !(k.isInteger() && k.isPositive())) {
+          // Parameter `1` at position `2` in `3` is expected to be a positive integer.
+          Errors.printMessage(messageHead, "pintprm", F.list(k, F.ZZ(integerPosition), dist),
+              engine);
+          return true;
+        }
+      }
+      for (int i : positive) {
+        IExpr parameter = dist.get(i);
+        double value = parameter.evalfNaN();
+        if (!Double.isNaN(value) && !(value > 0.0)) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          Errors.printMessage(messageHead, "posprm", F.list(parameter, F.ZZ(i), dist), engine);
+          return true;
+        }
+      }
+      return false;
+    }
+
     /** <code>true</code> if <code>parameter</code> has no real numeric value. */
     private static boolean isSymbolic(IExpr parameter, EvalEngine engine) {
       if (parameter.isReal()) {
@@ -5116,7 +5168,7 @@ public class StatisticsFunctions {
      * @return {@link F#NIL}
      */
     private static @AllowNIL IExpr parameterMessage(IEvaluator evaluator, IAST dist, EvalEngine engine) {
-      if (isSymbolicParameter(dist, engine)) {
+      if (isSymbolicParameter(dist, engine) || numericParameterMessage(dist, engine)) {
         return F.NIL;
       }
       if (dist.isAST(S.BinomialDistribution, 3)) {
