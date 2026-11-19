@@ -115,6 +115,21 @@ public class StatisticsContinousDistribution {
     return F.NIL;
   }
 
+  /**
+   * The quantile function of a distribution whose support is bounded below by <code>lower</code>
+   * and unbounded above:
+   * <code>ConditionalExpression(Piecewise({{quantile, 0 &lt; # &lt; 1}, {lower, # &lt;= 0}},
+   * Infinity), 0 &lt;= # &lt;= 1) &amp;</code>.
+   *
+   * @param quantile the quantile for <code>0 &lt; # &lt; 1</code> in terms of {@link F#Slot1}
+   */
+  private static IAST quantileFunction(IExpr quantile, IExpr lower) {
+    return F.Function(F.ConditionalExpression(
+        F.Piecewise(F.list(F.list(quantile, F.Less(F.C0, F.Slot1, F.C1)),
+            F.list(lower, F.LessEqual(F.Slot1, F.C0))), F.oo),
+        F.LessEqual(F.C0, F.Slot1, F.C1)));
+  }
+
   /** A distribution of two parameters in machine precision. */
   @FunctionalInterface
   private interface MachineDistribution {
@@ -3003,24 +3018,16 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         // ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a, #), 0 < # < 1},
         // {0, # <= 0}}, Infinity), 0 <= # <= 1) &
-        return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
-            F.list(F.Divide(b, F.InverseGammaRegularized(a, F.Slot1)),
-                F.Less(F.C0, F.Slot1, F.C1)), //
-            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))), F.oo), //
-            F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+        return callFunction(
+            quantileFunction(F.Divide(b, F.InverseGammaRegularized(a, F.Slot1)), F.C0), k);
       }
       IExpr g = parameters[2];
       IExpr m = parameters[3];
       // ConditionalExpression(Piecewise({{m + b*InverseGammaRegularized(a, #)^(-1/g), 0 < # < 1},
       // {m, # <= 0}}, Infinity), 0 <= # <= 1) &
-      return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
-          F.list(
-              F.Plus(m,
-                  F.Times(b,
-                      F.Power(F.InverseGammaRegularized(a, F.Slot1), F.Negate(F.Power(g, F.CN1))))),
-              F.Less(F.C0, F.Slot1, F.C1)), //
-          F.list(m, F.LessEqual(F.Slot1, F.C0))), F.oo), //
-          F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+      return callFunction(quantileFunction(F.Plus(m,
+          F.Times(b, F.Power(F.InverseGammaRegularized(a, F.Slot1), F.Negate(F.Power(g, F.CN1))))),
+          m), k);
     }
 
     @Override
@@ -6462,11 +6469,8 @@ public class StatisticsContinousDistribution {
         IExpr t = dist.arg1();
         // ConditionalExpression(Piecewise({{(Sqrt(Pi)*InverseErf(#))/t, 0 < # < 1},
         // {0, # <= 0}}, Infinity), 0 <= # <= 1) &
-        return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(
-            F.list(F.Divide(F.Times(F.Sqrt(F.Pi), F.InverseErf(F.Slot1)), t),
-                F.Less(F.C0, F.Slot1, F.C1)),
-            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))), F.oo),
-            F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+        return callFunction(
+            quantileFunction(F.Divide(F.Times(F.Sqrt(F.Pi), F.InverseErf(F.Slot1)), t), F.C0), k);
       }
       return F.NIL;
     }
