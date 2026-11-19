@@ -543,6 +543,87 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFisherZDistribution() {
+    check("PDF(FisherZDistribution(n, m), x)", //
+        "(2*E^(n*x)*m^(m/2)*n^(n/2)*(m+E^(2*x)*n)^(1/2*(-m-n)))/Beta(n/2,m/2)");
+    check("CDF(FisherZDistribution(n, m), x)", //
+        "BetaRegularized((E^(2*x)*n)/(m+E^(2*x)*n),n/2,m/2)");
+    check("SurvivalFunction(FisherZDistribution(n, m), x)", //
+        "BetaRegularized(m/(m+E^(2*x)*n),m/2,n/2)");
+    check("Quantile(FisherZDistribution(n, m), q)", //
+        "ConditionalExpression(Piecewise({{Log((m*(-1+1/InverseBetaRegularized(1,-q,m/2,n/\n"
+            + "2)))/n)/2,0<q<1},{-Infinity,q<=0}},Infinity),0<=q<=1)");
+    check("Mean(FisherZDistribution(n, m))", //
+        "1/2*(Log(m/n)-PolyGamma(0,m/2)+PolyGamma(0,n/2))");
+    check("Median(FisherZDistribution(n, m))", //
+        "Log((m*(-1+1/InverseBetaRegularized(1,-1/2,m/2,n/2)))/n)/2");
+    check("Variance(FisherZDistribution(n, m))", //
+        "1/4*(PolyGamma(1,m/2)+PolyGamma(1,n/2))");
+    check("Skewness(FisherZDistribution(n, m))", //
+        "(-PolyGamma(2,m/2)+PolyGamma(2,n/2))/(PolyGamma(1,m/2)+PolyGamma(1,n/2))^(3/2)");
+    check("Kurtosis(FisherZDistribution(n, m))", //
+        "3+(PolyGamma(3,m/2)+PolyGamma(3,n/2))/(PolyGamma(1,m/2)+PolyGamma(1,n/2))^2");
+    check("CentralMoment(FisherZDistribution(n, m), 3)", //
+        "1/8*(-PolyGamma(2,m/2)+PolyGamma(2,n/2))");
+    check("MomentGeneratingFunction(FisherZDistribution(n, m), t)", //
+        "((m/n)^(t/2)*Gamma(1/2*(m-t))*Gamma(1/2*(n+t)))/(Gamma(m/2)*Gamma(n/2))");
+    check("CharacteristicFunction(FisherZDistribution(4, 2), t)", //
+        "(Gamma(1/2*(2-I*t))*Gamma(1/2*(4+I*t)))/2^(I*1/2*t)");
+    check("{Mean(FisherZDistribution(n, n)), Skewness(FisherZDistribution(n, n))}", //
+        "{0,0}");
+    check("Mean(FisherZDistribution(4, 2))", //
+        "1/2*(1-Log(2))");
+    check("Variance(FisherZDistribution(4, 2))", //
+        "1/4*(-1+Pi^2/3)");
+    check("CDF(FisherZDistribution(4, 2), x)", //
+        "(16*E^(4*x))/(2+4*E^(2*x))^2");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(FisherZDistribution(4, 2), x), {x, -Infinity, Infinity})", //
+        "1.0");
+    check("NIntegrate((x-Mean(FisherZDistribution(4, 2)))^3*PDF(FisherZDistribution(4, 2), x), "
+        + "{x, -Infinity, Infinity})", //
+        "0.25");
+    check("N({CentralMoment(FisherZDistribution(4, 2), 3), " //
+        + "Kurtosis(FisherZDistribution(4, 2))})", //
+        "{0.25,4.33268}");
+
+    check("PDF(FisherZDistribution(3, 5), {-1.0, 0.0, 0.3})", //
+        "{0.172472,0.722349,0.606443}");
+    check("CDF(FisherZDistribution(3, 5), {-1.0, 0.0, 0.3})", //
+        "{0.0652221,0.535145,0.739932}");
+    check("N(CDF(FisherZDistribution(3, 5), 3/10))", //
+        "0.739932");
+    check("N(CDF(FisherZDistribution(4, 2), 1/2), 30)", //
+        "0.71341266942642611597008092327");
+    // no overflow of E^(2*x) and no cancellation in the upper tail
+    check("{PDF(FisherZDistribution(4, 2), 400.0), CDF(FisherZDistribution(4, 2), 400.0)}", //
+        "{0.0,1.0}");
+    check("SurvivalFunction(FisherZDistribution(4, 2), 20.0)", //
+        "4.24835*10^-18");
+    check("N(SurvivalFunction(FisherZDistribution(4, 2), 20), 20)", //
+        "0.0000000000000000042483542552915889818");
+    check("Quantile(FisherZDistribution(4, 2), {0, 0.25, 0.5, 0.75, 1})", //
+        "{-Infinity,-0.346574,0.0941132,0.586558,Infinity}");
+    check("CDF(FisherZDistribution(4, 2), Quantile(FisherZDistribution(4, 2), 0.3))", //
+        "0.3");
+
+    check("Length(RandomVariate(FisherZDistribution(4, 2), 10))", //
+        "10");
+    check("Abs(Mean(RandomVariate(FisherZDistribution(4, 2), 10^4)) - 0.153426) < 0.05", //
+        "True");
+
+    check("DistributionParameterAssumptions(FisherZDistribution(n, m))", //
+        "n>0&&m>0");
+    // message: FisherZDistribution: Parameter -1 at position 1 in FisherZDistribution(-1,2) is
+    // expected to be positive.
+    check("PDF(FisherZDistribution(-1, 2), x)", //
+        "PDF(FisherZDistribution(-1,2),x)");
+    check("RandomVariate(FisherZDistribution(2, 0))", //
+        "RandomVariate(FisherZDistribution(2,0))");
+  }
+
+  @Test
   public void testFrechetDistribution() {
     check("Mean(FrechetDistribution(n, m))", //
         "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
