@@ -784,6 +784,7 @@ public class Errors {
       "vloc",
       "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
       "vecmat1", "Argument `1` is neither a nonempty vector nor a nonempty matrix.", //
+      "vedim", "The number of variables `1` should match the region embedding dimension `2`.", //
       "vector", "Argument `1` at position `2` is not a non-empty vector.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
@@ -791,6 +792,8 @@ public class Errors {
       "The weights given on the left-hand side of `1` should be a list of positive numerical quantities having the same length as the list given on the right-hand side.", //
       "wghtvl",
       "The weights given on the left-hand side of `1` should have the same length as the data given on the right-hand side.", //
+      "wprec",
+      "The value of the option WorkingPrecision -> `1` is not a positive machine-sized real or integer.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
       "spsym", "Special symbol `1` cannot be cleared.", //

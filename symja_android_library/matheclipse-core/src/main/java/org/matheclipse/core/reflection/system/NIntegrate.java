@@ -993,8 +993,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * <p>
    * The Lebedev rules on the sphere integrate a smooth integrand in machine precision; a
    * <code>WorkingPrecision</code> above it gives message <code>precgt</code>. An integrand with a
-   * value which isn't finite at a node, and a sphere on which the rules don't converge, take the
-   * iterated integral in spherical coordinates instead.
+   * value which isn't finite at a node, and a sphere or ball on which the rules don't converge,
+   * take the iterated integral in spherical coordinates instead.
    */
   private static IExpr sphericalRegionIntegral(IAST ast, IExpr function, IAST spec, double epsrel,
       double epsabs, IExpr workingPrecision, IAST originalAST, EvalEngine engine) {
@@ -1004,7 +1004,12 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     IExpr exactCenter = region.argSize() >= 1 ? region.arg1() : F.List(F.C0, F.C0, F.C0);
     IExpr exactRadius = region.argSize() == 2 ? region.arg2() : F.C1;
     IExpr c = engine.evalN(exactCenter);
-    if (!c.isList() || c.argSize() != 3) {
+    if (c.isList() && c.argSize() != 3) {
+      // The number of variables `1` should match the region embedding dimension `2`.
+      return Errors.printMessage(ast.topHead(), "vedim", F.List(F.C3, F.ZZ(c.argSize())),
+          engine);
+    }
+    if (!c.isList()) {
       // Invalid integration variable or limit(s) in `1`.
       return Errors.printMessage(ast.topHead(), "ilim", F.List(spec), engine);
     }
@@ -1021,8 +1026,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     if (workingPrecision != S.MachinePrecision && !workingPrecision.isAutomatic()) {
       double digits = workingPrecision.evalfNaN();
       if (!Double.isFinite(digits) || digits <= 0.0) {
-        // Requested precision `1` is not a machine-sized real number.
-        return Errors.printMessage(ast.topHead(), "precbd", F.List(workingPrecision), engine);
+        // The value of the option WorkingPrecision -> `1` is not a positive machine-sized real or
+        // integer.
+        return Errors.printMessage(ast.topHead(), "wprec", F.List(workingPrecision), engine);
       }
       if (digits > ParserConfig.MACHINE_PRECISION) {
         // the rules only exist in machine precision, and the iterated integral in a higher
@@ -1057,14 +1063,12 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     if (result.converged) {
       return machineNumber(result.value);
     }
-    if (!result.isFinite() || sphere) {
-      // a singular point at a node, or an integrand which isn't smooth enough for the rules:
-      // the adaptive rules of the iterated integral
-      IExpr iterated = iteratedSphericalIntegral(integrand, variables, sphere, exactCenter,
-          exactRadius, originalAST, engine);
-      if (iterated.isNumber()) {
-        return iterated;
-      }
+    // a singular point at a node, or an integrand which isn't smooth enough for the rules: the
+    // adaptive rules of the iterated integral
+    IExpr iterated = iteratedSphericalIntegral(integrand, variables, sphere, exactCenter,
+        exactRadius, originalAST, engine);
+    if (iterated.isNumber()) {
+      return iterated;
     }
     if (!result.isFinite()) {
       // The integrand `1` has evaluated to non-numerical values for all sampling points in the
@@ -1247,8 +1251,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     if (option[5] != S.MachinePrecision && !option[5].isAutomatic()) {
       double digits = option[5].evalfNaN();
       if (!Double.isFinite(digits) || digits <= 0.0) {
-        // Requested precision `1` is not a machine-sized real number.
-        return Errors.printMessage(ast.topHead(), "precbd", F.List(option[5]), engine);
+        // The value of the option WorkingPrecision -> `1` is not a positive machine-sized real or
+        // integer.
+        return Errors.printMessage(ast.topHead(), "wprec", F.List(option[5]), engine);
       }
       workingPrecision = (int) Math.ceil(digits);
     }

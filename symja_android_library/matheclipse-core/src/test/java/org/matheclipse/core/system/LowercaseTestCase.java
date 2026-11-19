@@ -22472,7 +22472,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Abs(NIntegrate(10^-90*Exp(-2*y), {y, 0, Infinity}, WorkingPrecision -> 20) "
         + "- 10^-90/2) < 10^-108", //
         "True");
-    // NIntegrate: Requested precision v is not a machine-sized real number.
+    // NIntegrate: The value of the option WorkingPrecision -> v is not a positive machine-sized
+    // real or integer.
     check("NIntegrate(Exp(-y^2), {y, 0, 1}, WorkingPrecision -> v)", //
         "NIntegrate(E^(-y^2),{y,0,1},WorkingPrecision->v)");
   }

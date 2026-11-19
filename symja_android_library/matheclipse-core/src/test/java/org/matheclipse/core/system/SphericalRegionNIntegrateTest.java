@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -39,14 +40,18 @@ public class SphericalRegionNIntegrateTest extends ExprEvaluatorTestCase {
     // the moment of inertia of the unit ball
     check("Abs(NIntegrate(x^2 + y^2 + z^2, Element({x, y, z}, Ball())) - 4*Pi/5) < 10^-12", //
         "True");
-    // the kink of Abs(x - 3/10) keeps the rules from converging: within their evaluation budget
-    // they come close (NIntegrate: Numerical integration converging too slowly ...)
-    check("Abs(NIntegrate(Abs(x - 3/10), Element({x, y, z}, Ball())) "
-        + "- N(Integrate(Pi*Abs(x - 3/10)*(1 - x^2), {x, -1, 1}))) < 10^-2", //
-        "True");
     // a radial Gaussian: 4*Pi*Integrate(r^2*Exp(-r^2), {r, 0, 3/2})
     check("Abs(NIntegrate(Exp(-x^2 - y^2 - z^2), Element({x, y, z}, Ball({0, 0, 0}, 3/2)))"
         + " - N(4*Pi*Integrate(r^2*Exp(-r^2), {r, 0, 3/2}))) < 10^-10", //
+        "True");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testBallKink() {
+    // the kink of Abs(x - 3/10) keeps the rules from converging, the iterated integral in
+    // spherical coordinates takes over: 11773*Pi/20000
+    check("Abs(NIntegrate(Abs(x - 3/10), Element({x, y, z}, Ball())) - 11773*Pi/20000) < 10^-6", //
         "True");
   }
 
@@ -85,14 +90,15 @@ public class SphericalRegionNIntegrateTest extends ExprEvaluatorTestCase {
     check("Abs(NIntegrate(x^2, Element({x, y, z}, Sphere()), WorkingPrecision -> 30) - 4*Pi/3)"
         + " < 10^-12", //
         "True");
-    // NIntegrate: Requested precision -3 is not a machine-sized real number.
+    // NIntegrate: The value of the option WorkingPrecision -> -3 is not a positive machine-sized
+    // real or integer.
     check("NIntegrate(x^2, Element({x, y, z}, Sphere()), WorkingPrecision -> -3)", //
         "NIntegrate(x^2,{x,y,z}∈Sphere(),WorkingPrecision->-3)");
   }
 
   @Test
   public void testInvalidRegions() {
-    // NIntegrate: Invalid integration variable or limit(s) in {x,y,z}∈Sphere({0,0},1).
+    // NIntegrate: The number of variables 3 should match the region embedding dimension 2.
     check("NIntegrate(1, Element({x, y, z}, Sphere({0, 0}, 1)))", //
         "NIntegrate(1,{x,y,z}∈Sphere({0,0},1))");
     check("NIntegrate(1, Element({x, y, z}, Ball({0, 0, 0}, -1)))", //
