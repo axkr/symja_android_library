@@ -6288,12 +6288,14 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
     public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
       }
       return F.NIL;
     }
+    // CPD-ON
 
     @Override
     public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
