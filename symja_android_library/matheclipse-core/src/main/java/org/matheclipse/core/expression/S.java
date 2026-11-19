@@ -11534,6 +11534,16 @@ public class S {
   public final static IBuiltInSymbol GeoGraphics = S.initFinalSymbol("GeoGraphics", ID.GeoGraphics);
 
   /**
+   * GeogravityModelData(x) - TODO describe `GeogravityModelData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeogravityModelData.md">GeogravityModelData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeogravityModelData =
+      S.initFinalSymbol("GeogravityModelData", ID.GeogravityModelData);
+
+  /**
    * GeoGridLines(x) - TODO describe `GeoGridLines`.
    * 
    * @see <a href=
@@ -11542,6 +11552,16 @@ public class S {
    */
   public final static IBuiltInSymbol GeoGridLines =
       S.initFinalSymbol("GeoGridLines", ID.GeoGridLines);
+
+  /**
+   * GeomagneticModelData(x) - TODO describe `GeomagneticModelData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeomagneticModelData.md">GeomagneticModelData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeomagneticModelData =
+      S.initFinalSymbol("GeomagneticModelData", ID.GeomagneticModelData);
 
   /**
    * GeometricDistribution(p) - returns a geometric distribution.
@@ -24507,6 +24527,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SASTriangle = S.initFinalSymbol("SASTriangle", ID.SASTriangle);
+
+  /**
+   * SatelliteData(x) - TODO describe `SatelliteData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SatelliteData.md">SatelliteData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SatelliteData =
+      S.initFinalSymbol("SatelliteData", ID.SatelliteData);
 
   /**
    * SatisfiabilityCount(boolean-expr) - test whether the `boolean-expr` is satisfiable by a
