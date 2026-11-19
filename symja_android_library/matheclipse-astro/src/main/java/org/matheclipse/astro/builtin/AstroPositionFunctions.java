@@ -258,7 +258,7 @@ public class AstroPositionFunctions {
       if (!AstroDataContext.checkAvailable(S.AstroPosition, engine)) {
         return F.NIL;
       }
-      AstroBodies.Target target = AstroBodies.target(ast.arg1());
+      AstroBodies.Target target = AstroBodies.targetOrSatellite(ast.arg1());
       if (target == null) {
         return Errors.printMessage(S.AstroPosition, "astrobody", F.List(ast.arg1(), ast), engine);
       }
@@ -379,7 +379,7 @@ public class AstroPositionFunctions {
       if (!AstroDataContext.checkAvailable(S.AstroDistance, engine)) {
         return F.NIL;
       }
-      AstroBodies.Target astroTarget = AstroBodies.target(ast.arg1());
+      AstroBodies.Target astroTarget = AstroBodies.targetOrSatellite(ast.arg1());
       if (astroTarget == null) {
         return Errors.printMessage(S.AstroDistance, "astrobody", F.List(ast.arg1(), ast), engine);
       }
@@ -390,7 +390,6 @@ public class AstroPositionFunctions {
                 F.stringx("the HYG database, which is not bundled")),
             engine);
       }
-      String targetName = astroTarget.name;
       GeodeticPoint point = null;
       String observerName = null;
       AbsoluteDate date = null;
@@ -418,7 +417,7 @@ public class AstroPositionFunctions {
       }
       try {
         Frame frame = FramesFactory.getGCRF();
-        Vector3D target = AstroBodies.provider(targetName).getPosition(date, frame);
+        Vector3D target = astroTarget.provider.getPosition(date, frame);
         Vector3D observer;
         if (observerName != null) {
           observer = AstroBodies.provider(observerName).getPosition(date, frame);
@@ -459,8 +458,8 @@ public class AstroPositionFunctions {
       if (!AstroDataContext.checkAvailable(S.AstroAngularSeparation, engine)) {
         return F.NIL;
       }
-      AstroBodies.Target firstTarget = AstroBodies.target(ast.arg1());
-      AstroBodies.Target secondTarget = AstroBodies.target(ast.arg2());
+      AstroBodies.Target firstTarget = AstroBodies.targetOrSatellite(ast.arg1());
+      AstroBodies.Target secondTarget = AstroBodies.targetOrSatellite(ast.arg2());
       if (firstTarget == null) {
         return Errors.printMessage(S.AstroAngularSeparation, "astrobody", F.List(ast.arg1(), ast),
             engine);
@@ -518,7 +517,7 @@ public class AstroPositionFunctions {
       if (!AstroDataContext.checkAvailable(S.AstroSubpoint, engine)) {
         return F.NIL;
       }
-      AstroBodies.Target subTarget = AstroBodies.target(ast.arg1());
+      AstroBodies.Target subTarget = AstroBodies.targetOrSatellite(ast.arg1());
       if (subTarget == null) {
         return Errors.printMessage(S.AstroSubpoint, "astrobody", F.List(ast.arg1(), ast), engine);
       }

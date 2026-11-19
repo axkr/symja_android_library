@@ -24868,7 +24868,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "298.2572");
     check("GeodesyData(\"WGS84\", \"Eccentricity\")", //
         "0.0818192");
-    // ITRF00 is an alias of the IERS 2010 ellipsoid
+    // ITRF00 coordinates are on the GRS80 ellipsoid
     check("GeodesyData(\"ITRF00\", \"SemimajorAxis\")", //
         "Quantity(6.37814*10^6,\"Meters\")");
     // one argument lists the available properties

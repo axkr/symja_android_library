@@ -173,11 +173,32 @@ public class AstroBodies {
   }
 
   /**
+   * Like {@link #target(IExpr)}, but also accepts an Earth satellite given by its two-line element
+   * set (see {@link SatelliteTle}). Only for functions which evaluate a single instant.
+   *
+   * @return the target, or <code>null</code> if {@code expr} names nothing
+   */
+  public static Target targetOrSatellite(IExpr expr) {
+    if (SatelliteTle.isCandidate(expr)) {
+      // an Earth satellite given by its two-line elements; malformed lines name nothing
+      try {
+        SatelliteTle satellite = SatelliteTle.of(expr);
+        return new Target(satellite.name, satellite.propagator(), 0.0, false);
+      } catch (RuntimeException rex) {
+        return null;
+      }
+    }
+    return target(expr);
+  }
+
+  /**
    * Resolve a solar system body or a catalogued star.
    *
    * <p>
    * Solar system names win over catalogue names, so a star which happens to share a planet's name
-   * cannot shadow the planet.
+   * cannot shadow the planet. Satellites are left out on purpose: the
+   * rise, set and event searches step at rates made for bodies which take hours to cross the sky,
+   * and would step over a satellite pass of a few minutes.
    *
    * @return the target, or <code>null</code> if {@code expr} names neither
    */

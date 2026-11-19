@@ -61,7 +61,8 @@ public class AstroDataContext {
   /**
    * The subset of the official <code>orekit-data</code> bundle which is shipped in this module's
    * resources, used when no external data set is configured. Only the files which positional
-   * astronomy needs are included; the gravity field, ocean tide, space weather and solar activity
+   * astronomy and the geophysics functions need are included, plus the WMM and IGRF magnetic
+   * models; the ocean tide, space weather and solar activity
    * files of the bundle are for orbit propagation and are left out.
    *
    * <p>
@@ -79,7 +80,13 @@ public class AstroDataContext {
       // built with IERSConventions.IERS_2010.
       DEFAULT_DIRECTORY_NAME + "/Earth-Orientation-Parameters/IAU-2000/finals2000A.all", //
       // JPL DE 440 planetary and lunar ephemerides, 1990 to 2149
-      DEFAULT_DIRECTORY_NAME + "/DE-440-ephemerides/lnxp1990.440" //
+      DEFAULT_DIRECTORY_NAME + "/DE-440-ephemerides/lnxp1990.440", //
+      // NOAA/BGS World Magnetic Model WMM-2025, valid 2025.0 to 2030.0 (GeomagneticModelData)
+      DEFAULT_DIRECTORY_NAME + "/Magnetic-Field-Models/WMM.COF", //
+      // IAGA IGRF-14, 1900 to 2030, converted to Orekit's combined COF format
+      DEFAULT_DIRECTORY_NAME + "/Magnetic-Field-Models/IGRF.COF", //
+      // GFZ-GRGS EIGEN-6S gravity field, degree and order 240, tide free (GeogravityModelData)
+      DEFAULT_DIRECTORY_NAME + "/Potential/eigen-6s.gfc" //
   };
 
   private static final Object LOCK = new Object();

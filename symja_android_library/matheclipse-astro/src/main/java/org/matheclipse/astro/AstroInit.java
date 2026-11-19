@@ -4,6 +4,8 @@ import org.matheclipse.astro.builtin.AstroEclipseFunctions;
 import org.matheclipse.astro.builtin.AstroEventFunctions;
 import org.matheclipse.astro.builtin.AstroFindEventFunctions;
 import org.matheclipse.astro.builtin.AstroGeoFunctions;
+import org.matheclipse.astro.builtin.AstroGeophysicsFunctions;
+import org.matheclipse.astro.builtin.SatelliteFunctions;
 import org.matheclipse.astro.builtin.AstroGraphicsFunctions;
 import org.matheclipse.astro.builtin.AstroOrbitFunctions;
 import org.matheclipse.astro.builtin.AstroPositionFunctions;
@@ -42,6 +44,8 @@ public class AstroInit {
     AstroGraphicsFunctions.initialize();
     StarDataFunctions.initialize();
     GeoGraphicsFunctions.initialize();
+    AstroGeophysicsFunctions.initialize();
+    SatelliteFunctions.initialize();
   }
 
   private AstroInit() {}

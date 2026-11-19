@@ -122,6 +122,7 @@ public class Errors {
       "astrorefalt",
       "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
       "astrotimesys", "`1` is not a supported time system in `2`.", //
+      "astrotle", "`1` is not a valid two-line element set: `2`", //
       "astrotimetype", "`1` is not a supported sidereal time type in `2`.", //
       "astrotimezone", "`1` in `2` is not a time zone offset or an IANA time zone name.", //
       "attnf", "`1` is not a known attribute.", //
@@ -208,6 +209,7 @@ public class Errors {
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
       "date", "Expression `1` cannot be interpreted as a date specification.", //
+      "datum", "No direct transformation between datums `1` and `2` is available.", //
       "delaysm",
       "The system contains time delays. An exact simulation is not possible; try simulating over a time span.", //
       "depth",
@@ -308,6 +310,7 @@ public class Errors {
       "invprp",
       "The argument `1` is not a valid property. Specify \"Properties\" to obtain a list of valid properties.", //
       "hshtype", "`1` is not a known type of hash.", //
+      "invdtm", "Unknown geodetic datum `1`.", //
       "invhash", "`1` is not a valid Hash specification.", //
       "ibase", "Base `1` is not an integer greater than `2`.", //
       "idim", "`1` and `2` must have the same length.", //
@@ -445,6 +448,8 @@ public class Errors {
       "mkinv",
       "Expecting either an image or graphics with dimensions `1` or a list of positions to specify markers instead of `2`.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
+      "model", "Improper model specification.", //
+      "modelrng", "Calculations for `1` are only valid between the years `2` and `3`.", //
       "modp", "The value of the option `1` should be a prime number or zero.", //
       "mptd", "Object `1` at position {2,`2`} in `3` has only `4` of required `5` dimensions.", //
       "mseqs",
