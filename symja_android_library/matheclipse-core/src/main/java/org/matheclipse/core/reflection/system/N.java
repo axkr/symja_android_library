@@ -104,7 +104,18 @@ public final class N extends AbstractCoreFunctionEvaluator {
         return numerical;
       }
     }
-    return result;
+    return underflowAsZero(result, engine);
+  }
+
+  /**
+   * The value of <code>Underflow()</code> is <code>0.0</code>: a numeric evaluation inside another
+   * one, of a power with numeric arguments, keeps the object, only <code>N</code> replaces it.
+   */
+  private static IExpr underflowAsZero(IExpr result, EvalEngine engine) {
+    if (result.isNIL() || result.isFree(x -> x.isUnderflow(), true)) {
+      return result;
+    }
+    return engine.evaluate(result.replaceAll(x -> x.isUnderflow() ? F.CD0 : F.NIL));
   }
 
   /** Test if <code>x</code> is a head of a sum, product or integral. */
@@ -564,10 +575,45 @@ public final class N extends AbstractCoreFunctionEvaluator {
     // the numbers of a higher precision of their own are lowered to the precision asked for
     final long oldRequested = engine.setRequestedPrecision(nDigitPrecision);
     try {
-      return evalN2Requested(expr, nDigitPrecision, engine);
+      return convertedZeros(evalN2Requested(expr, nDigitPrecision, engine));
     } finally {
       engine.setRequestedPrecision(oldRequested);
     }
+  }
+
+  /**
+   * The zeros of a result which have neither a precision nor an accuracy are the zeros they were
+   * converted from: an arbitrary precision calculation takes the exact zero and the machine zero
+   * as an arbitrary precision zero, which has no precision of its own. The machine zero stays
+   * <code>0.0</code>, the exact zero stays <code>0</code>.
+   */
+  private static IExpr convertedZeros(IExpr result) {
+    if (result.isNumber()) {
+      return convertedZero(result).orElse(result);
+    }
+    if (result.isAST()) {
+      return result.replaceAll(x -> x.isNumber() ? convertedZero(x) : F.NIL).orElse(result);
+    }
+    return result;
+  }
+
+  /**
+   * The machine or exact zero of an arbitrary precision zero without precision, else NIL. A complex
+   * zero comes from a machine complex number: the exact complex zero is the integer zero.
+   */
+  private static IExpr convertedZero(IExpr x) {
+    if (x instanceof ApfloatNum) {
+      final ApfloatNum real = (ApfloatNum) x;
+      if (real.isZero() && Double.isInfinite(real.precision10())) {
+        return real.isMachineValue() ? F.CD0 : F.C0;
+      }
+    } else if (x instanceof ApcomplexNum) {
+      final ApcomplexNum complex = (ApcomplexNum) x;
+      if (complex.isZero() && Double.isInfinite(complex.precision10())) {
+        return F.CD0;
+      }
+    }
+    return F.NIL;
   }
 
   private static IExpr evalN2Requested(IExpr expr, final long nDigitPrecision,

@@ -192,7 +192,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0032() {
     check( //
         "Integrate[f^(a + b*x^2)*x^11, x]", //
-        "-(f^a*Gamma[6, -(b*x^2*Log[f])])/(2*b^6*Log[f]^6)", //
+        "(f^(a+b*x^2)*(-120+120*b*x^2*Log[f]-60*b^2*x^4*Log[f]^2+20*b^3*x^6*Log[f]^3-5*b^4*x^8*Log[f]^4+b^5*x^10*Log[f]^5))/(2*b^6*Log[f]^6)", //
         2218);
   }
 
@@ -300,7 +300,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0044() {
     check( //
         "Integrate[f^(a + b*x^3)*x^17, x]", //
-        "-(f^a*Gamma[6, -(b*x^3*Log[f])])/(3*b^6*Log[f]^6)", //
+        "(f^(a+b*x^3)*(-120+120*b*x^3*Log[f]-60*b^2*x^6*Log[f]^2+20*b^3*x^9*Log[f]^3-5*b^4*x^12*Log[f]^4+b^5*x^15*Log[f]^5))/(3*b^6*Log[f]^6)", //
         2218);
   }
 
@@ -309,7 +309,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0045() {
     check( //
         "Integrate[f^(a + b*x^3)*x^14, x]", //
-        "(f^a*Gamma[5, -(b*x^3*Log[f])])/(3*b^5*Log[f]^5)", //
+        "(f^(a+b*x^3)*(24-24*b*x^3*Log[f]+12*b^2*x^6*Log[f]^2-4*b^3*x^9*Log[f]^3+b^4*x^12*Log[f]^4))/(3*b^5*Log[f]^5)", //
         2218);
   }
 
@@ -858,7 +858,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0107() {
     check( //
         "Integrate[F^(a + b*(c + d*x)^2)*(c + d*x)^11, x]", //
-        "-(F^a*Gamma[6, -(b*(c + d*x)^2*Log[F])])/(2*b^6*d*Log[F]^6)", //
+        "(E^(b*(c+d*x)^2*Log[F])*F^a*(-120+120*b*(c+d*x)^2*Log[F]-60*b^2*(c+d*x)^4*Log[F]^2+20*b^3*(c+d*x)^6*Log[F]^3-5*b^4*(c+d*x)^8*Log[F]^4+b^5*(c+d*x)^10*Log[F]^5))/(2*b^6*d*Log[F]^6)", //
         2218);
   }
 
@@ -867,7 +867,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0108() {
     check( //
         "Integrate[F^(a + b*(c + d*x)^2)*(c + d*x)^9, x]", //
-        "(F^a*Gamma[5, -(b*(c + d*x)^2*Log[F])])/(2*b^5*d*Log[F]^5)", //
+        "(E^(b*(c+d*x)^2*Log[F])*F^a*(24-24*b*(c+d*x)^2*Log[F]+12*b^2*(c+d*x)^4*Log[F]^2-4*b^3*(c+d*x)^6*Log[F]^3+b^4*(c+d*x)^8*Log[F]^4))/(2*b^5*d*Log[F]^5)", //
         2218);
   }
 
@@ -966,7 +966,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0119() {
     check( //
         "Integrate[F^(a + b*(c + d*x)^3)*(c + d*x)^17, x]", //
-        "-(F^a*Gamma[6, -(b*(c + d*x)^3*Log[F])])/(3*b^6*d*Log[F]^6)", //
+        "(E^(b*(c+d*x)^3*Log[F])*F^a*(-120+120*b*(c+d*x)^3*Log[F]-60*b^2*(c+d*x)^6*Log[F]^2+20*b^3*(c+d*x)^9*Log[F]^3-5*b^4*(c+d*x)^12*Log[F]^4+b^5*(c+d*x)^15*Log[F]^5))/(3*b^6*d*Log[F]^6)", //
         2218);
   }
 
@@ -975,7 +975,7 @@ public class Exponentials extends AbstractRubiTestCase {
   public void test0120() {
     check( //
         "Integrate[F^(a + b*(c + d*x)^3)*(c + d*x)^14, x]", //
-        "(F^a*Gamma[5, -(b*(c + d*x)^3*Log[F])])/(3*b^5*d*Log[F]^5)", //
+        "(E^(b*(c+d*x)^3*Log[F])*F^a*(24-24*b*(c+d*x)^3*Log[F]+12*b^2*(c+d*x)^6*Log[F]^2-4*b^3*(c+d*x)^9*Log[F]^3+b^4*(c+d*x)^12*Log[F]^4))/(3*b^5*d*Log[F]^5)", //
         2218);
   }
 

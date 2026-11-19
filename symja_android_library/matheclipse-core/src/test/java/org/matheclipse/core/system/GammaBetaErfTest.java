@@ -1733,7 +1733,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0.876084792554381797223706695849");
     // TODO
     check("N(PolyGamma(-I*1.0,0),30)", //
-        "PolyGamma(I*(-1),0)");
+        "PolyGamma(I*(-1),0.0)");
     // TODO calculate for complex n:
     checkNumeric("PolyGamma(6+I,2.5+3*I)", //
         "PolyGamma(6.0+I*1.0,2.5+I*3.0)");

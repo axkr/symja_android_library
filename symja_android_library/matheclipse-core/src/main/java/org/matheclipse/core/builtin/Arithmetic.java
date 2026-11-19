@@ -5173,8 +5173,9 @@ public final class Arithmetic {
       IInteger exp = exponent.numerator();
       if (isBeyondAnyBitLength(
           Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()), exp)) {
-        // a proper fraction to a positive power is tiny, its reciprocal huge
-        return outOfRange(base.abs().isGT(F.C1) == exp.isPositive());
+        // the powers of numerator and denominator are taken one by one: the larger one overflows,
+        // and only a numerator 1 or -1 to a positive power leaves a tiny quotient
+        return exactPowerOutOfRange(exp.isNegative() || !base.numerator().abs().isOne());
       }
       // the squarings of a huge power can't be interrupted: refuse it before they start
       BigIntegerLimitExceeded.checkPower(
@@ -5202,7 +5203,7 @@ public final class Arithmetic {
         return F.NIL;
       }
       if (isBeyondAnyBitLength(base.bitLength(), exponent)) {
-        return outOfRange(exponent.isPositive());
+        return exactPowerOutOfRange(exponent.isPositive());
       }
       // may throw ArithmeticException
       long n = exponent.toLong();
@@ -5217,6 +5218,19 @@ public final class Arithmetic {
     private static boolean isBeyondAnyBitLength(long bits, IInteger n) {
       return bits > 1L && n.toBigNumerator().abs().multiply(java.math.BigInteger.valueOf(bits - 1L))
           .bitLength() >= Long.SIZE - 1;
+    }
+
+    /**
+     * An exact power whose bit length is beyond any number: the power of the base overflows
+     * (<code>General::ovfl</code>), and its reciprocal is <code>Underflow()</code>.
+     *
+     * @param huge <code>true</code> for <code>Overflow()</code>, <code>false</code> for the
+     *        reciprocal of an overflow
+     */
+    private static IExpr exactPowerOutOfRange(boolean huge) {
+      // Overflow occurred in computation.
+      Errors.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+      return huge ? F.Overflow() : F.Underflow();
     }
 
     /**
@@ -8908,9 +8922,8 @@ public final class Arithmetic {
 
     @Override
     public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (engine.isNumericMode()) {
-        return F.CD0;
-      }
+      // a power with numeric arguments is evaluated numerically and may return this object:
+      // N replaces it by 0.0, products and sums with inexact numbers absorb it
       return F.NIL;
     }
 

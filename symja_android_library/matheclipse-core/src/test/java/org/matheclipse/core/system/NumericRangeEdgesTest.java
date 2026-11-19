@@ -11,8 +11,16 @@ public class NumericRangeEdgesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowersBeyondAnyMagnitude() {
-    check("{(3/5)^(-2^64),(5/3)^(-2^64),7^(2^63)}", //
-        "{Overflow(),Underflow(),Overflow()}");
+    // the powers of numerator and denominator overflow one by one; a numerator 1 or a negative
+    // power of an integer is the reciprocal of an overflow
+    check("{(3/5)^(-2^64),(5/3)^(-2^64),(3/5)^(2^64),7^(2^63)}", //
+        "{Overflow(),Overflow(),Overflow(),Overflow()}");
+    check("{(1/7)^(2^63),(-1/7)^(2^63),3^(-2^64)}", //
+        "{Underflow(),Underflow(),Underflow()}");
+    check("0.5^(1.0*10^400)", //
+        "Underflow()");
+    check("{N(Underflow()),N(x+Underflow())}", //
+        "{0.0,x}");
     check("0.25^(10^500)", //
         "Overflow()");
     // a base next to 1 makes an ordinary number of a huge exponent
