@@ -361,7 +361,7 @@ public final class PlusOp {
           if (arg.isDirectedInfinity()) {
             return S.Indeterminate;
           }
-          if (arg.isRealResult() || isFiniteConstant(arg)) {
+          if (arg.isRealResult() || isFiniteConstant(arg) || arg.isOutOfRange()) {
             evaled = true;
             return F.NIL;
           }
@@ -376,7 +376,7 @@ public final class PlusOp {
                 EvalEngine.get());
             return S.Indeterminate;
           }
-          if (arg.isRealResult() || isFiniteConstant(arg)) {
+          if (arg.isRealResult() || isFiniteConstant(arg) || arg.isOutOfRange()) {
             evaled = true;
             return F.NIL;
           }
@@ -645,8 +645,10 @@ public final class PlusOp {
                   }
                   numberValue = arg;
                   return F.NIL;
-                } else if (numberValue.isOverflow() || numberValue.isInexactNumber()) {
-                  // an inexact term absorbs a magnitude below its last digit
+                } else if (numberValue.isOverflow() || numberValue.isUnderflow()
+                    || numberValue.isInexactNumber()) {
+                  // an inexact term absorbs a magnitude below its last digit; a sum of two
+                  // magnitudes below the range is below it as well
                   evaled = true;
                   return F.NIL;
                 } else if (EvalEngine.get().isNumericMode()) {

@@ -244,6 +244,10 @@ public final class Arithmetic {
       if (arg1.isNumber()) {
         return ((INumber) arg1).abs();
       }
+      if (arg1.isOverflow() || arg1.isUnderflow()) {
+        // a magnitude beyond the range of numbers carries no sign
+        return arg1;
+      }
       if (arg1.isQuantity()) {
         // the magnitude, keeping the unit, as Re, Im, Floor, Ceiling and Round already do. For an
         // affine unit that is the magnitude as written, not its absolute temperature.
@@ -765,6 +769,10 @@ public final class Arithmetic {
   private static class Chop extends AbstractFunctionEvaluator {
 
     private static @AllowNIL IExpr chopNumber(final IExpr x, final double tolerance) {
+      if (x.isUnderflow()) {
+        // a magnitude below the range of numbers is below every tolerance
+        return F.C0;
+      }
       return x.isNumber() ? F.chopNumber((INumber) x, tolerance) : F.NIL;
     }
 
@@ -4918,10 +4926,18 @@ public final class Arithmetic {
             && !(base.isPower() && base.base() == S.E) && base.isPositiveResult()) {
           return S.Indeterminate;
         }
+        if (isPositiveRationalBase(base)) {
+          // a huge positive exponent: above the range for a base above 1, below it otherwise
+          return ((IRational) base).isGT(F.C1) ? F.Overflow() : F.Underflow();
+        }
       } else if (exponent.isUnderflow()) {
         // an exponent too small to represent acts as 0. for an approximate positive base
         if (base.isInexactNumber() && base.isPositiveResult()) {
           return F.CD1;
+        }
+        if (isPositiveRationalBase(base)) {
+          // the power differs from 1 by a magnitude below the range
+          return F.Plus(F.C1, exponent);
         }
       }
       if (base.isReal() || exponent.isReal()) {
@@ -6940,6 +6956,13 @@ public final class Arithmetic {
       IExpr result = F.NIL;
       IExpr evaluated = engine.evaluateNIL(ast.arg1());
       IExpr arg1 = evaluated.isPresent() ? evaluated : ast.arg1();
+      if (arg1.isOverflow()) {
+        return F.C1;
+      }
+      if (arg1.isUnderflow()) {
+        // below the range of numbers: the sign is lost with the digits
+        return F.C0;
+      }
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude, and is dimensionless. Without this
         // the generic path reaches Quantity/Abs(Quantity), which is 0/0 for a zero magnitude.
@@ -7766,6 +7789,15 @@ public final class Arithmetic {
     }
 
     private static @AllowNIL IExpr eInfinity(IAST inf, IExpr o1) {
+      if (o1.isUnderflow()) {
+        // Indeterminate expression `1` encountered.
+        Errors.printMessage(S.Infinity, "indet", F.list(F.Times(inf, o1)), EvalEngine.get());
+        return S.Indeterminate;
+      }
+      if (o1.isOverflow()) {
+        // a magnitude beyond the range keeps the direction
+        return inf;
+      }
       if (inf.isComplexInfinity()) {
         if (o1.isZero()) {
           return S.Indeterminate;

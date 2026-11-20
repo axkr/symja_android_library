@@ -4,6 +4,7 @@ import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
+import org.apfloat.ApfloatMath;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.ApfloatArithmeticException;
@@ -1300,14 +1301,23 @@ public class Num implements INum {
     }
     try {
       double doubleGamma = org.hipparchus.special.Gamma.gamma(value);
-      if (Double.isFinite(doubleGamma)) {
+      // zero: a negative argument whose value may still be a (subnormal) machine number
+      if (Double.isFinite(doubleGamma) && doubleGamma != 0.0) {
         return F.num(doubleGamma);
       }
-      Apfloat gamma = EvalEngine.getApfloatDouble().gamma(apfloatValue());
+      // all digits of the double: rounded to 16 digits, -1.0*^15-0.5 became a negative integer
+      final Apfloat exact = new Apfloat(new java.math.BigDecimal(value));
+      Apfloat gamma = ApfloatNum.gammaOfLarge(exact, EvalEngine.getApfloatDouble());
+      if (value < 0.0 && ApfloatMath.abs(gamma).compareTo(new Apfloat(1)) < 0) {
+        // 0.0 below the machine range, as a machine underflow; a value above the range near a
+        // pole is promoted
+        return F.num(gamma.doubleValue());
+      }
       // CPD-OFF numeric special-function dispatch per number type
       return ApfloatNum.machineOrPromoted(gamma);
     } catch (OverflowException of) {
-      return F.Overflow();
+      // Gamma(x) = Pi/(Sin(Pi*x)*Gamma(1-x)): a negative x whose Gamma(1-x) overflows underflows
+      return value > 0.0 ? F.Overflow() : F.CD0;
     } catch (ArithmeticException | NumericComputationException are) {
       return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
@@ -1346,6 +1356,9 @@ public class Num implements INum {
         }
         return ComplexNum.machine(gamma);
       }
+    } catch (OverflowException oe) {
+      // an intermediate value beyond the exponent range: no value, no message
+      return F.NIL;
     } catch (ArithmeticException | NumericComputationException are) {
       if (Config.SHOW_STACKTRACE) {
         are.printStackTrace();

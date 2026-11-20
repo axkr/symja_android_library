@@ -2197,6 +2197,11 @@ public final class BooleanFunctions {
       if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
         return a1.equals(a2) ? S.True : S.False;
       }
+      if ((a1.isOutOfRange() && a2.isNumber()) || (a1.isNumber() && a2.isOutOfRange())
+          || (a1.isOverflow() && a2.isUnderflow()) || (a1.isUnderflow() && a2.isOverflow())) {
+        // a magnitude beyond the range of numbers differs from every number
+        return S.False;
+      }
       final IExpr arg1 = a1.isNumber() ? a1 : engine.evaluate(F.expandAll(a1, true, true));
       final IExpr arg2 = a2.isNumber() ? a2 : engine.evaluate(F.expandAll(a2, true, true));
       IExpr.COMPARE_TERNARY b = arg1.equalTernary(arg2, engine);
@@ -2877,6 +2882,13 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
+      if (a0.isOutOfRange() || a1.isOutOfRange()) {
+        int c = compareOutOfRange(a0, a1);
+        if (c != CompareUtil.NOT_COMPARABLE) {
+          return relation(isLessRelation() ? -c : c);
+        }
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
       // two real numeric operands: the one three-way comparison Equal uses too
       int c = CompareUtil.compareNumeric(a0, a1, engine);
       if (c != CompareUtil.NOT_COMPARABLE) {
@@ -2892,6 +2904,38 @@ public final class BooleanFunctions {
         }
         return compareTernary(a0, a1);
       }
+    }
+
+    /**
+     * Compare <code>Overflow()</code>, a magnitude above every number, or <code>Underflow()</code>,
+     * a magnitude between 0 and every positive number, with a real number or with each other.
+     *
+     * @return <code>-1, 1</code> or {@link CompareUtil#NOT_COMPARABLE}
+     */
+    private static int compareOutOfRange(IExpr a0, IExpr a1) {
+      if (a0.isOutOfRange() && a1.isOutOfRange()) {
+        if (a0.isOverflow() == a1.isOverflow()) {
+          return CompareUtil.NOT_COMPARABLE;
+        }
+        return a0.isOverflow() ? 1 : -1;
+      }
+      final boolean swapped = !a0.isOutOfRange();
+      final IExpr outOfRange = swapped ? a1 : a0;
+      final IExpr other = swapped ? a0 : a1;
+      final int c;
+      if (other.isInfinity()) {
+        c = -1;
+      } else if (other.isNegativeInfinity()) {
+        c = 1;
+      } else {
+        // a real number or a real numeric constant like Pi
+        final IReal real = other.isReal() ? (IReal) other : other.evalReal();
+        if (real == null) {
+          return CompareUtil.NOT_COMPARABLE;
+        }
+        c = outOfRange.isOverflow() || !real.isPositive() ? 1 : -1;
+      }
+      return swapped ? -c : c;
     }
 
     /** The answer for <code>c = -1, 0, 1</code> as the result of <code>first &gt; second</code>. */

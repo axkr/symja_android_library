@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -128,6 +129,38 @@ public class RischNorman {
       return false;
     }
     return hasTowerKernel(f, x);
+  }
+
+  /**
+   * Is <code>f</code> a function of a <code>Tan(u)</code> or <code>Tanh(u)</code> and of another
+   * kernel - an exponential, a logarithm or a tangent of another argument - without a root and
+   * without parameters, like the derivative of <code>x*E^x/(1+Tanh(x)/x)</code>? The conditions
+   * of the rules simplify ever larger expressions for these without an answer, and the parallel
+   * integration settles them in a fraction of a second. A tangent of an exponential or logarithm,
+   * <code>E^x*Tan(E^x)</code>, is a substitution the rules write better; a parameter makes the
+   * linear system of the ansatz symbolic and slow.
+   */
+  public static boolean isMixedTangentTower(IExpr f, IExpr x) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || RischNormanRadical.hasRoot(f, x)) {
+      return false;
+    }
+    final Set<IExpr> tangents = tangentArguments(f, x);
+    if (tangents.isEmpty()) {
+      return false;
+    }
+    for (IExpr tangent : tangents) {
+      if (!tangent.first().isPolynomial(x)) {
+        return false;
+      }
+    }
+    if (!f.isFree(e -> e.isSymbol() && !e.equals(x) && !(e instanceof IBuiltInSymbol), true)) {
+      return false;
+    }
+    if (tangents.size() > 1) {
+      return true;
+    }
+    return !f.isFree(e -> (e.isAST(S.Log, 2) || (e.isPower() && e.base().isE()))
+        && !e.isFree(x, true), true);
   }
 
   private static boolean hasTowerKernel(IExpr f, IExpr x) {
@@ -290,12 +323,17 @@ public class RischNorman {
       unknownsList.append(unknown);
     }
 
-    // 7. solve the linear system
-    IExpr solution = engine.evaluateNIL(F.SolveDistinct(equations, unknownsList));
-    if (solution.isNIL() || !solution.isListOfLists() || solution.argSize() == 0) {
+    // 7. solve the linear system; numeric coefficients directly, hundreds of equations are usual
+    IExpr rules = ExactLinearSystem.solve(equations, unknownsList, engine);
+    if (rules == null) {
+      IExpr solution = engine.evaluateNIL(F.SolveDistinct(equations, unknownsList));
+      if (solution.isNIL() || !solution.isListOfLists() || solution.argSize() == 0) {
+        return F.NIL;
+      }
+      rules = solution.first();
+    } else if (((IAST) rules).isEmpty()) {
       return F.NIL;
     }
-    IExpr rules = solution.first();
     IExpr resolved = engine.evaluate(F.ReplaceAll(ansatz, rules));
     // remaining free coefficients are set to zero
     for (IExpr unknown : unknowns) {

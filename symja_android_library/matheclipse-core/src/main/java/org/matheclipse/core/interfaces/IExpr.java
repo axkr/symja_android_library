@@ -4807,6 +4807,14 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is <code>Overflow()</code> or <code>Underflow()</code>: an approximate
+   * number whose magnitude is beyond the range of numbers.
+   */
+  default boolean isOutOfRange() {
+    return isOverflow() || isUnderflow();
+  }
+
+  /**
    * Test if this expression is a <code>Pattern[symbol]</code> object
    * 
    */

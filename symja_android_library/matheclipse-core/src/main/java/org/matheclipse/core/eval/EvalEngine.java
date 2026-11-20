@@ -3931,6 +3931,29 @@ public class EvalEngine implements Serializable {
    *
    * @see #incValueEpoch()
    */
+  /**
+   * <code>extended</code> is the list <code>list</code> with <code>added</code> appended or
+   * prepended. When <code>list</code> is known to hold only numbers and strings and
+   * <code>added</code> is one too, <code>extended</code> is marked as such a list, so the evaluation
+   * loop doesn't visit all its elements again. Without the mark a loop of <code>AppendTo</code>
+   * calls passed over the whole list once per call.
+   *
+   * @param list a list
+   * @param extended <code>list</code> with one more element
+   * @param added the evaluated element which was added
+   */
+  public static void markExtendedList(final IAST list, final IAST extended, final IExpr added) {
+    if ((added.isNumber() || added instanceof IStringX) && list.isList() && extended.isList()
+        && list.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)
+        // only the list classes which drop their flags on every change may remember the answer
+        && (extended instanceof org.matheclipse.core.expression.HMArrayList
+            || extended instanceof org.matheclipse.core.expression.ASTRRBTree)) {
+      extended.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
+      // no Sequence, Unevaluated or Nothing among numbers and strings
+      extended.addFlag(Flag.CONTAINS_NO_SPECIAL_ARG);
+    }
+  }
+
   private static boolean valuesUnchangedSince(final IAST ast, final long epoch) {
     final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
     // only the list classes which drop their flags on every change may remember the answer
@@ -5375,6 +5398,11 @@ public class EvalEngine implements Serializable {
           return result;
         } else {
           if (head instanceof BuiltInSymbol) {
+            if (ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)) {
+              // the other arguments are numbers and strings too: no up-values, and no pass over a
+              // long list of them
+              return F.NIL;
+            }
             int requiredMask = UniformFlags.uniformMask((IBuiltInSymbol) head);
             if (requiredMask != UniformFlags.NONE && ast.isUniform(requiredMask)) {
               return F.NIL;
@@ -6467,7 +6495,9 @@ public class EvalEngine implements Serializable {
       }
       return SignificanceArithmetic.conditioned(symbol, ast, result);
     } catch (ValidateException ve) {
-      ve.printStackTrace();
+      if (Config.SHOW_STACKTRACE) {
+        ve.printStackTrace();
+      }
       return Errors.printMessage(ast.topHead(), ve, this);
     } catch (FlowControlException e) {
       throw e;

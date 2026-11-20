@@ -1772,7 +1772,7 @@ public class ApfloatNum implements INum {
    * the working precision, with the argument as the exact number it reads -
    * <code>N(Gamma(10^6), 30)</code> had 24 digits.
    */
-  private static Apfloat gammaOfLarge(Apfloat x, FixedPrecisionApfloatHelper h) {
+  static Apfloat gammaOfLarge(Apfloat x, FixedPrecisionApfloatHelper h) {
     final long scale = x.scale();
     final long precision = h.precision();
     if (scale <= 1 || precision >= Apfloat.INFINITE - scale - 5) {
@@ -1791,7 +1791,8 @@ public class ApfloatNum implements INum {
       // CPD-OFF numeric special-function dispatch per number type
       return valueOf(gammaOfLarge(fApfloat, h()));
     } catch (OverflowException of) {
-      return F.Overflow();
+      // Gamma(x) = Pi/(Sin(Pi*x)*Gamma(1-x)): a negative x whose Gamma(1-x) overflows underflows
+      return fApfloat.signum() > 0 ? F.Overflow() : F.Underflow();
     } catch (ArithmeticException | NumericComputationException are) {
       return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
@@ -1816,6 +1817,9 @@ public class ApfloatNum implements INum {
     if (x instanceof INumber) {
       try {
         return F.complexNum(h().gamma(fApfloat, ((INumber) x).apcomplexValue()));
+      } catch (OverflowException oe) {
+        // an intermediate value beyond the exponent range: no value, no message
+        return F.NIL;
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and

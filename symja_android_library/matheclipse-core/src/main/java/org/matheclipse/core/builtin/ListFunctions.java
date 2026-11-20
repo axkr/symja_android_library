@@ -794,7 +794,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
-      return arg1AST.appendClone(arg2);
+      final IASTAppendable result = arg1AST.appendClone(arg2);
+      EvalEngine.markExtendedList(arg1AST, result, arg2);
+      return result;
     }
 
     @Override
@@ -964,8 +966,11 @@ public final class ListFunctions {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(head, "normal", F.list(F.C1, ast), EvalEngine.get());
       }
-      return prepend ? ((IAST) symbolValue).appendAtClone(1, value)
-          : ((IAST) symbolValue).appendClone(value);
+      final IAST list = (IAST) symbolValue;
+      final IASTAppendable result =
+          prepend ? list.appendAtClone(1, value) : list.appendClone(value);
+      EvalEngine.markExtendedList(list, result, value);
+      return result;
     }
   }
 
@@ -6522,7 +6527,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
-      return arg1AST.appendAtClone(1, arg2);
+      final IASTAppendable result = arg1AST.appendAtClone(1, arg2);
+      EvalEngine.markExtendedList(arg1AST, result, arg2);
+      return result;
     }
 
     @Override

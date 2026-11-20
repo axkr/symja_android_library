@@ -1087,6 +1087,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             return result;
           }
         }
+        if (Config.INTEGRATE_ALGORITHMS && RischNorman.isMixedTangentTower(fx, x)) {
+          // A tangent beside an exponential, a logarithm or a second tangent: the conditions of
+          // the rules simplify ever larger expressions for these until the deadline, while the
+          // parallel integration answers or gives up in a fraction of a second.
+          result = parallelIntegrationOfWhole(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         // A polynomial which is a perfect power is handed to the rules already written as one.
         // Their own rule for this (2007) builds the candidate root as Rt(a0,n) + Rt(an,n)*x, which
         // only ever has a *positive* middle term, so it recognizes (1+x)^2 in 1+2*x+x^2 but not
@@ -1273,6 +1282,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               () -> IntegrateTimeBudget.runWithin(
                   () -> ExponentialPolyLogIntegration.integrate(fx, x, engine),
                   MachineProfile.millis(POLYLOG_LADDER_TIMELIMIT_MILLIS)));
+          if (result.isPresent()) {
+            return result;
+          }
+          // E^(c+d*x)*Erf(a+b*x): by parts to a shifted Gaussian
+          result = quietStage(engine, fx, x, "an exponential times an error function",
+              () -> IntegralTable.exponentialTimesErrorFunction(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }

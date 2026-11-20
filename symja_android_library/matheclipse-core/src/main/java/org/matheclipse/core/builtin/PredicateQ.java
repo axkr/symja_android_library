@@ -216,7 +216,7 @@ public class PredicateQ {
       S.FreeQ.setEvaluator(new FreeQ());
       S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
       S.IndefiniteMatrixQ.setEvaluator(new IndefiniteMatrixQ());
-      S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
+      S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber() || x.isOutOfRange());
       S.IntegerQ.setPredicateQ(x -> x.isInteger());
       S.ListQ.setPredicateQ(x -> x.isList());
       S.LowerTriangularMatrixQ.setEvaluator(new LowerTriangularMatrixQ());
@@ -233,8 +233,8 @@ public class PredicateQ {
       S.NotListQ.setPredicateQ(x -> !x.isList());
       S.NormalMatrixQ.setEvaluator(new NormalMatrixQ());
       S.NameQ.setEvaluator(new NameQ());
-      S.NumberQ.setPredicateQ(x -> x.isNumber());
-      S.NumericQ.setPredicateQ(x -> x.isNumericFunction());
+      S.NumberQ.setPredicateQ(x -> x.isNumber() || x.isOutOfRange());
+      S.NumericQ.setPredicateQ(x -> x.isNumericFunction() || x.isOutOfRange());
       S.OddQ.setEvaluator(new OddQ());
       S.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
       S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
