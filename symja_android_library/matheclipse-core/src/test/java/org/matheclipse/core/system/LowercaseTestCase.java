@@ -23520,6 +23520,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMathMLFormPresentationForms() {
+    // TraditionalForm and StandardForm show only their content
+    check("m=MathMLForm(TraditionalForm(Cos(y)/y));"
+        + "{StringContainsQ(m, \"TraditionalForm\"), StringContainsQ(m, \"<mfrac>\")}", //
+        "{False,True}");
+    check("StringContainsQ(MathMLForm({StandardForm(u^3), TraditionalForm(v)}), \"Form\")", //
+        "False");
+  }
+
+  @Test
   public void testMathMLFormMatrixFormOfANonList() {
     // MatrixForm of something which is no matrix displays it as it is
     check(
@@ -30984,6 +30994,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNestWhile() {
+    // with a maximum count only the last values are kept, not a list of all of them
+    check("NestWhile(#+2 &, 1, # < 40001 &, 1, Infinity)", //
+        "40001");
+    check("NestWhile(#+1 &, 0, # < 10 &, 1, Infinity, -1)", //
+        "9");
+    check("NestWhile(#+1 &, 0, # < 10 &, 1, Infinity, 2)", //
+        "12");
+    check("NestWhileList(#+1 &, 0, # < 10 &, 1, Infinity, -1)", //
+        "{0,1,2,3,4,5,6,7,8,9}");
     check("NestWhile(#^2 &, 2, # < 256 &)", //
         "256");
     check("NestWhile(#+1 &, 1, # + #4 < 10 &, 4)", //

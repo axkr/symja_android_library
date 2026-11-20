@@ -305,16 +305,28 @@ public class SVGGraphics3D {
 
   private static final class Dot extends Renderable {
     final Vector3 point;
-    final double radius;
+    /** The diameter as a fraction of the picture width, or NaN for an absolute one. */
+    final double scaledSize;
+    /** The diameter in printer's points, used if {@link #scaledSize} is NaN. */
+    final double absoluteSize;
+    /** The radius in pixels, set once the width of the picture is known. */
+    double radius;
     final Color color;
     final double opacity;
 
-    Dot(Vector3 point, double radius, Color color, double opacity) {
+    Dot(Vector3 point, double scaledSize, double absoluteSize, Color color, double opacity) {
       this.point = point;
-      this.radius = radius;
+      this.scaledSize = scaledSize;
+      this.absoluteSize = absoluteSize;
       this.color = color;
       this.opacity = opacity;
       this.depth = point.z;
+    }
+
+    /** Size the dot for a picture <code>width</code> pixels wide. */
+    void resolve(double width) {
+      double diameter = Double.isNaN(scaledSize) ? absoluteSize : scaledSize * width;
+      radius = Math.max(0.5, 0.5 * diameter);
     }
 
     @Override
@@ -352,10 +364,15 @@ public class SVGGraphics3D {
               + escape(org.matheclipse.core.graphics.svg.TickGenerator.powerExponent(text))
               + "</tspan>"
           : escape(text);
-      return tag("text").attr("x", format(point.x + dx)).attr("y", format(point.y))
-          .attr("fill", hex(color)).attr("font-size", format(fontSize))
+      j2html.tags.ContainerTag<?> element = tag("text").attr("x", format(point.x + dx))
+          .attr("y", format(point.y)).attr("fill", hex(color)).attr("font-size", format(fontSize))
           .attr("font-family", "Arial, sans-serif").attr("text-anchor", anchor)
-          .attr("dominant-baseline", "middle").with(new UnescapedText(body));
+          .attr("dominant-baseline", "middle");
+      if (org.matheclipse.core.graphics.svg.SvgRenderer2D.keepsBlanks(text)) {
+        // blanks at the ends of a label or in a row are kept, not collapsed into one
+        element.attr("xml:space", "preserve");
+      }
+      return element.with(new UnescapedText(body));
     }
   }
 
@@ -752,7 +769,7 @@ public class SVGGraphics3D {
         curves(element, type, color.front, opacity, matrix, dataScale, view, lights, diagonal, out);
         break;
       case "Point":
-        dots(element, color.front, opacity, matrix, dataScale, view, diagonal, out);
+        dots(element, color.front, opacity, matrix, dataScale, view, out);
         break;
       case "Text":
         text(element, color.front, opacity, matrix, dataScale, view, out);
@@ -1035,12 +1052,17 @@ public class SVGGraphics3D {
         view, lights, out);
   }
 
+  /** The diameter of a point without a PointSize, as a fraction of the picture width. */
+  private static final double DEFAULT_POINT_SIZE = 0.01;
+
   private static void dots(JsonNode element, Color color, double opacity, double[] matrix,
-      Vector3 dataScale, View view, double diagonal, List<Renderable> out) {
-    double radius = 0.5
-        * (element.has("pointSizeScaled") ? element.get("pointSizeScaled").asDouble(0.01) * diagonal
-            : element.has("pointSize") ? element.get("pointSize").asDouble(3) * diagonal * 0.004
-                : 0.01 * diagonal);
+      Vector3 dataScale, View view, List<Renderable> out) {
+    // PointSize(d) is a fraction of the width of the picture, AbsolutePointSize(d) a size in
+    // printer's points; both are diameters on the page, whatever the depth of the point
+    double scaledSize = element.has("pointSizeScaled")
+        ? element.get("pointSizeScaled").asDouble(DEFAULT_POINT_SIZE)
+        : element.has("pointSize") ? Double.NaN : DEFAULT_POINT_SIZE;
+    double absoluteSize = element.has("pointSize") ? element.get("pointSize").asDouble(3) : 3;
     JsonNode data = element.get("points");
     if (data == null) {
       return;
@@ -1048,8 +1070,7 @@ public class SVGGraphics3D {
     for (int i = 0; i + 2 < data.size(); i += 3) {
       Vector3 p = place(new Vector3(data.get(i).asDouble(), data.get(i + 1).asDouble(),
           data.get(i + 2).asDouble()), matrix, dataScale);
-      // the radius is a world length, so it has to be measured after projection too
-      out.add(new Dot(view.project(p), radius, color, opacity));
+      out.add(new Dot(view.project(p), scaledSize, absoluteSize, color, opacity));
     }
   }
 
@@ -1795,10 +1816,11 @@ public class SVGGraphics3D {
       // SVG counts y downwards
       p.y = canvasHeight - (centreY + p.y * scale);
     }
-    // a dot's radius is a world length and has to follow the same scaling
+    // a dot is as big on the page wherever it is in the scene
     for (Renderable r : renderables) {
       if (r instanceof Dot) {
         ((Dot) r).point.z = 0;
+        ((Dot) r).resolve(width);
       }
     }
 

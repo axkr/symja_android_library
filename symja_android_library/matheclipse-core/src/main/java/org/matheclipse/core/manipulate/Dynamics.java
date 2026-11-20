@@ -595,6 +595,45 @@ public class Dynamics {
    *         change
    */
   public static double updateInterval(IAST dynamic) {
+    return updateIntervalOf(dynamic);
+  }
+
+  /**
+   * The intervals of the <code>Refresh[..., UpdateInterval -&gt; t]</code> evaluated on this
+   * thread since {@link #collectRefreshes()}, or <code>null</code> when nothing collects them.
+   */
+  private static final ThreadLocal<double[]> REFRESHES = new ThreadLocal<double[]>();
+
+  /**
+   * Start noting the <code>UpdateInterval</code> of every <code>Refresh</code> an evaluation on
+   * this thread actually reaches - a frame of a front end asks for the next one after the
+   * shortest of them.
+   */
+  public static void collectRefreshes() {
+    REFRESHES.set(new double[] {Double.POSITIVE_INFINITY});
+  }
+
+  /**
+   * Stop noting the intervals.
+   *
+   * @return the shortest interval noted since {@link #collectRefreshes()}, or
+   *         {@link Double#POSITIVE_INFINITY}
+   */
+  public static double collectedRefresh() {
+    double[] collected = REFRESHES.get();
+    REFRESHES.remove();
+    return collected == null ? Double.POSITIVE_INFINITY : collected[0];
+  }
+
+  /** Note the <code>UpdateInterval</code> of a <code>Refresh</code> that was evaluated. */
+  public static void noteRefresh(double seconds) {
+    double[] collected = REFRESHES.get();
+    if (collected != null && seconds > 0.0 && Double.isFinite(seconds)) {
+      collected[0] = Math.min(collected[0], seconds);
+    }
+  }
+
+  private static double updateIntervalOf(IAST dynamic) {
     IExpr interval = optionValue(dynamic, S.UpdateInterval);
     if (!interval.isPresent()) {
       return Double.POSITIVE_INFINITY;

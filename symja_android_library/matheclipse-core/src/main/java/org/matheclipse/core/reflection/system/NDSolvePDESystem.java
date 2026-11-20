@@ -66,6 +66,8 @@ final class NDSolvePDESystem {
     final IExpr[] endValue = {F.NIL, F.NIL};
     /** the NeumannValue terms: their factor in the rate and their value, per end */
     final List<IExpr[]>[] fluxes = newFluxLists();
+    /** the given space derivative at the two ends, or {@link F#NIL} */
+    final IExpr[] endSlope = {F.NIL, F.NIL};
     boolean diffusing;
 
     Field(IExpr head) {
@@ -110,7 +112,7 @@ final class NDSolvePDESystem {
       fields.add(new Field(head));
     }
 
-    IAST equations = ast.arg1().makeList();
+    IAST equations = withConditionsApart(ast.arg1().makeList());
     // the position of the time variable in the arguments: 1 for u(t, x), 2 for u(x, t)
     int timeArgument = timeArgument(equations, fields, t, x);
     if (timeArgument < 0) {
@@ -125,6 +127,16 @@ final class NDSolvePDESystem {
     }
 
     for (IExpr equation : equations) {
+      if (equation.isAST(S.DirichletCondition, 3) && equation.first().isEqual()
+          && isStart(equation.second(), t, t0)) {
+        // DirichletCondition(u(x, t) == f, t == t0) is the initial condition
+        IAST rule = F.Rule(t, F.num(t0));
+        if (!initialValue(F.subst(equation.first().first(), rule),
+            F.subst(equation.first().second(), rule), fields, timeArgument, t, x, t0)) {
+          return F.NIL;
+        }
+        continue;
+      }
       if (equation.isAST(S.DirichletCondition, 3)) {
         // DirichletCondition(u(x, t) == g, x == x0)
         if (!boundaryValue(equation.first(), equation.second(), fields, timeArgument, t, x, x0,
@@ -164,7 +176,8 @@ final class NDSolvePDESystem {
           return F.NIL;
         }
         if (!boundaryValue(lhs, rhs, fields, timeArgument, t, x, x0, x1)
-            && !initialValue(lhs, rhs, fields, timeArgument, t, x, t0)) {
+            && !initialValue(lhs, rhs, fields, timeArgument, t, x, t0)
+            && !boundarySlope(lhs, rhs, fields, timeArgument, t, x0, x1)) {
           return F.NIL;
         }
         continue;
@@ -206,6 +219,23 @@ final class NDSolvePDESystem {
         }
       }
       field.diffusing = !field.rate.isFree(field.uxx);
+      for (int end = 0; end < 2; end++) {
+        if (field.endSlope[end].isPresent()) {
+          // du/dx = g at an end is the flux a*du/dn of the diffusion a, n the outward normal
+          if (!field.diffusing || field.endKind[end] != END_NONE
+              || !field.fluxes[end].isEmpty()) {
+            return F.NIL;
+          }
+          IExpr diffusion = engine.evaluate(F.D(field.rate, field.uxx));
+          if (!isFree(diffusion, fields)) {
+            return F.NIL;
+          }
+          IExpr at = F.num(end == 0 ? x0 : x1);
+          IExpr value = engine.evaluate(F.Times(end == 0 ? F.CN1 : F.C1,
+              F.subst(diffusion, F.Rule(x, at)), field.endSlope[end]));
+          field.fluxes[end].add(new IExpr[] {F.C1, value});
+        }
+      }
       boolean hasFlux = !field.fluxes[0].isEmpty() || !field.fluxes[1].isEmpty();
       for (int end = 0; end < 2; end++) {
         if (!field.diffusing) {
@@ -371,6 +401,87 @@ final class NDSolvePDESystem {
     }
     field.initial = value;
     return true;
+  }
+
+  /**
+   * The equations with the <code>DirichletCondition</code> terms written into an equation, next to
+   * its <code>NeumannValue</code> terms, taken out as conditions of their own.
+   */
+  private static IAST withConditionsApart(IAST equations) {
+    IASTAppendable result = F.ListAlloc(equations.argSize() + 2);
+    for (IExpr equation : equations) {
+      if (!equation.isEqual() || equation.isFree(S.DirichletCondition, true)) {
+        result.append(equation);
+        continue;
+      }
+      List<IExpr> conditions = new ArrayList<IExpr>();
+      IExpr without = equation.replaceAll(e -> {
+        if (e.isAST(S.DirichletCondition, 3)) {
+          conditions.add(e);
+          return F.C0;
+        }
+        return F.NIL;
+      }).orElse(equation);
+      result.append(without);
+      for (IExpr condition : conditions) {
+        result.append(condition);
+      }
+    }
+    return result;
+  }
+
+  /** <code>true</code> if <code>condition</code> is <code>t == t0</code>, either way round. */
+  private static boolean isStart(IExpr condition, ISymbol t, double t0) {
+    if (!condition.isEqual()) {
+      return false;
+    }
+    IExpr at = condition.first() == t ? condition.second()
+        : condition.second() == t ? condition.first() : F.NIL;
+    return at.isNumber() && Math.abs(at.evalfNaN() - t0) <= 1e-12 * Math.max(1.0, Math.abs(t0));
+  }
+
+  /**
+   * <code>Derivative(0, 1)(u)(t, x0) == g(t)</code> at one of the two ends, either way round: the
+   * space derivative of a field there.
+   */
+  private static boolean boundarySlope(IExpr lhs, IExpr rhs, List<Field> fields, int timeArgument,
+      ISymbol t, double x0, double x1) {
+    IExpr application = lhs;
+    IExpr value = rhs;
+    if (!isSpaceDerivative(application, fields, timeArgument)) {
+      application = rhs;
+      value = lhs;
+    }
+    if (!isSpaceDerivative(application, fields, timeArgument) || !isFree(value, fields)) {
+      return false;
+    }
+    Field field = field(application.head().first(), fields);
+    IExpr[] arguments = arguments(application, timeArgument);
+    if (arguments[0] != t) {
+      return false;
+    }
+    // an end like Pi is a number only once evaluated
+    int end = endAt(arguments[1].evalfNaN(), x0, x1);
+    if (end < 0 || field.endSlope[end].isPresent()) {
+      return false;
+    }
+    field.endSlope[end] = value;
+    return true;
+  }
+
+  /** <code>true</code> for a call of the first space derivative of one of the fields. */
+  private static boolean isSpaceDerivative(IExpr application, List<Field> fields,
+      int timeArgument) {
+    if (!application.isAST2() || !application.head().isAST1()) {
+      return false;
+    }
+    IExpr orders = application.head().head();
+    if (!orders.isAST(S.Derivative, 3) || field(application.head().first(), fields) == null) {
+      return false;
+    }
+    IExpr timeOrder = timeArgument == 1 ? orders.first() : orders.second();
+    IExpr spaceOrder = timeArgument == 1 ? orders.second() : orders.first();
+    return timeOrder.isZero() && spaceOrder.isOne();
   }
 
   /** <code>u(x0, t) == g(t)</code> at one of the two ends, either way round. */

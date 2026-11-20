@@ -135,6 +135,13 @@ function wireDynamicControls(cell) {
 
 /** Make the Button elements of a cell clickable; their code never leaves the server. */
 function wireDynamicButtons(cell) {
+	wireSymjaEvents(cell.output, function(action, point) {
+		if (cell.inflight)
+			return false;
+		postDynamic(cell, {action: action,
+			point: point == 'none' ? 'none' : Object.toJSON(point)});
+		return true;
+	});
 	cell.output.select('span.symjabutton').each(function(button) {
 		var action = button.readAttribute('data-action');
 		if (action == null)

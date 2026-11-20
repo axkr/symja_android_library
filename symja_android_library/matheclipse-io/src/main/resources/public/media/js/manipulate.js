@@ -33,9 +33,12 @@ function createManipulate(spec) {
 		scheduled: false,
 		inflight: false,
 		playing: false,
-		timer: null
+		timer: null,
+		// the timer of Refresh[..., UpdateInterval -> t], which asks for the next frame by itself
+		refreshTimer: null
 	};
 	manipulateWidgets[widget.id] = widget;
+	scheduleManipulateRefresh(widget, spec.updateInterval);
 
 	widget.controls.each(function(control) {
 		if (control.name)
@@ -355,6 +358,8 @@ function buildSlider2D(widget, control) {
 /** One X/Y pair of sliders per draggable point. */
 function buildLocator(widget, control) {
 	var box = $E('span', {'class': 'manipulatecontrol manipulatelocator'});
+	// the sliders are the fallback for a body that is no picture to put the points on
+	control.box = box;
 	var points = widget.bindings[control.name] || [];
 	var rows = [];
 	points.each(function(point, index) {
@@ -649,13 +654,40 @@ function requestBodyControl(widget, control) {
 	}, MANIPULATE_DEBOUNCE);
 }
 
-function postManipulate(widget, buttonIndex, bodyButtonIndex, bodyControl) {
+/**
+ * Ask for the next frame after the UpdateInterval the last one stated, or stop asking when it
+ * stated none - the interval may depend on the controls, If[running, 0.1, Infinity] say.
+ */
+function scheduleManipulateRefresh(widget, seconds) {
+	if (widget.refreshTimer) {
+		window.clearTimeout(widget.refreshTimer);
+		widget.refreshTimer = null;
+	}
+	if (!(seconds > 0))
+		return;
+	widget.refreshTimer = window.setTimeout(function() {
+		widget.refreshTimer = null;
+		if (!manipulateWidgets[widget.id])
+			return;
+		if (widget.inflight || widget.scheduled) {
+			// a frame is on its way already; its answer schedules the next one
+			return;
+		}
+		postManipulate(widget, -1, null, null, true);
+	}, Math.max(50, Math.round(seconds * 1000)));
+}
+
+function postManipulate(widget, buttonIndex, bodyButtonIndex, bodyControl, refresh, point) {
 	widget.inflight = true;
 	widget.applied = widget.pending;
 	var parameters = {
 		id: widget.id,
 		bindings: Object.toJSON(widget.bindings)
 	};
+	if (refresh)
+		parameters.refresh = 1;
+	if (point)
+		parameters.point = point == 'none' ? 'none' : Object.toJSON(point);
 	if (buttonIndex >= 0)
 		parameters.button = buttonIndex;
 	if (bodyButtonIndex != null && bodyButtonIndex >= 0)
@@ -687,6 +719,7 @@ function postManipulate(widget, buttonIndex, bodyButtonIndex, bodyControl) {
 			widget.bodyControls = response.bodyControls || [];
 			showManipulateResponse(widget, response);
 			widget.inflight = false;
+			scheduleManipulateRefresh(widget, response.updateInterval);
 			// a change that arrived while this request was on its way
 			if (widget.applied != widget.pending)
 				requestManipulate(widget, null);
@@ -860,6 +893,235 @@ function showManipulateBody(widget, body) {
 	widget.output = replacement;
 	wireManipulateBodyButtons(widget);
 	wireManipulateBodyControls(widget);
+	drawManipulateLocators(widget);
+}
+
+// ---------------------------------------------------------------- locators
+
+/**
+ * Make the ClickPanes and EventHandlers of an output live. post(action, point) sends one event
+ * and answers whether it was sent; the point is in the coordinates of the picture, or 'none' for
+ * content that is no picture. A ClickPane only answers a click on its picture.
+ */
+function wireSymjaEvents(container, post) {
+	var panes = container.querySelectorAll('.symjaclick');
+	Array.prototype.forEach.call(panes, function(pane) {
+		function pointOf(event) {
+			if (!pane.querySelector('svg[data-frame]'))
+				return pane.tagName.toLowerCase() == 'span' ? null : 'none';
+			return symjaClickPoint(pane, event);
+		}
+		function action(name) {
+			var value = pane.getAttribute(name);
+			return value == null ? -1 : parseInt(value, 10);
+		}
+		var clicked = action('data-action');
+		var down = action('data-down');
+		var dragged = action('data-drag');
+		var pressed = false;
+		// a click or a press is never lost: while a request is on its way it waits its turn. A
+		// drag only sends where the pointer is now, so a move that cannot go is simply skipped
+		function send(index, point, attempts) {
+			if (post(index, point) || attempts > 200)
+				return;
+			window.setTimeout(function() {
+				send(index, point, attempts + 1);
+			}, 50);
+		}
+		pane.style.cursor = 'pointer';
+		pane.addEventListener('pointerdown', function(event) {
+			pressed = true;
+			if (down >= 0) {
+				var point = pointOf(event);
+				if (point)
+					send(down, point, 0);
+			}
+		});
+		pane.addEventListener('pointermove', function(event) {
+			if (!pressed || dragged < 0)
+				return;
+			var point = pointOf(event);
+			if (point)
+				post(dragged, point);
+		});
+		pane.addEventListener('pointerup', function() {
+			pressed = false;
+		});
+		pane.addEventListener('pointerleave', function() {
+			pressed = false;
+		});
+		if (clicked >= 0) {
+			pane.addEventListener('click', function(event) {
+				var point = pointOf(event);
+				if (point)
+					send(clicked, point, 0);
+			});
+		}
+	});
+}
+
+/**
+ * The point a ClickPane was clicked at, in the coordinates of its picture, or null when the
+ * picture says nothing about its coordinates.
+ */
+function symjaClickPoint(pane, event) {
+	var svg = pane.querySelector('svg[data-frame]');
+	if (!svg)
+		return null;
+	var f = svg.getAttribute('data-frame').split(' ').map(parseFloat);
+	if (f.length < 6 || f.some(isNaN))
+		return null;
+	var at = manipulateSvgPoint(svg, event);
+	if (!at)
+		return null;
+	return [f[4] + (at[0] - f[0]) / f[2], f[5] + (f[1] - at[1]) / f[3]];
+}
+
+var SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** The picture of the body the locators go on, and how its coordinates are drawn, or null. */
+function manipulateLocatorFrame(widget) {
+	var svg = widget.output ? widget.output.querySelector('svg[data-frame]') : null;
+	if (!svg)
+		return null;
+	var f = svg.getAttribute('data-frame').split(' ').map(parseFloat);
+	if (f.length < 6 || f.some(isNaN))
+		return null;
+	return {
+		svg: svg,
+		toPixel: function(p) {
+			return [f[0] + (p[0] - f[4]) * f[2], f[1] - (p[1] - f[5]) * f[3]];
+		},
+		toPoint: function(px, py) {
+			return [f[4] + (px - f[0]) / f[2], f[5] + (f[1] - py) / f[3]];
+		}
+	};
+}
+
+/** The pointer position in the coordinates of the picture's own drawing. */
+function manipulateSvgPoint(svg, event) {
+	var point = svg.createSVGPoint();
+	point.x = event.clientX;
+	point.y = event.clientY;
+	var matrix = svg.getScreenCTM();
+	if (!matrix)
+		return null;
+	var inner = point.matrixTransform(matrix.inverse());
+	return [inner.x, inner.y];
+}
+
+/**
+ * Put the points of the widget's Locator controls on the picture of the body, where they are
+ * dragged. The picture is drawn anew on every frame, so the markers are too, from the values the
+ * widget holds; a body which is no two dimensional picture keeps the sliders instead.
+ */
+function drawManipulateLocators(widget) {
+	var locators = widget.controls.filter(function(control) {
+		return control.kind == 'locator' && control.name;
+	});
+	if (locators.length == 0)
+		return;
+	var frame = manipulateLocatorFrame(widget);
+	locators.each(function(control) {
+		var row = control.row || control.box;
+		if (row)
+			row.style.display = frame ? 'none' : '';
+	});
+	if (!frame)
+		return;
+	locators.each(function(control) {
+		(widget.bindings[control.name] || []).each(function(point, index) {
+			var at = frame.toPixel(point);
+			var marker = document.createElementNS(SVG_NS, 'g');
+			marker.setAttribute('class', 'manipulatelocatormarker');
+			marker.setAttribute('transform', 'translate(' + at[0] + ',' + at[1] + ')');
+			marker.setAttribute('style', 'cursor: move');
+			marker.innerHTML = '<circle r="7" fill="white" fill-opacity="0.6" stroke="#333"'
+				+ ' stroke-width="1.2"/><path d="M -7 0 H -3 M 3 0 H 7 M 0 -7 V -3 M 0 3 V 7"'
+				+ ' stroke="#333" stroke-width="1.2"/>';
+			marker.locator = {control: control, index: index};
+			frame.svg.appendChild(marker);
+		});
+	});
+	frame.svg.addEventListener('pointerdown', function(event) {
+		var target = event.target;
+		while (target && target != frame.svg && !target.locator)
+			target = target.parentNode;
+		if (!target || !target.locator)
+			return;
+		event.preventDefault();
+		widget.locatorDrag = target.locator;
+		manipulateDraggedWidget = widget;
+	});
+}
+
+/** The widget whose locator is being dragged, or null. */
+var manipulateDraggedWidget = null;
+
+// one pair of listeners for the page: the picture under the pointer is replaced on every frame,
+// and a widget that is gone must not be held on to
+document.addEventListener('pointermove', function(event) {
+	var widget = manipulateDraggedWidget;
+	if (widget && widget.locatorDrag && manipulateWidgets[widget.id])
+		dragManipulateLocator(widget, event);
+});
+document.addEventListener('pointerup', function() {
+	if (manipulateDraggedWidget)
+		manipulateDraggedWidget.locatorDrag = null;
+	manipulateDraggedWidget = null;
+});
+
+/** Move the dragged point to the pointer, inside the range of its control, and ask for a frame. */
+function dragManipulateLocator(widget, event) {
+	var frame = manipulateLocatorFrame(widget);
+	if (!frame)
+		return;
+	var at = manipulateSvgPoint(frame.svg, event);
+	if (!at)
+		return;
+	var drag = widget.locatorDrag;
+	var control = drag.control;
+	// a point stays on the picture, and inside its rectangle where the control gave one
+	var box = frame.svg.viewBox ? frame.svg.viewBox.baseVal : null;
+	if (box && box.width > 0) {
+		at[0] = Math.min(box.x + box.width, Math.max(box.x, at[0]));
+		at[1] = Math.min(box.y + box.height, Math.max(box.y, at[1]));
+	}
+	var point = frame.toPoint(at[0], at[1]);
+	if (control.bounded && control.max > control.min)
+		point[0] = Math.min(control.max, Math.max(control.min, point[0]));
+	if (control.bounded && control.maxY > control.minY)
+		point[1] = Math.min(control.maxY, Math.max(control.minY, point[1]));
+	var points = widget.bindings[control.name];
+	if (!points || !points[drag.index])
+		return;
+	points[drag.index] = point;
+	// the marker of the frame on screen follows at once; the next frame draws it anew
+	var marker = frame.svg.querySelectorAll('g.manipulatelocatormarker')[
+		manipulateMarkerIndex(widget, control, drag.index)];
+	if (marker) {
+		var px = frame.toPixel(point);
+		marker.setAttribute('transform', 'translate(' + px[0] + ',' + px[1] + ')');
+	}
+	if (control.apply)
+		control.apply(points);
+	manipulateChanged(widget, control);
+}
+
+/** The position of a point's marker among all the markers of the widget. */
+function manipulateMarkerIndex(widget, control, index) {
+	var position = 0;
+	var found = -1;
+	widget.controls.each(function(other) {
+		if (found >= 0 || other.kind != 'locator' || !other.name)
+			return;
+		if (other == control) {
+			found = position + index;
+			return;
+		}
+		position += (widget.bindings[other.name] || []).length;
+	});
+	return found;
 }
 
 /**
@@ -915,6 +1177,12 @@ function manipulateSameShape(control, descriptor) {
  * against the live control values and re-renders.
  */
 function wireManipulateBodyButtons(widget) {
+	wireSymjaEvents(widget.output, function(action, point) {
+		if (widget.inflight)
+			return false;
+		postManipulate(widget, -1, action, null, false, point);
+		return true;
+	});
 	widget.output.select('span.symjabutton').each(function(button) {
 		var action = button.readAttribute('data-action');
 		if (action == null)
@@ -935,6 +1203,7 @@ function disposeManipulate(id) {
 	if (!widget)
 		return;
 	stopManipulateAnimation(widget);
+	scheduleManipulateRefresh(widget, 0);
 	delete manipulateWidgets[id];
 	new Ajax.Request('/ajax/manipulate/', {
 		method: 'post',

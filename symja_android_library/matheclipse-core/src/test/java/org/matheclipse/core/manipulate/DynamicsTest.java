@@ -388,6 +388,37 @@ public class DynamicsTest {
         control.toJSON(new ObjectMapper()).get("value").toString());
   }
 
+  /**
+   * The actions of an EventHandler are kept as functions of the point the event happened at; the
+   * rules are replaced by the positions for a click, a press and a drag.
+   */
+  @Test
+  public void testEventHandlerActionsTakeThePoint() {
+    eval("taps = 0; spot = {0, 0}");
+    Interactions interactions = new Interactions(engine);
+    IExpr rewritten = interactions.rewrite(eval("EventHandler(Graphics(Circle()),"
+        + " {\"MouseDragged\" :> (spot = MousePosition(\"Graphics\")),"
+        + " \"MouseClicked\" :> taps++})"));
+    assertEquals("EventHandler(Graphics(Circle({0,0})),{1,-1,0})", rewritten.toString());
+    assertEquals(2, interactions.getActions().size());
+    engine.evaluate(F.unaryAST1(interactions.getActions().get(0),
+        F.list(F.num(0.5), F.num(-0.25))));
+    engine.evaluate(F.unaryAST1(interactions.getActions().get(1), F.list(F.C0, F.C0)));
+    assertEquals("{{0.5,-0.25},1}", eval("{spot, taps}").toString());
+    // MousePosition with a default: the default where the event had no point
+    Interactions defaults = new Interactions(engine);
+    defaults.rewrite(eval("EventHandler(\"text\", {\"MouseClicked\" :> "
+        + "(spot = {MousePosition(\"Graphics\", {9, 9}), MousePosition(\"ScreenAbsolute\")})})"));
+    engine.evaluate(F.unaryAST1(defaults.getActions().get(0),
+        org.matheclipse.core.expression.S.None));
+    assertEquals("{{9,9},None}", eval("spot").toString());
+    engine.evaluate(F.unaryAST1(defaults.getActions().get(0), F.list(F.C1, F.C2)));
+    assertEquals("{{1,2},None}", eval("spot").toString());
+    // a handler of none of these events is left as it is
+    IExpr other = eval("EventHandler(\"text\", {\"KeyDown\" :> taps++})");
+    assertEquals(other, new Interactions(engine).rewrite(other));
+  }
+
   @Test
   public void testLocatorPaneTakesItsBoxFromThePlotRange() {
     eval("p = {5.0, 5.0}");
@@ -397,7 +428,8 @@ public class DynamicsTest {
     // a point outside the plot range could not be seen, so that is the box it moves in
     assertEquals("{\"kind\":\"locator\",\"name\":\"$c0\",\"label\":\"\",\"enabled\":true,"
         + "\"value\":[[5.0,5.0]],\"min\":0.0,\"max\":10.0,\"minY\":0.0,\"maxY\":20.0,"
-        + "\"autoCreate\":false}", control.toJSON(new ObjectMapper()).toString());
+        + "\"autoCreate\":false,\"bounded\":false}",
+        control.toJSON(new ObjectMapper()).toString());
   }
 
   @Test

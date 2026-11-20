@@ -202,6 +202,14 @@ public class ManipulateFunction {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // a front end evaluating a frame asks for the next one after the UpdateInterval of the
+      // Refresh it reached; one that is never evaluated asks for nothing
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.UpdateInterval) {
+          org.matheclipse.core.manipulate.Dynamics.noteRefresh(option.second().evalfNaN());
+        }
+      }
       return ast.arg1();
     }
 

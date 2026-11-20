@@ -3374,15 +3374,20 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (system.layout != null || system.curve != null || system.constraints != null) {
         return null;
       }
+      final int dimension = system.dimension();
+      // If(u < v, a, b) switches like a step of u - v
+      IExpr[] stepped = new IExpr[dimension];
+      for (int i = 0; i < dimension; i++) {
+        stepped[i] = ifAsUnitSteps(system.derivatives[i], system);
+      }
       java.util.List<IAST> terms = new java.util.ArrayList<IAST>();
-      for (IExpr derivative : system.derivatives) {
+      for (IExpr derivative : stepped) {
         collectSwitches(derivative, system, terms);
       }
       if (terms.isEmpty()) {
         return null;
       }
       final int n = terms.size();
-      final int dimension = system.dimension();
       ISymbol[] sigmas = new ISymbol[n];
       IASTAppendable toSigmas = F.ListAlloc(n);
       for (int k = 0; k < n; k++) {
@@ -3394,7 +3399,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       IExpr[] derivatives = new IExpr[dimension];
       for (int i = 0; i < dimension; i++) {
-        derivatives[i] = F.subst(system.derivatives[i], toSigmas);
+        derivatives[i] = F.subst(stepped[i], toSigmas);
       }
       // the state components as symbols, by which the switching functions are differentiated
       ISymbol[] values = new ISymbol[dimension];
@@ -3427,6 +3432,55 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       }
       FirstOrderSystem switched = system.restart(derivatives, system.t0, system.initialState);
       return new Switching(switched, sigmas, arguments, timeRates, gradients, forward, engine);
+    }
+
+    /**
+     * <code>expr</code> with every <code>If(test, a, b)</code> whose test compares two sides
+     * depending on the state or the independent variable written as a step: with
+     * <code>s = UnitStep(u - v)</code>, <code>If(u < v, a, b)</code> is
+     * <code>a*(1 - s) + b*s</code>, which is <code>b</code> at <code>u == v</code> as the test is
+     * false there; <code>u >= v</code> swaps the branches, <code>u > v</code> and
+     * <code>u <= v</code> step on <code>v - u</code>.
+     */
+    private static IExpr ifAsUnitSteps(IExpr expr, FirstOrderSystem system) {
+      return expr.replaceAll(x -> {
+        if (!x.isAST(S.If, 4)) {
+          return F.NIL;
+        }
+        IExpr test = x.first();
+        if (!test.isAST2()
+            || !(test.isAST(S.Less) || test.isAST(S.Greater) || test.isAST(S.LessEqual)
+                || test.isAST(S.GreaterEqual))) {
+          return F.NIL;
+        }
+        IExpr difference = test.isAST(S.Less) || test.isAST(S.GreaterEqual)
+            ? F.Subtract(test.first(), test.second())
+            : F.Subtract(test.second(), test.first());
+        if (isConstant(difference, system)) {
+          return F.NIL;
+        }
+        IExpr whenTrue = ifAsUnitSteps(x.second(), system);
+        IExpr whenFalse = ifAsUnitSteps(((IAST) x).arg3(), system);
+        // the branch taken where the step is 0, and the one taken where it is 1
+        IExpr below = test.isAST(S.Less) || test.isAST(S.Greater) ? whenTrue : whenFalse;
+        IExpr above = below == whenTrue ? whenFalse : whenTrue;
+        // each branch with its own indicator: their difference would cancel the smaller one
+        IAST step = F.UnitStep(difference);
+        return F.Plus(F.Times(below, F.Subtract(F.C1, step)), F.Times(above, step));
+      }).orElse(expr);
+    }
+
+    /** <code>true</code> if <code>expr</code> depends neither on the time nor on the state. */
+    private static boolean isConstant(IExpr expr, FirstOrderSystem system) {
+      if (!expr.isFree(system.timeVar)) {
+        return false;
+      }
+      for (ISymbol function : system.functions) {
+        if (!expr.isFree(function)) {
+          return false;
+        }
+      }
+      return true;
     }
 
     /**

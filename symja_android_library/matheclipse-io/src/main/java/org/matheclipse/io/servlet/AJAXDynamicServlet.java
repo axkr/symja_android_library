@@ -104,7 +104,11 @@ public class AJAXDynamicServlet extends HttpServlet {
       }
     }
 
-    out.println(update(state, sessionID, id, controlIndex, value, actionIndex, poll, refresh));
+    // the point a ClickPane was clicked at
+    org.matheclipse.core.interfaces.IExpr point =
+        ManipulateSession.pointOf(req.getParameter("point"));
+    out.println(
+        update(state, sessionID, id, controlIndex, value, actionIndex, point, poll, refresh));
   }
 
   /**
@@ -115,6 +119,18 @@ public class AJAXDynamicServlet extends HttpServlet {
    */
   static String update(AJAXQueryServlet.SessionState state, String sessionID, String id,
       int controlIndex, JsonNode value, int actionIndex, long poll, boolean refresh)
+      throws IOException {
+    return update(state, sessionID, id, controlIndex, value, actionIndex,
+        org.matheclipse.core.expression.F.NIL, poll, refresh);
+  }
+
+  /**
+   * As {@link #update(AJAXQueryServlet.SessionState, String, String, int, JsonNode, int, long,
+   * boolean)}, with the point of a click.
+   */
+  static String update(AJAXQueryServlet.SessionState state, String sessionID, String id,
+      int controlIndex, JsonNode value, int actionIndex,
+      org.matheclipse.core.interfaces.IExpr point, long poll, boolean refresh)
       throws IOException {
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
@@ -130,8 +146,8 @@ public class AJAXDynamicServlet extends HttpServlet {
 
       // one evaluation per session at a time, and never on the engine's own monitor
       synchronized (state.lock) {
-        return evaluate(engine, sessionID, id, controlIndex, value, actionIndex, poll, refresh,
-            outWriter, errorWriter);
+        return evaluate(engine, sessionID, id, controlIndex, value, actionIndex, point, poll,
+            refresh, outWriter, errorWriter);
       }
     } finally {
       EvalEngine.remove();
@@ -143,8 +159,8 @@ public class AJAXDynamicServlet extends HttpServlet {
    * dynamic that does not finish must not hold on to the request thread.
    */
   private static String evaluate(EvalEngine engine, String sessionID, String id, int controlIndex,
-      JsonNode value, int actionIndex, long poll, boolean refresh, StringBuilderWriter outWriter,
-      StringBuilderWriter errorWriter) {
+      JsonNode value, int actionIndex, org.matheclipse.core.interfaces.IExpr point, long poll,
+      boolean refresh, StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<String> task = executor.submit(() -> {
       try {
@@ -154,8 +170,8 @@ public class AJAXDynamicServlet extends HttpServlet {
           answer = DynamicSession.applyControl(engine, sessionID, id, controlIndex, value,
               outWriter, errorWriter);
         } else if (actionIndex >= 0) {
-          answer = DynamicSession.applyAction(engine, sessionID, id, actionIndex, outWriter,
-              errorWriter);
+          answer = DynamicSession.applyAction(engine, sessionID, id, actionIndex, point,
+              outWriter, errorWriter);
         } else if (refresh) {
           answer = DynamicSession.refresh(engine, sessionID, id, outWriter, errorWriter);
         } else {

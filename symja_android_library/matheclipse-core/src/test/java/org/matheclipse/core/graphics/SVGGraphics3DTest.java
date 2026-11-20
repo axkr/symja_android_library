@@ -77,6 +77,32 @@ public class SVGGraphics3DTest {
   /**
    * A {@code Scaled} radius is resolved against the scene diagonal, so the ball still has a size.
    */
+  /** The radii of the circles a picture draws its points with. */
+  private static Set<String> dotRadii(String svg) {
+    Set<String> radii = new HashSet<>();
+    Matcher m = Pattern.compile("<circle[^>]*r=\"([0-9.]+)\"").matcher(svg);
+    while (m.find()) {
+      radii.add(m.group(1));
+    }
+    return radii;
+  }
+
+  @Test
+  public void pointsAreSizedOnThePage() {
+    // PointSize is a fraction of the picture width, a diameter
+    assertEquals(Set.of("9.000"),
+        dotRadii(svg("Graphics3D[{PointSize[0.05],Point[{{0,0,0},{2,3,1}}]}]")));
+    assertEquals(Set.of("5.000"),
+        dotRadii(svg("Graphics3D[{PointSize[0.05],Point[{0,0,0}]},ImageSize->200]")));
+    // AbsolutePointSize is a diameter in printer's points
+    assertEquals(Set.of("3.000"),
+        dotRadii(svg("Graphics3D[{AbsolutePointSize[6],Point[{1,1,1}]}]")));
+    // a size name inside PointSize is the same as on its own
+    assertEquals(dotRadii(svg("Graphics3D[{Large,Point[{0,0,0}]}]")),
+        dotRadii(svg("Graphics3D[{PointSize[Large],Point[{0,0,0}]}]")));
+    assertEquals(Set.of("3.240"), dotRadii(svg("Graphics3D[{PointSize[Large],Point[{0,0,0}]}]")));
+  }
+
   @Test
   public void aScaledSphereIsDrawn() {
     assertTrue(count(svg("Graphics3D[Sphere[{0,0,0},Scaled[0.2]],PlotRange->2]"), "polygon") > 50,

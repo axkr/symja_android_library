@@ -124,8 +124,12 @@ public class AJAXManipulateServlet extends HttpServlet {
       }
     }
 
+    // a frame the browser asked for on the timer of Refresh[..., UpdateInterval -> t]
+    boolean refresh = req.getParameter("refresh") != null;
+    // the point a ClickPane of the body was clicked at
+    IExpr point = ManipulateSession.pointOf(req.getParameter("point"));
     out.println(evaluate(session.getId(), spec, bindings, buttonIndex, bodyButtonIndex,
-        bodyControlIndex, bodyControlValue, id));
+        bodyControlIndex, bodyControlValue, id, refresh, point));
   }
 
   /**
@@ -137,6 +141,19 @@ public class AJAXManipulateServlet extends HttpServlet {
   static String evaluate(String sessionID, ManipulateSpec spec, JsonNode bindings, int buttonIndex,
       int bodyButtonIndex, int bodyControlIndex, JsonNode bodyControlValue, String id)
       throws IOException {
+    return evaluate(sessionID, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
+        bodyControlValue, id, false, org.matheclipse.core.expression.F.NIL);
+  }
+
+  /**
+   * As {@link #evaluate(String, ManipulateSpec, JsonNode, int, int, int, JsonNode, String)}.
+   *
+   * @param refresh <code>true</code> for a frame of an <code>UpdateInterval</code> timer, which
+   *        moved no control and so keeps the locals of a module at the end of the body
+   */
+  static String evaluate(String sessionID, ManipulateSpec spec, JsonNode bindings, int buttonIndex,
+      int bodyButtonIndex, int bodyControlIndex, JsonNode bodyControlValue, String id,
+      boolean refresh, IExpr point) throws IOException {
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringBuilderWriter errorWriter = new StringBuilderWriter();
@@ -159,7 +176,7 @@ public class AJAXManipulateServlet extends HttpServlet {
       // budgeted evaluation copies the engine from its worker thread
       synchronized (state.lock) {
         return evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
-            bodyControlValue, id, outWriter, errorWriter);
+            bodyControlValue, id, refresh, point, outWriter, errorWriter);
       }
     } finally {
       EvalEngine.remove();
@@ -184,7 +201,8 @@ public class AJAXManipulateServlet extends HttpServlet {
 
   private static String evaluate(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
       int buttonIndex, int bodyButtonIndex, int bodyControlIndex, JsonNode bodyControlValue,
-      String widgetId, StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+      String widgetId, boolean refresh, IExpr point, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Future<String> task = executor.submit(() -> {
       try {
@@ -195,10 +213,13 @@ public class AJAXManipulateServlet extends HttpServlet {
           updated = buttonIndex >= 0
               ? ManipulateSession.runButtonAction(engine, spec, bindings, buttonIndex)
               : ManipulateSession.runBodyButtonAction(engine, spec, bindings, widgetId,
-                  bodyButtonIndex);
+                  bodyButtonIndex, point);
         } else if (bodyControlIndex >= 0) {
           updated = ManipulateSession.applyBodyControl(engine, spec, bindings, widgetId,
               bodyControlIndex, bodyControlValue);
+        } else if (!refresh) {
+          // a panel control moved: the body is evaluated anew, a module at its end with it
+          ManipulateSession.controlsMoved(spec);
         }
         if (updated != null && !updated.isEmpty()) {
           // the write may have moved panel controls; render for the values it left behind
@@ -207,6 +228,15 @@ public class AJAXManipulateServlet extends HttpServlet {
           effective = merged;
         }
         ManipulateSession.Frame frame = ManipulateSession.evaluateFrame(engine, spec, effective);
+        // a control variable the body assigned moves its control
+        ObjectNode moved = ManipulateSession.movedBindings(spec, effective, frame.locals);
+        if (!moved.isEmpty()) {
+          if (updated == null) {
+            updated = moved;
+          } else {
+            updated.setAll(moved);
+          }
+        }
         IExpr result = ManipulateSession.registerBodyInteractions(engine, spec, effective,
             widgetId, frame.result);
         String[] rendered =
@@ -215,7 +245,7 @@ public class AJAXManipulateServlet extends HttpServlet {
             ManipulateSession.resolveEnabled(engine, spec, effective),
             ManipulateSession.resolveVisible(engine, spec, effective),
             ManipulateSession.renderDisplays(engine, spec, frame.locals, outWriter, errorWriter),
-            ManipulateSession.bodyControlsJSON(widgetId));
+            ManipulateSession.bodyControlsJSON(widgetId), frame.updateInterval);
       } catch (AbortException ae) {
         String[] aborted =
             AJAXQueryServlet.renderResult(engine, S.$Aborted, outWriter, errorWriter);
@@ -244,10 +274,11 @@ public class AJAXManipulateServlet extends HttpServlet {
   private static String withExtras(String resultJSON, ObjectNode updated,
       com.fasterxml.jackson.databind.node.ArrayNode enabled,
       com.fasterxml.jackson.databind.node.ArrayNode visible, ObjectNode displays,
-      com.fasterxml.jackson.databind.node.ArrayNode bodyControls) {
+      com.fasterxml.jackson.databind.node.ArrayNode bodyControls, double updateInterval) {
     boolean hasBindings = updated != null && !updated.isEmpty();
+    boolean timed = Double.isFinite(updateInterval);
     if (!hasBindings && enabled == null && visible == null && displays == null
-        && bodyControls == null) {
+        && bodyControls == null && !timed) {
       return resultJSON;
     }
     try {
@@ -267,6 +298,10 @@ public class AJAXManipulateServlet extends HttpServlet {
         }
         if (bodyControls != null) {
           ((ObjectNode) tree).set("bodyControls", bodyControls);
+        }
+        if (timed) {
+          // the browser asks for the next frame by itself after this many seconds
+          ((ObjectNode) tree).put("updateInterval", updateInterval);
         }
         return tree.toString();
       }

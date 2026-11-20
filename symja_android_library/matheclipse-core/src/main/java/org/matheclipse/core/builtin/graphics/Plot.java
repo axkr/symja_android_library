@@ -96,6 +96,7 @@ public class Plot extends ListPlot {
       ast = ast.copyUntil(argSize + 1);
     }
     IExpr function = ast.arg1();
+    expressionLegends(graphicsOptions, originalAST.arg1(), function);
     if (ast.arg2().isList3()) {
       final IAST rangeList = (IAST) ast.arg2();
       IExpr variable = rangeList.arg1();
@@ -152,6 +153,38 @@ public class Plot extends ListPlot {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>PlotLegends -> Automatic</code> or <code>"Expressions"</code>, also inside
+   * <code>Placed</code>: every curve is named by the expression it plots, as written in the call.
+   *
+   * @param graphicsOptions the options, whose legend is replaced by the list of expressions
+   * @param written the first argument of the call as it was written
+   * @param evaluated the first argument evaluated, which is the list of curves when the written
+   *        one only stands for it, like a symbol or <code>Evaluate(...)</code>
+   */
+  static void expressionLegends(GraphicsOptions graphicsOptions, IExpr written, IExpr evaluated) {
+    IExpr spec = graphicsOptions.plotLegends();
+    IAST placed = F.NIL;
+    if (spec.isAST(S.Placed) && spec.argSize() >= 1) {
+      placed = (IAST) spec;
+      spec = spec.first();
+    }
+    if (spec != S.Automatic && !(spec.isString() && spec.toString().equals("Expressions"))) {
+      return;
+    }
+    IExpr curves = PlotWrapper.strip(written);
+    if (!curves.isList()) {
+      IExpr evaluatedCurves = PlotWrapper.strip(evaluated);
+      if (evaluatedCurves.isList()) {
+        curves = evaluatedCurves;
+      } else {
+        curves = F.list(written.isAST(S.Evaluate, 2) ? evaluatedCurves : curves);
+      }
+    }
+    IAST labels = ((IAST) curves).map(curve -> F.HoldForm(PlotWrapper.strip(curve)), 1);
+    graphicsOptions.setPlotLegends(placed.isPresent() ? placed.setAtCopy(1, labels) : labels);
   }
 
   /**

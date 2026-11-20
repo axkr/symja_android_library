@@ -197,6 +197,157 @@ public class ManipulateSessionTest {
         ManipulateSession.evaluateFrame(engine, spec, bindings).result.toString());
   }
 
+  /** The body of one frame with the given slider value, as a string. */
+  private static String frame(EvalEngine engine, ManipulateSpec spec, String name, int value) {
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put(name, value);
+    return ManipulateSession.evaluateFrame(engine, spec, bindings).result.toString();
+  }
+
+  /** A hidden variable the body writes keeps its value from one frame to the next. */
+  @Test
+  public void testHiddenVariableKeepsItsValue() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine,
+        "Manipulate(calls = calls + 1; {w, calls}, {w, 0, 4, 1}, {{calls, 0}, ControlType -> None})");
+    assertEquals("{2,1}", frame(engine, spec, "w", 2));
+    assertEquals("{3,2}", frame(engine, spec, "w", 3));
+    assertEquals("{3,3}", frame(engine, spec, "w", 3));
+  }
+
+  /** What a button of the body writes into a hidden variable is there in the next frame. */
+  @Test
+  public void testBodyButtonWritesAHiddenVariable() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine, "Manipulate({Button(\"add\", acc = acc + w), acc},"
+        + " {w, 1, 6, 1}, {{acc, 10}, ControlType -> None})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 4);
+    ManipulateSession.Frame first = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    ManipulateSession.registerBodyInteractions(engine, spec, bindings, "hidden-test", first.result);
+    assertNotNull(ManipulateSession.runBodyButtonAction(engine, spec, bindings, "hidden-test", 0));
+    assertTrue(frame(engine, spec, "w", 4).endsWith(",14}"), frame(engine, spec, "w", 4));
+  }
+
+  /**
+   * The locals of a module at the end of the body survive the frames its own buttons cause, and
+   * start over when a panel control moves.
+   */
+  @Test
+  public void testModuleLocalsBetweenFrames() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine, "Manipulate(DynamicModule({stock = 5},"
+        + " {Button(\"take\", stock = stock - w), stock}), {w, 1, 3, 1})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 2);
+    ManipulateSession.Frame first = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertTrue(first.result.toString().endsWith(",5}"), first.result.toString());
+    ManipulateSession.registerBodyInteractions(engine, spec, bindings, "module-test", first.result);
+    ManipulateSession.runBodyButtonAction(engine, spec, bindings, "module-test", 0);
+    assertTrue(frame(engine, spec, "w", 2).endsWith(",3}"), frame(engine, spec, "w", 2));
+    ManipulateSession.controlsMoved(spec);
+    assertTrue(frame(engine, spec, "w", 3).endsWith(",5}"), frame(engine, spec, "w", 3));
+  }
+
+  /**
+   * A Refresh with an UpdateInterval gives the frame its timer, worked out with the frame's own
+   * control values; the timed frames carry the hidden variables on.
+   */
+  @Test
+  public void testRefreshUpdateInterval() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine, "Manipulate(Refresh(beats = beats + 1; {w, beats},"
+        + " UpdateInterval -> If(w > 0, 1/4, Infinity)), {w, 0, 2, 1},"
+        + " {{beats, 0}, ControlType -> None})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 1);
+    ManipulateSession.Frame frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertEquals("{1,1}", frame.result.toString());
+    assertEquals(0.25, frame.updateInterval);
+    frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertEquals("{1,2}", frame.result.toString());
+    bindings.put("w", 0);
+    frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertEquals("{0,3}", frame.result.toString());
+    assertTrue(Double.isInfinite(frame.updateInterval), "no timer once the interval is Infinity");
+    // a body without Refresh has no timer
+    ManipulateSpec plain = widget(engine, "Manipulate(w^2, {w, 0, 2, 1})");
+    assertTrue(
+        Double.isInfinite(ManipulateSession.evaluateFrame(engine, plain, bindings).updateInterval));
+  }
+
+  /** A click on a ClickPane of the body applies its function to the point, for the next frame. */
+  @Test
+  public void testBodyClickPaneGetsThePoint() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine, "Manipulate({ClickPane(Graphics(Point(spot),"
+        + " PlotRange -> 1), (spot = #) &), w, spot}, {w, 0, 2, 1},"
+        + " {{spot, {0, 0}}, ControlType -> None})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 1);
+    ManipulateSession.Frame first = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    IExpr rewritten = ManipulateSession.registerBodyInteractions(engine, spec, bindings,
+        "click-test", first.result);
+    assertTrue(rewritten.toString().startsWith("{ClickPane(Graphics("), rewritten.toString());
+    assertNotNull(ManipulateSession.runBodyButtonAction(engine, spec, bindings, "click-test", 0,
+        ManipulateSession.pointOf("[0.5, -0.25]")));
+    assertTrue(frame(engine, spec, "w", 1).endsWith(",1,{0.5,-0.25}}"),
+        frame(engine, spec, "w", 1));
+    assertTrue(ManipulateSession.pointOf("[\"a\", 1]").isNIL());
+  }
+
+  /** A locator the body leaves where it was is not moved, whatever number type it was sent as. */
+  @Test
+  public void testUnchangedLocatorIsNotMoved() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec =
+        widget(engine, "Manipulate(Graphics(Point(p), PlotRange -> 2), {{p, {1, 1}}, Locator})");
+    ObjectNode bindings = (ObjectNode) MAPPER.readTree("{\"p\": [[1, 1]]}");
+    ManipulateSession.Frame frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertTrue(ManipulateSession.movedBindings(spec, bindings, frame.locals).isEmpty());
+  }
+
+  /** The locals of a hoisted module are its own, not the symbols of the same name outside. */
+  @Test
+  public void testModuleLocalsAreRenamed() throws Exception {
+    EvalEngine engine = engine();
+    EvalEngine.set(engine);
+    engine.evaluate(engine.parse("stock = 100; peek() := stock"));
+    ManipulateSpec spec = widget(engine, "Manipulate(DynamicModule({stock = 5},"
+        + " {Button(\"take\", stock = stock - w), stock, peek()}), {w, 1, 3, 1})");
+    assertTrue(frame(engine, spec, "w", 2).endsWith(",5,100}"), frame(engine, spec, "w", 2));
+  }
+
+  /** Only a Refresh the frame evaluates asks for the next frame. */
+  @Test
+  public void testRefreshInAnUnusedBranch() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine,
+        "Manipulate(If(w > 1, Refresh(w, UpdateInterval -> 0.2), \"off\"), {w, 0, 2, 1})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 0);
+    assertTrue(Double
+        .isInfinite(ManipulateSession.evaluateFrame(engine, spec, bindings).updateInterval));
+    bindings.put("w", 2);
+    assertEquals(0.2, ManipulateSession.evaluateFrame(engine, spec, bindings).updateInterval);
+  }
+
+  /** A control variable the body assigns moves its control. */
+  @Test
+  public void testBodyAssignmentMovesTheControl() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine, "Manipulate(If(w > 4, w = 4); w^2, {w, 0, 9, 1})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("w", 7);
+    ManipulateSession.Frame frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertEquals("16", frame.result.toString());
+    assertEquals(4.0,
+        ManipulateSession.movedBindings(spec, bindings, frame.locals).get("w").asDouble());
+    bindings.put("w", 2);
+    frame = ManipulateSession.evaluateFrame(engine, spec, bindings);
+    assertTrue(ManipulateSession.movedBindings(spec, bindings, frame.locals).isEmpty());
+  }
+
   /**
    * The text a browser sends for an input field is code only where the field says it takes an
    * expression and the deployment lets it.

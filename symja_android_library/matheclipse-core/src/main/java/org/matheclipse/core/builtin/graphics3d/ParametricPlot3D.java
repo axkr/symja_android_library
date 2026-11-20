@@ -60,7 +60,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     PlotWrapper.collectCurves(ast.arg1(), functions);
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS],
-        isSurface ? SURFACE_POINTS : CURVE_POINTS);
+        isSurface ? SURFACE_POINTS : CURVE_POINTS,
+        isSurface ? Plot3DTools.MAX_GRID_POINTS : Plot3DTools.MAX_CURVE_POINTS);
     IExpr plotStyle = options[Plot3DTools.X_PLOT_STYLE];
     IExpr meshOption = options[Plot3DTools.X_MESH];
     IASTAppendable graphicsList = F.ListAlloc(functions.size());
@@ -173,6 +174,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     IASTAppendable currentLine = F.ListAlloc(pointsCount);
 
     for (int i = 0; i < pointsCount; i++) {
+      engine.checkTimeLimit();
       double u = uMin + i * step;
       double[] point = evaluatePoint(func, engine, F.List(F.Rule(uVar, F.num(u))), monitor);
       if (point != null && region != null && !region.accepts(point[0], point[1], point[2], u)) {

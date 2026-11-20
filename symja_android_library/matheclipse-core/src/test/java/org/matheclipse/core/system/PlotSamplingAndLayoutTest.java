@@ -473,6 +473,157 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testClickPaneIsItsPicture() {
+    // a ClickPane outside an interactive output shows its picture, inert
+    check("m=MathMLForm(ClickPane(Graphics(Disk(),ImageSize->40),Print));"
+        + "{StringContainsQ(m,\"ClickPane\"),StringContainsQ(m,\"<svg\"),StringContainsQ(m,\"symjaclick\")}", //
+        "{False,True,False}");
+    // with the position of a kept function it is marked for the clicks
+    check("m=MathMLForm(ClickPane(Graphics(Disk(),ImageSize->40),3));"
+        + "{StringContainsQ(m,\"data-action=\\\"3\\\"\"),StringContainsQ(m,\"data-frame\")}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testEventHandlerIsItsContent() {
+    // outside an interactive output an EventHandler is its content
+    check("StringContainsQ(MathMLForm(EventHandler(\"tap\", {\"MouseClicked\" :> Print(1)})),"
+        + "{\"EventHandler\", \"symjaclick\"})", //
+        "False");
+    // with the positions of kept actions it is marked for the events
+    check("m=MathMLForm(EventHandler(Graphics(Disk(),ImageSize->40),{2,-1,5}));"
+        + "{StringContainsQ(m,\"data-action=\\\"2\\\"\"),StringContainsQ(m,\"data-drag=\\\"5\\\"\"),"
+        + "StringContainsQ(m,\"data-down\")}", //
+        "{True,True,False}");
+    check("StringContainsQ(MathMLForm(EventHandler(\"tap\",{0,-1,-1})),\"<mrow class=\")", //
+        "True");
+  }
+
+  @Test
+  public void testClickableWrappedPictureAndStackedLegends() {
+    // a picture with a legend is clickable too
+    check("StringContainsQ(MathMLForm(ClickPane(Legended(Graphics(Disk(),ImageSize->40),"
+        + "LineLegend({Red},{\"a\"})),0)),\"symjaclick\")", //
+        "True");
+    // legends of different kinds are drawn one below the other
+    check("s=ExportString(Legended(Graphics(Line({{0,0},{1,1}})),{LineLegend({Red},{\"ln\"}),"
+        + "PointLegend({Blue},{\"pt\"})}),\"SVG\");"
+        + "{StringContainsQ(s,\">ln<\"),StringContainsQ(s,\">pt<\"),StringCount(s,\"<circle\")}", //
+        "{True,True,1}");
+  }
+
+  @Test
+  public void testPictureCarriesItsDataFrame() {
+    // a page puts the points of a Locator on the picture with the frame of its coordinates:
+    // x0 + (x - xmin) sx, y0 - (y - ymin) sy
+    check("f=ToExpression(StringSplit(First(StringCases(ExportString(Graphics(Line({{-1,-2},{3,2}}),"
+        + "PlotRange->{{-1,3},{-2,2}}),\"SVG\"),RegularExpression(\"data-frame=.([^\\\"]+)\"):>\"$1\"))));"
+        + "{Length(f), f[[5]], f[[6]], f[[3]]>0, f[[4]]>0}", //
+        "{6,-1.0,-2.0,True,True}");
+    // a scaled axis has none
+    check("StringContainsQ(ExportString(LogPlot(Exp(u),{u,0,2}),\"SVG\"),\"data-frame\")", //
+        "False");
+  }
+
+  @Test
+  public void testWrappedLabelsAreDrawnNotPrinted() {
+    // a turned label is written along its direction
+    check("s=ExportString(Graphics({Text(Rotate(\"up\",Pi/2),{0,0}),Point({2,1})}),\"SVG\");"
+        + "{StringContainsQ(s,\"Rotate\"),StringContainsQ(s,\"rotate(-90\"),StringContainsQ(s,\">up<\")}", //
+        "{False,True,True}");
+    check("s=ExportString(Plot(u,{u,0,2},Epilog->Inset(Rotate(Style(\"mark\",Blue),Pi/2),{1,1})),"
+        + "\"SVG\");{StringContainsQ(s,\"Rotate\"),StringContainsQ(s,\">mark<\")}", //
+        "{False,True}");
+    // a panel is a box around its text
+    check("s=ExportString(Graphics({Inset(Panel(\"box\"),{0,0}),Point({1,1})}),\"SVG\");"
+        + "{StringContainsQ(s,\"Panel\"),StringContainsQ(s,\">box<\"),StringCount(s,\"<rect\")>1}", //
+        "{False,True,True}");
+    // Framed and TextCell plot labels show their text
+    check("s=ExportString(Plot(u,{u,0,2},PlotLabel->Framed(\"head\"),AxesLabel->{TextCell(\"tc\"),None}),"
+        + "\"SVG\");{StringContainsQ(s,\"Framed\"),StringContainsQ(s,\"TextCell\"),"
+        + "StringContainsQ(s,\">head<\"),StringContainsQ(s,\">tc<\")}", //
+        "{False,False,True,True}");
+    // scripts without script characters, subsuperscripts and square roots
+    check("s=ExportString(Graphics({Text(Superscript(q,-w^3),{0,0}),Text(Subsuperscript(z,0,3),{1,0}),"
+        + "Text(Sqrt(5),{0,1}),Text(Subscript(m,j+k),{1,1})}),\"SVG\");"
+        + "StringCases(s,RegularExpression(\">[^<>]+</text>\"))", //
+        "{>q^(-w³)</text>,>z₀³</text>,>√5</text>,>m_(j + k)</text>}");
+    // an image inset is no text
+    check("s=ExportString(Graphics({Inset(Image({{1,0},{0,1}}),{0,0}),Point({1,1})}),\"SVG\");"
+        + "StringContainsQ(s,\"Image(\")", //
+        "False");
+    // Magnify scales a picture, a formula and a label
+    check("m=MathMLForm(Magnify(Graphics(Line({{0,0},{1,2}}),ImageSize->150),3));"
+        + "{StringContainsQ(m,\"Magnify\"),StringContainsQ(m,\"width=\\\"450\")}", //
+        "{False,True}");
+    check("StringContainsQ(MathMLForm(Magnify(a+b^2,2)),\"mathsize=\\\"200%\")", //
+        "True");
+    check("s=ExportString(Graphics({Text(Magnify(\"wide\",3),{0,0}),Point({1,1})}),\"SVG\");"
+        + "{StringContainsQ(s,\"Magnify\"),StringContainsQ(s,\"font-size=\\\"36\")}", //
+        "{False,True}");
+    // a Null slot of a row shows nothing
+    check("StringContainsQ(MathMLForm(Row({\"p\",Null,\"q\"})),\"Null\")", //
+        "False");
+  }
+
+  @Test
+  public void testExactTicksAndTraditionalLabels() {
+    // an exact tick position is labelled as it is written
+    check("s=ExportString(Plot(Cos(u),{u,-2*Pi,2*Pi},Ticks->{{-2*Pi,-Pi/3,3*Pi/2},{-1,-1/4}}),"
+        + "\"SVG\");StringCases(s,RegularExpression(\">[^<>]{1,8}</text>\"))", //
+        "{>-2 π</text>,>-π/3</text>,>3 π/2</text>,>-1</text>,>-1/4</text>}");
+    // machine numbers keep their decimal labels
+    check("s=ExportString(Plot(u,{u,0,1},Ticks->{{0.25,0.5},None}),\"SVG\");"
+        + "StringCases(s,RegularExpression(\">0[.][0-9]+</text>\"))", //
+        "{>0.25</text>,>0.5</text>}");
+    // labels are set in traditional notation
+    check("s=ExportString(Graphics({Text(Cosh(w)^3,{0,0}),Text(Sqrt(1+w)/2,{1,0}),"
+        + "Text(ArcSin(v)>=g(v),{1,1})},PlotLabel->Gamma(1+k)/Log(k)),\"SVG\");"
+        + "StringCases(s,RegularExpression(\">[^<>]+</text>\"))", //
+        "{>cosh³(w)</text>,>√(1 + w)/2</text>,>sin⁻¹(v) ≥ g(v)</text>,>Γ(1 + k)/log(k)</text>}");
+  }
+
+  @Test
+  public void testLegendsOfCombinedAndAutomaticPlots() {
+    // Show draws the legends of all the legended plots it combines as one
+    check("s=ExportString(Show(Plot(t,{t,0,2},PlotLegends->{\"up\"}),"
+        + "Plot(2-t,{t,0,2},PlotStyle->Green,PlotLegends->{\"down\",\"none\"}),"
+        + "Plot({t/2,t/3},{t,0,2},PlotLegends->{\"half\",\"third\"})),\"SVG\");"
+        + "StringCases(s,RegularExpression(\">(up|down|half|third)<\"))", //
+        "{>up<,>down<,>half<,>third<}");
+    // Automatic and "Expressions" name every curve by the expression it plots
+    check("l=Plot({Cos(t),t^2},{t,0,1},PlotLegends->Automatic)[[2]];{Head(l[[1]]),l[[1,2]],l[[2]]}", //
+        "{LineLegend,{Cos(t),t^2},After}");
+    check("Plot(Exp(-t),{t,0,1},PlotLegends->Placed(\"Expressions\",Below))[[2]]", //
+        "Placed(LineLegend({RGBColor(0.24,0.6,0.8)},{E^(-t)}),Below)");
+    check("h={t,1-t};Plot(h,{t,0,1},PlotLegends->Automatic)[[2,1,2]]", //
+        "{t,1-t}");
+    // a shaded contour plot has a bar of its colours over the range of the values
+    check("c=ContourPlot(u-v,{u,0,3},{v,0,1},PlotLegends->Automatic);"
+        + "{Head(c), c[[2,1,1,2]]}", //
+        "{Legended,{-1.0,3.0}}");
+    check("Head(ContourPlot(u^2+v^2==1,{u,-1,1},{v,-1,1},PlotLegends->Automatic))", //
+        "Graphics");
+  }
+
+  @Test
+  public void testCurvePlotPointsAndLabelBlanks() {
+    // a space curve takes many more PlotPoints than a surface grid
+    check("Length(First(Cases(ParametricPlot3D({s,s^2,1-s},{s,0,1},PlotPoints->600), "
+        + "Line(p_):>p, Infinity)))", //
+        "600");
+    // blanks at the ends of a label or in a row are kept
+    check("StringContainsQ(ExportString(Graphics(Text(\" ab\",{0,0})),\"SVG\"),"
+        + "\"xml:space=\\\"preserve\")", //
+        "True");
+    check("StringContainsQ(ExportString(Graphics(Text(\"a b\",{0,0})),\"SVG\"),\"xml:space\")", //
+        "False");
+    check("StringContainsQ(ExportString(Graphics3D({Text(\"p  q\",{0,0,0})}),\"SVG\"),"
+        + "\"xml:space=\\\"preserve\")", //
+        "True");
+  }
+
+  @Test
   public void testAxesStyleFontSize() {
     // a font size of AxesStyle or FrameStyle sizes the tick labels and the axes or frame labels
     check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, AxesStyle -> Directive(Blue, 17), "

@@ -67,10 +67,42 @@ public final class LegendRenderer {
     if (!isSupported(spec)) {
       return;
     }
+    if (isLegendList(spec)) {
+      // legends of different kinds, the plots Show combined: one below the other
+      double offset = 0.0;
+      boolean bar = false;
+      for (IExpr legend : (IAST) spec) {
+        if (isBarLegend(legend)) {
+          if (!bar) {
+            drawBarLegend((IAST) legend, gradientId, parent);
+            bar = true;
+          }
+          continue;
+        }
+        offset = drawEntries(legend, parent, offset);
+      }
+      return;
+    }
     if (isBarLegend(spec)) {
       drawBarLegend((IAST) spec, gradientId, parent);
       return;
     }
+    drawEntries(spec, parent, 0.0);
+  }
+
+  /** A list of legends rather than a list of labels. */
+  private static boolean isLegendList(IExpr spec) {
+    return spec.isList() && spec.argSize() > 0
+        && ((IAST) spec).forAll(x -> isListLegend(x) || isBarLegend(x));
+  }
+
+  /**
+   * Draw a legend that names its entries one by one, <code>offset</code> pixels below the top of
+   * the legend area.
+   *
+   * @return the offset below it, where a next legend goes
+   */
+  private double drawEntries(IExpr spec, ContainerTag<?> parent, double offset) {
     List<String> labels = labels(spec);
     IExpr markerSource = spec;
     boolean swatch = spec.isAST(S.SwatchLegend);
@@ -79,11 +111,11 @@ public final class LegendRenderer {
       markerSource = spec.argSize() >= 1 ? ((IAST) spec).arg1() : spec;
     }
     if (labels.isEmpty()) {
-      return;
+      return offset;
     }
     // a LineLegend names curves and a PointLegend points; a bare list of labels follows Joined
     boolean line = spec.isAST(S.LineLegend) || (!spec.isAST(S.PointLegend) && options.joined);
-    drawListLegend(labels, markerSource, swatch, line, parent);
+    return offset + drawListLegend(labels, markerSource, swatch, line, parent, offset) + 6.0;
   }
 
   private static boolean isListLegend(IExpr spec) {
@@ -122,12 +154,13 @@ public final class LegendRenderer {
     return labels;
   }
 
-  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch, boolean line,
-      ContainerTag<?> parent) {
+  /** @return the height of the legend's box */
+  private double drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
+      boolean line, ContainerTag<?> parent, double offset) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
-    double yBase = viewport.plotY1 + 12;
+    double yBase = viewport.plotY1 + 12 + offset;
     double boxHeight = count * lineHeight + 8;
 
     parent.with(tag("rect").attr("x", SvgRenderer2D.fmt(xBase - 6))
@@ -158,6 +191,7 @@ public final class LegendRenderer {
           .attr("y", SvgRenderer2D.fmt(y)).attr("fill", "black").attr("font-family", "sans-serif")
           .attr("font-size", "11").withText(labels.get(i)));
     }
+    return boxHeight;
   }
 
   /** The swatch colour for legend entry {@code index}. */

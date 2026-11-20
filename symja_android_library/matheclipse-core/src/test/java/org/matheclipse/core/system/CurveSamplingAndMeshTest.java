@@ -127,8 +127,8 @@ public class CurveSamplingAndMeshTest extends ExprEvaluatorTestCase {
   public void testSmallGraphicKeepsItsShape() {
     // a narrow picture is not stretched to a minimum height
     check("StringCases(ExportString(Graphics(Rectangle(), ImageSize -> 24), \"SVG\"), "
-        + "RegularExpression(\"<svg[^>]*>\"))", //
-        "{<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">}");
+        + "RegularExpression(\"<svg[^>]*viewBox=\\\"[^\\\"]*\\\"\"))", //
+        "{<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"}");
   }
 
   @Test

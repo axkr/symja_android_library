@@ -296,7 +296,7 @@ public class DensityPlot extends ListPlot {
   }
 
   /** The colour function of the legend: a named scheme, or the default gradient of the plot. */
-  private static IExpr legendColorFunction(IExpr colorFunction) {
+  static IExpr legendColorFunction(IExpr colorFunction) {
     if (colorFunction.isString() || (colorFunction != S.Automatic && colorFunction.isPresent())) {
       return colorFunction;
     }

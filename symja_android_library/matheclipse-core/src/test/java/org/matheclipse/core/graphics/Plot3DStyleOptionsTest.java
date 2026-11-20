@@ -235,7 +235,7 @@ public class Plot3DStyleOptionsTest {
    */
   @Test
   public void testAutomaticAxesLabelsAreTheVariablesAndTheFunction() {
-    assertEquals("[\"x\",\"y\",\"Sin(x+y)\"]",
+    assertEquals("[\"x\",\"y\",\"sin(x + y)\"]",
         axesLabels("Plot3D[Sin[x+y],{x,0,1},{y,0,1},AxesLabel->Automatic]"));
     assertFalse(
         org.matheclipse.core.graphics.SVGGraphics3D

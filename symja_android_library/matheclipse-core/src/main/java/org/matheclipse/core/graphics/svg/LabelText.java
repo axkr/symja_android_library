@@ -1,6 +1,7 @@
 package org.matheclipse.core.graphics.svg;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.NumberFormatter.FormattedNumber;
@@ -44,6 +45,12 @@ public final class LabelText {
     }
     if ((expr.isAST(S.Style) || expr.isAST(S.Text)) && expr.argSize() >= 1) {
       // Text(expr) as a label is the label expr
+      return of(expr.first());
+    }
+    if ((expr.isAST(S.Framed) || expr.isAST(S.Panel) || expr.isAST(S.Pane)
+        || expr.isAST(S.TextCell) || expr.isAST(S.Rotate) || expr.isAST(S.Tooltip)
+        || expr.isAST(S.Magnify)) && expr.argSize() >= 1) {
+      // a box, a turn, a size or a hover around a label: as text, what it holds
       return of(expr.first());
     }
     if (expr.isAST(S.HoldForm, 2) || expr.isAST(S.TraditionalForm, 2)
@@ -131,10 +138,23 @@ public final class LabelText {
       // 1/x
       return product(org.matheclipse.core.expression.F.Times(expr));
     }
+    if (expr.isPower() && expr.exponent().isNumEqualRational(
+        org.matheclipse.core.expression.F.C1D2)) {
+      // the square root, its radicand in parentheses unless it is a single symbol or number
+      IExpr radicand = expr.base();
+      String text = of(radicand);
+      return "\u221A" + (radicand.isAtom() ? text : "(" + text + ")");
+    }
     if ((expr.isPower() || expr.isAST(S.Superscript, 3) || expr.isAST(S.Subscript, 3))) {
       boolean sub = expr.isAST(S.Subscript);
       String script = script(of(expr.second()), sub ? SUB_FROM : SUPER_FROM,
           sub ? SUB_TO : SUPER_TO);
+      if (script != null && expr.isPower() && expr.exponent().isInteger()
+          && expr.exponent().isPositive() && isNamedFunctionCall(expr.base())) {
+        // sin²(x): the power goes on the name of the function
+        IAST call = (IAST) expr.base();
+        return functionName((ISymbol) call.head()) + script + "(" + joined(call, ", ") + ")";
+      }
       if (script != null) {
         String base = of(expr.first());
         if (expr.first().isPlus() || expr.first().isTimes()) {
@@ -142,6 +162,26 @@ public final class LabelText {
         }
         return base + script;
       }
+      if (expr.isPower()) {
+        // an exponent without superscript characters, after a caret
+        String base = of(expr.first());
+        if (!expr.first().isAtom()) {
+          base = "(" + base + ")";
+        }
+        return base + "^" + scriptText(expr.second());
+      }
+    }
+    if (expr.isAST(S.Superscript, 3) || expr.isAST(S.Subscript, 3)) {
+      // a script without superscript or subscript characters, after a caret or an underscore
+      return scriptBase(expr.first()) + (expr.isAST(S.Subscript) ? "_" : "^")
+          + scriptText(expr.second());
+    }
+    if (expr.isAST(S.Subsuperscript, 4)) {
+      // x with the subscript first, then the superscript
+      String sub = script(of(expr.second()), SUB_FROM, SUB_TO);
+      String sup = script(of(((IAST) expr).arg3()), SUPER_FROM, SUPER_TO);
+      return scriptBase(expr.first()) + (sub != null ? sub : "_" + scriptText(expr.second()))
+          + (sup != null ? sup : "^" + scriptText(((IAST) expr).arg3()));
     }
     if (expr.isAST(S.SuperStar, 2) || expr.isAST(S.SuperDagger, 2)) {
       // x* and x\u2020: the mark follows the base
@@ -149,6 +189,9 @@ public final class LabelText {
     }
     if (expr == S.Pi) {
       return "\u03C0";
+    }
+    if (expr == S.E) {
+      return "e";
     }
     if (expr.isInfinity()) {
       return "\u221E";
@@ -159,10 +202,210 @@ public final class LabelText {
     if (expr.isTimes()) {
       return product((IAST) expr);
     }
+    String traditional = traditional(expr);
+    if (traditional != null) {
+      return traditional;
+    }
     // a derivative anywhere inside is written with the same prime marks as one which stands alone
     return PrimitiveCollector
         .unquote((expr.isFree(S.Derivative, true) ? expr : primed(expr)).toString());
   }
+
+  /**
+   * The relations, lists, rules and function calls of a label as they are set in traditional
+   * notation: <code>x == 1</code> as <code>x = 1</code>, <code>Sin(x)</code> as
+   * <code>sin(x)</code>, <code>f(t)</code> with parentheses, <code>Abs(x)</code> as
+   * <code>|x|</code>.
+   *
+   * @return <code>null</code> for anything else, which keeps its written form
+   */
+  private static String traditional(IExpr expr) {
+    if (!expr.isAST() || expr.isAST0()) {
+      return null;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isList()) {
+      return "{" + joined(ast, ", ") + "}";
+    }
+    String relation = relation(ast.head());
+    if (relation != null && ast.argSize() >= 2) {
+      return joined(ast, relation);
+    }
+    if (ast.isAST(S.Abs, 2)) {
+      return "|" + of(ast.arg1()) + "|";
+    }
+    if (ast.isAST(S.Floor, 2)) {
+      return "\u230A" + of(ast.arg1()) + "\u230B";
+    }
+    if (ast.isAST(S.Ceiling, 2)) {
+      return "\u2308" + of(ast.arg1()) + "\u2309";
+    }
+    if (ast.isAST(S.Factorial, 2)) {
+      return factorText(ast.arg1()) + "!";
+    }
+    IExpr head = ast.head();
+    String name;
+    if (head.isBuiltInSymbol()) {
+      if (!((ISymbol) head).isNumericFunctionAttribute()) {
+        // a builtin which is no mathematical function keeps its written form
+        return null;
+      }
+      name = functionName((ISymbol) head);
+    } else if (head.isSymbol()) {
+      name = of(head);
+    } else if (isDerivative(head)) {
+      // f'(t)
+      name = derivative(head);
+    } else if (head.isAST(S.Style) || head.isAST(S.Subscript) || head.isAST(S.Superscript)) {
+      // Style("E", Italic)(t) is E(t)
+      name = of(head);
+    } else {
+      return null;
+    }
+    return name + "(" + joined(ast, ", ") + ")";
+  }
+
+  /**
+   * <code>true</code> for a call of a function whose name is set in lower case, like
+   * <code>Sin(x)</code>, whose powers are written on the name.
+   */
+  private static boolean isNamedFunctionCall(IExpr expr) {
+    if (!expr.isAST() || expr.isAST0() || !expr.head().isBuiltInSymbol()) {
+      return false;
+    }
+    String set = setName((ISymbol) expr.head());
+    return set != null && Character.isLowerCase(set.charAt(0)) && !set.endsWith(INVERSE)
+        && expr.head() != S.Sign;
+  }
+
+  /** The base of a script, in parentheses if it is a sum or a product. */
+  private static String scriptBase(IExpr base) {
+    String text = of(base);
+    return base.isPlus() || base.isTimes() ? "(" + text + ")" : text;
+  }
+
+  /**
+   * A script written after a caret or an underscore, in parentheses unless it is a symbol or a
+   * natural number: <code>x^(1/3)</code>, <code>x^(-2)</code>.
+   */
+  private static String scriptText(IExpr script) {
+    String text = of(script);
+    return script.isSymbol() || (script.isInteger() && !script.isNegative()) ? text
+        : "(" + text + ")";
+  }
+
+  /** The separator of a relation written between its sides, or <code>null</code>. */
+  private static String relation(IExpr head) {
+    if (head == S.Equal) {
+      return " = ";
+    }
+    if (head == S.Unequal) {
+      return " \u2260 ";
+    }
+    if (head == S.Less) {
+      return " < ";
+    }
+    if (head == S.LessEqual) {
+      return " \u2264 ";
+    }
+    if (head == S.Greater) {
+      return " > ";
+    }
+    if (head == S.GreaterEqual) {
+      return " \u2265 ";
+    }
+    if (head == S.Rule) {
+      return " \u2192 ";
+    }
+    return null;
+  }
+
+  /**
+   * The name a mathematical function is set with: the trigonometric and hyperbolic functions and
+   * the logarithm in lower case, their inverses as <code>sin\u207B\u00B9</code>, the gamma and
+   * zeta functions by their Greek letters.
+   */
+  private static String functionName(ISymbol function) {
+    String set = setName(function);
+    return set != null ? set : of(function);
+  }
+
+  /**
+   * The name a function is set with in traditional notation, or <code>null</code> for one which
+   * keeps its own name.
+   */
+  private static String setName(ISymbol function) {
+    if (!function.isBuiltInSymbol()) {
+      return null;
+    }
+    switch (((org.matheclipse.core.interfaces.IBuiltInSymbol) function).ordinal()) {
+      case ID.Sin:
+        return "sin";
+      case ID.Cos:
+        return "cos";
+      case ID.Tan:
+        return "tan";
+      case ID.Cot:
+        return "cot";
+      case ID.Sec:
+        return "sec";
+      case ID.Csc:
+        return "csc";
+      case ID.Sinh:
+        return "sinh";
+      case ID.Cosh:
+        return "cosh";
+      case ID.Tanh:
+        return "tanh";
+      case ID.Coth:
+        return "coth";
+      case ID.Sech:
+        return "sech";
+      case ID.Csch:
+        return "csch";
+      case ID.Log:
+        return "log";
+      case ID.Erf:
+        return "erf";
+      case ID.Erfc:
+        return "erfc";
+      case ID.ArcSin:
+        return "sin" + INVERSE;
+      case ID.ArcCos:
+        return "cos" + INVERSE;
+      case ID.ArcTan:
+        return "tan" + INVERSE;
+      case ID.ArcCot:
+        return "cot" + INVERSE;
+      case ID.ArcSec:
+        return "sec" + INVERSE;
+      case ID.ArcCsc:
+        return "csc" + INVERSE;
+      case ID.ArcSinh:
+        return "sinh" + INVERSE;
+      case ID.ArcCosh:
+        return "cosh" + INVERSE;
+      case ID.ArcTanh:
+        return "tanh" + INVERSE;
+      case ID.ArcCoth:
+        return "coth" + INVERSE;
+      case ID.ArcSech:
+        return "sech" + INVERSE;
+      case ID.ArcCsch:
+        return "csch" + INVERSE;
+      case ID.Sign:
+        return "sgn";
+      case ID.Gamma:
+        return "\u0393";
+      case ID.Zeta:
+        return "\u03B6";
+      default:
+        return null;
+    }
+  }
+
+  /** The superscript -1 of an inverse function. */
+  private static final String INVERSE = "\u207B\u00B9";
 
   /**
    * The number of a number form wrapper as it is written in a picture, with the exponent of the
@@ -215,11 +458,15 @@ public final class LabelText {
         negative = true;
         continue;
       }
-      if (factor.isFraction() && ((org.matheclipse.core.interfaces.IFraction) factor).numerator()
-          .abs().isOne()) {
-        // a/2 instead of 1/2 a
+      if (factor.isFraction()) {
+        // 3 π/4 instead of 3/4 π
+        org.matheclipse.core.interfaces.IFraction fraction =
+            (org.matheclipse.core.interfaces.IFraction) factor;
         negative ^= factor.isNegative();
-        append(denominator, of(((org.matheclipse.core.interfaces.IFraction) factor).denominator()));
+        if (!fraction.numerator().abs().isOne()) {
+          append(numerator, of(fraction.numerator().abs()));
+        }
+        append(denominator, of(fraction.denominator()));
         denominators++;
         continue;
       }

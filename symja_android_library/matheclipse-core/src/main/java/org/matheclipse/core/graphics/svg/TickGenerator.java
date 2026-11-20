@@ -196,11 +196,20 @@ public final class TickGenerator {
       } else {
         double value = ColorUtil.dbl(entry, Double.NaN);
         if (!Double.isNaN(value)) {
-          ticks.add(new Tick(value, trim(value), true));
+          // an exact position is labelled the way it is written, Pi/2 as π/2 and 1/3 as 1/3
+          ticks.add(new Tick(value, isExactLabel(entry) ? LabelText.of(entry) : trim(value), true));
         }
       }
     }
     return ticks;
+  }
+
+  /**
+   * <code>true</code> for a tick position which is no machine number and not a plain integer
+   * either: a fraction or an expression like <code>Pi/2</code>, which reads better as written.
+   */
+  private static boolean isExactLabel(IExpr position) {
+    return position.isFraction() || !position.isNumber();
   }
 
   /**

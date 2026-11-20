@@ -529,8 +529,27 @@ public final class SvgRenderer2D {
       text.attr("transform",
           String.format(Locale.US, "rotate(%.3f %s %s)", angle, fmt(x), fmt(y + dy)));
     }
+    if (keepsBlanks(prim.text)) {
+      text.attr("xml:space", "preserve");
+    }
     withLines(text, prim.text, x, style.fontSize, 0.5);
     parent.with(text);
+  }
+
+  /**
+   * <code>true</code> if a label has blanks at its ends or several in a row, which SVG collapses
+   * into one unless the text element preserves them.
+   */
+  public static boolean keepsBlanks(String content) {
+    if (content == null || content.isEmpty()) {
+      return false;
+    }
+    for (String line : content.split("\n", -1)) {
+      if (line.startsWith(" ") || line.endsWith(" ") || line.contains("  ")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

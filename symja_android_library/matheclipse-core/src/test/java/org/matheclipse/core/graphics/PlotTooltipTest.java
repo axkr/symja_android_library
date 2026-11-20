@@ -360,7 +360,7 @@ public class PlotTooltipTest {
    */
   @Test
   public void testAutomaticAxesLabelsNameTheVariableAndTheFunction() {
-    assertEquals("[x][Sin(x)]", labelsOf("Plot(Sin(x), {x,0,6}, AxesLabel->Automatic)"));
+    assertEquals("[x][sin(x)]", labelsOf("Plot(Sin(x), {x,0,6}, AxesLabel->Automatic)"));
   }
 
   /** Several curves have no one name, so the vertical axis stays unlabelled. */

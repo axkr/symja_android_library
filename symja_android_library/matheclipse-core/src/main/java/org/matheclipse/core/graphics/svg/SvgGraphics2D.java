@@ -410,13 +410,36 @@ public class SvgGraphics2D {
 
   private ContainerTag<?> svgRoot(List<DomContent> elements) {
     elements = withPictureTitle(elements);
-    return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
+    ContainerTag<?> root = tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", SvgRenderer2D.fmt(options.imageSize[0]))
         .attr("height", SvgRenderer2D.fmt(options.imageSize[1]))
         .attr("style", "max-width: 100%; height: auto;")
         .attr("viewBox", String.format(Locale.US, "0 0 %s %s",
-            SvgRenderer2D.fmt(options.imageSize[0]), SvgRenderer2D.fmt(options.imageSize[1])))
-        .with(elements);
+            SvgRenderer2D.fmt(options.imageSize[0]), SvgRenderer2D.fmt(options.imageSize[1])));
+    String frame = dataFrame();
+    if (frame != null) {
+      root.attr("data-frame", frame);
+    }
+    return root.with(elements);
+  }
+
+  /**
+   * Where the coordinates of the picture are drawn, for a page which puts something on it - the
+   * locators of a <code>Manipulate</code>: <code>x0 y0 sx sy xmin ymin</code>, a point
+   * <code>{x, y}</code> being drawn at <code>x0 + (x - xmin) sx</code>,
+   * <code>y0 - (y - ymin) sy</code>.
+   *
+   * @return <code>null</code> without a viewport, or with a scaled axis
+   */
+  private String dataFrame() {
+    if (viewport == null || viewport.isLogX() || viewport.isLogY()
+        || !Double.isFinite(viewport.scaleX) || !Double.isFinite(viewport.scaleY)) {
+      return null;
+    }
+    return String.format(Locale.US, "%s %s %s %s %s %s", SvgRenderer2D.fmt(viewport.plotX1),
+        SvgRenderer2D.fmt(viewport.plotY2), Double.toString(viewport.scaleX),
+        Double.toString(viewport.scaleY), Double.toString(viewport.minX),
+        Double.toString(viewport.minY));
   }
 
   /**
@@ -1186,7 +1209,9 @@ public class SvgGraphics2D {
     if (graphicsExpr.isAST(S.Legended, 3) && graphicsExpr.arg1().isAST(S.Graphics)) {
       // a plot given PlotLegends comes back as Legended[Graphics[...], legend]; the
       // legend goes back to the renderer the way it reads one, as the PlotLegends of the picture
-      IExpr legend = GraphicsOptions.bareLegend(graphicsExpr.arg2());
+      // the legends Show keeps of the plots it combines are drawn as one
+      IExpr legend =
+          GraphicsOptions.mergeLegends(GraphicsOptions.bareLegend(graphicsExpr.arg2()));
       IASTAppendable picture = ((IAST) graphicsExpr.arg1()).copyAppendable();
       picture.append(F.Rule(S.PlotLegends, legend));
       return picture;

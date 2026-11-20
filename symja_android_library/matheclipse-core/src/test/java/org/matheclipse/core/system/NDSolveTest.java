@@ -263,6 +263,39 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         "{True,{{0.0,1.0},{0.0,2.0}}}");
   }
 
+  // the slope at an end, a DirichletCondition written into the equation or given at the start
+  @Test
+  public void testNDSolvePDEEndConditions() {
+    // the steady state of w(t,0) == 0 and a slope 1/2 at x == 2 is w = x/2
+    check("u=NDSolveValue({D(w(t,x),t)==3*D(w(t,x),x,x), w(0,x)==0, w(t,0)==0, "
+        + "Derivative(0,1)[w][t,2]==1/2}, w, {t,0,20}, {x,0,2});Round(1000*{u(20,1),u(20,2)})", //
+        "{500,1000}");
+    check("u=NDSolveValue({D(w(x,t),t)==D(w(x,t),x,x), w(x,0)==0, Derivative(1,0)[w][0,t]==-2, "
+        + "w(3,t)==0}, w, {t,0,40}, {x,0,3});Round(1000*{u(0,40),u(1,40)})", //
+        "{6000,4000}");
+    // both ends insulated: the cosine mode decays as Exp(-k^2*t)
+    check("u=NDSolveValue({D(w(t,x),t)==D(w(t,x),x,x), w(0,x)==Cos(2*x), "
+        + "Derivative(0,1)[w][t,0]==0, Derivative(0,1)[w][t,Pi]==0}, w, {t,0,1/4}, {x,0,Pi});"
+        + "Abs(u(1/4,1/2)-Exp(-1)*Cos(1))<10^-3", //
+        "True");
+    check("u=NDSolveValue({D(w(t,x),t)==D(w(t,x),x,x)+DirichletCondition(w(t,x)==1,x==0)"
+        + "+DirichletCondition(w(t,x)==3,x==2), DirichletCondition(w(t,x)==1,t==0)}, w, "
+        + "{t,0,10}, {x,0,2});Round(1000*u(10,1))", //
+        "2000");
+  }
+
+  // an If on the state switches the right hand side where its test changes, followed exactly
+  @Test
+  public void testNDSolveIfSwitch() {
+    check("s=NDSolveValue({y'(t)==If(y(t)<1/100,5000,(2-y(t))/10), y(0)==0}, y, {t,0,300});"
+        + "{s(\"Domain\"), Abs(s(10^-6)-1/200)<10^-8, Abs(s(50)-(2-199/100*Exp(-5)))<10^-5}", //
+        "{{{0.0,300.0}},True,True}");
+    check("s=NDSolveValue({y'(t)==If(t>=1,0,3), y(0)==0}, y, {t,0,2});Abs(s(2)-3)<10^-8", //
+        "True");
+    check("s=NDSolveValue({y'(t)==If(y(t)>1,-1,1), y(0)==0}, y, {t,0,3});Abs(s(1/2)-1/2)<10^-8", //
+        "True");
+  }
+
   // a NeumannValue is the flux into the bar through its end: the total grows by it
   @Test
   public void testNDSolvePDENeumannValue() {

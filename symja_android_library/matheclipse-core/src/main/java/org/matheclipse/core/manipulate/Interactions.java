@@ -87,6 +87,18 @@ public class Interactions {
       actions.add(ast.arg2());
       return F.binaryAST2(ast.head(), ast.arg1(), F.ZZ(actions.size() - 1));
     }
+    if (ast.isAST(S.EventHandler) && ast.argSize() >= 2 && !isEventMarker(ast.arg2())) {
+      IExpr handled = rewriteEventHandler(ast);
+      if (handled.isPresent()) {
+        return handled;
+      }
+    }
+    if (ast.isAST(S.ClickPane) && ast.argSize() >= 2 && !ast.arg2().isInteger()) {
+      // ClickPane[picture, f]: the function is kept, and applied to the point that was clicked
+      IExpr picture = rewrite(ast.arg1());
+      actions.add(ast.arg2());
+      return F.binaryAST2(ast.head(), picture, F.ZZ(actions.size() - 1));
+    }
     if (ast.isAST(S.LocatorPane) && ast.size() >= 3) {
       IExpr pane = rewriteLocatorPane(ast);
       if (pane.isPresent()) {
@@ -115,6 +127,75 @@ public class Interactions {
       }
     }
     return copy.isPresent() ? copy : expr;
+  }
+
+  /** The events of an <code>EventHandler</code>, in the order of its marker. */
+  private static final String[][] EVENTS = {{"MouseClicked", "MouseUp"}, {"MouseDown"},
+      {"MouseDragged"}};
+
+  /**
+   * <code>EventHandler[expr, {"MouseClicked" :&gt; action, ...}]</code> with its actions kept: the
+   * rules are replaced by <code>{clicked, down, dragged}</code>, the positions of the actions for
+   * a click, for pressing the button and for moving with it pressed, <code>-1</code> for an event
+   * it does not handle. Each action is kept as a function of the point the event happened at,
+   * which is what <code>MousePosition[]</code> and <code>MousePosition["Graphics"]</code> in it
+   * stand for.
+   *
+   * @return {@link F#NIL} if the handler handles none of these events
+   */
+  private IExpr rewriteEventHandler(IAST handler) {
+    IAST rules = handler.arg2().isList() ? (IAST) handler.arg2() : F.list(handler.arg2());
+    int[] positions = {-1, -1, -1};
+    for (IExpr rule : rules) {
+      if (!rule.isRuleAST() || !rule.first().isString()) {
+        continue;
+      }
+      String event = rule.first().toString();
+      for (int kind = 0; kind < EVENTS.length; kind++) {
+        for (String name : EVENTS[kind]) {
+          if (name.equals(event) && positions[kind] < 0) {
+            actions.add(pointAction(rule.second()));
+            positions[kind] = actions.size() - 1;
+          }
+        }
+      }
+    }
+    if (positions[0] < 0 && positions[1] < 0 && positions[2] < 0) {
+      return F.NIL;
+    }
+    return F.binaryAST2(handler.head(), rewrite(handler.arg1()),
+        F.list(F.ZZ(positions[0]), F.ZZ(positions[1]), F.ZZ(positions[2])));
+  }
+
+  /** The marker {@link #rewriteEventHandler(IAST)} put in place of the rules. */
+  private static boolean isEventMarker(IExpr expr) {
+    return expr.isList() && expr.argSize() == 3 && expr.first().isInteger();
+  }
+
+  /**
+   * An action as a function of the point its event happened at: <code>MousePosition[]</code> and
+   * <code>MousePosition["Graphics"]</code> in it are that point.
+   */
+  private static IExpr pointAction(IExpr action) {
+    org.matheclipse.core.interfaces.ISymbol point = F.Dummy("mousePosition");
+    IExpr body = action.replaceAll(x -> x.isAST(S.MousePosition) ? mousePosition((IAST) x, point)
+        : F.NIL).orElse(action);
+    return F.Function(F.list(point), body);
+  }
+
+  /**
+   * What <code>MousePosition[kind, default]</code> in an action stands for: the point of the
+   * event for the coordinates of the picture, which is all the page reports, and the default -
+   * or <code>None</code> - where the event had no point or the kind asks for other coordinates.
+   */
+  private static IExpr mousePosition(IAST call, org.matheclipse.core.interfaces.ISymbol point) {
+    IExpr otherwise = call.argSize() >= 2 ? call.arg2() : S.None;
+    boolean graphics = call.argSize() == 0
+        || (call.first().isString() && call.first().toString().equals("Graphics"));
+    if (!graphics) {
+      return otherwise;
+    }
+    return F.If(F.SameQ(point, S.None), otherwise, point);
   }
 
   /**

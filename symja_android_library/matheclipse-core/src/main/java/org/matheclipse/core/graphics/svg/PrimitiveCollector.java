@@ -1678,6 +1678,8 @@ public final class PrimitiveCollector {
     IExpr content = ast.arg1();
     Color frame = null;
     Color background = null;
+    // the angle a Rotate around the label turns it by, NaN if there is none
+    double rotation = Double.NaN;
 
     // unwrap the display wrappers a label can carry
     while (content.isAST()) {
@@ -1707,7 +1709,29 @@ public final class PrimitiveCollector {
           applyTextStyle(wrapper.get(i), textStyle);
         }
         content = wrapper.arg1();
-      } else if (head == S.Pane) {
+      } else if (head == S.Panel) {
+        // a panel is a light box with a grey edge around its content
+        frame = PANEL_EDGE;
+        background = PANEL_BACKGROUND;
+        IExpr bg = optionValue(wrapper, S.Background);
+        if (bg != null && ColorUtil.parse(bg) != null) {
+          background = ColorUtil.parse(bg);
+        }
+        content = wrapper.arg1();
+      } else if (head == S.Rotate && wrapper.argSize() >= 2) {
+        double angle = wrapper.arg2().evalfNaN();
+        if (Double.isFinite(angle)) {
+          rotation = angle;
+        }
+        content = wrapper.arg1();
+      } else if (head == S.Magnify) {
+        // Magnify(label, s) writes the label s times as large, Magnify(label) 1.5 times
+        double factor = wrapper.argSize() >= 2 ? wrapper.arg2().evalfNaN() : 1.5;
+        if (factor > 0.0 && Double.isFinite(factor)) {
+          textStyle.fontSize *= factor;
+        }
+        content = wrapper.arg1();
+      } else if (head == S.Pane || head == S.TextCell) {
         content = wrapper.arg1();
       } else {
         break;
@@ -1731,6 +1755,11 @@ public final class PrimitiveCollector {
     }
     double dirX = 1;
     double dirY = 0;
+    if (Double.isFinite(rotation)) {
+      // Rotate(label, angle) writes the label along the direction of that angle
+      dirX = Math.cos(rotation);
+      dirY = Math.sin(rotation);
+    }
     if (ast.argSize() >= 4 && ast.arg4().isList()) {
       double[] dir = pointOf(ast.arg4());
       if (dir[0] != 0 || dir[1] != 0) {
@@ -1741,6 +1770,10 @@ public final class PrimitiveCollector {
     primitives.add(new Prim2D.TextPrim(textOf(content), pos[0], pos[1], offsetX, offsetY, dirX,
         dirY, frame, background, textStyle, shiftX, shiftY));
   }
+
+  /** The edge and the background of a <code>Panel</code> around a label. */
+  private static final Color PANEL_EDGE = new Color(0xA0, 0xA0, 0xA0);
+  private static final Color PANEL_BACKGROUND = new Color(0xF2, 0xF2, 0xF2);
 
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
   private String textOf(IExpr expr) {
@@ -1778,6 +1811,9 @@ public final class PrimitiveCollector {
                 : F.NIL);
       }
       object = content;
+    } else if (content.head() == S.Image) {
+      collectImageInset(ast, content, style);
+      return;
     } else if (!(object.isAST(S.Graphics) || object.isAST(S.Graphics3D))) {
       collectText(ast, style);
       return;
@@ -1829,6 +1865,46 @@ public final class PrimitiveCollector {
       }
     }
     primitives.add(new Prim2D.InsetPrim(svg, pos[0], pos[1], w, h, alignX, alignY, style.clone()));
+  }
+
+  /**
+   * <code>Inset(image, pos, opos, size)</code>: the image as a PNG picture, at its own aspect
+   * ratio, as wide as the size asks for or as wide as an inset picture is by default.
+   */
+  private void collectImageInset(IAST ast, IExpr image, Style2D style) {
+    org.matheclipse.core.io.ImageFormatIO io = org.matheclipse.core.io.ImageFormatIO.get();
+    if (io == null || !io.canExport(org.matheclipse.core.io.Extension.PNG)) {
+      return;
+    }
+    java.io.ByteArrayOutputStream png = new java.io.ByteArrayOutputStream();
+    if (!io.exportImage(png, image, org.matheclipse.core.io.Extension.PNG)) {
+      return;
+    }
+    IExpr dimensions = org.matheclipse.core.eval.EvalEngine.get()
+        .evaluate(F.unaryAST1(S.ImageDimensions, image));
+    double columns = 1;
+    double rows = 1;
+    if (dimensions.isList() && dimensions.argSize() >= 2) {
+      columns = Math.max(1, dimensions.first().evalfNaN());
+      rows = Math.max(1, dimensions.second().evalfNaN());
+    }
+    // the image at its own width, but neither a speck nor larger than an inset picture
+    double w = Math.max(imageWidth / 6.0, Math.min(imageWidth / 3.0, columns));
+    if (ast.argSize() >= 4 && ast.arg4().isList()) {
+      double[] size = pointOf(ast.arg4());
+      if (size[0] > 0) {
+        w = size[0];
+      }
+    }
+    double h = w * rows / columns;
+    String svg = String.format(Locale.US,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%s\" height=\"%s\">"
+            + "<image width=\"%s\" height=\"%s\" preserveAspectRatio=\"none\" "
+            + "href=\"data:image/png;base64,%s\"/></svg>",
+        SvgRenderer2D.fmt(w), SvgRenderer2D.fmt(h), SvgRenderer2D.fmt(w), SvgRenderer2D.fmt(h),
+        java.util.Base64.getEncoder().encodeToString(png.toByteArray()));
+    double[] pos = ast.argSize() >= 2 ? pointOf(ast.arg2()) : new double[] {0, 0};
+    primitives.add(new Prim2D.InsetPrim(svg, pos[0], pos[1], w, h, w / 2.0, h / 2.0, style.clone()));
   }
 
   private static final java.util.regex.Pattern SVG_ROOT =

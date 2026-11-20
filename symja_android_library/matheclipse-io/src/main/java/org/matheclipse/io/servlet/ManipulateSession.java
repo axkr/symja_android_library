@@ -1,9 +1,11 @@
 package org.matheclipse.io.servlet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -67,6 +69,144 @@ public class ManipulateSession {
       new LinkedHashMap<String, List<ManipulateControl>>();
 
   private ManipulateSession() {}
+
+  /**
+   * What a widget keeps between its frames that no control in the browser holds: the values of
+   * its <code>ControlType -&gt; None</code> variables, which the body and the buttons write, and the
+   * locals of a <code>DynamicModule</code> at the end of its body.
+   *
+   * <p>
+   * Every frame evaluates the body anew, so a <code>count++</code> of a button, a step of a
+   * simulation or a local of a module would otherwise start over each time. The variables are
+   * bound from here like the control variables are bound from the browser, and what a frame or an
+   * action leaves them with is written back.
+   */
+  static final class WidgetState {
+    /** The body, with a <code>DynamicModule</code> at its end replaced by what it holds. */
+    final IExpr body;
+    /** The declarations of that module's locals, <code>p</code> or <code>p = init</code>. */
+    final List<IExpr> moduleDeclarations;
+    /** The locals of the module, in the order they are declared. */
+    final List<ISymbol> moduleLocals;
+    /** The values the last frame or action left the hidden variables and the module locals. */
+    final Map<ISymbol, IExpr> values = new LinkedHashMap<ISymbol, IExpr>();
+    /** Whether the module locals have their initial values yet. */
+    boolean moduleInitialized = false;
+
+    private WidgetState(IExpr body, List<IExpr> moduleDeclarations, List<ISymbol> moduleLocals) {
+      this.body = body;
+      this.moduleDeclarations = moduleDeclarations;
+      this.moduleLocals = moduleLocals;
+    }
+
+    /** The state of a widget whose body is <code>body</code>. */
+    static WidgetState of(IExpr body) {
+      IAST module = F.NIL;
+      if (isModule(body)) {
+        module = (IAST) body;
+      } else if (body.isAST(S.CompoundExpression) && body.argSize() >= 1
+          && isModule(((IAST) body).last())) {
+        module = (IAST) ((IAST) body).last();
+      }
+      if (module.isNIL()) {
+        return new WidgetState(body, Collections.<IExpr>emptyList(),
+            Collections.<ISymbol>emptyList());
+      }
+      List<IExpr> declarations = new ArrayList<IExpr>();
+      List<ISymbol> locals = new ArrayList<ISymbol>();
+      // each local gets a name of its own, the way the module renames them, so that a symbol of
+      // the same name outside the body is not what the body reads and writes
+      IASTAppendable renamed = F.ListAlloc(module.arg1().argSize());
+      for (IExpr declaration : (IAST) module.arg1()) {
+        IExpr variable = declaration.isAST(S.Set, 3) || declaration.isAST(S.SetDelayed, 3)
+            ? declaration.first()
+            : declaration;
+        if (!variable.isSymbol()) {
+          // a declaration of another shape: the module is left as it is
+          return new WidgetState(body, Collections.<IExpr>emptyList(),
+              Collections.<ISymbol>emptyList());
+        }
+        ISymbol local = F.Dummy(((ISymbol) variable).getSymbolName() + "$" + nextLocal());
+        renamed.append(F.Rule(variable, local));
+        locals.add(local);
+      }
+      for (IExpr declaration : (IAST) module.arg1()) {
+        if (declaration.isAST(S.Set, 3) || declaration.isAST(S.SetDelayed, 3)) {
+          // the initial value is read with the names outside the module, the variable renamed
+          declarations.add(
+              ((IAST) declaration).setAtCopy(1, F.subst(declaration.first(), renamed)));
+        } else {
+          declarations.add(F.subst(declaration, renamed));
+        }
+      }
+      IExpr inner = F.subst(module.arg2(), renamed);
+      IExpr hoisted = body == module ? inner : ((IAST) body).setAtCopy(body.argSize(), inner);
+      return new WidgetState(hoisted, declarations, locals);
+    }
+
+    private static long localCounter = 0L;
+
+    private static synchronized long nextLocal() {
+      return ++localCounter;
+    }
+
+    private static boolean isModule(IExpr expr) {
+      return expr.isAST(S.DynamicModule) && expr.argSize() >= 2 && expr.first().isList();
+    }
+
+    /** Whether <code>variable</code> is a local of the hoisted module. */
+    boolean isModuleLocal(IExpr variable) {
+      return variable.isSymbol() && moduleLocals.contains(variable);
+    }
+
+    /**
+     * Keep the value a frame or an action left <code>variable</code> with; a variable left
+     * without a value - it evaluates to itself - keeps none.
+     */
+    synchronized void keep(ISymbol variable, IExpr value) {
+      if (value.isPresent() && !value.equals(variable)) {
+        values.put(variable, value);
+      }
+    }
+
+    synchronized IExpr valueOf(ISymbol variable) {
+      IExpr value = values.get(variable);
+      return value == null ? F.NIL : value;
+    }
+
+    /** Start the module locals over, the way a new evaluation of the module would. */
+    synchronized void resetModule() {
+      for (ISymbol local : moduleLocals) {
+        values.remove(local);
+      }
+      moduleInitialized = false;
+    }
+  }
+
+  /** The state of every live widget, which goes with its specification. */
+  private static final Map<ManipulateSpec, WidgetState> STATES =
+      Collections.synchronizedMap(new WeakHashMap<ManipulateSpec, WidgetState>());
+
+  /** The state of a widget, made when it is first asked for. */
+  static WidgetState stateOf(ManipulateSpec spec) {
+    synchronized (STATES) {
+      WidgetState state = STATES.get(spec);
+      if (state == null) {
+        state = WidgetState.of(spec.getBody());
+        STATES.put(spec, state);
+      }
+      return state;
+    }
+  }
+
+  /**
+   * Start the locals of the module at the end of a widget's body over: a panel control moved, and
+   * the body - module and all - is evaluated anew, which is what a notebook does. The hidden
+   * variables of the widget keep their values.
+   */
+  static void controlsMoved(ManipulateSpec spec) {
+    stateOf(spec).resetModule();
+  }
 
   private static synchronized String store(EvalEngine engine, String sessionID,
       ManipulateSpec spec) {
@@ -184,6 +324,17 @@ public class ManipulateSession {
     ManipulateControl panelControl = target.isSymbol()
         ? spec.controlNamed(((ISymbol) target).getSymbolName())
         : null;
+    WidgetState state = stateOf(spec);
+    if ((panelControl != null && ManipulateControl.NONE.equals(panelControl.getKind()))
+        || state.isModuleLocal(target)) {
+      // a variable no control of the browser holds: the next frame is rendered with the value
+      // written here
+      IASTAppendable locals = bindingList(engine, spec, bindings);
+      IExpr result = engine.evaluate(F.Block(locals,
+          F.CompoundExpression(F.Set(target, written), target)));
+      state.keep((ISymbol) target, result);
+      return JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+    }
     if (panelControl != null) {
       // the control drives one of the widget's own variables: the write has to land in the
       // binding set the next frame is rendered with, not in the session
@@ -286,7 +437,7 @@ public class ManipulateSession {
     return JSONBuilder.createJSONManipulate(id, spec, rendered[1],
         resolveEnabled(engine, spec, bindings), resolveVisible(engine, spec, bindings),
         renderDisplays(engine, spec, frame.locals, outWriter, errorWriter), bodyControlsJSON(id),
-        spec.warnings());
+        spec.warnings(), frame.updateInterval);
   }
 
   /** The control values as the browser would first send them. */
@@ -335,11 +486,20 @@ public class ManipulateSession {
      */
     final IAST locals;
 
-    Frame(IExpr result, IAST locals) {
+    /**
+     * The seconds after which the browser asks for the next frame by itself, from a
+     * <code>Refresh[..., UpdateInterval -&gt; t]</code> in the body, or
+     * {@link Double#POSITIVE_INFINITY} for a frame that only follows its controls.
+     */
+    final double updateInterval;
+
+    Frame(IExpr result, IAST locals, double updateInterval) {
       this.result = result;
       this.locals = locals;
+      this.updateInterval = updateInterval;
     }
   }
+
 
   /**
    * Evaluate the body of a widget with the control values the browser sent, and read back the
@@ -357,32 +517,59 @@ public class ManipulateSession {
    * which is what a notebook shows, where the body and the read-outs share one set of variables.
    */
   static Frame evaluateFrame(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    WidgetState state = stateOf(spec);
     IASTAppendable locals = bindingList(engine, spec, bindings);
     IASTAppendable variables = F.ListAlloc(locals.argSize());
     for (int i = 1; i < locals.size(); i++) {
-      variables.append(((IAST) locals.get(i)).arg1());
+      variables.append(variableOf(locals.get(i)));
+    }
+    IExpr body = state.body;
+    synchronized (state) {
+      if (!state.moduleInitialized && !state.moduleDeclarations.isEmpty()) {
+        // the module's locals take their initial values first, in the order declared
+        IASTAppendable initialized =
+            F.ast(S.CompoundExpression, state.moduleDeclarations.size() + 1);
+        for (IExpr declaration : state.moduleDeclarations) {
+          if (declaration.isAST(S.Set, 3) || declaration.isAST(S.SetDelayed, 3)) {
+            initialized.append(declaration);
+          }
+        }
+        initialized.append(body);
+        body = initialized;
+        state.moduleInitialized = true;
+      }
     }
     // {{body}, {u1, u2, ...}}: a List evaluates in order, so the variables are read after the body
     // ran; the body is wrapped once more so a Sequence it returns cannot shift the pair
-    IExpr evaluated = engine.evaluate(F.Block(locals,
-        F.List(F.List(Dynamics.releaseAll(spec.getBody())), variables)));
+    // the Refresh the evaluation reaches says when the next frame is asked for
+    Dynamics.collectRefreshes();
+    IExpr evaluated;
+    double updateInterval;
+    try {
+      evaluated = engine.evaluate(F.Block(locals,
+          F.List(F.List(Dynamics.releaseAll(body)), variables)));
+    } finally {
+      updateInterval = Dynamics.collectedRefresh();
+    }
     IExpr result = evaluated;
     IAST after = locals;
     if (evaluated.isList() && evaluated.argSize() == 2 && evaluated.first().isList()
         && evaluated.second().isList()
         && ((IAST) evaluated.second()).argSize() == variables.argSize()) {
-      IAST body = (IAST) evaluated.first();
-      result = body.argSize() == 1 ? body.arg1() : body.setAtCopy(0, S.Sequence);
+      IAST bodyResult = (IAST) evaluated.first();
+      result = bodyResult.argSize() == 1 ? bodyResult.arg1()
+          : bodyResult.setAtCopy(0, S.Sequence);
       IAST values = (IAST) evaluated.second();
       IASTAppendable updated = F.ListAlloc(variables.argSize());
       for (int i = 1; i <= variables.argSize(); i++) {
         updated.append(F.Set(variables.get(i), values.get(i)));
       }
       after = updated;
+      keepState(spec, variables, values);
     }
     // the wrappers of the body itself came off before it ran; this catches one the evaluation
     // produced, from a definition such as caption[] := Dynamic[k]
-    return new Frame(Dynamics.resolve(result, engine), after);
+    return new Frame(Dynamics.resolve(result, engine), after, updateInterval);
   }
 
   /**
@@ -488,17 +675,107 @@ public class ManipulateSession {
   /** The <code>Block</code> local assignments for the control values the browser sent. */
   private static IASTAppendable bindingList(EvalEngine engine, ManipulateSpec spec,
       JsonNode bindings) {
-    IASTAppendable locals = F.ListAlloc(spec.getControls().size());
+    WidgetState state = stateOf(spec);
+    IASTAppendable locals = F.ListAlloc(spec.getControls().size() + state.moduleLocals.size());
     for (ManipulateControl control : spec.getControls()) {
       if (!control.bindsVariable()) {
         continue;
       }
-      IExpr value = valueOf(control, bindings.get(control.getName()), engine);
+      IExpr value = F.NIL;
+      if (ManipulateControl.NONE.equals(control.getKind())) {
+        // the browser holds no value for it: the one the last frame or action left
+        value = state.valueOf(control.getVariable());
+      }
+      if (value.isNIL()) {
+        value = valueOf(control, bindings.get(control.getName()), engine);
+      }
       if (value.isPresent()) {
         locals.append(F.Set(control.getVariable(), value));
       }
     }
+    for (ISymbol local : state.moduleLocals) {
+      IExpr value = state.valueOf(local);
+      // a local without a value yet is still local to the frame
+      locals.append(value.isPresent() ? F.Set(local, value) : local);
+    }
     return locals;
+  }
+
+  /** The variable a <code>Block</code> local assignment, or a bare local, is for. */
+  private static IExpr variableOf(IExpr local) {
+    return local.isAST(S.Set, 3) ? local.first() : local;
+  }
+
+  /**
+   * Keep what a frame or an action left the variables the browser doesn't hold with: the hidden
+   * control variables and the module locals.
+   *
+   * @param variables the variables, in the order of <code>values</code>
+   */
+  private static void keepState(ManipulateSpec spec, IAST variables, IAST values) {
+    WidgetState state = stateOf(spec);
+    for (int i = 1; i < variables.size() && i < values.size(); i++) {
+      IExpr variable = variables.get(i);
+      if (!variable.isSymbol()) {
+        continue;
+      }
+      ManipulateControl control = spec.controlNamed(((ISymbol) variable).getSymbolName());
+      boolean hidden = control != null && ManipulateControl.NONE.equals(control.getKind());
+      if (hidden || state.isModuleLocal(variable)) {
+        state.keep((ISymbol) variable, values.get(i));
+      }
+    }
+  }
+
+  /**
+   * The bindings of the panel controls whose variables the body assigned, so the browser moves
+   * them to the values the frame was rendered with.
+   *
+   * @return the moved bindings, empty when the body moved none
+   */
+  static ObjectNode movedBindings(ManipulateSpec spec, JsonNode bindings, IAST after) {
+    ObjectNode moved = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+    for (IExpr local : after) {
+      if (!local.isAST(S.Set, 3) || !local.first().isSymbol()) {
+        continue;
+      }
+      ManipulateControl control = spec.controlNamed(((ISymbol) local.first()).getSymbolName());
+      if (control == null || ManipulateControl.NONE.equals(control.getKind())
+          || ManipulateControl.DISPLAY.equals(control.getKind())
+          || ManipulateControl.INPUTFIELD.equals(control.getKind())) {
+        // an input field holds the text that was typed, which the value need not spell
+        continue;
+      }
+      ObjectNode written = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
+      putBinding(written, control, local.second());
+      JsonNode now = written.get(control.getName());
+      if (now != null && !sameValue(now, bindings.get(control.getName()))) {
+        moved.set(control.getName(), now);
+      }
+    }
+    return moved;
+  }
+
+  /** Whether two binding values agree, numbers by their value, also inside lists of them. */
+  static boolean sameValue(JsonNode a, JsonNode b) {
+    if (b == null || b.isNull()) {
+      return false;
+    }
+    if (a.isNumber() && b.isNumber()) {
+      return a.asDouble() == b.asDouble();
+    }
+    if (a.isArray() && b.isArray()) {
+      if (a.size() != b.size()) {
+        return false;
+      }
+      for (int i = 0; i < a.size(); i++) {
+        if (!sameValue(a.get(i), b.get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return a.equals(b);
   }
 
   /**
@@ -695,6 +972,18 @@ public class ManipulateSession {
    */
   static ObjectNode runBodyButtonAction(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
       String widgetId, int actionIndex) {
+    return runBodyButtonAction(engine, spec, bindings, widgetId, actionIndex, F.NIL);
+  }
+
+  /**
+   * As {@link #runBodyButtonAction(EvalEngine, ManipulateSpec, JsonNode, String, int)}, for the
+   * click of a <code>ClickPane</code> of the body: its function is applied to the point clicked.
+   *
+   * @param point <code>{x, y}</code> in the coordinates of the picture, or {@link F#NIL} for a
+   *        button
+   */
+  static ObjectNode runBodyButtonAction(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+      String widgetId, int actionIndex, IExpr point) {
     List<IExpr> actions;
     synchronized (ManipulateSession.class) {
       actions = BODY_ACTIONS.get(widgetId);
@@ -702,7 +991,38 @@ public class ManipulateSession {
     if (actions == null || actionIndex < 0 || actionIndex >= actions.size()) {
       return null;
     }
-    return runAction(engine, spec, bindings, actions.get(actionIndex));
+    IExpr action = actions.get(actionIndex);
+    return runAction(engine, spec, bindings,
+        point.isPresent() ? F.unaryAST1(action, point) : action);
+  }
+
+  /**
+   * The point a browser posted for a click, <code>[x, y]</code> in the coordinates of the picture.
+   *
+   * @return <code>{x, y}</code>, or {@link F#NIL} for no point or one that is no pair of numbers
+   */
+  static IExpr pointOf(String posted) {
+    if (posted == null || posted.isEmpty()) {
+      return F.NIL;
+    }
+    if (posted.equals("none")) {
+      // an event of something that is no picture: there is no point it happened at
+      return S.None;
+    }
+    try {
+      JsonNode node = JSONBuilder.JSON_OBJECT_MAPPER.readTree(posted);
+      if (node != null && node.isArray() && node.size() >= 2 && node.get(0).isNumber()
+          && node.get(1).isNumber()) {
+        double x = node.get(0).asDouble();
+        double y = node.get(1).asDouble();
+        if (Double.isFinite(x) && Double.isFinite(y)) {
+          return F.list(F.num(x), F.num(y));
+        }
+      }
+    } catch (Exception ex) {
+      // no point
+    }
+    return F.NIL;
   }
 
   /**
@@ -721,8 +1041,14 @@ public class ManipulateSession {
         readBack.append(control.getVariable());
       }
     }
+    for (ISymbol local : stateOf(spec).moduleLocals) {
+      readBack.append(local);
+    }
     body.append(readBack);
     IExpr result = engine.evaluate(F.Block(locals, body));
+    if (result.isList()) {
+      keepState(spec, readBack, (IAST) result);
+    }
 
     ObjectNode updated = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
     if (result.isList()) {

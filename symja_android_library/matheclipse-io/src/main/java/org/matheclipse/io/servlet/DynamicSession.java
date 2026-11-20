@@ -115,7 +115,9 @@ public class DynamicSession {
   static boolean isDynamicResult(IExpr expr) {
     // a Button on its own changes something too: without a live cell around it there is nothing
     // its click could be posted for, and it would be a picture of a button
-    return Dynamics.containsDynamic(expr) || !expr.isFree(x -> x.isAST(S.Button), true);
+    return Dynamics.containsDynamic(expr)
+        || !expr.isFree(
+            x -> x.isAST(S.Button) || x.isAST(S.ClickPane) || x.isAST(S.EventHandler), true);
   }
 
   static synchronized String store(String sessionID, Cell cell) {
@@ -293,6 +295,20 @@ public class DynamicSession {
    */
   static ObjectNode applyAction(EvalEngine engine, String sessionID, String id, int actionIndex,
       StringBuilderWriter outWriter, StringBuilderWriter errorWriter) throws java.io.IOException {
+    return applyAction(engine, sessionID, id, actionIndex, F.NIL, outWriter, errorWriter);
+  }
+
+  /**
+   * As {@link #applyAction(EvalEngine, String, String, int, StringBuilderWriter,
+   * StringBuilderWriter)}, for the click of a <code>ClickPane</code>: its function is applied to
+   * the point clicked.
+   *
+   * @param point <code>{x, y}</code> in the coordinates of the picture, or {@link F#NIL} for a
+   *        button
+   */
+  static ObjectNode applyAction(EvalEngine engine, String sessionID, String id, int actionIndex,
+      IExpr point, StringBuilderWriter outWriter, StringBuilderWriter errorWriter)
+      throws java.io.IOException {
     Cell cell = lookup(sessionID, id);
     IExpr action = null;
     if (cell != null) {
@@ -304,7 +320,7 @@ public class DynamicSession {
     }
     if (action != null) {
       try {
-        engine.evaluate(action);
+        engine.evaluate(point.isPresent() ? F.unaryAST1(action, point) : action);
       } catch (RuntimeException rex) {
         // an action that fails must not stop the cells from being refreshed
       }

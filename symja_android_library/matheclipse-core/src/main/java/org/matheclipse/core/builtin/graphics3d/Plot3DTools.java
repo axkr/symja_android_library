@@ -285,6 +285,15 @@ public final class Plot3DTools {
 
   /** Read {@code PlotPoints}, which may be a single count or one per direction. */
   public static int[] plotPoints(IExpr option, int defaultCount) {
+    return plotPoints(option, defaultCount, MAX_GRID_POINTS);
+  }
+
+  /**
+   * The <code>PlotPoints</code> per direction, at most <code>maximum</code>.
+   *
+   * @param maximum {@link #MAX_GRID_POINTS} for a grid, {@link #MAX_CURVE_POINTS} for a curve
+   */
+  public static int[] plotPoints(IExpr option, int defaultCount, int maximum) {
     int u = defaultCount;
     int v = defaultCount;
     if (option.isList() && ((IAST) option).argSize() >= 2) {
@@ -299,15 +308,24 @@ public final class Plot3DTools {
       u = n;
       v = n;
     }
-    return new int[] {clampPlotPoints(u, defaultCount), clampPlotPoints(v, defaultCount)};
+    return new int[] {clampPlotPoints(u, defaultCount, maximum),
+        clampPlotPoints(v, defaultCount, maximum)};
   }
 
-  private static int clampPlotPoints(int value, int defaultCount) {
+  /**
+   * The most <code>PlotPoints</code> per direction of a grid: an upper bound keeps a mistyped
+   * value from building a mesh nothing can render.
+   */
+  public static final int MAX_GRID_POINTS = 400;
+
+  /** The most <code>PlotPoints</code> of a curve, which grows only linearly with them. */
+  public static final int MAX_CURVE_POINTS = 20000;
+
+  private static int clampPlotPoints(int value, int defaultCount, int maximum) {
     if (value < 2) {
       return Math.max(2, defaultCount);
     }
-    // an upper bound keeps a mistyped PlotPoints from building a mesh nothing can render
-    return Math.min(value, 400);
+    return Math.min(value, maximum);
   }
 
   /**

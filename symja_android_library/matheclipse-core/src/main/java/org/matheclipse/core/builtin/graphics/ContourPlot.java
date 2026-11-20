@@ -183,6 +183,8 @@ public class ContourPlot extends ListPlot {
     }
 
     boolean shaded = false;
+    // the least and the greatest value of the shaded functions, for a legend of their colours
+    final double[] valueRange = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
     if (functionArg.isList()) {
       // Multiple functions/equations
       IAST list = (IAST) functionArg;
@@ -203,7 +205,7 @@ public class ContourPlot extends ListPlot {
         generateContours(primitives, func, xRange, yRange, xVar, yVar, cells, null,
             numberOfContours,
             style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
-            contourLines, contourLabels, region, boundaryStyle);
+            contourLines, contourLabels, region, boundaryStyle, valueRange);
         count++;
       }
     } else {
@@ -211,7 +213,7 @@ public class ContourPlot extends ListPlot {
       shaded = isShaded(functionArg, contourShading);
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, cells, middle,
           numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
-          engine, false, contourLines, contourLabels, region, boundaryStyle);
+          engine, false, contourLines, contourLabels, region, boundaryStyle, valueRange);
     }
 
     // the contours share one table of points; the mesh, which is not traced from the data, is
@@ -220,6 +222,15 @@ public class ContourPlot extends ListPlot {
         cells[0], cells[1]);
     IAST content = F.List(graphicsComplex(primitives, xRange, yRange),
         meshLines.isPresent() ? meshLines : F.CEmptyList);
+
+    IExpr legends = GraphicsOptions.optionValue(originalAST, S.PlotLegends, S.None);
+    if ((legends == S.Automatic || legends.isTrue()) && shaded
+        && valueRange[0] <= valueRange[1]) {
+      // a bar of the colours the regions between the contours are shaded in, over their values
+      graphicsOptions.setPlotLegends(F.BarLegend(F.List(
+          DensityPlot.legendColorFunction(colorFunctionOpt),
+          F.List(F.num(valueRange[0]), F.num(valueRange[1])))));
+    }
 
     IExpr graphics = createGraphicsFunction(content, graphicsOptions, wrappedAST);
     if (!shaded
@@ -455,7 +466,8 @@ public class ContourPlot extends ListPlot {
       int numberOfContours,
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
-      boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle) {
+      boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle,
+      double[] valueRange) {
     // an equation is not shaded unless the shading is specified
     final boolean shaded = isShaded(function, contourShading);
     boolean isEquation = false;
@@ -519,6 +531,10 @@ public class ContourPlot extends ListPlot {
 
     if (minZ == Double.MAX_VALUE)
       return;
+    if (shaded && !isEquation) {
+      valueRange[0] = Math.min(valueRange[0], minZ);
+      valueRange[1] = Math.max(valueRange[1], maxZ);
+    }
 
     // one argument, the average of the two levels the band lies between, which is what the
     // reference means by "the average of the scaled values of f for each pair of successive

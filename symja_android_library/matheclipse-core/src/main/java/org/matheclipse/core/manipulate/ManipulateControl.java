@@ -126,6 +126,11 @@ public class ManipulateControl {
   // locator
   private final List<double[]> points = new ArrayList<double[]>();
   private boolean autoCreate = false;
+  /**
+   * Whether the rectangle a locator moves in was given; without one the points move anywhere on
+   * the picture.
+   */
+  private boolean bounded = false;
 
   /**
    * Whether this Locator was declared with a single point rather than a list of them.
@@ -377,6 +382,10 @@ public class ManipulateControl {
     this.autoCreate = autoCreate;
   }
 
+  void setBounded(boolean bounded) {
+    this.bounded = bounded;
+  }
+
   void setAction(IExpr action) {
     this.action = action;
   }
@@ -589,6 +598,7 @@ public class ManipulateControl {
       json.put("minY", minY);
       json.put("maxY", maxY);
       json.put("autoCreate", autoCreate);
+      json.put("bounded", bounded);
     } else if (COLOR.equals(kind)) {
       json.put("value", colorText());
     } else if (INPUTFIELD.equals(kind)) {

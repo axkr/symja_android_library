@@ -3198,6 +3198,58 @@ public class GraphicsOptions {
     return legend;
   }
 
+  /**
+   * One legend for the list of legends <code>Show</code> keeps of the graphics it combines: the
+   * entries of every <code>LineLegend</code>, <code>PointLegend</code> and
+   * <code>SwatchLegend</code> one after the other, each with its own colour, when they are all of
+   * one kind. Legends of different kinds - lines and points, a <code>BarLegend</code> beside
+   * them - stay a list, which is drawn as legends one below the other; anything which is no list
+   * of legends is returned as it is.
+   */
+  public static IExpr mergeLegends(IExpr legends) {
+    if (!legends.isList() || legends.argSize() == 0 || !isLegend(legends.first())) {
+      return legends;
+    }
+    IAST list = (IAST) legends;
+    if (list.argSize() == 1) {
+      return list.arg1();
+    }
+    IASTAppendable colors = F.ListAlloc();
+    IASTAppendable labels = F.ListAlloc();
+    for (IExpr legend : list) {
+      if (!isLegend(legend)) {
+        return list.arg1();
+      }
+    }
+    for (IExpr legend : list) {
+      if (legend.head() != list.arg1().head() || !isEntryLegend(legend) || legend.argSize() < 2
+          || !legend.first().isList() || !legend.second().isList()) {
+        // legends which cannot be one are drawn one below the other
+        return list;
+      }
+      IAST legendColors = (IAST) legend.first();
+      IAST legendLabels = (IAST) legend.second();
+      for (int i = 1; i < legendLabels.size(); i++) {
+        if (i >= legendColors.size()) {
+          // an entry without a colour of its own: the legends are drawn one below the other
+          return list;
+        }
+        colors.append(legendColors.get(i));
+        labels.append(legendLabels.get(i));
+      }
+    }
+    return F.binaryAST2(list.arg1().head(), colors, labels);
+  }
+
+  private static boolean isLegend(IExpr expr) {
+    return isEntryLegend(expr) || expr.isAST(S.BarLegend);
+  }
+
+  /** A legend with one entry per curve, point set or area. */
+  private static boolean isEntryLegend(IExpr expr) {
+    return expr.isAST(S.LineLegend) || expr.isAST(S.PointLegend) || expr.isAST(S.SwatchLegend);
+  }
+
   /** The key under <code>Method</code> which carries a plot's axis scaling. */
   private static final String METHOD_SCALING = "Scaling";
 

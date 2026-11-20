@@ -689,6 +689,7 @@ public class ManipulateSpec {
     }
     control.setRange(xMin, xMax, Double.NaN);
     control.setRangeY(yMin, yMax);
+    control.setBounded(explicitRectangle);
     // CPD-ON
 
     if (initial.isList2() && !initial.first().isList()) {

@@ -2111,11 +2111,8 @@ public final class Programming {
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = F.C1;
       if (ast.argSize() > 4) {
-        IExpr temp = NestWhileListEvaluator.evaluate(ast.setAtClone(0, S.NestWhileList), engine);
-        if (temp.isList()) {
-          return temp.last();
-        }
-        return F.NIL;
+        // only the last values are kept, not the list of all of them
+        return NestWhileList.nestWhileList(ast, true, engine);
       }
       if (ast.argSize() >= 4) {
         n = ast.arg4();
@@ -2216,6 +2213,14 @@ public final class Programming {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return nestWhileList(ast, false, engine);
+    }
+
+    /**
+     * <code>NestWhileList(f, expr, test, m, max, n)</code>, or with <code>lastOnly</code> the value
+     * <code>NestWhile</code> gives: the last element of that list, without building it.
+     */
+    static @AllowNIL IExpr nestWhileList(final IAST ast, boolean lastOnly, EvalEngine engine) {
       IExpr f = ast.arg1();
       IExpr expr = ast.arg2();
       IExpr test = ast.arg3();
@@ -2254,7 +2259,8 @@ public final class Programming {
         }
         n = tmpInt;
       }
-      return nestWhileList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n, engine);
+      return nestWhileList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n,
+          lastOnly, engine);
     }
 
     @Override
@@ -2269,11 +2275,13 @@ public final class Programming {
      * @param function
      * @param m
      * @param n apply <code>function</code> n extra times. If n is negative drop last n values.
+     * @param lastOnly return only the last element of the list, which keeps only the last values
      * @param engine
      * @return
      */
-    private static IAST nestWhileList(final IExpr expr, final IExpr test,
-        final Function<IExpr, IExpr> function, int m, int max, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr nestWhileList(final IExpr expr, final IExpr test,
+        final Function<IExpr, IExpr> function, int m, int max, int n, boolean lastOnly,
+        EvalEngine engine) {
       IExpr temp = expr;
       IExpr[] args;
       int arrSize;
@@ -2291,7 +2299,7 @@ public final class Programming {
       }
 
       args = new IExpr[arrSize];
-      final IASTAppendable resultList = F.ListAlloc(15);
+      final Results resultList = new Results(lastOnly ? (n < 0 ? 1 - n : 1) : -1);
       args[0] = temp;
 
       int count = 1;
@@ -2344,16 +2352,60 @@ public final class Programming {
         }
       }
 
-      if (n < 0) {
-        // drop last n values
-        if (resultList.argSize() < -n) {
-          return F.CEmptyList;
-        }
-        return resultList.copyUntil(resultList.size() + n);
-      }
-      return resultList;
+      return resultList.result(n);
     }
 
+    /**
+     * The values of a nest: all of them in a list, or only the last <code>window</code> of them.
+     */
+    private static final class Results {
+      private final IASTAppendable list;
+      private final java.util.ArrayDeque<IExpr> last;
+      private final int window;
+      private long count = 0;
+
+      /** @param window the number of last values kept, or <code>-1</code> to keep all of them */
+      Results(int window) {
+        this.window = window;
+        this.list = window < 0 ? F.ListAlloc(15) : null;
+        this.last = window < 0 ? null : new java.util.ArrayDeque<IExpr>(window + 1);
+      }
+
+      void append(IExpr value) {
+        count++;
+        if (list != null) {
+          list.append(value);
+        } else {
+          last.addLast(value);
+          if (last.size() > window) {
+            last.removeFirst();
+          }
+        }
+      }
+
+      /**
+       * The list with the last <code>-n</code> values dropped for a negative <code>n</code>, or
+       * its last element if only the last values were kept.
+       */
+      @AllowNIL
+      IExpr result(int n) {
+        if (list != null) {
+          if (n < 0) {
+            // drop last n values
+            if (list.argSize() < -n) {
+              return F.CEmptyList;
+            }
+            return list.copyUntil(list.size() + n);
+          }
+          return list;
+        }
+        if (n < 0) {
+          // the last element of the list without the last -n values
+          return count < 1 - n ? F.NIL : last.peekFirst();
+        }
+        return last.peekLast();
+      }
+    }
   }
 
   /**

@@ -343,7 +343,8 @@ public final class PrimitiveCollector3D {
         style.thickness = Style3D.Size.ofAbsolute(ColorUtil.dbl(ast.arg1(), 1.0));
         return true;
       case ID.PointSize:
-        style.pointSize = Style3D.Size.ofScaled(ColorUtil.dbl(ast.arg1(), 0.01));
+        // PointSize(Large) takes the same sizes as a bare Large
+        style.pointSize = Style3D.Size.ofScaled(namedPointSize(ast.arg1(), 0.01));
         return true;
       case ID.AbsolutePointSize:
         style.pointSize = Style3D.Size.ofAbsolute(ColorUtil.dbl(ast.arg1(), 3.0));
@@ -462,6 +463,28 @@ public final class PrimitiveCollector3D {
     }
   }
 
+  /**
+   * The point size a size name stands for, as a fraction of the picture width, or the number
+   * <code>value</code> itself.
+   */
+  private static double namedPointSize(IExpr value, double defaultValue) {
+    if (value.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) value).ordinal()) {
+        case ID.Tiny:
+          return 0.005;
+        case ID.Small:
+          return 0.008;
+        case ID.Medium:
+          return 0.012;
+        case ID.Large:
+          return 0.018;
+        default:
+          return defaultValue;
+      }
+    }
+    return ColorUtil.dbl(value, defaultValue);
+  }
+
   private static double fontSizeOf(IExpr value, double current) {
     if (value.isBuiltInSymbol()) {
       switch (((IBuiltInSymbol) value).ordinal()) {
@@ -512,16 +535,10 @@ public final class PrimitiveCollector3D {
         style.dashingScaled = true;
         return true;
       case ID.Tiny:
-        style.pointSize = Style3D.Size.ofScaled(0.005);
-        return true;
       case ID.Small:
-        style.pointSize = Style3D.Size.ofScaled(0.008);
-        return true;
       case ID.Medium:
-        style.pointSize = Style3D.Size.ofScaled(0.012);
-        return true;
       case ID.Large:
-        style.pointSize = Style3D.Size.ofScaled(0.018);
+        style.pointSize = Style3D.Size.ofScaled(namedPointSize(symbol, 0.01));
         return true;
       case ID.Bold:
         style.fontWeight = "bold";

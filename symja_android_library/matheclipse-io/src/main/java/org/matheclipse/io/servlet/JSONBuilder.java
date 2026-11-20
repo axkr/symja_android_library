@@ -82,9 +82,13 @@ public class JSONBuilder {
   public static String[] createJSONManipulate(String id,
       org.matheclipse.core.manipulate.ManipulateSpec spec, String renderedBody,
       ArrayNode enabled, ArrayNode visible, ObjectNode displays, ArrayNode bodyControls,
-      java.util.List<String> warnings) {
+      java.util.List<String> warnings, double updateInterval) {
     ObjectNode manipulate = spec.toJSON(JSON_OBJECT_MAPPER);
     manipulate.put("id", id);
+    if (Double.isFinite(updateInterval)) {
+      // Refresh[..., UpdateInterval -> t]: the browser asks for the next frame by itself
+      manipulate.put("updateInterval", updateInterval);
+    }
     if (enabled != null) {
       manipulate.set("enabled", enabled);
     }

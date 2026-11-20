@@ -1042,12 +1042,175 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       IExpr separator = f.size() == 3 ? f.arg2() : F.NIL;
       fFactory.tagStart(buf, "mrow");
       for (int i = 1; i < items.size(); i++) {
-        fFactory.convertInternal(buf, items.get(i), Integer.MIN_VALUE, false);
+        if (items.get(i) != S.Null) {
+          // a Null slot of a row shows nothing
+          fFactory.convertInternal(buf, items.get(i), Integer.MIN_VALUE, false);
+        }
         if (separator.isPresent() && i < items.argSize()) {
           fFactory.convertInternal(buf, separator, Integer.MIN_VALUE, false);
         }
       }
       fFactory.tagEnd(buf, "mrow");
+      return true;
+    }
+  }
+
+  /**
+   * <code>true</code> for a two dimensional picture the SVG renderer draws - a
+   * <code>Graphics</code>, or one wrapped in a legend, a tooltip or a label - which is what a click
+   * can be read off in the coordinates of its plot.
+   */
+  private static boolean isPicture2D(IExpr expr) {
+    return expr.isAST(S.Graphics)
+        || (expr.isGraphicsObject() && expr.isFree(x -> x.isAST(S.Graphics3D), true));
+  }
+
+  /**
+   * <code>ClickPane[picture, f]</code> as the picture. The interactive front end has replaced
+   * <code>f</code> with the position of the function it kept, and the picture is marked with it,
+   * so a click on it applies the function to the point clicked; written anywhere else the pane is
+   * its picture and nothing more.
+   */
+  private static final class ClickPane extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.argSize() < 1) {
+        return false;
+      }
+      IExpr picture = f.arg1();
+      int action = f.argSize() >= 2 && f.arg2().isInteger() ? f.arg2().toIntDefault() : -1;
+      if (action >= 0 && isPicture2D(picture)) {
+        StringBuilder svg = new StringBuilder();
+        try {
+          if (GraphicsUtil.renderGraphics2DSVG(svg, (IAST) picture, true, EvalEngine.get())) {
+            fFactory.tagStart(buf, "mtext");
+            buf.append("<span class=\"symjaclick\" data-action=\"").append(action).append("\">");
+            buf.append(svg);
+            buf.append("</span>");
+            fFactory.tagEnd(buf, "mtext");
+            return true;
+          }
+        } catch (RuntimeException rex) {
+          // drawn below without the click
+        }
+      }
+      fFactory.convertInternal(buf, picture, precedence, false);
+      return true;
+    }
+  }
+
+  /**
+   * <code>EventHandler[expr, ...]</code> as <code>expr</code>. The interactive front end has
+   * replaced the rules with <code>{clicked, down, dragged}</code>, the positions of the actions it
+   * kept, and the content is marked with them: a picture as the clickable picture, anything else
+   * as a row the browser listens on. Written anywhere else it is its content and nothing more.
+   */
+  private static final class EventHandler extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.argSize() < 1) {
+        return false;
+      }
+      IExpr content = f.arg1();
+      String marks = f.argSize() >= 2 ? eventMarks(f.arg2()) : null;
+      if (marks == null) {
+        fFactory.convertInternal(buf, content, precedence, false);
+        return true;
+      }
+      if (isPicture2D(content)) {
+        StringBuilder svg = new StringBuilder();
+        try {
+          if (GraphicsUtil.renderGraphics2DSVG(svg, (IAST) content, true, EvalEngine.get())) {
+            fFactory.tagStart(buf, "mtext");
+            buf.append("<span class=\"symjaclick\"").append(marks).append(">");
+            buf.append(svg);
+            buf.append("</span>");
+            fFactory.tagEnd(buf, "mtext");
+            return true;
+          }
+        } catch (RuntimeException rex) {
+          // drawn below as a marked row
+        }
+      }
+      fFactory.tagStart(buf, "mrow", "class=\"symjaclick\"" + marks);
+      fFactory.convertInternal(buf, content, precedence, false);
+      fFactory.tagEnd(buf, "mrow");
+      return true;
+    }
+
+    /**
+     * The data attributes of the marker <code>{clicked, down, dragged}</code>, or
+     * <code>null</code> when <code>marker</code> is no such list.
+     */
+    private static String eventMarks(IExpr marker) {
+      if (!marker.isList() || marker.argSize() != 3) {
+        return null;
+      }
+      String[] names = {"data-action", "data-down", "data-drag"};
+      StringBuilder marks = new StringBuilder();
+      for (int i = 0; i < 3; i++) {
+        IExpr position = ((IAST) marker).get(i + 1);
+        if (!position.isInteger()) {
+          return null;
+        }
+        int index = position.toIntDefault();
+        if (index >= 0) {
+          marks.append(' ').append(names[i]).append("=\"").append(index).append('"');
+        }
+      }
+      return marks.toString();
+    }
+  }
+
+  /**
+   * <code>Magnify[expr, s]</code>: a picture at <code>s</code> times its width, anything else at
+   * <code>s</code> times the size of its text.
+   */
+  private static final class Magnify extends AbstractConverter {
+
+    /** The width a picture is drawn at without an ImageSize of its own. */
+    private static final double DEFAULT_WIDTH = 360.0;
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.argSize() < 1 || f.argSize() > 2) {
+        return false;
+      }
+      // Magnify(expr) is a magnification of 1.5
+      double factor = f.argSize() == 2 ? f.arg2().evalfNaN() : 1.5;
+      if (!(factor > 0.0) || Double.isInfinite(factor)) {
+        return false;
+      }
+      IExpr content = f.arg1();
+      if (content.isAST(S.Graphics) || content.isAST(S.Graphics3D)) {
+        IAST picture = (IAST) content;
+        double width = DEFAULT_WIDTH;
+        org.matheclipse.core.interfaces.IASTAppendable sized = F.ast(picture.head(), picture.size());
+        if (picture.argSize() >= 1) {
+          sized.append(picture.arg1());
+        }
+        for (int i = 2; i < picture.size(); i++) {
+          IExpr option = picture.get(i);
+          if (option.isRuleAST() && option.first() == S.ImageSize) {
+            IExpr value = option.second();
+            double given = (value.isList() && value.argSize() >= 1 ? value.first() : value)
+                .evalfNaN();
+            if (given > 0.0 && Double.isFinite(given)) {
+              width = given;
+            }
+            continue;
+          }
+          sized.append(option);
+        }
+        sized.append(F.Rule(S.ImageSize, F.num(width * factor)));
+        fFactory.convertInternal(buf, sized, precedence, false);
+        return true;
+      }
+      fFactory.tagStart(buf, "mstyle", "mathsize=\"" + Math.round(factor * 100.0) + "%\"");
+      fFactory.convertInternal(buf, content, precedence, false);
+      fFactory.tagEnd(buf, "mstyle");
       return true;
     }
   }
@@ -2388,6 +2551,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           break;
         case ID.Defer:
         case ID.HoldForm:
+          // the presentation forms are what MathML draws anyway: only their content is shown
+        case ID.TraditionalForm:
+        case ID.StandardForm:
           if ((list.isAST1())) {
             convertInternal(buf, list.arg1(), precedence, false);
             return;
@@ -3484,6 +3650,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Sqrt, new Sqrt());
     CONVERTERS.put(S.Button, new Button());
     CONVERTERS.put(S.Row, new Row());
+    CONVERTERS.put(S.ClickPane, new ClickPane());
+    CONVERTERS.put(S.EventHandler, new EventHandler());
+    CONVERTERS.put(S.Magnify, new Magnify());
     CONVERTERS.put(S.Column, new Column());
     CONVERTERS.put(S.Grid, new Grid());
     CONVERTERS.put(S.Text, new Text());
