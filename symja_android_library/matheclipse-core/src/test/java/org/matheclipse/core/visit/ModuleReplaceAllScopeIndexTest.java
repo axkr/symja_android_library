@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.IdentityHashMap;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
@@ -110,11 +111,30 @@ public class ModuleReplaceAllScopeIndexTest extends ExprEvaluatorTestCase {
     checkSame(evaluator.parse("Hold(" + body + ")"), variableSets()[2]);
   }
 
+  /**
+   * Parsing and printing a chain of depth 300 recurse several frames per level, more than the
+   * default thread stack of some JVMs holds; the chains are checked on a thread with a large stack.
+   */
   @Test
-  public void testDeepChains() {
-    for (int width : new int[] {0, 30}) {
-      checkSame(evaluator.parse("Hold(" + functionChain(300, width) + ")"), variableSets()[2]);
-      checkSame(evaluator.parse("Hold(" + ruleChain(300, width) + ")"), variableSets()[2]);
+  public void testDeepChains() throws InterruptedException {
+    final EvalEngine engine = EvalEngine.get();
+    final AtomicReference<Throwable> failure = new AtomicReference<Throwable>();
+    Thread thread = new Thread(null, () -> {
+      EvalEngine.set(engine);
+      try {
+        for (int width : new int[] {0, 30}) {
+          checkSame(evaluator.parse("Hold(" + functionChain(300, width) + ")"),
+              variableSets()[2]);
+          checkSame(evaluator.parse("Hold(" + ruleChain(300, width) + ")"), variableSets()[2]);
+        }
+      } catch (Throwable th) {
+        failure.set(th);
+      }
+    }, "deep-chains", 64L * 1024 * 1024);
+    thread.start();
+    thread.join();
+    if (failure.get() != null) {
+      throw new AssertionError(failure.get());
     }
   }
 
