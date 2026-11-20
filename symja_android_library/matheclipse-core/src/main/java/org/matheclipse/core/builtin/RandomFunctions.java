@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.Random;
@@ -132,7 +133,7 @@ public final class RandomFunctions {
   private static final class RandomColor extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr model = F.RGBColor(F.$b(), F.$b(), F.$b());
       IExpr spec = F.NIL;
       if (ast.isAST1()) {
@@ -181,7 +182,7 @@ public final class RandomFunctions {
      * The color expression with blanks for <code>expr</code>, or {@link F#NIL} if it is no color
      * model.
      */
-    private static IExpr colorModel(IExpr expr) {
+    private static @AllowNIL IExpr colorModel(IExpr expr) {
       if (expr.isString()) {
         switch (expr.toString()) {
           case "RGB":
@@ -229,7 +230,7 @@ public final class RandomFunctions {
   private static final class RandomSymbol extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       if (argSize == 0) {
         return S.RandomReal.evalBuiltinStep(F.RandomReal(), engine);
@@ -362,7 +363,7 @@ public final class RandomFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Span) && (arg1.argSize() == 2 || arg1.argSize() == 3)
@@ -509,7 +510,7 @@ public final class RandomFunctions {
    * @param spec the number or the list of the dimensions, or {@link F#NIL} for a single number
    * @return {@link F#NIL} if the specification is invalid
    */
-  private static IExpr randomArray(IAST ast, IExpr spec, Supplier<IExpr> number,
+  private static @AllowNIL IExpr randomArray(IAST ast, IExpr spec, Supplier<IExpr> number,
       EvalEngine engine) {
     if (spec.isNIL()) {
       return number.get();
@@ -533,7 +534,7 @@ public final class RandomFunctions {
     }
 
     /** The form with a <code>WorkingPrecision</code> option as the last argument. */
-    private static IExpr evaluateWorkingPrecision(IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr evaluateWorkingPrecision(IAST ast, EvalEngine engine) {
       int digits = workingPrecisionDigits(ast.last().second());
       if (digits < 0 || ast.argSize() > 3) {
         return F.NIL;
@@ -548,7 +549,7 @@ public final class RandomFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.argSize() > 0 && ast.last().isRuleAST()
             && ast.last().first() == S.WorkingPrecision) {
@@ -649,7 +650,7 @@ public final class RandomFunctions {
    * @return {@link F#NIL} if <code>RandomVariate</code> stays unevaluated, for example for invalid
    *         parameters, so that <code>ast</code> keeps its own head
    */
-  private static IExpr randomVariate(IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr randomVariate(IAST ast, EvalEngine engine) {
     IExpr result = engine.evaluate(
         ast.isAST1() ? F.RandomVariate(ast.arg1()) : F.RandomVariate(ast.arg1(), ast.arg2()));
     return result.head() == S.RandomVariate ? F.NIL : result;
@@ -679,7 +680,7 @@ public final class RandomFunctions {
   private static final class RandomInteger extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         Random tlr = engine.getRandom();
         return randomBigInteger(BigInteger.ONE, false, tlr);
@@ -771,7 +772,7 @@ public final class RandomFunctions {
      * <code>RandomInteger({min, max}, {n1, n2, ...})</code> for bounds which aren't both machine
      * integers.
      */
-    private IExpr randomBigIntegerRange(final IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr randomBigIntegerRange(final IAST ast, EvalEngine engine) {
       IExpr lower = ast.arg1().first();
       IExpr upper = ast.arg1().second();
       if (!lower.isInteger() || !upper.isInteger()) {
@@ -833,7 +834,7 @@ public final class RandomFunctions {
   private static final class RandomPermutation extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       int d = ast.arg1().toMachineInt();
 
@@ -865,7 +866,7 @@ public final class RandomFunctions {
   private static final class RandomPrime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       boolean parametersChecked = false;
       BigInteger TWO = BigInteger.valueOf(2L);
@@ -984,7 +985,7 @@ public final class RandomFunctions {
   private static final class RandomReal extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 0 && argSize < ast.size()) {
         ast = ast.copyUntil(argSize + 1);
@@ -1234,7 +1235,7 @@ public final class RandomFunctions {
   private static final class RandomSample extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IAST weights = null;
       if (arg1.isRuleAST()) {
@@ -1307,7 +1308,7 @@ public final class RandomFunctions {
      * @return {@link F#NIL} when the weights are not usable - not all numbers, or one of them
      *         negative or not finite
      */
-    private static IExpr weightedShuffle(IAST weightList, IAST items, int n, Random random) {
+    private static @AllowNIL IExpr weightedShuffle(IAST weightList, IAST items, int n, Random random) {
       final int len = items.argSize();
       double[] weights = weightList.toDoubleVector();
       if (weights == null || weights.length != len) {
@@ -1370,7 +1371,7 @@ public final class RandomFunctions {
      * The integers a <code>Span</code> runs over, as a list, or {@link F#NIL} when the span is not
      * one of concrete integers - <code>1;;10;;2</code> is <code>{1,3,5,7,9}</code>.
      */
-    private static IExpr spanAsList(IAST span, EvalEngine engine) {
+    private static @AllowNIL IExpr spanAsList(IAST span, EvalEngine engine) {
       if (span.size() < 3) {
         return F.NIL;
       }

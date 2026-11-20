@@ -1,5 +1,9 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 /** A TransformationFunction applied to a graphics primitive or region. */
@@ -89,5 +93,46 @@ public class RegionTransformationTest extends ExprEvaluatorTestCase {
         "Circle({0,0},E)");
     check("ScalingTransform({3, 3})[Sphere({0, 0}, Pi)]", //
         "Sphere({0,0},3*Pi)");
+  }
+
+  @Test
+  public void testComposedTransformationFunctions() {
+    // Composition applies the last function first, RightComposition the first one
+    check("ScalingTransform({2, 3}) /* TranslationTransform({1, -1})", //
+        "TransformationFunction({{2,0,1},{0,3,-1},{0,0,1}})");
+    check("TranslationTransform({1, -1}) @* ScalingTransform({2, 3})", //
+        "TransformationFunction({{2,0,1},{0,3,-1},{0,0,1}})");
+    check("RightComposition(TranslationTransform({1, -1}), ScalingTransform({2, 3}))", //
+        "TransformationFunction({{2,0,2},{0,3,-3},{0,0,1}})");
+    check("(TranslationTransform({3, 1}) /* RotationTransform(Pi/2))[{1, 2}] == "
+        + "RotationTransform(Pi/2)[TranslationTransform({3, 1})[{1, 2}]]", //
+        "True");
+    // a run of transformations between other functions is fused
+    check("f /* ScalingTransform({2, 2}) /* TranslationTransform({0, 1}) /* g", //
+        "f/*TransformationFunction({{2,0,0},{0,2,1},{0,0,1}})/*g");
+    // Identity drops out, a composition of one function is that function
+    check("{Composition(h), RightComposition(Identity, h), Composition(Identity, h, Identity), "
+        + "RightComposition(h), Composition(Identity)}", //
+        "{h,h,h,h,Identity}");
+    // transformations of different dimensions are not multiplied
+    check("Head(RotationTransform(Pi/2, {0, 0, 1}) /* TranslationTransform({1, 0}))", //
+        "RightComposition");
+    assertEquals(
+        "TransformationFunction: TransformationFunction({{2,0,0},{0,2,0},{0,0,1}}) and "
+            + "TransformationFunction({{1,0,0,1},{0,1,0,0},{0,0,1,0},{0,0,0,1}}) in Composition "
+            + "have incompatible dimensions.\n", //
+        messagesOf("ScalingTransform({2, 2}) @* TranslationTransform({1, 0, 0})"));
+  }
+
+  private String messagesOf(String input) {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    PrintStream old = evaluator.getEvalEngine().getErrorPrintStream();
+    evaluator.getEvalEngine().setErrorPrintStream(new PrintStream(buffer, true));
+    try {
+      evaluator.eval(input);
+    } finally {
+      evaluator.getEvalEngine().setErrorPrintStream(old);
+    }
+    return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
   }
 }

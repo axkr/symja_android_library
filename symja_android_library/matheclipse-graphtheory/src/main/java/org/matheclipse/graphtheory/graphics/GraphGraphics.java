@@ -97,10 +97,15 @@ final public class GraphGraphics {
   /** the depth <code>f(k)</code> of the layer <code>k</code> of a tree layout, or {@link F#NIL} */
   private IExpr layerSizeFunction = F.NIL;
   /**
-   * the function <code>f(points, {source, target}, edge)</code> which draws an edge in the place
-   * of the default line or arrow, or {@link F#NIL}
+   * the function <code>f(points, edge)</code> which draws an edge in the place of the default line
+   * or arrow, or {@link F#NIL}
    */
   private IExpr edgeRenderingFunction = F.NIL;
+  /**
+   * the function <code>f(position, vertex)</code> which draws a vertex in the place of the default
+   * shape, <code>None</code> for no vertex shapes, or {@link F#NIL} for the default shapes
+   */
+  private IExpr vertexRenderingFunction = F.NIL;
   /** the edge passed to the {@link #edgeRenderingFunction} is an <code>UndirectedEdge</code> */
   private boolean undirectedRenderedEdges = false;
   private final IAST options;
@@ -192,9 +197,8 @@ final public class GraphGraphics {
   }
 
   /**
-   * Draw every edge as <code>function(points, {source, target}, edge)</code>: the points of the
-   * edge from its source to its target, the two vertices and the edge itself. The edge labels are
-   * drawn as without the function.
+   * Draw every edge as <code>function(points, edge)</code>: the points of the edge from its source
+   * to its target and the edge itself. The edge labels are drawn as without the function.
    *
    * @param function the function or {@link F#NIL} for the default edges
    */
@@ -214,6 +218,34 @@ final public class GraphGraphics {
   /** The plot options which are neither options of the graph nor of the picture. */
   private static final Set<IExpr> PLOT_DRAWING_OPTIONS =
       new HashSet<>(java.util.Arrays.asList(S.EdgeRenderingFunction, S.LayerSizeFunction));
+
+  /**
+   * Whether <code>name</code> is the option <code>VertexRenderingFunction</code>: <code>f</code>
+   * draws a vertex as <code>f(position, vertex)</code>, <code>None</code> and
+   * <code>Automatic</code> the default shapes.
+   */
+  public static boolean isVertexRenderingFunction(IExpr name) {
+    return name == S.VertexRenderingFunction;
+  }
+
+  /**
+   * The value of the option <code>VertexRenderingFunction -&gt; value</code> of a plot function,
+   * or {@link F#NIL} if it is not given, <code>Automatic</code> or <code>None</code>.
+   *
+   * @param ast <code>plot(graph, ..., options...)</code>
+   * @param from the first position an option can stand at
+   */
+  public static IExpr vertexRenderingFunction(IAST ast, int from) {
+    for (int i = from; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (option.isRuleAST() && isVertexRenderingFunction(option.first())) {
+        // None keeps the default shapes as Automatic does
+        return option.second().isAutomatic() || option.second().isNone() ? F.NIL
+            : option.second();
+      }
+    }
+    return F.NIL;
+  }
 
   /** Whether <code>name</code> is the symbol of the given name, in any case of its letters. */
   private static boolean isSymbolName(IExpr name, String symbolName) {
@@ -255,6 +287,7 @@ final public class GraphGraphics {
     if (layerSize.isPresent() && layerSize != S.Automatic) {
       setLayerSizeFunction(layerSize);
     }
+    vertexRenderingFunction = vertexRenderingFunction(ast, from);
   }
 
   private <E> void calculateLayout(Graph<IExpr, E> g) {
@@ -436,8 +469,8 @@ final public class GraphGraphics {
           } else {
             points = F.List(point(p1[0], p1[1]), point(p2[0], p2[1]));
           }
-          sink.append(engine.evaluate(F.ternaryAST3(edgeRenderingFunction, points,
-              F.List(source, target), F.binaryAST2(edgeHead, source, target))));
+          sink.append(engine.evaluate(F.binaryAST2(edgeRenderingFunction, points,
+              F.binaryAST2(edgeHead, source, target))));
         } else if (source.equals(target)) {
           IAST points = selfLoopPoints(p1);
           sink.append(directed ? F.Arrow(points) : F.Line(points));
@@ -1187,7 +1220,7 @@ final public class GraphGraphics {
         && (isGraphOption(option.first()) || isVertexLabeling(option.first()));
   }
 
-  static boolean isVertexLabeling(IExpr name) {
+  public static boolean isVertexLabeling(IExpr name) {
     return isSymbolName(name, "VertexLabeling");
   }
 
@@ -1196,7 +1229,8 @@ final public class GraphGraphics {
    * {@link #setPlotOptions(IAST, int)} - and so is not passed on to <code>Graphics</code>.
    */
   public static boolean isPlotDrawingOption(IExpr option) {
-    return option.isRuleAST() && PLOT_DRAWING_OPTIONS.contains(option.first());
+    return option.isRuleAST() && (PLOT_DRAWING_OPTIONS.contains(option.first())
+        || isVertexRenderingFunction(option.first()));
   }
 
   /**
@@ -1408,9 +1442,15 @@ final public class GraphGraphics {
     for (IExpr v : graph.vertexSet()) {
       double[] p = vertexCoords.get(v);
       if (p != null) {
-        IExpr shape = vertexPrimitive(p, vertexRadius(v, distance), distance);
-        IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
-        vertexPrimitives.append(style.isPresent() ? F.List(style, shape) : shape);
+        if (vertexRenderingFunction.isPresent()) {
+          // the function draws the vertex at its position
+          vertexPrimitives.append(EvalEngine.get()
+              .evaluate(F.binaryAST2(vertexRenderingFunction, point(p[0], p[1]), v)));
+        } else {
+          IExpr shape = vertexPrimitive(p, vertexRadius(v, distance), distance);
+          IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
+          vertexPrimitives.append(style.isPresent() ? F.List(style, shape) : shape);
+        }
         if (showVertexLabels) {
           IAST pos = point(p[0], p[1]);
           IExpr text = centeredLabels ? ast(S.Text, v, pos) : F.Text(v, pos, F.List(F.C0, F.CN1));

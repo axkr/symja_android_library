@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.interfaces.Attribute;
@@ -43,7 +45,7 @@ public class CompileFunctions {
   private static class Compile extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr head = ast.head();
       if (head.isAST(S.Compile, 3)) {
         return apply((IAST) head, ast, engine);
@@ -56,7 +58,7 @@ public class CompileFunctions {
      * Evaluate the body of <code>compiled</code> with the arguments of <code>call</code> in place
      * of its parameters.
      */
-    private static IExpr apply(IAST compiled, IAST call, EvalEngine engine) {
+    private static @AllowNIL IExpr apply(IAST compiled, IAST call, EvalEngine engine) {
       IExpr parameterSpec = compiled.arg1();
       if (!parameterSpec.isList()) {
         return F.NIL;
@@ -80,9 +82,16 @@ public class CompileFunctions {
         }
         ISymbol local = F.Dummy(parameter.getSymbolName() + EvalEngine.uniqueName("$"));
         IExpr value = engine.evaluate(call.get(i));
-        if (isInexactParameter(parameters.get(i)) && value.isNumericFunction(true)) {
-          // a real or complex parameter holds a machine number, as in compiled code
-          value = engine.evalN(value);
+        if (isInexactParameter(parameters.get(i))) {
+          if (value.isNumericFunction(true)
+              && engine.evaluate(F.ArrayDepth(value)).toIntDefault(-1) == rank(
+                  parameters.get(i))) {
+            // a real or complex parameter holds a machine number, as in compiled code
+            value = engine.evalN(value);
+          } else {
+            // the body is evaluated with the argument as it is, which compiled code cannot do
+            notMachineNumbers(parameters.get(i), value, i, engine);
+          }
         }
         local.assignValue(value, false);
         variables[i - 1] = local;
@@ -98,6 +107,37 @@ public class CompileFunctions {
           }
         }
       }
+    }
+
+    /**
+     * Print the message that an argument of a real or complex parameter has no machine numbers:
+     * <code>CompiledFunction::cfsa</code> for a number, <code>CompiledFunction::cfta</code> for a
+     * tensor of the declared rank.
+     */
+    private static void notMachineNumbers(IExpr declaration, IExpr argument, int position,
+        EvalEngine engine) {
+      boolean complex = declaration.isList() && declaration.size() > 2
+          && ((IPatternObject) declaration.second()).getHeadTest() == S.Complex;
+      int rank = rank(declaration);
+      if (rank > 0) {
+        // Argument `1` at position `2` should be a rank `3` tensor of machine-size `4`.
+        Errors.printMessage(S.CompiledFunction, "cfta", F.List(argument, F.ZZ(position),
+            F.ZZ(rank), F.stringx(complex ? "complex numbers" : "real numbers")), engine);
+      } else {
+        // Argument `1` at position `2` should be a machine-size `3`.
+        Errors.printMessage(S.CompiledFunction, "cfsa", F.list(argument, F.ZZ(position),
+            F.stringx(complex ? "complex number" : "real number")), engine);
+      }
+    }
+
+    /**
+     * The tensor rank of a parameter declaration: <code>n</code> for <code>{x, _Real, n}</code>, 0
+     * for a number.
+     */
+    private static int rank(IExpr declaration) {
+      return declaration.isList() && declaration.size() > 3
+          ? ((IAST) declaration).get(3).toIntDefault(0)
+          : 0;
     }
 
     /**

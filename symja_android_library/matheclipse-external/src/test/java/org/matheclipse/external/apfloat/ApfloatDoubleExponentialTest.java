@@ -8,6 +8,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests of {@link ApfloatDoubleExponential}.
@@ -38,6 +39,7 @@ public class ApfloatDoubleExponentialTest
     }
 
     @Test
+    @Tag("slow")
     public void testFiniteInterval()
         throws ApfloatDoubleExponential.Failure
     {
@@ -55,6 +57,7 @@ public class ApfloatDoubleExponentialTest
     }
 
     @Test
+    @Tag("slow")
     public void testInfiniteIntervals()
         throws ApfloatDoubleExponential.Failure
     {

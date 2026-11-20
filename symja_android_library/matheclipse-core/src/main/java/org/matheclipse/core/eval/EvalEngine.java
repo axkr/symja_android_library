@@ -2298,7 +2298,7 @@ public class EvalEngine implements Serializable {
    *
    * @return the nested application, or {@link F#NIL} when the head is not a composition
    */
-  private static IExpr expandCompositionHead(IAST ast) {
+  private static @AllowNIL IExpr expandCompositionHead(IAST ast) {
     IExpr head = ast.head();
     boolean rightToLeft = head.isAST(S.Composition);
     if (!rightToLeft && !head.isAST(S.RightComposition)) {
@@ -2337,7 +2337,7 @@ public class EvalEngine implements Serializable {
     return ((IAST) arg).forAll(x -> x.isList() ? isMachineRealArray(x) : x instanceof Num);
   }
 
-  private IExpr evalASTArg1(final IAST ast) {
+  private @AllowNIL IExpr evalASTArg1(final IAST ast) {
     // special case ast.isAST1()
     // head == ast[0] --- arg1 == ast[1]
     IExpr result = ast.head().evaluateHead(ast, this);
@@ -2445,7 +2445,7 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return <code>F.NIL</code> if no evaluation happened
    */
-  private IExpr evalASTBuiltinFunction(final ISymbol symbol, final IAST ast) {
+  private @AllowNIL IExpr evalASTBuiltinFunction(final ISymbol symbol, final IAST ast) {
     final int attributes = symbol.getAttributes();
     if (fEvalLHSMode) {
       if (Attribute.HOLDALL.isSetIn(attributes)) {
@@ -2644,7 +2644,7 @@ public class EvalEngine implements Serializable {
     return result;
   }
 
-  public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
+  public @AllowNIL IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
       final int attributes) {
     IExpr returnResult = F.NIL;
     IExpr result;
@@ -2753,7 +2753,7 @@ public class EvalEngine implements Serializable {
    *        {@link ISymbol#ORDERLESS} the mutableAST will be modified.
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  public IExpr evalAttributes(ISymbol symbol, IASTMutable mutableAST) {
+  public @AllowNIL IExpr evalAttributes(ISymbol symbol, IASTMutable mutableAST) {
     final int astSize = mutableAST.size();
     if (astSize == 2) {
       return evalASTArg1(mutableAST);
@@ -3716,7 +3716,7 @@ public class EvalEngine implements Serializable {
    * @see #evalWithoutNumericReset(IExpr)
    * @see #evaluateNIL(IExpr)
    */
-  private final IExpr evalLoop(final IExpr expr) {
+  private final @AllowNIL IExpr evalLoop(final IExpr expr) {
     if (fAbortRequested && (fAbortProtectDepth == 0 || fProtectedCheckAborts > 0)) {
       // somebody else asked this evaluation to stop: the kernel on the other end of a link
       // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
@@ -3931,6 +3931,29 @@ public class EvalEngine implements Serializable {
    *
    * @see #incValueEpoch()
    */
+  /**
+   * <code>extended</code> is the list <code>list</code> with <code>added</code> appended or
+   * prepended. When <code>list</code> is known to hold only numbers and strings and
+   * <code>added</code> is one too, <code>extended</code> is marked as such a list, so the evaluation
+   * loop doesn't visit all its elements again. Without the mark a loop of <code>AppendTo</code>
+   * calls passed over the whole list once per call.
+   *
+   * @param list a list
+   * @param extended <code>list</code> with one more element
+   * @param added the evaluated element which was added
+   */
+  public static void markExtendedList(final IAST list, final IAST extended, final IExpr added) {
+    if ((added.isNumber() || added instanceof IStringX) && list.isList() && extended.isList()
+        && list.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)
+        // only the list classes which drop their flags on every change may remember the answer
+        && (extended instanceof org.matheclipse.core.expression.HMArrayList
+            || extended instanceof org.matheclipse.core.expression.ASTRRBTree)) {
+      extended.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
+      // no Sequence, Unevaluated or Nothing among numbers and strings
+      extended.addFlag(Flag.CONTAINS_NO_SPECIAL_ARG);
+    }
+  }
+
   private static boolean valuesUnchangedSince(final IAST ast, final long epoch) {
     final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
     // only the list classes which drop their flags on every change may remember the answer
@@ -4031,7 +4054,7 @@ public class EvalEngine implements Serializable {
    * @see #evalWithoutNumericReset(IExpr)
    * @see #evaluateNIL(IExpr)
    */
-  private IExpr evalLoopTraceMode(final IExpr expr) {
+  private @AllowNIL IExpr evalLoopTraceMode(final IExpr expr) {
     IExpr result = expr;
 
     try {
@@ -4116,7 +4139,7 @@ public class EvalEngine implements Serializable {
    * @param localValue the value
    * @param quiet if <code>true</code> evaluate in quiet mode and suppress evaluation messages
    */
-  public IExpr evalModuleDummySymbol(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
+  public @AllowNIL IExpr evalModuleDummySymbol(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
     boolean quietMode = isQuietMode();
     setQuietMode(quiet);
     java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables =
@@ -4204,7 +4227,7 @@ public class EvalEngine implements Serializable {
    * @param attributes
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  private IExpr evalNoAttributes(IAST ast, int attributes) {
+  private @AllowNIL IExpr evalNoAttributes(IAST ast, int attributes) {
     final boolean argNumericMode = isNumericArg(ast);
     if (!argNumericMode && ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)) {
       // numbers and strings, already evaluated once: evaluating them again changes nothing. A loop
@@ -4271,7 +4294,7 @@ public class EvalEngine implements Serializable {
    * @return the numerically evaluated expression or <code>F.NIL</code> if evaluation is not
    *         possible
    */
-  public final IExpr evalNumericFunctionNIL(final IExpr expr) {
+  public final @AllowNIL IExpr evalNumericFunctionNIL(final IExpr expr) {
     if (expr.isNumericFunction(true)) {
       return evalNumericFunction(expr, false);
     }
@@ -4358,6 +4381,13 @@ public class EvalEngine implements Serializable {
       if (expr.isFreeOfPatterns()) {
         return evalWithoutNumericReset(expr);
       }
+      if (isPatternInHeldPartOnly(expr)) {
+        // the pattern is the value of a computation on held patterns, as in Hold({_Integer})[[1]]
+        IExpr value = evalWithoutNumericReset(expr);
+        if (!value.equals(expr)) {
+          return evalPattern(value);
+        }
+      }
       if (expr.isAST()) {
         if (expr.isOneIdentityAST() && expr.head().isBuiltInSymbol()) {
           // Times(x_) or Plus(x_) is x_ as an expression too; for a symbol of a package, f(y_)
@@ -4376,6 +4406,37 @@ public class EvalEngine implements Serializable {
       setNumericMode(numericMode);
       fEvalPatternMatcherMode = patternMatcherMode;
     }
+  }
+
+  /**
+   * <code>true</code> if every pattern object of <code>expr</code> lies inside a
+   * <code>Hold</code>, <code>HoldForm</code> or <code>HoldComplete</code> part, so that none of
+   * them is an active pattern of <code>expr</code> as it is written.
+   */
+  private static boolean isPatternInHeldPartOnly(IExpr expr) {
+    if (expr instanceof IPatternObject) {
+      return false;
+    }
+    if (expr.isAST() && !expr.isFreeOfPatterns()) {
+      IAST ast = (IAST) expr;
+      IExpr head = ast.head();
+      if (head == S.Hold || head == S.HoldForm || head == S.HoldComplete) {
+        return true;
+      }
+      if (head == S.Blank || head == S.BlankSequence || head == S.BlankNullSequence
+          || head == S.Pattern || head == S.Optional || head == S.Repeated
+          || head == S.RepeatedNull || head == S.Condition || head == S.PatternTest
+          || head == S.Except || head == S.HoldPattern || head == S.Verbatim
+          || head == S.OptionsPattern || head == S.PatternSequence) {
+        return false;
+      }
+      for (int i = 0; i < ast.size(); i++) {
+        if (!isPatternInHeldPartOnly(ast.get(i))) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
@@ -4468,7 +4529,7 @@ public class EvalEngine implements Serializable {
    * @param argsAST
    * @return <code>F.NIL</code> if no evaluation happened
    */
-  public IExpr evalRules(ISymbol symbol, IAST argsAST) {
+  public @AllowNIL IExpr evalRules(ISymbol symbol, IAST argsAST) {
     IAST ast;
     boolean[] unevaluatedFunction = new boolean[] {false};
     if (argsAST.hasSpecialArg() && argsAST.exists(x -> x.isAST(S.Unevaluated, 2))
@@ -4678,7 +4739,7 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  private IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation,
+  private @AllowNIL IExpr evalSetAttributesRecursive(IAST ast, boolean noEvaluation,
       boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
     IExpr head = ast.head();
@@ -4906,7 +4967,7 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return
    */
-  private IExpr evalTagSetPlusTimes(IAST ast) {
+  private @AllowNIL IExpr evalTagSetPlusTimes(IAST ast) {
     if (!ast.hasSpecialArg()) {
       // both Rubi hooks below require an argument with the head `Dist`, which hasSpecialArg()
       // covers - and by now the flag was already computed while the arguments were evaluated
@@ -5014,7 +5075,7 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  public IExpr evalTimeConstrained(final IExpr expr, long seconds) {
+  public @AllowNIL IExpr evalTimeConstrained(final IExpr expr, long seconds) {
     return evalTimeConstrained(expr, F.NIL, seconds);
   }
 
@@ -5240,7 +5301,7 @@ public class EvalEngine implements Serializable {
    * @param expr the object which should be evaluated
    * @return the evaluated object or {@link F#NIL} if no evaluation was possible
    */
-  public final IExpr evaluateNIL(final IExpr expr) {
+  public final @AllowNIL IExpr evaluateNIL(final IExpr expr) {
     if (expr.isPresent()) {
       boolean numericMode = fNumericMode;
       try {
@@ -5312,7 +5373,7 @@ public class EvalEngine implements Serializable {
     return false;
   }
 
-  public IExpr evalUpRules(IAST ast) {
+  public @AllowNIL IExpr evalUpRules(IAST ast) {
     IExpr result = F.NIL;
     // if no UpSet/UpSetDelayed/TagSet was evaluated yet, no argument can carry an up-value, so the
     // probe over all arguments (and their topHead()) is skipped completely
@@ -5337,6 +5398,11 @@ public class EvalEngine implements Serializable {
           return result;
         } else {
           if (head instanceof BuiltInSymbol) {
+            if (ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS)) {
+              // the other arguments are numbers and strings too: no up-values, and no pass over a
+              // long list of them
+              return F.NIL;
+            }
             int requiredMask = UniformFlags.uniformMask((IBuiltInSymbol) head);
             if (requiredMask != UniformFlags.NONE && ast.isUniform(requiredMask)) {
               return F.NIL;
@@ -5373,7 +5439,7 @@ public class EvalEngine implements Serializable {
    * The up-values which this engine defined for the protected built-in <code>head</code>, see
    * {@link #notationRulesSymbol(ISymbol)}.
    */
-  private IExpr evalNotationUpRules(ISymbol head, IAST ast) {
+  private @AllowNIL IExpr evalNotationUpRules(ISymbol head, IAST ast) {
     if (fNotationContext != null && head instanceof IBuiltInSymbol) {
       ISymbol rules = fNotationContext.get(head.getSymbolName());
       if (rules != null) {
@@ -5564,7 +5630,7 @@ public class EvalEngine implements Serializable {
     incEpoch();
   }
 
-  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
+  public @AllowNIL IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
     if (fDollarSymbolMap != null) {
       IExpr expr = fDollarSymbolMap.get(dollarSymbol);
       return expr == null ? F.NIL : expr;
@@ -5858,7 +5924,7 @@ public class EvalEngine implements Serializable {
    * <code>$MaxPrecision</code> in this engine, or {@link F#NIL} if it has none or it is no
    * non-negative number or <code>Infinity</code>.
    */
-  public IExpr precisionBoundValue(boolean lower) {
+  public @AllowNIL IExpr precisionBoundValue(boolean lower) {
     if (fDollarSymbolMap == null) {
       return F.NIL;
     }
@@ -5903,7 +5969,7 @@ public class EvalEngine implements Serializable {
    * The value of <code>$MaxExtraPrecision</code>, evaluated if it was assigned with
    * <code>:=</code>, or {@link F#NIL} if it has none.
    */
-  private static IExpr maxExtraPrecisionValue() {
+  private static @AllowNIL IExpr maxExtraPrecisionValue() {
     final IExpr value = S.$MaxExtraPrecision.assignedValue();
     if (value == null || value.isNIL()) {
       return F.NIL;
@@ -5986,7 +6052,7 @@ public class EvalEngine implements Serializable {
    * @return the expression at number <code>frame</code> on the caller stack or {@link F#NIL} if no
    *         such frame exists.
    */
-  public IExpr getStackFrame(int frame) {
+  public @AllowNIL IExpr getStackFrame(int frame) {
     Deque<IExpr> stack = getStack();
     Iterator<IExpr> iterator = stack.iterator();
     while (iterator.hasNext()) {
@@ -6429,7 +6495,9 @@ public class EvalEngine implements Serializable {
       }
       return SignificanceArithmetic.conditioned(symbol, ast, result);
     } catch (ValidateException ve) {
-      ve.printStackTrace();
+      if (Config.SHOW_STACKTRACE) {
+        ve.printStackTrace();
+      }
       return Errors.printMessage(ast.topHead(), ve, this);
     } catch (FlowControlException e) {
       throw e;
@@ -6538,7 +6606,7 @@ public class EvalEngine implements Serializable {
    *
    * @return {@link F#NIL} if that doesn't give a finite number either
    */
-  private IExpr promotedNumericFunction(IFunctionEvaluator functionEvaluator, IAST ast) {
+  private @AllowNIL IExpr promotedNumericFunction(IFunctionEvaluator functionEvaluator, IAST ast) {
     final long precision = ParserConfig.MACHINE_PRECISION;
     FixedPrecisionApfloatHelper oldHelper = fApfloatHelper;
     try {
@@ -6617,7 +6685,7 @@ public class EvalEngine implements Serializable {
     fOptionsStack.pop();
   }
 
-  private IExpr preevalForwardBackward(final IAST arg1, final IAST iteratorVariables) {
+  private @AllowNIL IExpr preevalForwardBackward(final IAST arg1, final IAST iteratorVariables) {
     // only the iterator variables are local, if they are given; all other symbols keep their
     // values, so that in Sum((g /. x -> k/n), {k, 0, n}) the value of g is substituted
     IAST moduleVariablesList =
@@ -7357,7 +7425,7 @@ public class EvalEngine implements Serializable {
     return fStack;
   }
 
-  public IExpr stackPop() {
+  public @AllowNIL IExpr stackPop() {
     if (fStack.isEmpty()) {
       return F.NIL;
     }
@@ -7382,7 +7450,7 @@ public class EvalEngine implements Serializable {
    *         {@link ISparseArray}. Returns {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments
    *         were found or if the arguments cannot be combined.
    */
-  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead, String messageShortcut) {
+  public @AllowNIL IExpr threadASTListArgs(final IAST ast, ISymbol commandHead, String messageShortcut) {
     if (ast.isUniform()) {
       // uniform arguments never contain a S.List, S.Association or S.SparseArray argument
       ast.addFlag(Flag.IS_LISTABLE_THREADED);
@@ -7615,7 +7683,7 @@ public class EvalEngine implements Serializable {
    * @return <code>head(nonThreadable..., head(threadable...))</code> with the inner part already
    *         threaded, or {@link F#NIL} if there is nothing to combine
    */
-  private IExpr threadAroundNonThreadable(final IAST ast) {
+  private @AllowNIL IExpr threadAroundNonThreadable(final IAST ast) {
     final ISymbol symbol = ast.topHead();
     if (!ast.head().isSymbol() || !symbol.hasOrderlessFlatAttribute()) {
       return F.NIL;
@@ -7672,7 +7740,7 @@ public class EvalEngine implements Serializable {
    *         ({@link ISymbol#ONEIDENTITY}), or {@link F#NIL} if <code>ast</code> contains no
    *         <code>identityElement</code> argument
    */
-  private static IExpr removeIdentityElement(final IAST ast, final IExpr identityElement) {
+  private static @AllowNIL IExpr removeIdentityElement(final IAST ast, final IExpr identityElement) {
     final int size = ast.size();
     int identityCount = 0;
     for (int i = 1; i < size; i++) {
@@ -7720,7 +7788,7 @@ public class EvalEngine implements Serializable {
    * @param messageArgs the arguments of the message
    * @return {@link F#NIL}
    */
-  private IExpr invalidListable(final IAST ast, ISymbol errorHead, String errorShortcut,
+  private @AllowNIL IExpr invalidListable(final IAST ast, ISymbol errorHead, String errorShortcut,
       IAST messageArgs) {
     Errors.printMessage(errorHead, errorShortcut, messageArgs, this);
     ast.addFlag(Flag.IS_LISTABLE_THREADED);

@@ -9,7 +9,7 @@ They are loaded from the classpath by
 that refreshing a file is a plain copy; Orekit itself matches its loaders against
 the file name only and ignores the directories.
 
-Only what positional astronomy needs is included.
+Only what positional astronomy and the geophysics functions need is included.
 
 | File | Size | Purpose | Coverage |
 | --- | --- | --- | --- |
@@ -17,13 +17,21 @@ Only what positional astronomy needs is included.
 | `itrf-versions.conf` | 4.7 KB | maps the IERS data files to ITRF versions | — |
 | `Earth-Orientation-Parameters/IAU-2000/finals2000A.all` | 3.6 MB | IERS Earth orientation parameters, CIO based. Needed for ITRF/TIRF, UT1 and sidereal time. | 1973 – late 2026 (predicted from Aug 2026) |
 | `DE-440-ephemerides/lnxp1990.440` | 14.2 MB | JPL DE 440 planetary and lunar ephemerides. Positions of the Sun, Moon and planets. | 1990 – 2149 |
+| `Potential/eigen-6s.gfc` | 2.6 MB | GFZ-GRGS EIGEN-6S gravity field (ICGEM format, degree 240, tide free), from the upstream bundle. Used by `GeogravityModelData`. | — |
+| `Magnetic-Field-Models/WMM.COF` | 4.5 KB | World Magnetic Model WMM-2025 (NOAA NCEI / BGS, public domain), copied unchanged from `WMM2025COF.zip`. Default model of `GeomagneticModelData`. | 2025.0 – 2030.0 |
+| `Magnetic-Field-Models/IGRF.COF` | 154 KB | IAGA International Geomagnetic Reference Field IGRF-14, converted from `igrf14coeffs.txt` to Orekit's combined COF format (one block per 5-year epoch, secular variation on the last block). Not part of the upstream bundle. | 1900.0 – 2030.0 |
+
+Orekit only matches the file names `WMM.COF` and `IGRF.COF`. When WMM-2030 or
+IGRF-15 is published, replace the files: copy the new `WMM.COF` as it is, and
+regenerate `IGRF.COF` from the new `igrfNNcoeffs.txt` - each header line is
+`name epoch nMax nMaxSV 0 start end -1.0 600.0 name 0`, followed by
+`n m g h dg dh name index` rows up to `n = m = nMax` (10 before 2000, 13 since).
 
 ## Deliberately not included
 
 | Upstream file or directory | Size | Why not |
 | --- | --- | --- |
 | `Earth-Orientation-Parameters/IAU-1980/finals.all` | 3.6 MB | equinox based EOP, only needed for the `IERS_1996`/`IERS_2003` equinox frames. `AstroConvert.earthFrame()` uses `IERSConventions.IERS_2010`, which reads the IAU-2000 file. Add this file if equinox based frames are ever exposed. |
-| `Potential/` | 2.6 MB | Eigen 6S gravity field - orbit propagation only |
 | `MSAFE/` | 5.6 MB | Marshall Solar Activity Future Estimation - atmospheric drag only |
 | `CSSI-Space-Weather-Data/` | 3.4 MB | atmospheric density - drag only |
 | `Space-Environment-Data/` | 1.9 MB | Jacchia-Bowman 2008 atmosphere - drag only |

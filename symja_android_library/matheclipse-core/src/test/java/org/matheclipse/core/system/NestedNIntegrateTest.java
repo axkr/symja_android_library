@@ -67,4 +67,13 @@ public class NestedNIntegrateTest extends ExprEvaluatorTestCase {
         + "{Abs((x /. FindRoot(r(x), {x, 1, 2})) - 2^(1/3)) < 10^-9, m <= 20}", //
         "{True,True}");
   }
+
+  @Test
+  public void testNIntegrateImaginaryRoundingNoise() {
+    // w*Conjugate(w) is real; its imaginary part is rounding noise, which isn't integrated
+    check("w(x_) := Exp(-x^2)*(Cos(x) + 0.5*I*Sin(x)); g = w(x)*Conjugate(w(x)); "
+        + "{NIntegrate(g, {x, -6, 6}), "
+        + "Chop(NIntegrate(g, {x, -6, 6}) - NIntegrate(Exp(-2*x^2)*(Cos(x)^2 + 0.25*Sin(x)^2), {x, -6, 6}))}", //
+        "{1.06839,0}");
+  }
 }

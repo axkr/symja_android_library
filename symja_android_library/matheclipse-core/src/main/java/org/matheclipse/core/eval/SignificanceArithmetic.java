@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -277,7 +278,7 @@ public final class SignificanceArithmetic {
    * @return {@link F#NIL} if the arguments are no special point, or no argument is an
    *         arbitrary-precision number
    */
-  public static IExpr logSpecialPoint(final IExpr base, final IExpr x) {
+  public static @AllowNIL IExpr logSpecialPoint(final IExpr base, final IExpr x) {
     if (!(base instanceof ApfloatNum) && !(x instanceof ApfloatNum)) {
       return F.NIL;
     }
@@ -333,7 +334,7 @@ public final class SignificanceArithmetic {
    *
    * @return {@link F#NIL} if the argument covers no such point
    */
-  private static IExpr indeterminatePoint(final Function function, final IAST ast) {
+  private static @AllowNIL IExpr indeterminatePoint(final Function function, final IAST ast) {
     if ((function == Function.ARCTANH || function == Function.ARCCOTH) && ast.isAST1()
         && (coversPoint(ast.arg1(), Apfloat.ONE)
             || coversPoint(ast.arg1(), new Apfloat(-1L)))) {
@@ -384,7 +385,7 @@ public final class SignificanceArithmetic {
    * @param ast the function with its arguments
    * @return {@link F#NIL} if <code>ast</code> is no such function at such a point
    */
-  public static IExpr unevaluatedAtSpecialPoint(final ISymbol head, final IAST ast) {
+  public static @AllowNIL IExpr unevaluatedAtSpecialPoint(final ISymbol head, final IAST ast) {
     if (!(head instanceof IBuiltInSymbol) || !ast.isAST1() || !(ast.arg1() instanceof ApfloatNum)) {
       return F.NIL;
     }
@@ -473,7 +474,7 @@ public final class SignificanceArithmetic {
    * The numbers of <code>result</code> with the precision <code>precision</code>, or with their own
    * if that is lower, see {@link #opaquePrecision(ISymbol, IAST)}.
    */
-  public static IExpr withPrecision(final IExpr result, final double precision) {
+  public static @AllowNIL IExpr withPrecision(final IExpr result, final double precision) {
     if (result instanceof ApfloatNum) {
       return ((ApfloatNum) result).withMaximumPrecision(precision);
     }

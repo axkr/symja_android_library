@@ -428,7 +428,12 @@ public final class AxesFrameRenderer {
     if (ticks != null && ticks.fontSizeSet) {
       return ticks.labels.fontSize;
     }
-    return options.labelFontSizeSet ? options.labelStyle.fontSize : TICK_FONT_SIZE;
+    if (options.labelFontSizeSet) {
+      return options.labelStyle.fontSize;
+    }
+    // a font size of AxesStyle or FrameStyle sizes the tick labels of the axes or frame
+    double styleSize = options.hasFrame() ? options.frameFontSize : options.axesFontSize;
+    return Double.isNaN(styleSize) ? TICK_FONT_SIZE : styleSize;
   }
 
   /** Widest tick label on the y axis, used to reserve left padding. */

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Map;
 import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
@@ -85,7 +86,7 @@ public class FormulaDataFunctions {
   private static final class FormulaData extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         IASTAppendable names = F.ListAlloc(Catalogue.FORMULAS.size());
         for (String name : Catalogue.FORMULAS.keySet()) {
@@ -122,7 +123,7 @@ public class FormulaDataFunctions {
     }
 
     /** A named property of a formula. */
-    private static IExpr property(IAST equation, String name) {
+    private static @AllowNIL IExpr property(IAST equation, String name) {
       IAST variables = quantityVariables(equation);
       switch (name) {
         case "Equation":
@@ -147,7 +148,7 @@ public class FormulaDataFunctions {
      *
      * @return the solved equation, or the substituted equation when the unknown is not unique
      */
-    private static IExpr solve(IAST equation, IAST rules, EvalEngine engine) {
+    private static @AllowNIL IExpr solve(IAST equation, IAST rules, EvalEngine engine) {
       IAST variables = quantityVariables(equation);
       IASTAppendable substitutions = F.ListAlloc(rules.size());
       IASTAppendable unknowns = F.ListAlloc(variables.size());

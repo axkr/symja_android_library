@@ -420,6 +420,50 @@ public class RootTest extends ExprEvaluatorTestCase {
         "{-1.0,1.0,1.0}");
   }
 
+  /** A root of a polynomial with an inexact coefficient is inexact, also an exact factor's. */
+  @Test
+  public void testRootOfPolynomialInAVariable() {
+    // Root(poly, x, k) is the k-th root of the polynomial poly in x
+    check("Root(z^2 - 7, z, 2)", //
+        "Sqrt(7)");
+    check("Root(z^2 - 7, z, 1)", //
+        "-Sqrt(7)");
+    check("Root(z^2 + c, z, 2)", //
+        "Sqrt(-c)");
+    check("Root(z^5 - z - 3, z, 1)", //
+        "Root(-3-#1+#1^5&,1,0)");
+    // there is no third root of a quadratic
+    check("Root(z^2 - 7, z, 3)", //
+        "Root(-7+z^2,z,3)");
+  }
+
+  @Test
+  public void testRootToThePrecisionOfItsCoefficients() {
+    check("Precision(Root(#^2 - 7.`24 &, 2))", //
+        "24");
+    check("Root(#^2 - 7.`24 &, 2)", //
+        "2.64575131106459059050162");
+  }
+
+  @Test
+  public void testRootOfInexactPolynomial() {
+    check("Root(#^3 - 0.3*# &, 2)", //
+        "0.0");
+    check("Table(Root(#^3 - 0.3*# &, k), {k, 3})", //
+        "{-0.547723,0.0,0.547723}");
+    check("Root(#^4 - 2.5*#^2 &, 3)", //
+        "0.0");
+    check("Root(#^3 + 1.5*#^2 &, 1)", //
+        "-1.5");
+    check("ToRadicals(Root(#^3 - 0.7*# &, 2))", //
+        "0.0");
+    check("Accuracy(Root(#^3 - 0.2`25*# &, 2))", //
+        "25.0");
+    // exact coefficients keep the exact root
+    check("Root(#^3 - 3*# &, 2)", //
+        "0");
+  }
+
   /**
    * {@code N[Root[f, k], precision]} refines the machine-precision root with Newton's method in
    * arbitrary precision arithmetic.

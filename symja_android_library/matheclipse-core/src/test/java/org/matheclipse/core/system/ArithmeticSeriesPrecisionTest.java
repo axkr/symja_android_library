@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Dirichlet series of arithmetic functions in <code>Sum</code> and <code>NSum</code>, numeric
@@ -50,6 +51,7 @@ public class ArithmeticSeriesPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZetaDerivativesOfHigherOrder() {
     check("Zeta''(4.0)", //
         "0.0650582");

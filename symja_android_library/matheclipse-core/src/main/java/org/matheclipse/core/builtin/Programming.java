@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
@@ -292,7 +293,7 @@ public final class Programming {
    */
   private static final class Block extends AbstractCoreFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IAST blockVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (blockVariablesList.isPresent()) {
         IExpr localized = evaluateWithLocalizedFormalSymbols(ast, blockVariablesList, engine);
@@ -311,7 +312,7 @@ public final class Programming {
      *
      * @return {@link F#NIL} if no local variable is a formal symbol
      */
-    private static IExpr evaluateWithLocalizedFormalSymbols(final IAST ast,
+    private static @AllowNIL IExpr evaluateWithLocalizedFormalSymbols(final IAST ast,
         final IAST blockVariablesList, EvalEngine engine) {
       java.util.Map<IExpr, IExpr> forward = null;
       IASTMutable variables = F.NIL;
@@ -585,7 +586,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         return engine.evalCheckAbort(ast.arg1(), ast.arg2());
       }
@@ -818,7 +819,7 @@ public final class Programming {
   private static class Defer extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (!ToggleFeature.DEFER) {
       // return F.NIL;
       // }
@@ -1012,7 +1013,7 @@ public final class Programming {
       fIndex = 0;
     }
 
-    public IExpr doIt(IExpr input) {
+    public @AllowNIL IExpr doIt(IExpr input) {
       if (fIndex < fIterList.size()) {
         final int position = fIndex;
         final IIterator<IExpr> iter = fIterList.get(position);
@@ -1496,7 +1497,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 2 || ast.argSize() > 4) {
         // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
         // declared `expectedArgSize` has to be enforced here before the arguments are read
@@ -1542,7 +1543,7 @@ public final class Programming {
   private static final class Indexed extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = ast.arg2();
       if (!arg2.isList()) {
         return ast.setAtCopy(2, F.List(arg2));
@@ -1672,12 +1673,12 @@ public final class Programming {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isList()) {
         if (builtinSymbol == S.SetDelayed) {
@@ -1713,7 +1714,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         if (!FileSandbox.isHostVisible(engine)) {
           // the memory of the process is shared by every session of a server
@@ -1757,7 +1758,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         if (!FileSandbox.isHostVisible(engine)) {
           // the memory of the process is shared by every session of a server
@@ -1784,7 +1785,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         if (!FileSandbox.isHostVisible(engine)) {
           // the memory of the process is shared by every session of a server
@@ -1966,7 +1967,7 @@ public final class Programming {
   private static final class Nest extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg3 = ast.arg3();
       if (arg3.isInteger()) {
         int n = arg3.toIntDefault();
@@ -2107,7 +2108,7 @@ public final class Programming {
   private static final class NestWhile extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = F.C1;
       if (ast.argSize() > 4) {
         IExpr temp = NestWhileListEvaluator.evaluate(ast.setAtClone(0, S.NestWhileList), engine);
@@ -2127,7 +2128,7 @@ public final class Programming {
       return ARGS_3_6;
     }
 
-    public static IExpr nestWhile(final IExpr expr, final IExpr test,
+    public static @AllowNIL IExpr nestWhile(final IExpr expr, final IExpr test,
         final Function<IExpr, IExpr> fn, final IExpr n, EvalEngine engine) {
       if (n == S.All) {
         IExpr temp = expr;
@@ -2214,7 +2215,7 @@ public final class Programming {
   private static class NestWhileList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr f = ast.arg1();
       IExpr expr = ast.arg2();
       IExpr test = ast.arg3();
@@ -2437,7 +2438,7 @@ public final class Programming {
    * @return {@link S#Null} when every argument was a message name, {@link F#NIL} otherwise, so that
    *         the caller can go on to treat the arguments as symbols to trace
    */
-  private static IExpr switchMessages(final IAST ast, EvalEngine engine, boolean disable) {
+  private static @AllowNIL IExpr switchMessages(final IAST ast, EvalEngine engine, boolean disable) {
     if (ast.isAST0()) {
       return F.NIL;
     }
@@ -2590,7 +2591,7 @@ public final class Programming {
   private static final class On extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         engine.setOnOffMode(true, null, false);
         return S.Null;
@@ -3215,7 +3216,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if ((ast.size() & 0x0001) != 0x0000) {
         // `1` called with `2` arguments. `3`
         return Errors.printMessage(S.Switch, "argct", F.List(S.Switch, F.ZZ(ast.argSize()),
@@ -3249,7 +3250,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
       if (argSize >= 2 && argSize <= 3) {
         IExpr arg2 = engine.evaluate(ast.arg2());
@@ -3711,7 +3712,7 @@ public final class Programming {
     private static final int DEFAULT_MAX_DEPTH = 5;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.TraceForm) {
         return F.NIL;
       }
@@ -3841,7 +3842,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.TraceDialog) {
         return F.NIL;
       }
@@ -3952,7 +3953,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (((ast.argSize()) & 0x0001) == 0x0001) {
         // `1`.
         return Errors.printMessage(S.Which, "error", F.List("Number of arguments must be even."),
@@ -4027,7 +4028,7 @@ public final class Programming {
       implements IFastFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 1 || ast.argSize() > 2) {
         // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
         // declared `expectedArgSize` has to be enforced here before the arguments are read
@@ -4085,7 +4086,7 @@ public final class Programming {
   private static final class With extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 2) {
         // the fast path of EvalEngine#evalLoop() doesn't run checkBuiltinArguments(), so the
         // declared `expectedArgSize` has to be enforced here before the arguments are read
@@ -4240,7 +4241,7 @@ public final class Programming {
    * @param engine the evaluation engine
    * @return the evaluated body or {@link F#NIL} if the variable list is invalid
    */
-  private static IExpr evaluateModule(final IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr evaluateModule(final IAST ast, EvalEngine engine) {
     final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
     if (moduleVariablesList.isPresent()) {
       IExpr temp = moduleSubstVariables(moduleVariablesList, ast.arg2(), engine);
@@ -4262,7 +4263,7 @@ public final class Programming {
    * @param engine
    * @return
    */
-  private static IExpr moduleSubstVariables(IAST intializerList, IExpr moduleBlock,
+  private static @AllowNIL IExpr moduleSubstVariables(IAST intializerList, IExpr moduleBlock,
       final EvalEngine engine) {
     // final long moduleCounter = engine.incModuleCounter();
     final String varAppend = EvalEngine.uniqueName("$");
@@ -4313,7 +4314,7 @@ public final class Programming {
    * @param engine
    * @return
    */
-  private static IExpr withSubstVariables(IAST intializerList, IExpr withBlock,
+  private static @AllowNIL IExpr withSubstVariables(IAST intializerList, IExpr withBlock,
       final EvalEngine engine) {
     // final long moduleCounter = engine.incModuleCounter();
     // final String varAppend = "$" + moduleCounter;

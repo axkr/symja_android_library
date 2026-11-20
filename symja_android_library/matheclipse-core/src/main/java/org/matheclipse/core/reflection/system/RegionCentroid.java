@@ -52,13 +52,21 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
         switch (((IBuiltInSymbol) head).ordinal()) {
           case ID.BooleanRegion:
             return BooleanRegions.holeCentroid(reg, engine);
-          case ID.Point:
           case ID.Disk:
           case ID.Circle:
+            if (reg.argSize() == 3) {
+              return sectorCentroid(reg, engine);
+            }
+            return centerCentroid(reg, engine);
+          case ID.Annulus:
+            if (reg.argSize() == 3) {
+              return annulusSectorCentroid(reg, engine);
+            }
+            return centerCentroid(reg, engine);
+          case ID.Point:
           case ID.Ball:
           case ID.Sphere:
           case ID.Ellipsoid:
-          case ID.Annulus:
             return centerCentroid(reg, engine);
           case ID.RegularPolygon:
             return regularPolygonCentroid(reg);
@@ -163,6 +171,54 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The centroid of the sector <code>Disk(c, r, {t1, t2})</code> or of the arc
+   * <code>Circle(c, r, {t1, t2})</code>. The centroid of an elliptical arc needs the arc length
+   * along the way and is left unevaluated.
+   */
+  private IExpr sectorCentroid(IAST reg, EvalEngine engine) {
+    RegionPrimitives.DiskSpec spec = RegionPrimitives.parseDisk(reg);
+    if (spec == null || spec.t1 == null || !spec.center.isList2()) {
+      return F.NIL;
+    }
+    if (reg.head() == S.Circle) {
+      if (!spec.r1.equals(spec.r2)) {
+        IExpr extent = engine.evaluate(F.Abs(F.Subtract(spec.t2, spec.t1)));
+        return engine.evaluate(F.GreaterEqual(extent, F.C2Pi)).isTrue() ? spec.center : F.NIL;
+      }
+      return RegionPrimitives.sectorCentroid(spec.center, spec.r1, spec.r2, spec.t1, spec.t2,
+          F.C1, engine);
+    }
+    return RegionPrimitives.sectorCentroid(spec.center, spec.r1, spec.r2, spec.t1, spec.t2,
+        F.C2D3, engine);
+  }
+
+  /**
+   * The centroid of the sector <code>Annulus(c, {rInner, rOuter}, {t1, t2})</code>: the radius is
+   * distributed with a density proportional to itself between the two radii, so its mean is
+   * <code>2/3*(rOuter^3 - rInner^3)/(rOuter^2 - rInner^2)</code>.
+   */
+  private IExpr annulusSectorCentroid(IAST reg, EvalEngine engine) {
+    RegionPrimitives.AnnulusSpec spec = RegionPrimitives.parseAnnulus(reg, engine);
+    if (spec == null || !spec.center.isList2()) {
+      return F.NIL;
+    }
+    if (spec.isFull()) {
+      return spec.center;
+    }
+    IExpr rIn = spec.innerRadius;
+    IExpr rOut = spec.outerRadius;
+    IExpr denominator = engine.evaluate(F.Subtract(F.Sqr(rOut), F.Sqr(rIn)));
+    if (denominator.isZero()) {
+      return F.NIL;
+    }
+    IExpr radialMean = engine.evaluate(F.Times(F.C2D3,
+        F.Subtract(F.Power(rOut, F.C3), F.Power(rIn, F.C3)), F.Power(denominator, F.CN1)));
+    IAST angles = (IAST) reg.arg3();
+    return RegionPrimitives.sectorCentroid(spec.center, F.C1, F.C1, angles.arg1(), angles.arg2(),
+        radialMean, engine);
   }
 
   private IExpr boxCentroid(IAST reg, EvalEngine engine) {

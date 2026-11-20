@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
@@ -47,7 +48,7 @@ public class FilterFunctions {
   private static class GaborMatrix extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr spec = ast.arg1();
       double r;
       double sigma;
@@ -114,7 +115,7 @@ public class FilterFunctions {
   private static class TotalVariationFilter extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       double[] parameters = totalVariationParameters(ast);
       if (parameters == null || !ast.arg1().isList()) {
         return F.NIL;
@@ -251,7 +252,7 @@ public class FilterFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.arg1().isList()) {
           IAST list = (IAST) ast.arg1();
@@ -442,7 +443,7 @@ public class FilterFunctions {
      *
      * @return {@link F#NIL} if the specification is not valid
      */
-    private static IExpr productKernel(IExpr spec, EvalEngine engine) {
+    private static @AllowNIL IExpr productKernel(IExpr spec, EvalEngine engine) {
       IAST radii = (IAST) spec.first();
       final int n = radii.argSize();
       if (n == 0) {
@@ -560,7 +561,7 @@ public class FilterFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int n1 = 0;
       int n2 = 0;
@@ -624,7 +625,7 @@ public class FilterFunctions {
   private static class GaussianFilter extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -757,7 +758,7 @@ public class FilterFunctions {
   private static class LaplacianFilter extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }

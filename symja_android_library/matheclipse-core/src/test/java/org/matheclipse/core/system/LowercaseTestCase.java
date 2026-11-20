@@ -3115,6 +3115,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ChineseRemainder({1, 2}, {6, 10})", //
         "ChineseRemainder({1,2},{6,10})");
+    // moduli with common factors: the solution modulo their least common multiple
+    check("ChineseRemainder({5, 11}, {12, 18})", //
+        "29");
+    check("ChineseRemainder({3, 3, 3}, {4, 6, 10})", //
+        "3");
+    check("ChineseRemainder({5, 7^30 + 9}, {2*(7^30 + 4), 3*(7^30 + 4)})", //
+        "90157361162769032351453017");
+    // the smallest solution not less than the third argument
+    check("ChineseRemainder({2, 4}, {7, 9}, 2^80)", //
+        "1208925819614629174706230");
+    check("ChineseRemainder({2, 4}, {7, 9}, -50)", //
+        "-5");
+    check("ChineseRemainder({2, 4}, {7, 9}, 58)", //
+        "58");
+    check("ChineseRemainder({1, 6}, {5, 8}, 7/3)", //
+        "ChineseRemainder({1,6},{5,8},7/3)");
+    check("ChineseRemainder({1, 6, 2}, {5, 8})", //
+        "ChineseRemainder({1,6,2},{5,8})");
   }
 
   @Test
@@ -4474,8 +4492,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // ContinuedFraction(Pi,-20).
     check("ContinuedFraction(9/22)", //
         "{0,2,2,4}");
-    check("ContinuedFraction(9.0/22)", //
-        "{0,2,2,3,1}");
+    check("ContinuedFraction(0.3)", //
+        "{0,3}");
     check("ContinuedFraction(-19/10)", //
         "{-1,-1,-9}");
     check("ContinuedFraction(7283752929681393 / 4096)", //
@@ -4579,11 +4597,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,{1,1,1,1,6}}");
 
     check("ContinuedFraction(0.753)", //
-        "{0,1,3,20,1,1,2,1,1}");
+        "{0,1,3,20,1,1,2}");
     check("ContinuedFraction(0.55)", //
         "{0,1,1,4,2}");
     check("ContinuedFraction(-0.753)", //
-        "{0,-1,-3,-20,-1,-1,-2,-1,-1}");
+        "{0,-1,-3,-20,-1,-1,-2}");
     check("ContinuedFraction(-0.55)", //
         "{0,-1,-1,-4,-2}");
     check("ContinuedFraction(Pi,30)", //
@@ -4626,23 +4644,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testConvexHull() {
-    // the planar convex hull as a list of point indices in counter-clockwise order
+    // the planar convex hull as a list of point indices in counter-clockwise order, starting at
+    // the rightmost point (the lowest one of several rightmost points)
     check("ConvexHull({{0,0},{2,0},{2,2},{0,2}})", //
-        "{1,2,3,4}");
+        "{2,3,4,1}");
 
     // AllPoints->True is the default and keeps the points which lie on a hull edge
     check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}})", //
-        "{1,2,3,4,5}");
+        "{3,4,5,1,2}");
     check("ConvexHull({{0,0},{1,0},{2,0},{2,2},{0,2}}, AllPoints->False)", //
-        "{1,3,4,5}");
+        "{3,4,5,1}");
 
     // an interior point isn't part of the hull
     check("ConvexHull({{1,1},{0,0},{2,0},{2,2},{0,2}})", //
-        "{2,3,4,5}");
+        "{3,4,5,2}");
+    // a single rightmost point which is not the lowest point
+    check("ConvexHull({{-1,0},{1,-1},{3,1},{0,2},{1,1}})", //
+        "{3,4,1,2}");
+    // a point on the right edge between the two rightmost corners
+    check("ConvexHull({{0,1},{4,3},{4,-1},{4,1},{1,-2}})", //
+        "{3,4,2,1,5}");
 
-    // co-linear points don't have a two dimensional hull
+    // co-linear points are ordered along their line, without AllPoints only its ends
     check("ConvexHull({{0,0},{1,1},{2,2}})", //
-        "ConvexHull({{0,0},{1,1},{2,2}})");
+        "{1,2,3}");
+    check("ConvexHull({{2,-1},{0,3},{1,1},{-1,5}})", //
+        "{4,2,3,1}");
+    check("ConvexHull({{2,-1},{0,3},{1,1},{-1,5}}, AllPoints->False)", //
+        "{4,1}");
+    check("ConvexHull({{5,7},{2,4}})", //
+        "{2,1}");
+    // a single distinct point has no hull
+    check("ConvexHull({{1,2},{1,2}})", //
+        "ConvexHull({{1,2},{1,2}})");
+    // an exact and an inexact copy of a point are one point of the hull
+    check("ConvexHull({{3,6},{1,2},{2,4},{1.,2.}})", //
+        "{2,3,1}");
   }
 
   /**
@@ -5599,7 +5636,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("x\\[EmptySet] = 3; x\\[EmptySet] + 1", //
         "4");
     check("Infix(t(a, b), \\[EmptySmallCircle])", //
-        "a \u25E6 b");
+        "a\u25E6b");
     check("Head(\\[GothicCapitalA])", //
         "Symbol");
     // Syntax error in line: 1 - Unknown unicode longname Fake.
@@ -6119,8 +6156,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCapitalDifferentialD() {
+    // the characters in front of the mapped character are kept
     check("\"start \\[CapitalDifferentialD] 123 end\"", //
-        "startⅅ 123 end");
+        "start ⅅ 123 end");
   }
 
   @Test
@@ -8099,6 +8137,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2*Pi)*Gamma(3/4)^2)");
     check("EllipticE(Pi/2, m)", //
         "EllipticE(m)");
+    // a multiple of a quarter period
+    check("EllipticE(-5*Pi/2, 2/7)", //
+        "-5*EllipticE(2/7)");
+    check("EllipticE(2*Pi, q)", //
+        "4*EllipticE(q)");
     check("EllipticE(5/4,1)", //
         "Sin(5/4)");
     check("EllipticE(0.4)", //
@@ -9070,6 +9113,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorVariablesOnlyInAProduct() {
     // q, r and s occur in every term with the same exponent: a polynomial in p and q*r*s
     check("Factor(4*p^4+13*p^2*q^2*r^2*s^2+9*q^4*r^4*s^4)", //
@@ -10133,6 +10177,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3,4,30,140,661,3128,14805,70066}");
     check("FindLinearRecurrence(data)", //
         "{4,3,2,1}");
+    // an order 4 recurrence fitted to all 8 terms is not confirmed by any further term
+    check("FindLinearRecurrence({1, 2, 4, 8, 17, 35, 72, 149})", //
+        "FindLinearRecurrence({1,2,4,8,17,35,72,149})");
+    check("FindLinearRecurrence({1, 1, 2, 3, 5, 8, 14, 22})", //
+        "FindLinearRecurrence({1,1,2,3,5,8,14,22})");
 
   }
 
@@ -10350,6 +10399,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x-3)^2+(y-1)^2, " //
         + "{{x, 0, -1, 2},{y,0}}, Method->\"SequentialQuadratic\")], 10^-4)", //
         "{1,{2,1}}");
+    // both bounds active, also for a single variable and together with a constraint
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x-3)^2+(y+1)^2, " //
+        + "{{x, 0, -2, 3/2},{y, 0, -1/2, 2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{5/2,{3/2,-1/2}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMaximum(-(x-3)^2-(y+1)^2, " //
+        + "{{x, 0, -2, 3/2},{y, 0, -1/2, 2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{-5/2,{3/2,-1/2}}");
+    check("Round({#[[1]], x /. #[[2]]} &[FindMinimum((x-3)^2, " //
+        + "{{x, 0, -2, 3/2}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{9/4,3/2}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum({(x-3)^2+(y+1)^2, x+y<=0}, " //
+        + "{{x, 0, -2, 3/2},{y, 0}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{5/2,{3/2,-3/2}}");
+    // the interior coordinate of an extremum on a bound
+    check("Abs(y /. Last(FindMinimum(Sin(x)*Cos(y)+x^2/10, {{x, 1, -1, 2}, {y, 1/2, -1, 1}}, " //
+        + "Method->\"SequentialQuadratic\"))) < 10^-7", //
+        "True");
 
     // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' ...
     check("FindMinimum({x+y, x^2+y^2<=1, x!=0}, {{x,0.5},{y,0.5}})", //
@@ -10364,7 +10430,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
         //
-        "{5.07481*10^-12,{x->0.999999,y->0.999997}}");
+        "{4.85272*10^-12,{x->0.999998,y->0.999997}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
@@ -10665,12 +10731,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindGeneratingFunction() {
-    // TODO unequals WMA
+    // TODO the generating function has a logarithm; an order 4 recurrence fitted to all 8 terms
+    // is not a confirmed answer
     check("FindGeneratingFunction({1, 3/2, 9/5, 2, 15/7, 9/4, 7/3, 12/5}, x)", //
-        "(1-111/110*x+12/55*x^2-x^3/825)/(1-138/55*x+24/11*x^2-25/33*x^3+13/154*x^4)");
-    // TODO unequals WMA
+        "FindGeneratingFunction({1,3/2,9/5,2,15/7,9/4,7/3,12/5},x)");
+    // TODO 1/((1-x)*(1-x^2)*(1-x^5)*(1-x^10)) needs more terms than given for its recurrence
     check("FindGeneratingFunction({1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 11, 12}, x)", //
-        "(1+2*x-2*x^2+4*x^3+5*x^5)/(1+x-5*x^2+5*x^3-2*x^5-2*x^6)");
+        "FindGeneratingFunction({1,1,2,2,3,4,5,6,7,8,11,12},x)");
 
     check("FindGeneratingFunction({0, 1, 2, 0, 1, 2, 0}, x)", //
         "(x+2*x^2)/(1-x^3)");
@@ -10679,8 +10746,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("FindGeneratingFunction({3, 7, 13, 21, 31, 43, 57}, x) // Factor", //
         "-(3-2*x+x^2)/(-1+x)^3");
+    // a polynomial sequence needs one confirming term beyond the degree+1 fitted ones
     check("FindGeneratingFunction({1, 2, 3, 4}, x)", //
-        "1/(1-2*x+x^2)");
+        "1/(1-x)^2");
+    check("FindGeneratingFunction({1, 2, 4, 8, 17, 35, 72, 149}, x)", //
+        "FindGeneratingFunction({1,2,4,8,17,35,72,149},x)");
 
   }
 
@@ -10795,13 +10865,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindSequenceFunction({7,9,11,13,15})", //
         "5+2*#1&");
 
-    // Polynomial interpolation: the first ten Motzkin numbers have constant
-    // 8th differences {14,14}, so the degree-8 interpolating polynomial reproduces all ten terms
-    // and
-    // is returned as the simplest closed form.
+    // the first ten Motzkin numbers have constant 8th differences {14,14}: the polynomial fit
+    // confirmed by one term comes before the recurrence guessers
     check("FindSequenceFunction({1, 1, 2, 4, 9, 21, 51, 127, 323, 835}, n)", //
-        "1/2880*(66240-161184*n+160444*n^2-84384*n^3+26189*n^4-4956*n^5+566*n^6-36*n^7+n^\n" //
+        "1/2880*(66240-161184*n+160444*n^2-84384*n^3+26189*n^4-4956*n^5+566*n^6-36*n^7+n^\n"
             + "8)");
+    // the Motzkin numbers from M(1) on fit no polynomial; an order 2 recurrence with linear
+    // coefficients
+    check("FindSequenceFunction({1, 2, 4, 9, 21, 51, 127, 323, 835, 2188, 5798, 15511}, n)", //
+        "DifferenceRoot[Function({y,n},{(-3-3*n)*y(n)+(-5-2*n)*y(1+n)+(4+n)*y(2+n)==0,y(1)==1,y(2)==2})][n]");
+    check("FindSequenceFunction({1, 32, 243, 1024, 3125, 7776, 16807}, n)", //
+        "n^5");
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440}, n)", //
+        "FindSequenceFunction({1,3,20,210,3024,55440},n)");
+    // hypergeometric terms with a ratio of degree 2: (2*n-1)!/n! and Binomial(2*n,n)^2
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440, 1235520, 32432400}, n)", //
+        "Pochhammer(3/2,-1+n)/(4^(1-n)*n)");
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440, 1235520, 32432400}, n) /. n->9", //
+        "980179200");
+    check("FindSequenceFunction(Table(Binomial(2*k,k)^2, {k, 1, 9}), n)", //
+        "Pochhammer(3/2,-1+n)^2/(2^(2-4*n)*Pochhammer(2,-1+n)^2)");
+    // a P-recursive result closed by RSolveValue
+    check("FindSequenceFunction(Table(k*2^k + 3^k, {k, 1, 10}), n)", //
+        "3^n+2^n*n");
+    // {n, a(n)} pairs: consecutive indices shift the sequence, indices with gaps aren't fitted
+    check("FindSequenceFunction({{3, 10}, {4, 17}, {5, 26}, {6, 37}, {7, 50}}, n)", //
+        "1+n^2");
+    check("FindSequenceFunction({{2, 5}, {5, 26}, {9, 82}, {11, 122}}, n)", //
+        "FindSequenceFunction({{2,5},{5,26},{9,82},{11,122}},n)");
+    check("FindSequenceFunction({{0, 1}, {1, 1}, {2, 2}, {3, 6}, {4, 24}, {5, 120}}, n)", //
+        "n!");
     // M4: general holonomic / P-recursive guesser -> DifferenceRoot. 2^n+n is an order-3 C-finite
     // sequence whose finite differences never stabilize (so no interpolating polynomial is found)
     // and which RSolveValue cannot close, so it falls through to the holonomic DifferenceRoot; the
@@ -11986,11 +12079,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Graphics");
     check("Head /@ RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]", //
         "{GraphicsComplex,List}");
-    // the outline is one closed loop on the unit circle, not the staircase of the grid
-    check("With({g = RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})}, With({loops = "
-        + "Cases(g, Line(l_) :> l, Infinity)[[1]], pts = g[[1, 1, 1]]}, {Length(loops), "
-        + "First(loops[[1]]) == Last(loops[[1]]), Max(Abs(Map(Norm, pts[[loops[[1]]]]) - 1)) < 10^-3}))", //
-        "{1,True,True}");
+    // the outline is one closed loop on the unit circle, not the staircase of the grid; a single
+    // loop is one flat list of point indices
+    check("With({g = RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})}, With({loop = "
+        + "Cases(g, Line(l_) :> l, Infinity)[[1]], pts = g[[1, 1, 1]]}, {VectorQ(loop, IntegerQ), "
+        + "First(loop) == Last(loop), Max(Abs(Map(Norm, pts[[loop]]) - 1)) < 10^-3}))", //
+        "{True,True,True}");
     // an annulus has two loops
     check(
         "Length(Cases(RegionPlot(1 < x^2 + y^2 < 3, {x, -2, 2}, {y, -2, 2}), Line(l_) :> l,"
@@ -12006,10 +12100,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Graphics");
     check("{AspectRatio, Frame, Axes} /. Rest(List @@ RegionPlot(x > 0, {x, -2, 2}, {y, -2, 2}))", //
         "{1,True,False}");
-    // one region for each condition; BoundaryStyle -> None leaves the fill alone
+    // one region for each condition, in one GraphicsComplex with all fills before the boundary
+    // lines; BoundaryStyle -> None leaves the fill alone
     check(
         "Count(RegionPlot({x^2 + y^2 < 1, x > 1}, {x, -2, 2}, {y, -2, 2})[[1]], _GraphicsComplex)", //
-        "2");
+        "1");
     check(
         "Cases(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}, BoundaryStyle -> None), _Line,"
             + " Infinity)", //
@@ -12060,7 +12155,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Head(First(ArrayPlot({{1, 2}, {3, 4}})))", //
         "Raster");
     check("First(ArrayPlot({{1, 2}, {3, 4}}))[[2]]", //
-        "{{0.0,0.0},{2.0,2.0}}");
+        "{{0,0},{2,2}}");
     // DataReversed draws the first row at the bottom
     check(
         "First(ArrayPlot({{3, 4}, {1, 2}}, DataReversed -> True)) === "
@@ -13592,6 +13687,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{same}");
     check("SequenceAlignment(\"pq\", \"pq\", Weight -> 2)", //
         "SequenceAlignment(pq,pq,weight->2)");
+    // the traceback table of two 201-character strings has more cells than the largest AST
+    check("With({a = SequenceAlignment(StringRepeat(\"ab\", 100) <> \"x\" <> StringRepeat(\"cd\", 100), "
+        + "StringRepeat(\"ab\", 100) <> \"y\" <> StringRepeat(\"cd\", 100))}, "
+        + "{Length(a), a[[2]], StringLength(a[[1]]), StringLength(a[[3]])})", //
+        "{3,{x,y},200,200}");
+    check("SequenceAlignment({1, 2, 3, 4, 5}, {2, 3, 9, 5, 6})", //
+        "{{{1},{}},{2,3},{{4},{9}},{5},{{},{6}}}");
   }
 
   @Test
@@ -14063,6 +14165,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ReplacePart({p,q},w,{{1},{y}})");
     check("ReplacePart({p,q}, w, {{2^70}})", //
         "ReplacePart({p,q},w,{{1180591620717411303424}})");
+  }
+
+  @Test
+  public void testReplacePartFirstRuleWins() {
+    // a negative and a positive index which name the same part: the first rule is used
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{-1, 2} -> s, {2, 2} -> t})", //
+        "{{u,v,w},{p,s,r}}");
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{2, 2} -> t, {2, -2} -> s})", //
+        "{{u,v,w},{p,t,r}}");
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{1, -1} -> s, {1, 3} -> t, {-2, 3} -> z})", //
+        "{{u,v,s},{p,q,r}}");
+    // a pattern rule and literal rules
+    check("ReplacePart({{u, v}, {p, q}, {r, s}}, {{_?EvenQ, 1} -> a, {-1, -1} -> b})", //
+        "{{u,v},{a,q},{r,b}}");
+  }
+
+  @Test
+  public void testReplacePartLiteralPositions() {
+    check("Total(ReplacePart(ConstantArray(0, {120, 90}), 1, {7, 88}), 2)", //
+        "1");
+    check("ReplacePart(ConstantArray(0, {3, 4}), {{2, -1} -> c, {-3, 1} -> d})", //
+        "{{d,0,0,0},{0,0,0,c},{0,0,0,0}}");
+    // a position which does not exist is skipped
+    check("ReplacePart({{k, l}, {m}}, {{2, 2} -> c, {1, 2} -> d})", //
+        "{{k,d},{m}}");
+    check("ReplacePart(h(k, g(l, m)), {2, 1} -> c)", //
+        "h(k,g(c,m))");
+    // a replaced part isn't visited: the rule for a position inside it is dropped
+    check("ReplacePart(h(k, g(l, m)), {{2, 1} -> c, -1 -> d})", //
+        "h(k,d)");
+    check("ReplacePart(h(k, g(l, m)), {-1 -> d, {2, 1} -> c})", //
+        "h(k,d)");
+    check("ReplacePart({{e, f}, {g, h}}, {{_, 2} -> c, 1 -> d})", //
+        "{d,{g,c}}");
+    check("ReplacePart({{e, f}, {g, h}}, {{1, 1} -> c, 1 -> d})", //
+        "{d,{g,h}}");
+    // the pattern of an index doesn't reach the head
+    check("ReplacePart({{e, f}, {g, h}}, {-1, _} -> z)", //
+        "{{e,f},{z,z}}");
+    // a negative index in a position pattern of any length
+    check("ReplacePart({{e, f, g}, {h, k, l}}, {__, -2} -> z)", //
+        "{{e,z,g},{h,z,l}}");
+    check("ReplacePart({{e, f, g}, {h, k, l}}, {3 | -2, 1} -> z)", //
+        "{{z,f,g},{h,k,l}}");
+    check("ReplacePart(Derivative(1)[k][3], {-2, 1} -> h)", //
+        "h'(3)");
   }
 
   @Test
@@ -15788,12 +15936,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testContinuedFractionArbitraryPrecision() {
     // the precision limits the number of terms
-    check("ContinuedFraction(N(Sqrt(7), 30))", //
-        "{2,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,4,1,1,1,\n"
-            + "4,1,1,1,4,1,1,1,4}");
-    check("ContinuedFraction(N(GoldenRatio, 20))", //
-        "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,\n"
-            + "1,1,1,1,1,1,1}");
+    check("c=ContinuedFraction(N(Sqrt(7), 30)); {Length(c), c == Join({2}, Take(Flatten(Table({1,1,1,4}, {13})), 49))}", //
+        "{50,True}");
+    check("c=ContinuedFraction(N(GoldenRatio, 20)); {Length(c), Union(c)}", //
+        "{48,{1}}");
     check("Convergents({1,2,3,4,5})", //
         "{1,3/2,10/7,43/30,225/157}");
     check(
@@ -17055,8 +17201,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("cp = ContourPlot(x - y, {x, 0, 1}, {y, 0, 1}, PlotPoints -> 4, Contours -> 1, "
         + "Mesh -> 1); {Head(cp[[1, 1]]), "
         + "Length(Cases(Normal(cp[[1, 1]]), _Polygon, Infinity)) > 0, Cases(cp[[1, 2]], _Line)}", //
-        "{GraphicsComplex,True,{Line({{0.0,0.0},{0.0,1.0}}),Line({{1.0,0.0},{1.0,1.0}}),"
-            + "Line({{0.0,0.0},{1.0,0.0}}),Line({{0.0,1.0},{1.0,1.0}})}}");
+        "{GraphicsComplex,True,{Line({{0.5,0.0},{0.5,1.0}}),Line({{0.0,0.5},{1.0,0.5}})}}");
   }
 
   @Test
@@ -17577,6 +17722,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testContinuedFractionAlgebraicOfDegreeTwo() {
+    // a quadratic irrational in another form than a + b*Sqrt(d) is read from its minimal polynomial
+    check("ContinuedFraction(GoldenRatio^3)", //
+        "{4,{4}}");
+    check("ContinuedFraction(1/GoldenRatio^2)", //
+        "{0,2,{1}}");
+    check("ContinuedFraction(GoldenRatio^3, 5)", //
+        "{4,4,4,4,4}");
+    check("ContinuedFraction(Sqrt(3+2*Sqrt(2)))", //
+        "{2,{2}}");
+    check("ContinuedFraction(Root(#^2-3*#-5&,2))", //
+        "{4,{5}}");
+    check("ContinuedFraction(Root(#^2-3*#-5&,1))", //
+        "{-1,{-5}}");
+    // an integer which is not written as one
+    check("ContinuedFraction(Log(64)/Log(4))", //
+        "{3}");
+  }
+
+  @Test
+  public void testMinimalPolynomialOverAnExtension() {
+    // the characteristic polynomial of an element of Q(a)
+    check("MinimalPolynomial(Sqrt(5) - 2, z, Extension -> Sqrt(5))", //
+        "-1+4*z+z^2");
+    check("MinimalPolynomial(Sqrt(3), z, Extension -> 3^(1/4))", //
+        "9-6*z^2+z^4");
+    check("MinimalPolynomial(7, z, Extension -> Sqrt(5))", //
+        "(7-z)^2");
+    // an element of another field
+    check("MinimalPolynomial(Sqrt(5), z, Extension -> Sqrt(7))", //
+        "MinimalPolynomial(Sqrt(5),z,Extension->Sqrt(7))");
+  }
+
+  @Test
+  public void testContinuedFractionToMachinePrecision() {
+    // an exact number without a period has no complete expansion: the number of terms is needed
+    check("ContinuedFraction(Pi^3)", //
+        "ContinuedFraction(Pi^3)");
+    check("ContinuedFraction(3^(1/4)+2)", //
+        "ContinuedFraction(2+3^(1/4))");
+    check("ContinuedFraction(Pi^3, 12)", //
+        "{31,159,3,7,1,13,2,1,3,1,12,2}");
+    // a machine number gives the terms which all the reals that round to it have
+    check("ContinuedFraction(Sqrt(3.0))", //
+        "{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1}");
+    check("ContinuedFraction(Sqrt(5.0))", //
+        "{2,4,4,4,4,4,4,4,4,4,4,4,4}");
+    check("ContinuedFraction(0.625)", //
+        "{0,1,1,1}");
+    check("ContinuedFraction(-0.625)", //
+        "{0,-1,-1,-1}");
+    // an integer which the interval reaches over is a term only if the number lies above it
+    check("ContinuedFraction(0.375)", //
+        "{0,2,1}");
+    check("ContinuedFraction(0.35)", //
+        "{0,2,1,6}");
+    // an arbitrary precision number stands for the numbers which round to its binary mantissa
+    check("ContinuedFraction(N(E, 25))", //
+        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,14,1,1,16,1,1,18,1,1}");
+    check("Length(ContinuedFraction(N(Sqrt(11), 35)))", //
+        "27");
+    // not even the integer part of a large machine number is certain
+    check("ContinuedFraction(3.0*10^200)", //
+        "ContinuedFraction(3.*10^200)");
+    check("ContinuedFraction(N(GoldenRatio^3))", //
+        "{4,4,4,4,4,4,4,4,4,4,4,4,4}");
+
+  }
+
+  @Test
   public void testSumWithoutClosedFormStaysWhole() {
     // a symbolic sum with a part which has no closed form stays unevaluated as a whole: it is not
     // split into the sums of its terms and no constant factor is pulled out
@@ -17657,13 +17872,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testTraditionalFormBoxString() {
     check("ToString(TraditionalForm(y^3))", //
         "\\!\\(\\*FormBox[SuperscriptBox[\"y\", \"3\"], TraditionalForm]\\)");
+    // a number form on one line is written as its text
     check("ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))", //
-        "\\!\\(\\*FormBox[TagBox[InterpretationBox[StyleBox[\"\\\"3.142\\\"\", "
-            + "Rule[ShowStringCharacters, False]], 3.14159265`, Rule[AutoDelete, True]], "
-            + "Function[NumberForm[Slot[1], {5, 3}]]], TraditionalForm]\\)");
-    // the box escape reads back as the wrapper
-    check("FullForm(ToExpression(ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))))", //
-        "NumberForm(3.14159265`, List(5, 3))");
+        "3.142");
+    // the box escape of the standard form reads back as the wrapper
     check("FullForm(ToExpression(ToString(NumberForm(4.5*^9, {3, 1}), StandardForm)))", //
         "NumberForm(4.5`*^9, List(3, 1))");
     check("ToBoxes(NumberForm(4.5*^9, {3, 1}))[[1, 1, 1]]", //
@@ -18547,11 +18759,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("p = Plot({x^2, 1 - x}, {x, 0, 2}, PlotStyle -> {None, Red}, Filling -> {1 -> Axis}); "
         + "{Count(p, _Line, Infinity), Count(p, _Polygon, Infinity), Count(p, _Invisible, Infinity)}", //
         "{1,1,0}");
-    // the filling between two curves of which one is hidden
+    // the filling between two curves of which one is hidden; the curves cross once, so the area
+    // between them is two polygons
     check(
         "Count(Plot({Sin(x), Cos(x), x/3}, {x, 0, 2}, PlotStyle -> {Automatic, None, Automatic}, "
             + "Filling -> {1 -> {2}}), _Line | _Polygon, Infinity)", //
-        "3");
+        "4");
   }
 
   @Test
@@ -22300,6 +22513,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testResidueAtRootOfUnitySpelledTwoWays() {
     // 1-(-1)^(1/3)+(-1)^(2/3) is zero: the point is a pole in both spellings
     check("Chop(N(Residue(1/(1 + w^2 + w^4)^2, {w, (-1)^(1/3)}) "
@@ -22333,6 +22547,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrateWorkingPrecision() {
     check("Precision(NIntegrate(1/(1 + y)^4, {y, 0, Infinity}, WorkingPrecision -> 25))", //
         "25");
@@ -22349,7 +22564,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Abs(NIntegrate(10^-90*Exp(-2*y), {y, 0, Infinity}, WorkingPrecision -> 20) "
         + "- 10^-90/2) < 10^-108", //
         "True");
-    // NIntegrate: Requested precision v is not a machine-sized real number.
+    // NIntegrate: The value of the option WorkingPrecision -> v is not a positive machine-sized
+    // real or integer.
     check("NIntegrate(Exp(-y^2), {y, 0, 1}, WorkingPrecision -> v)", //
         "NIntegrate(E^(-y^2),{y,0,1},WorkingPrecision->v)");
   }
@@ -22438,6 +22654,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateMeijerAntiderivative() {
     check("Integrate(y^c*BesselJ(m, 2*y), y)", //
         "1/2*y^(1+c+m)*Gamma(1/2*(1+c+m))*HypergeometricPFQRegularized({1/2*(1+c+m)},{1/2*(\n3+c+m),1+m},-y^2)");
@@ -22600,6 +22817,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQLargeParametricPowers() {
     // machine values at the real sample points: exact powers (1+b*y)^(m^2/3) have huge rationals
     check("PossibleZeroQ((1 + b*y)^(m^2/3)*(1 - b*y)^(-m^2/2)*(1/(1 - m) + y/(m - 1)) - "
@@ -23257,6 +23475,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQRealSegmentOfOneVariable() {
     // not zero for 0<w<1 only, and for 0<w<2 in the second one
     check("Table(PossibleZeroQ(Sqrt((1+1/w)/(1-1/w))*(1-1/w)-Sqrt(1-1/w^2)), {12})//Union", //
@@ -24449,6 +24668,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "MarcumQ(1.0,2.0,-3.0)");
     check("MarcumQ(1, 2)", //
         "MarcumQ(1,2)");
+    // the order a == 0 does not move m into the domain
+    check("MarcumQ(-1, 0, 3.0)", //
+        "MarcumQ(-1.0,0.0,3.0)");
+    check("MarcumQ(0, 0, b)", //
+        "MarcumQ(0,0,b)");
+    check("MarcumQ(-1, 0, b0, b1)", //
+        "MarcumQ(-1,0,b0,b1)");
+    // equal limits of machine numbers give a machine zero
+    check("MarcumQ(1, 2.0, 3.0, 3.0)", //
+        "0.0");
+    check("N(MarcumQ(1, 2, 3, 3), 30)", //
+        "0");
 
     // the values were calculated with mpmath from the Poisson series of GammaRegularized
     checkNumeric("MarcumQ(1, 2.0, 3.0)", //
@@ -24473,6 +24704,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // too large for the series
     check("MarcumQ(1, 1.0*^15, 3.0)", //
         "MarcumQ(1.0,1.*10^15,3.0)");
+    // more than a million terms: given up before the series is summed
+    check("MarcumQ(1, 4.0*^5, 4.0*^5)", //
+        "MarcumQ(1.0,400000.0,400000.0)");
+    // b much larger than a: the rest of the series is bounded with the growth of
+    // GammaRegularized(m+k, b^2/2), so few terms are summed (values from mpmath)
+    checkNumeric("N(MarcumQ(1, 1, 3000), 30)", //
+        "2.29216637564568202707011715220*10^-1953025");
+    checkNumeric("N(MarcumQ(3/2, 5, 200), 30)", //
+        "7.74636532287715950083899145319*10^-8259");
 
     // the difference keeps the digits which cancel
     checkNumeric("MarcumQ(1, 2.0, 0, 3.0)", //
@@ -24744,7 +24984,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "298.2572");
     check("GeodesyData(\"WGS84\", \"Eccentricity\")", //
         "0.0818192");
-    // ITRF00 is an alias of the IERS 2010 ellipsoid
+    // ITRF00 coordinates are on the GRS80 ellipsoid
     check("GeodesyData(\"ITRF00\", \"SemimajorAxis\")", //
         "Quantity(6.37814*10^6,\"Meters\")");
     // one argument lists the available properties
@@ -29370,6 +29610,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMinimalPolynomialAtAnExpression() {
+    // a second argument which is no symbol is substituted into the polynomial
+    check("MinimalPolynomial(Sqrt(5), 2)", //
+        "-1");
+    check("MinimalPolynomial(Sqrt(3), 2*w)", //
+        "-3+4*w^2");
+    check("MinimalPolynomial(1+Sqrt(3), g(u))", //
+        "-2-2*g(u)+g(u)^2");
+    check("MinimalPolynomial(Sqrt(7), {1, v-1})", //
+        "{-6,-7+(1-v)^2}");
+    check("MinimalPolynomial(GoldenRatio^2, t)", //
+        "1-3*t+t^2");
+    check("s = Root(#^3 - 2*# - 5 &, 1); MinimalPolynomial(s, s) === -5 - 2*s + s^3", //
+        "True");
+  }
+
+  @Test
   public void testMinus() {
     check("Minus(a)", //
         "-a");
@@ -30006,6 +30263,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // a fraction with a denominator beyond 53 bits is rounded once
+    check("N(1/10^40)", //
+        "1.*10^-40");
+    check("N(-7/10^22)", //
+        "-7.*10^-22");
     // a machine number stays one inside N(expr, p); a longer literal keeps its own digits
     check("{N(2.25, 30), Precision(N(2.25, 30)), Precision(N(3/7 + 0.5, 30))}", //
         "{2.25,16,16}");
@@ -30020,7 +30282,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // literals with an exponent: 3.*^1 is 30., rounded once, and inside N with a negative
     // exponent
     check("{3.*^1, 7.*^-19 == 7.*10^-19, N(3.*^1, 25), N(4.75*^-6, 25)}", //
-        "{30.0,True,30,0.00000475}");
+        "{30.0,True,30.0,0.00000475}");
     // below the double range a machine literal is 0.0
     check("{6.*^-500 == 0, Precision(6.*^-500)}", //
         "{True,16}");
@@ -33974,8 +34236,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "p^q^36893488147419103232");
     check("Power(q,2,65)", //
         "q^36893488147419103232");
+    // a power whose bit length is beyond any number
     check("3^2^65", //
-        "3^36893488147419103232");
+        "Overflow()");
     check("x^(-2)^(-3)", //
         "1/x^(1/8)");
     check("(Sqrt[a])^(1/4)", //

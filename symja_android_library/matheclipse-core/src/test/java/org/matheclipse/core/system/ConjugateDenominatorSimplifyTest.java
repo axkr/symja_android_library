@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Products with sums of square roots in the denominator, which the simplifier multiplies by the
@@ -42,6 +43,7 @@ public class ConjugateDenominatorSimplifyTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegralOverQuarticRadical() {
     // the partial fractions of 1/(x^2+5*x+5) over Sqrt(1+x^4): the coefficients of the
     // elliptic and logarithmic parts are simplified in the rules

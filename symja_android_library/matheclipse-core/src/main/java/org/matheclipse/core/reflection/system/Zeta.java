@@ -100,6 +100,10 @@ public class Zeta extends AbstractArg12 {
       if (large != null) {
         return F.num(large.real());
       }
+      if (arg1.isInteger() && arg1.signum() > 0 && arg1.scale() < 10 && arg1.longValue() >= 2) {
+        // integer powers in the alternating series
+        return F.num(ApcomplexZetaMath.zetaOfInteger(arg1.longValue(), h.precision(), arg1.radix()));
+      }
       return F.num(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);

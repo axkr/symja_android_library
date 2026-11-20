@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.external.apfloat.ZetaWorkaround;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.external.apfloat.ApfloatRiemannSiegelMath;
@@ -203,7 +204,7 @@ public class EllipticIntegrals {
   private static class CarlsonRC extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
@@ -235,7 +236,7 @@ public class EllipticIntegrals {
       return carlsonRC(engine, x, y).eval(engine);
     }
 
-    private static IExpr carlsonRC(EvalEngine engine, IExpr x, IExpr y) {
+    private static @AllowNIL IExpr carlsonRC(EvalEngine engine, IExpr x, IExpr y) {
       if (x.equals(y)) {
         final IExpr reCondition = S.LessEqual.of(engine, F.Re(x), F.C0);
         final IExpr imCondition = S.Equal.of(engine, F.Im(x), F.C0);
@@ -320,10 +321,23 @@ public class EllipticIntegrals {
       return carlsonRD(x, y, z, engine).eval(engine);
     }
 
-    private static IExpr carlsonRD(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr carlsonRD(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (zeros(z) == 1 || zeros(x, y) == 2) {
         // the integral diverges at its lower limit
         return F.CComplexInfinity;
+      }
+      if (x.equals(y) && y.equals(z)) {
+        // x^(-3/2)
+        return F.Power(x, F.CN3D2);
+      }
+      if (!engine.isNumericMode() && !(x.isNumber() && y.isNumber() && z.isNumber())) {
+        // RD is symmetric in its first two arguments
+        if (y.equals(z)) {
+          return carlsonRDEqualLast(x, z);
+        }
+        if (x.equals(z)) {
+          return carlsonRDEqualLast(y, z);
+        }
       }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z);
@@ -337,6 +351,16 @@ public class EllipticIntegrals {
             EllipticIntegralsJS::carlsonRD);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>CarlsonRD(x, z, z)</code> with <code>CarlsonRF(x, z, z) == CarlsonRC(x, z)</code>:
+     * <code>Piecewise({{z^(-3/2), x == z}}, 3*(Sqrt(x)/z - CarlsonRF(x, z, z))/(2*(x - z)))</code>.
+     */
+    private static IExpr carlsonRDEqualLast(IExpr x, IExpr z) {
+      return F.Piecewise(F.list(F.list(F.Power(z, F.CN3D2), F.Equal(x, z))),
+          F.Times(F.C3D2, F.Power(F.Subtract(x, z), F.CN1),
+              F.Subtract(F.Divide(F.Sqrt(x), z), F.CarlsonRF(x, z, z))));
     }
 
     @Override
@@ -380,7 +404,7 @@ public class EllipticIntegrals {
       return carlsonRF(x, y, z, engine).eval(engine);
     }
 
-    private static IExpr carlsonRF(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr carlsonRF(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (x.equals(y) && x.equals(z)) {
         // 1 / Sqrt(x)
         return F.Power(x, F.CN1D2);
@@ -444,7 +468,7 @@ public class EllipticIntegrals {
       return carlsonRG(x, y, z, engine).eval();
     }
 
-    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr carlsonRG(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (x.equals(y)) {
         if (x.equals(z)) {
           // Sqrt(x)
@@ -531,7 +555,7 @@ public class EllipticIntegrals {
       return value;
     }
 
-    private static IExpr carlsonRJ(IExpr x, IExpr y, IExpr z, IExpr p, EvalEngine engine) {
+    private static @AllowNIL IExpr carlsonRJ(IExpr x, IExpr y, IExpr z, IExpr p, EvalEngine engine) {
       if (zeros(p) == 1 || zeros(x, y, z) >= 2) {
         // the integral diverges at its lower limit
         return F.CComplexInfinity;
@@ -597,7 +621,7 @@ public class EllipticIntegrals {
       return ellipticE3(z).eval(engine);
     }
 
-    private static IExpr ellipticE3(IExpr z) {
+    private static @AllowNIL IExpr ellipticE3(IExpr z) {
       if (z.isZero()) {
         // Pi/2
         return F.CPiHalf;
@@ -633,7 +657,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr ellipticE2(IExpr z, IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr ellipticE2(IExpr z, IAST ast, EvalEngine engine) {
       IExpr m = ast.arg2();
       if (m.isZero()) {
         return z;
@@ -655,6 +679,16 @@ public class EllipticIntegrals {
         return F.EllipticE(m);
       // CPD-OFF closed-form special values per function
       }
+      // CPD-ON
+      IRational halfTurns = z == S.Pi ? F.C2
+          : z.isTimes() && z.argSize() == 2 && z.second() == S.Pi && z.first().isRational()
+              ? ((IRational) z.first()).multiply(F.C2).normalize()
+              : null;
+      if (halfTurns != null && halfTurns.isInteger()) {
+        // EllipticE(k*Pi/2, m) = k*EllipticE(m) /; IntegerQ(k)
+        return F.Times(halfTurns, F.EllipticE(m));
+      }
+      // CPD-OFF closed-form special values per function
 
       if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
@@ -703,7 +737,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         try {
@@ -764,7 +798,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList2()) {
         IExpr u = ast.arg1();
         IAST list = (IAST) ast.arg2();
@@ -787,7 +821,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr u = ast.arg1();
       if (!ast.arg2().isList2()) {
         return F.NIL;
@@ -844,7 +878,7 @@ public class EllipticIntegrals {
       return ellipticF(z, m, engine).eval(engine);
     }
 
-    private static IExpr ellipticF(IExpr z, IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr ellipticF(IExpr z, IExpr m, EvalEngine engine) {
       if (z.isZero() || m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
@@ -1043,7 +1077,7 @@ public class EllipticIntegrals {
           WorkingPrecision.apcomplex(y, digits), WorkingPrecision.apcomplex(z, digits)), digits);
     }
 
-    static IExpr ellipticF(IExpr phi, IExpr m, EvalEngine engine) {
+    static @AllowNIL IExpr ellipticF(IExpr phi, IExpr m, EvalEngine engine) {
       Apcomplex phiValue = apcomplex(phi, engine);
       Apcomplex mValue = apcomplex(m, engine);
       if (phiValue == null || mValue == null) {
@@ -1052,7 +1086,7 @@ public class EllipticIntegrals {
       return evaluate(() -> ApcomplexEllipticMath.ellipticF(phiValue, mValue), engine);
     }
 
-    static IExpr ellipticE(IExpr phi, IExpr m, EvalEngine engine) {
+    static @AllowNIL IExpr ellipticE(IExpr phi, IExpr m, EvalEngine engine) {
       Apcomplex phiValue = apcomplex(phi, engine);
       Apcomplex mValue = apcomplex(m, engine);
       if (phiValue == null || mValue == null) {
@@ -1061,7 +1095,7 @@ public class EllipticIntegrals {
       return evaluate(() -> ApcomplexEllipticMath.ellipticE(phiValue, mValue), engine);
     }
 
-    static IExpr ellipticPi(IExpr nParameter, IExpr phi, IExpr m, EvalEngine engine) {
+    static @AllowNIL IExpr ellipticPi(IExpr nParameter, IExpr phi, IExpr m, EvalEngine engine) {
       Apcomplex nValue = apcomplex(nParameter, engine);
       Apcomplex phiValue = apcomplex(phi, engine);
       Apcomplex mValue = apcomplex(m, engine);
@@ -1072,7 +1106,7 @@ public class EllipticIntegrals {
     }
 
     /** the complete integral <code>EllipticPi(n,m)</code> */
-    static IExpr ellipticPi(IExpr nParameter, IExpr m, EvalEngine engine) {
+    static @AllowNIL IExpr ellipticPi(IExpr nParameter, IExpr m, EvalEngine engine) {
       Apcomplex nValue = apcomplex(nParameter, engine);
       Apcomplex mValue = apcomplex(m, engine);
       if (nValue == null || mValue == null) {
@@ -1085,7 +1119,7 @@ public class EllipticIntegrals {
   /**
    * A Carlson symmetric integral of {@link #arbitraryArguments}, rounded to the requested precision.
    */
-  private static IExpr carlson(ISymbol symbol, EvalEngine engine, Supplier<IExpr> evaluation) {
+  private static @AllowNIL IExpr carlson(ISymbol symbol, EvalEngine engine, Supplier<IExpr> evaluation) {
     IExpr value = arbitraryPrecision(symbol, engine, evaluation);
     return value.isPresent() ? engine.evalN(value, engine.getNumericPrecision()) : F.NIL;
   }
@@ -1094,7 +1128,7 @@ public class EllipticIntegrals {
    * Evaluate one of the arbitrary precision forms, printing a message instead of throwing if the
    * evaluation fails.
    */
-  private static IExpr arbitraryPrecision(ISymbol symbol, EvalEngine engine,
+  private static @AllowNIL IExpr arbitraryPrecision(ISymbol symbol, EvalEngine engine,
       Supplier<IExpr> evaluation) {
     try {
       return evaluation.get();
@@ -1175,7 +1209,7 @@ public class EllipticIntegrals {
       return ellipticK(m).eval(engine);
     }
 
-    private static IExpr ellipticK(IExpr m) {
+    private static @AllowNIL IExpr ellipticK(IExpr m) {
       if (m.isInfinity() || m.isNegativeInfinity() || m.isDirectedInfinity(F.CI)
           || m.isDirectedInfinity(F.CNI)) {
         return F.C0;
@@ -1204,7 +1238,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST1()) {
         IInexactNumber m = (IInexactNumber) ast.arg1();
         IExpr temp = ellipticK(m);
@@ -1312,7 +1346,7 @@ public class EllipticIntegrals {
      *
      * @return {@link F#NIL} if the arguments of the Carlson symmetric form aren't inexact numbers
      */
-    private static IExpr numericCarlsonForm(IExpr x, IExpr a, IExpr b, EvalEngine engine) {
+    private static @AllowNIL IExpr numericCarlsonForm(IExpr x, IExpr a, IExpr b, EvalEngine engine) {
       // d == Sqrt(a^2-4*b)
       IExpr d = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
       IExpr y = engine.evaluate(F.Plus(x, F.Times(F.C1D2, F.Plus(a, d))));
@@ -1334,7 +1368,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList2() && ast.arg2().isList2()) {
         IAST point = (IAST) ast.arg1();
         IAST list = (IAST) ast.arg2();
@@ -1348,7 +1382,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList2() || !ast.arg2().isList2()) {
         return F.NIL;
       }
@@ -1450,7 +1484,7 @@ public class EllipticIntegrals {
       return ellipticPi2(n, m, engine).eval(engine);
     }
 
-    private static IExpr ellipticPi2(IExpr n, IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr ellipticPi2(IExpr n, IExpr m, EvalEngine engine) {
       final boolean doubleMode = engine.isDoubleMode();
       if (n.isZero()) {
         return F.EllipticK(m);
@@ -1527,7 +1561,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr ellipticPi3(IExpr n, IExpr z, final IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr ellipticPi3(IExpr n, IExpr z, final IExpr m, EvalEngine engine) {
       if (engine.isDoubleMode() && z.isNumber() && n.isNumber() && m.isNumber()) {
         try {
           double nDouble = n.evalfNaN();
@@ -1651,7 +1685,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       int a = ast.arg1().toIntDefault();
       IExpr z = ast.isAST3() ? ast.arg2() : F.C0;
       IExpr q = ast.last();
@@ -1715,7 +1749,7 @@ public class EllipticIntegrals {
      * it cancels for a nome next to the unit circle, at machine precision or the precision of the
      * engine; {@link F#NIL} otherwise, or where that fails.
      */
-    private static IExpr thetaSeries(int a, IExpr z, IExpr q, EvalEngine engine) {
+    private static @AllowNIL IExpr thetaSeries(int a, IExpr z, IExpr q, EvalEngine engine) {
       if (a < 1 || a > 4 || !z.isNumber() || !q.isNumber() || q.isZero()
           || !(z.isInexactNumber() || q.isInexactNumber() || engine.isNumericMode())) {
         return F.NIL;
@@ -1733,7 +1767,7 @@ public class EllipticIntegrals {
       }
     }
 
-    private static IExpr ellipticTheta2(int a, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr ellipticTheta2(int a, IExpr m, boolean doubleMode) {
       if (a >= 1 && a <= 4) {
         if (m.isZero()) {
           switch (a) {
@@ -1772,7 +1806,7 @@ public class EllipticIntegrals {
      * nome inside the unit disk; for a symbolic nome only <code>EllipticTheta(1, 0, q)</code> is
      * known to be <code>0</code>. A number outside the unit disk leaves it unevaluated.
      */
-    private static IExpr theta1AtPiMultiple(IExpr x, IExpr q, EvalEngine engine) {
+    private static @AllowNIL IExpr theta1AtPiMultiple(IExpr x, IExpr q, EvalEngine engine) {
       IExpr k = x.isZero() ? F.C0 : engine.evaluate(F.Times(x, F.Power(S.Pi, F.CN1)));
       if (!k.isInteger()) {
         return F.NIL;
@@ -1786,7 +1820,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr ellipticTheta3(int a, IExpr x, IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr ellipticTheta3(int a, IExpr x, IExpr m, EvalEngine engine) {
       if (a >= 1 && a <= 4) {
         if (m.isZero()) {
           switch (a) {
@@ -1848,7 +1882,7 @@ public class EllipticIntegrals {
   private static class InverseWeierstrassP extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr u = ast.arg1();
       IExpr invariants = ast.arg2();
       if (u.isZero() && invariants.isList2() && invariants.first().isZero()
@@ -2171,7 +2205,7 @@ public class EllipticIntegrals {
   private static class JacobiAmplitude extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
       if (isArbitrary(z, m, engine) && z.isReal() && m.isReal()) {
@@ -2188,7 +2222,7 @@ public class EllipticIntegrals {
       return jacobiAmplitude(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiAmplitude(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiAmplitude(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return z;
       }
@@ -2298,7 +2332,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (!z.isNumber()) {
         return F.NIL;
@@ -2366,7 +2400,7 @@ public class EllipticIntegrals {
    *        <code>S, C, D, N</code>
    * @return {@link F#NIL} if the arguments are not inexact numbers, or the integral diverges
    */
-  private static IExpr inverseJacobiNumeric(String kind, IExpr z, IExpr m, EvalEngine engine) {
+  private static @AllowNIL IExpr inverseJacobiNumeric(String kind, IExpr z, IExpr m, EvalEngine engine) {
     if (!z.isNumber() || !m.isNumber() || z.isZero() || m.isZero() || m.isOne()) {
       return F.NIL;
     }
@@ -2417,7 +2451,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
       IExpr arbitrary = jacobiArbitrary(kind, z, m, engine);
@@ -2492,7 +2526,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
       if (m.isInfinity() && kind.equals("NC")) {
@@ -2570,7 +2604,7 @@ public class EllipticIntegrals {
    * @param kind the two letters of the function: the numerator and the denominator among
    *        <code>S, C, D, N</code>
    */
-  private static IExpr jacobiArbitrary(String kind, IExpr z, IExpr m, EvalEngine engine) {
+  private static @AllowNIL IExpr jacobiArbitrary(String kind, IExpr z, IExpr m, EvalEngine engine) {
     if (!z.isNumber() || !m.isNumber() || z.isZero() || m.isZero() || m.isOne()) {
       return F.NIL;
     }
@@ -2621,7 +2655,7 @@ public class EllipticIntegrals {
       return jacobiCD(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiCD(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiCD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Cos(z);
       }
@@ -2700,7 +2734,7 @@ public class EllipticIntegrals {
       return jacobiCN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiCN(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiCN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Cos(z);
       // CPD-OFF closed-form special values per function
@@ -2784,7 +2818,7 @@ public class EllipticIntegrals {
       return jacobiDN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiDN(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiDN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.C1;
       // CPD-OFF closed-form special values per function
@@ -2868,7 +2902,7 @@ public class EllipticIntegrals {
       return jacobiSC(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiSC(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiSC(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         // CPD-OFF closed-form special values per function
         return F.Tan(z);
@@ -2952,7 +2986,7 @@ public class EllipticIntegrals {
       return jacobiSD(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiSD(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiSD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         // CPD-OFF closed-form special values per function
         return F.Sin(z);
@@ -3036,7 +3070,7 @@ public class EllipticIntegrals {
       return jacobiSN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
-    private static IExpr jacobiSN(IExpr z, IExpr m, boolean doubleMode) {
+    private static @AllowNIL IExpr jacobiSN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Sin(z);
       }
@@ -3086,7 +3120,7 @@ public class EllipticIntegrals {
       return jacobiZeta(z, m, engine).eval(engine);
     }
 
-    private static IExpr jacobiZeta(IExpr z, IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr jacobiZeta(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.C0;
       }
@@ -3137,7 +3171,7 @@ public class EllipticIntegrals {
       return kleinInvariantJ(t, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr kleinInvariantJ(IExpr t, boolean numericMode) {
+    private static @AllowNIL IExpr kleinInvariantJ(IExpr t, boolean numericMode) {
       IExpr im = t.im();
 
       if (im.isZero()) {
@@ -3207,7 +3241,7 @@ public class EllipticIntegrals {
   private static class WeierstrassHalfPeriods extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isList2()) {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
@@ -3217,7 +3251,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3, EvalEngine engine) {
+    private static @AllowNIL IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3, EvalEngine engine) {
       if (numericPair(g2, g3, engine)) {
         try {
           final boolean arbitrary = isArbitrary(g2, g3, engine);
@@ -3274,7 +3308,7 @@ public class EllipticIntegrals {
   private static class WeierstrassInvariants extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isList2()) {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
@@ -3284,7 +3318,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr weierstrassInvariants(IExpr g2, IExpr g3, EvalEngine engine) {
+    private static @AllowNIL IExpr weierstrassInvariants(IExpr g2, IExpr g3, EvalEngine engine) {
       if (numericPair(g2, g3, engine)) {
         try {
           if (isArbitrary(g2, g3, engine)) {
@@ -3375,7 +3409,7 @@ public class EllipticIntegrals {
    * <code>WeierstrassP</code> or its derivative for arbitrary precision numbers; {@link F#NIL}
    * if the roots of the cubic are not separated.
    */
-  private static IExpr weierstrassArbitrary(IExpr u, IExpr g2, IExpr g3, boolean derivative,
+  private static @AllowNIL IExpr weierstrassArbitrary(IExpr u, IExpr g2, IExpr g3, boolean derivative,
       EvalEngine engine) {
     final int digits = (int) engine.getNumericPrecision();
     try {
@@ -3469,7 +3503,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList2()) {
         IAST list = (IAST) ast.arg2();
         IAST parameters = weierstrassJacobiParameters(list.arg1(), list.arg2());
@@ -3482,7 +3516,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr u = ast.arg1();
       if (u.isZero()) {
         return F.CComplexInfinity;
@@ -3507,7 +3541,7 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr weierstrassP(IExpr u, IExpr g2, IExpr g3) {
+    private static @AllowNIL IExpr weierstrassP(IExpr u, IExpr g2, IExpr g3) {
       if (g2.isZero() && g3.isZero()) {
         return F.Power(u, F.CN2);
       }
@@ -3621,7 +3655,7 @@ public class EllipticIntegrals {
       return new long[] {Math.round(a), Math.round(b)};
     }
 
-    private static IExpr weierstrassPPrime(IExpr u, IExpr g2, IExpr g3) {
+    private static @AllowNIL IExpr weierstrassPPrime(IExpr u, IExpr g2, IExpr g3) {
       if (g2.isZero() && g3.isZero()) {
         return F.Times(F.CN2, F.Power(u, F.CN3));
       }
@@ -3669,7 +3703,7 @@ public class EllipticIntegrals {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr u = ast.arg1();
       if (!ast.arg2().isList2()) {
         return F.NIL;

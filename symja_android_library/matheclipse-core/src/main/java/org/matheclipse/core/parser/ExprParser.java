@@ -19,6 +19,7 @@ import java.util.Locale;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1257,7 +1258,27 @@ public class ExprParser extends Scanner {
           temp = ((NumStr) temp).promoted();
         }
       } else {
-        if (exponentStr == null) {
+        if (numberStr.indexOf('.') >= 0) {
+          // b^^ddd.ddd*^e: a real number of the digits' precision
+          java.math.BigInteger[] digits = baseFraction(numberStr, numFormat);
+          double precision = baseDigitsPrecision(digits[0]);
+          java.math.BigInteger[] value = timesBasePower(digits, numFormat, exponentStr);
+          if (precision <= ParserConfig.MACHINE_PRECISION) {
+            temp = F.num(F.QQ(F.ZZ(value[0]), F.ZZ(value[1])).doubleValue());
+          } else {
+            // a few guard digits; the precision mark is the real number of the digits
+            long digitCount = (long) Math.ceil(precision) + 5L;
+            temp = ApfloatNum.valueOf(new org.apfloat.Apfloat(value[0], digitCount)
+                .divide(new org.apfloat.Apfloat(value[1], digitCount)), precision);
+          }
+        } else if (exponentStr != null && numFormat != 10) {
+          // b^^ddd*^e: the exact number ddd*b^e
+          java.math.BigInteger[] value = timesBasePower(
+              new java.math.BigInteger[] {new java.math.BigInteger(numberStr, numFormat),
+                  java.math.BigInteger.ONE},
+              numFormat, exponentStr);
+          temp = F.QQ(F.ZZ(value[0]), F.ZZ(value[1])).normalize();
+        } else if (exponentStr == null) {
           temp = F.ZZ(numberStr, numFormat);
         } else {
           if (numFormat == 10) {
@@ -1332,6 +1353,7 @@ public class ExprParser extends Scanner {
     }
     if (lastOperatorPosition > 0) {
       fCurrentPosition = lastOperatorPosition;
+      fOperatorStartPosition = startPosition;
       // Built from the prefix that actually matched. Previously fOperatorString was left holding
       // whichever prefix was probed last, which is a longer, unmatched one whenever the scan
       // overshot - so for an input like "a&&&b" the parser went on to compare "&&&" against the
@@ -1753,10 +1775,13 @@ public class ExprParser extends Scanner {
    * An operator with no prefix reading - <code>&amp;</code>, <code>/</code>, <code>//</code> - can
    * only apply to what stands to its left, so the <code>;</code> has <code>Null</code> on its right
    * and the operator then takes the whole <code>CompoundExpression</code> as its left operand. That
-   * is how <code>n[#] = a[#]; &amp;</code> is a pure function whose body ends in a semicolon.
+   * is how <code>n[#] = a[#]; &amp;</code> is a pure function whose body ends in a semicolon. A run
+   * of prefix operators like <code>!!</code> begins one: <code>a; !!b</code> is
+   * <code>CompoundExpression(a, Not(Not(b)))</code>.
    */
   private boolean compoundExpressionEndsHere() {
-    return fToken == TT_OPERATOR && determinePrefixOperator() == null;
+    return fToken == TT_OPERATOR && determinePrefixOperator() == null
+        && (fOperatorString == null || !isPrefixOperatorRun(fOperatorString));
   }
 
   /** <code>Put</code> (<code>&gt;&gt;</code>) or <code>PutAppend</code> (<code>&gt;&gt;&gt;</code>). */
@@ -2429,13 +2454,71 @@ public class ExprParser extends Scanner {
         fCurrentChar = '.';
         return getNumber(false);
       }
-      final PrefixExprOperator prefixOperator = determinePrefixOperator();
+      PrefixExprOperator prefixOperator = determinePrefixOperator();
+      if (prefixOperator == null) {
+        prefixOperator = leadingPrefixOperator();
+      }
       if (prefixOperator != null) {
         return parsePrefixOperator(prefixOperator);
       }
       throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
     }
     return getPart(min_precedence);
+  }
+
+  /**
+   * The longest leading part of the current operator token which is a prefix operator, for a token
+   * which has no prefix reading of its own but is a run of prefix operators. The longest match
+   * makes <code>!!</code> one token, but in front of an operand it is no <code>Factorial2</code>:
+   * <code>!!a</code> is <code>Not(Not(a))</code>. The scanner continues right after the part which
+   * is used. A token like <code>!=</code>, whose rest is no prefix operator, is not split.
+   *
+   * @return <code>null</code> if the token is no run of prefix operators
+   */
+  private PrefixExprOperator leadingPrefixOperator() {
+    final String token = fOperatorString;
+    if (token == null || fCurrentPosition - fOperatorStartPosition != token.length()) {
+      return null;
+    }
+    for (int length = token.length() - 1; length > 0; length--) {
+      final String part = token.substring(0, length);
+      final PrefixExprOperator prefix = prefixOperator(fFactory.getOperatorList(part));
+      if (prefix != null && isPrefixOperatorRun(token.substring(length))) {
+        final List<Operator> list = fFactory.getOperatorList(part);
+        fCurrentPosition = fOperatorStartPosition + length;
+        fOperatorString = part;
+        fOperList = list;
+        classifyOperators(list);
+        return prefix;
+      }
+    }
+    return null;
+  }
+
+  /** Whether the text is one prefix operator or a run of them. */
+  private boolean isPrefixOperatorRun(final String text) {
+    if (prefixOperator(fFactory.getOperatorList(text)) != null) {
+      return true;
+    }
+    for (int length = text.length() - 1; length > 0; length--) {
+      if (prefixOperator(fFactory.getOperatorList(text.substring(0, length))) != null
+          && isPrefixOperatorRun(text.substring(length))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The prefix reading among the operators of a token, or <code>null</code>. */
+  private static PrefixExprOperator prefixOperator(final List<Operator> list) {
+    if (list != null) {
+      for (int i = 0; i < list.size(); i++) {
+        if (list.get(i) instanceof PrefixExprOperator) {
+          return (PrefixExprOperator) list.get(i);
+        }
+      }
+    }
+    return null;
   }
 
   private final IExpr parsePrefixOperator(final PrefixExprOperator prefixOperator) {

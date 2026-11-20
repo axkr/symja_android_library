@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -68,7 +69,7 @@ public class SeriesFunctions {
 
   private static final class PadeApproximant extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList3()) {
         IExpr function = ast.arg1();
         IAST list = (IAST) ast.arg2();
@@ -138,7 +139,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if no approximant could be computed
      */
-    private static IExpr seriesPade(IExpr function, IExpr x, IExpr x0, int m, int n,
+    private static @AllowNIL IExpr seriesPade(IExpr function, IExpr x, IExpr x0, int m, int n,
         EvalEngine engine) {
       IExpr seriesExpr = engine.evaluate(F.Series(function, F.List(x, x0, F.ZZ(m + n))));
       if (!(seriesExpr instanceof ASTSeriesData)) {
@@ -404,7 +405,7 @@ public class SeriesFunctions {
    */
   private static final class ComposeSeries extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() > 2) {
         if (ast.arg1() instanceof ASTSeriesData) {
           ASTSeriesData result = (ASTSeriesData) ast.arg1();
@@ -474,7 +475,7 @@ public class SeriesFunctions {
    */
   private static final class InverseSeries extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       // 1. Invertierung eines bereits generierten ASTSeriesData Objekts
       if (ast.arg1() instanceof ASTSeriesData) {
@@ -529,7 +530,7 @@ public class SeriesFunctions {
   private static final class Residue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2() && (ast.arg2().isList2())) {
         IExpr function = ast.arg1();
         IAST list = (IAST) ast.arg2();
@@ -669,7 +670,7 @@ public class SeriesFunctions {
      * @return {@link F#NIL} if the function isn't recognized as analytic on the punctured plane or
      *         no usable series could be computed
      */
-    private static IExpr essentialSingularityResidue(IExpr function, IExpr x, IExpr x0,
+    private static @AllowNIL IExpr essentialSingularityResidue(IExpr function, IExpr x, IExpr x0,
         EvalEngine engine) {
       IExpr shifted = function;
       if (!x0.isZero()) {
@@ -723,7 +724,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if the function doesn't have this form or a residue isn't found
      */
-    private static IExpr rationalFactorPoleResidues(IExpr function, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr rationalFactorPoleResidues(IExpr function, IExpr x, EvalEngine engine) {
       if (IN_POLE_SUM.get()) {
         return F.NIL;
       }
@@ -742,7 +743,7 @@ public class SeriesFunctions {
     private static final ThreadLocal<Boolean> IN_POLE_SUM =
         ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-    private static IExpr poleResidueSum(IExpr function, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr poleResidueSum(IExpr function, IExpr x, EvalEngine engine) {
       IExpr together = engine.evalQuiet(F.Together(function));
       IExpr numerator = engine.evalQuiet(F.Numerator(together));
       IExpr denominator = engine.evalQuiet(F.Denominator(together));
@@ -785,7 +786,7 @@ public class SeriesFunctions {
      * @return {@link F#NIL} if no term has an essential singularity <code>Exp(b/w)</code> or a term
      *         doesn't have this form
      */
-    private static IExpr exponentialLaurentResidue(IExpr function, IExpr x, IExpr x0,
+    private static @AllowNIL IExpr exponentialLaurentResidue(IExpr function, IExpr x, IExpr x0,
         EvalEngine engine) {
       if (x0.isDirectedInfinity() || !x0.isFree(x, true)
           || !function.has(e -> isExponentialOfInverse(e, x), true)) {
@@ -960,7 +961,7 @@ public class SeriesFunctions {
      * A square root of <code>expr</code> without fractional powers, like <code>a/2</code> of
      * <code>a^2/4</code>, or {@link F#NIL}.
      */
-    private static IExpr rootWithoutRadicals(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr rootWithoutRadicals(IExpr expr, EvalEngine engine) {
       IExpr root = engine.evalQuiet(F.PowerExpand(F.Sqrt(expr)));
       boolean radical = root.has(e -> e.isPower() && e.exponent().isFraction(), true)
           || root.has(e -> e.isComplex() || e.isComplexNumeric(), true);
@@ -1092,7 +1093,7 @@ public class SeriesFunctions {
   private static final class O extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         // O(x, x0) is O(x - x0)
@@ -1187,7 +1188,7 @@ public class SeriesFunctions {
      *
      * @return the rebuilt expression, or {@link F#NIL} when no argument could be expanded
      */
-    private static IExpr mapSeriesOverArguments(IExpr currentExpr, IExpr x, IAST iterator,
+    private static @AllowNIL IExpr mapSeriesOverArguments(IExpr currentExpr, IExpr x, IAST iterator,
         EvalEngine engine) {
       if (!currentExpr.isAST() || !x.isPresent()) {
         return F.NIL;
@@ -1217,7 +1218,7 @@ public class SeriesFunctions {
      *
      * @return the truncated series, or {@link F#NIL} when nothing needs to change
      */
-    private static IExpr truncateExistingSeries(ASTSeriesData outerSeries, IExpr x, IExpr x0,
+    private static @AllowNIL IExpr truncateExistingSeries(ASTSeriesData outerSeries, IExpr x, IExpr x0,
         int n) {
       int targetTruncate = n * outerSeries.puiseuxDenominator() + outerSeries.truncationOffset();
       if (targetTruncate >= outerSeries.truncateOrder()) {
@@ -1243,7 +1244,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if every expansion variable of <code>ast</code> is a variable
      */
-    private static IExpr seriesInSubexpression(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr seriesInSubexpression(final IAST ast, EvalEngine engine) {
       for (int i = 2; i <= ast.argSize(); i++) {
         IExpr iterator = ast.get(i);
         if (!iterator.isList3() && !iterator.isRuleAST()) {
@@ -1427,7 +1428,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} otherwise
      */
-    private static IExpr scaleOf(IExpr arg, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr scaleOf(IExpr arg, IExpr x, EvalEngine engine) {
       IExpr c = engine.evaluate(F.Divide(arg, x));
       if (!c.isFree(x) || !(c.isPositiveResult() || c.isNegativeResult())) {
         return F.NIL;
@@ -1454,7 +1455,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if a WhittakerM or WhittakerW can't be rewritten
      */
-    private static IExpr whittakerMAsHypergeometric(IExpr expr, IExpr x, boolean atInfinity,
+    private static @AllowNIL IExpr whittakerMAsHypergeometric(IExpr expr, IExpr x, boolean atInfinity,
         EvalEngine engine) {
       final boolean[] failed = new boolean[] {false};
       IExpr rewritten = F.subst(expr, y -> {
@@ -1492,7 +1493,7 @@ public class SeriesFunctions {
      * @return {@link F#NIL} if <code>function</code> is not <code>WhittakerW(k, m, x)</code> with a
      *         rational <code>k</code> and an <code>m</code> free of <code>x</code>
      */
-    private static IExpr whittakerWAsymptotic(IExpr function, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr whittakerWAsymptotic(IExpr function, IExpr x, int n, EvalEngine engine) {
       if (!function.isAST(S.WhittakerW, 4) || !((IAST) function).arg3().equals(x)) {
         return F.NIL;
       }
@@ -1530,7 +1531,7 @@ public class SeriesFunctions {
       return (y.isAST(S.WhittakerM, 4) || y.isAST(S.WhittakerW, 4)) && !y.isFree(x);
     }
 
-    private static IExpr asymptoticAtInfinity(IExpr function, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr asymptoticAtInfinity(IExpr function, IExpr x, int n, EvalEngine engine) {
       final IAST iterator = F.List(x, F.CInfinity, F.ZZ(n));
       if (function.isAST(S.HermiteH, 3) && function.second().equals(x)
           && !function.first().isInteger() && function.first().isFree(x)) {
@@ -1627,7 +1628,7 @@ public class SeriesFunctions {
      * The series with <code>constant</code> added to its coefficient of <code>x^0</code>, truncated
      * at <code>x^truncate</code>.
      */
-    private static IExpr withConstantTerm(ASTSeriesData series, IExpr constant, int truncate) {
+    private static @AllowNIL IExpr withConstantTerm(ASTSeriesData series, IExpr constant, int truncate) {
       int min = Math.min(series.minExponent(), 0);
       if (truncate <= 0 || series.truncateOrder() < truncate || series.puiseuxDenominator() != 1) {
         return F.NIL;
@@ -1660,7 +1661,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if the two sides cannot be compared term by term
      */
-    private static IExpr twoSidedSeries(IExpr function, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr twoSidedSeries(IExpr function, IExpr x, int n, EvalEngine engine) {
       if (BRANCH_SIDES.get() == Boolean.TRUE) {
         return F.NIL;
       }
@@ -1718,7 +1719,7 @@ public class SeriesFunctions {
       }
     }
 
-    private static IExpr evaluateSeries(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr evaluateSeries(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 2) {
         return F.NIL;
       }
@@ -1934,7 +1935,7 @@ public class SeriesFunctions {
     }
 
     /** The <code>{x, x0, n}</code> form: expand to a fixed number of orders. */
-    private static IExpr fixedOrderSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
+    private static @AllowNIL IExpr fixedOrderSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
         int n, int direction, boolean isInfinity, EvalEngine engine) {
       ASTSeriesData series =
           ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n, direction, engine);
@@ -1982,7 +1983,7 @@ public class SeriesFunctions {
      * <code>x</code> times <code>Gamma(x)</code>, so that quotients like
      * <code>Gamma(x+1)/Gamma(x)</code> cancel before they are expanded at infinity.
      */
-    private static IExpr shiftGammaArguments(IExpr expr, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr shiftGammaArguments(IExpr expr, IExpr x, EvalEngine engine) {
       IExpr result = expr.replaceAll(e -> {
         if (e.isAST(S.Gamma, 2)) {
           IExpr k = engine.evaluate(F.Subtract(e.first(), x));
@@ -2025,7 +2026,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if <code>expr</code> isn't one of these functions
      */
-    private static IExpr stirlingSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr stirlingSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
       if (n < 0 || !expr.isAST1()) {
         return F.NIL;
       }
@@ -2109,7 +2110,7 @@ public class SeriesFunctions {
      * @return {@link F#NIL} if the logarithms aren't all of powers of <code>x</code> or the rest
      *         has no expansion
      */
-    private static IExpr logCoefficientSeries(IExpr expr, IExpr x, IAST iterator,
+    private static @AllowNIL IExpr logCoefficientSeries(IExpr expr, IExpr x, IAST iterator,
         EvalEngine engine) {
       final ISymbol logX = F.Dummy("logx");
       final boolean[] failed = new boolean[] {false};
@@ -2167,7 +2168,7 @@ public class SeriesFunctions {
      *        <code>Log(c*(-1)^k) + k*Log(-x)</code>
      * @return {@link F#NIL} for any other argument
      */
-    private static IExpr logOfPower(IExpr arg, IExpr x, IExpr logX, boolean bothSides,
+    private static @AllowNIL IExpr logOfPower(IExpr arg, IExpr x, IExpr logX, boolean bothSides,
         boolean negative) {
       IExpr constant = F.C1;
       IExpr power = arg;
@@ -2260,7 +2261,7 @@ public class SeriesFunctions {
      *
      * @return <code>expr</code> if there is no such <code>LogGamma</code>
      */
-    private static IExpr logGammaAsymptotic(IExpr expr, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr logGammaAsymptotic(IExpr expr, IExpr x, int n, EvalEngine engine) {
       if (n < 0 || n > MAX_STIRLING_ORDER) {
         return expr;
       }
@@ -2287,7 +2288,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if <code>expr</code> has no such factor
      */
-    private static IExpr stirlingProductSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr stirlingProductSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
       if (n < 0 || n > MAX_STIRLING_ORDER || !(expr.isTimes() || expr.isPower())) {
         return F.NIL;
       }
@@ -2407,7 +2408,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if <code>expr</code> isn't one of these functions of <code>x</code>
      */
-    private static IExpr erfcSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr erfcSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
       if (n < 0 || !(expr.isAST(S.Erfc, 2) || expr.isAST(S.Erf, 2)) || !expr.first().equals(x)) {
         return F.NIL;
       }
@@ -2443,7 +2444,7 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if <code>expr</code> isn't one of these functions
      */
-    private static IExpr polyGammaSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr polyGammaSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
       if (n < 0) {
         return F.NIL;
       }
@@ -2534,7 +2535,7 @@ public class SeriesFunctions {
      * expansions (e.g. the tail of <code>Series(Gamma(Sin(x)-x), x -&gt; 0)</code> ends at index
      * -7, not -8), so the expansion would have to be run anyway to recover it.
      */
-    private static IExpr leadingTermSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
+    private static @AllowNIL IExpr leadingTermSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
         int direction, boolean isInfinity, EvalEngine engine) {
       // Raise the order until a non-zero coefficient appears: the leading term of a function whose
       // low-order coefficients all cancel sits deeper than any fixed order would reach.
@@ -2669,7 +2670,7 @@ public class SeriesFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() > 2) {
         // Every specification has to be one before any folding starts. One that is not - an
         // Interval, a Rule, a pattern - does not evaluate, so the fold wraps the whole expression
@@ -2784,7 +2785,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    private static IExpr functionCoefficient(final IAST ast, IExpr function, IExpr x, IExpr x0,
+    private static @AllowNIL IExpr functionCoefficient(final IAST ast, IExpr function, IExpr x, IExpr x0,
         IExpr n, EvalEngine engine) {
 
       if (x0.isDirectedInfinity()) {
@@ -3020,7 +3021,7 @@ public class SeriesFunctions {
      * @return a {@link S#Piecewise} expression, or {@link F#NIL} if <code>function</code> is not a
      *         binomial power with a symbolic index expanded around zero
      */
-    private static IExpr binomialPowerSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr binomialPowerSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       if (n.isNumber() || !x0.isZero() || !function.isPower()) {
         return F.NIL;
@@ -3056,7 +3057,7 @@ public class SeriesFunctions {
      * of rational functions P(x)/Q(x) when 'n' is symbolic, and matches known identities (like
      * Fibonacci and ChebyshevU) for both numeric and symbolic 'n'.
      */
-    private static IExpr holonomicSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr holonomicSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       java.util.Set<IExpr> guard = HOLONOMIC_GUARD.get();
       if (guard.contains(function)) {
@@ -3175,7 +3176,7 @@ public class SeriesFunctions {
       }
     }
 
-    private static IExpr rationalSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr rationalSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       IExpr den = engine.evaluate(F.Denominator(function));
       if (den.isOne() || den.isFree(x)) {
@@ -3234,7 +3235,7 @@ public class SeriesFunctions {
       }
     }
 
-    private static IExpr rationalTermCoefficient(IExpr term, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr rationalTermCoefficient(IExpr term, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       IExpr c = F.C1;
       IExpr core = term;
@@ -3323,7 +3324,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    private static IExpr compositeSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr compositeSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       if (!n.isInteger() || !n.isPositive()) {
         return F.NIL;
@@ -3369,7 +3370,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    private static IExpr taylorCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+    private static @AllowNIL IExpr taylorCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       final int nInt = n.toIntDefault();
       if (nInt < 0) {
@@ -3402,7 +3403,7 @@ public class SeriesFunctions {
       return engine.evaluate(F.Together(F.ExpandAll(rawCoefficient)));
     }
 
-    private static IExpr specialFunctionCoefficient(IAST function, IExpr x, IExpr x0, IExpr n) {
+    private static @AllowNIL IExpr specialFunctionCoefficient(IAST function, IExpr x, IExpr x0, IExpr n) {
       if (function.isAST3()) {
         IExpr head = function.head();
         IExpr arg1 = function.first();
@@ -3470,7 +3471,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    public static IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0,
+    public static @AllowNIL IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0,
         IExpr n, final IAST seriesTemplate, EvalEngine engine) {
       try {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
@@ -3626,7 +3627,7 @@ public class SeriesFunctions {
   private static final class SeriesData extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int denominator = 1;
       if (ast.size() == 6 || ast.size() == 7) {
         if (ast.arg3().isVector() < 0 || !ast.arg3().isAST()) {

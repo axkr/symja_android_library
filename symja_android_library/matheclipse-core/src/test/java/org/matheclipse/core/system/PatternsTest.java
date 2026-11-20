@@ -1530,6 +1530,46 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRepeatedInInputForm() {
+    // p.. and p... are postfix operators: an operand of lower precedence is parenthesized
+    check("ToString(Hold(Repeated(p -> q), RepeatedNull(p :> q), Repeated(p | q), Repeated(r : {_}), "
+        + "Repeated(g(r)), Repeated(r_), Repeated(p + q), w : Repeated(p -> q)), InputForm)", //
+        "Hold((p->q)..,(p:>q)...,(p|q)..,(r:{_})..,g(r)..,(r_)..,p + q..,w:(p->q)..)");
+    // a repetition with limits keeps them
+    check("ToString(Hold(Repeated(p, {2, 4}), Repeated(p, 3), RepeatedNull(p, 2), Repeated(p, {3})), InputForm)", //
+        "Hold(Repeated(p,{2,4}),Repeated(p,3),RepeatedNull(p,2),Repeated(p,{3}))");
+    // a blank is separated from the dots, which would read as an optional blank _. otherwise
+    check("ToString(Hold(Repeated(_), RepeatedNull(__), Repeated(_Real), RepeatedNull(r_)), InputForm)", //
+        "Hold(_ ..,__ ...,_Real..,(r_)...)");
+    // an optional pattern binds weaker than the dots and is parenthesized
+    check("ToString(Hold(Repeated(Optional(u_)), RepeatedNull(Optional(_, 2))), InputForm)", //
+        "Hold((u_.)..,(_:2)...)");
+    check("h = Hold(Repeated(_), RepeatedNull(___)); ToExpression(ToString(h, InputForm)) === h", //
+        "True");
+    // the printed pattern reads back as the same pattern
+    check("h = Hold(Repeated(p -> q), RepeatedNull(p | q), Repeated(r_), Repeated(p, {2, 4}), "
+        + "w : Repeated(p :> q)); ToExpression(ToString(h, InputForm)) === h", //
+        "True");
+    check("pat = ToExpression(ToString(Hold({Repeated(_Integer -> _Real)}), InputForm))[[1]]; "
+        + "{MatchQ({1 -> 2.0, 3 -> 4.0}, pat), MatchQ({1 -> 2}, pat)}", //
+        "{True,False}");
+  }
+
+  @Test
+  public void testPatternComputedFromHeldPatterns() {
+    // a pattern which is the value of a computation on held patterns is matched as that value
+    check("{MatchQ({2}, Hold({_Integer})[[1]]), MatchQ({2.5}, Hold({_Integer})[[1]])}", //
+        "{True,False}");
+    check("Cases({1, b, 2.5, 3}, ReleaseHold(HoldForm(_Integer)))", //
+        "{1,3}");
+    check("Count({u(1), u(2), w(3)}, First(Hold(u(_))))", //
+        "2");
+    // a pattern as it is written is not evaluated
+    check("pv(x_) := 0; {MatchQ(Unevaluated(pv(7)), pv(_)), MatchQ(Hold(pv(1)), Hold(pv(_)))}", //
+        "{True,True}");
+  }
+
+  @Test
   public void testNamedDefaultWithInnerPatternNames() {
     // the default isn't taken without a match where the pattern has names of its own
     check("$ng(w : (u_ + 1) : 7) := {w, u}; $ng()", //

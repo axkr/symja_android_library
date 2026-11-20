@@ -77,66 +77,188 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       String resampling = resamplingOption(ast, 3, engine);
-      // an enlargement by whole factors replicates the pixels unless a resampling is asked
-      // for - ImageResize(Image({{1,2,3},{4,5,6}}/10.), {6,4}) has every pixel four times
-      boolean wholeFactors = "Automatic".equals(resampling) && size[0] >= image.getWidth()
-          && size[1] >= image.getHeight() && size[0] % image.getWidth() == 0
-          && size[1] % image.getHeight() == 0;
-      if (wholeFactors || "Nearest".equals(resampling)) {
+      if ("Nearest".equals(resampling)) {
         return nearest(ast.arg1(), image, size[0], size[1]);
       }
-      if (size[0] <= image.getWidth() && size[1] <= image.getHeight()) {
-        IExpr averaged = averaged(ast.arg1(), size[0], size[1], engine);
-        if (averaged.isPresent()) {
-          return averaged;
-        }
+      IExpr resampled = resampled(ast.arg1(), size[0], size[1], resampling, engine);
+      if (resampled.isPresent()) {
+        return resampled;
       }
+      // a bitmap without samples of its own
       return new ImageExpr(Geometry.resize(image, size[0], size[1], true), null);
     }
 
     /**
-     * A smaller image of real samples: every pixel is the mean of the block of pixels behind it,
-     * like {@link Geometry#resize} does it for the bitmap, but of the samples themselves and
-     * without rounding the result to <code>1/255</code>.
+     * The samples of an image resampled to <code>width</code> by <code>height</code>, one direction
+     * after the other, see {@link #resample(double[], int, String)}. This works on the samples
+     * themselves, on the intensity scale, so an image of integer samples is resized by the same
+     * rules as one of real samples and keeps its type.
      *
-     * @return <code>F.NIL</code> if the image has no real samples
+     * @param resampling the <code>Resampling</code> method, <code>"Automatic"</code> if none is
+     *        given
+     * @return <code>F.NIL</code> if the image has no samples to read
      */
-    private static IExpr averaged(IExpr arg, int width, int height, EvalEngine engine) {
-      if (!(arg instanceof ImageExpr) || PixelMatrix.of(arg) == null) {
+    private static IExpr resampled(IExpr arg, int width, int height, String resampling,
+        EvalEngine engine) {
+      if (!(arg instanceof ImageExpr)) {
         return F.NIL;
       }
       ImageExpr source = (ImageExpr) arg;
       String type = source.sampleType();
-      if (!Pixels.REAL32.equals(type) && !Pixels.REAL64.equals(type)) {
-        return F.NIL;
-      }
       double[][][] channels = ImageFilterFunctions.channels(source, engine);
-      if (channels == null) {
+      if (channels == null || channels.length == 0 || channels[0].length == 0) {
         return F.NIL;
       }
       final int sourceHeight = channels[0].length;
-      final int sourceWidth = channels[0][0].length;
-      final double scaleX = (double) sourceWidth / width;
-      final double scaleY = (double) sourceHeight / height;
       double[][][] result = new double[channels.length][height][width];
+      double[] column = new double[sourceHeight];
       for (int c = 0; c < channels.length; c++) {
-        for (int y = 0; y < height; y++) {
-          int fromY = (int) Math.floor(y * scaleY);
-          int toY = Math.min(sourceHeight, Math.max(fromY + 1, (int) Math.ceil((y + 1) * scaleY)));
-          for (int x = 0; x < width; x++) {
-            int fromX = (int) Math.floor(x * scaleX);
-            int toX = Math.min(sourceWidth, Math.max(fromX + 1, (int) Math.ceil((x + 1) * scaleX)));
-            double sum = 0.0;
-            for (int row = fromY; row < toY; row++) {
-              for (int column = fromX; column < toX; column++) {
-                sum += channels[c][row][column];
-              }
-            }
-            result[c][y][x] = sum / ((toY - fromY) * (toX - fromX));
+        // the rows to the new width, then the columns of that to the new height
+        double[][] rows = new double[sourceHeight][];
+        for (int y = 0; y < sourceHeight; y++) {
+          engine.checkTimeLimit();
+          rows[y] = resample(channels[c][y], width, resampling);
+        }
+        for (int x = 0; x < width; x++) {
+          engine.checkTimeLimit();
+          for (int y = 0; y < sourceHeight; y++) {
+            column[y] = rows[y][x];
+          }
+          double[] scaled = resample(column, height, resampling);
+          for (int y = 0; y < height; y++) {
+            result[c][y][x] = scaled[y];
           }
         }
       }
       return ImageFilterFunctions.toImage(result, source.getOptions(), type);
+    }
+
+    /**
+     * One line of samples resampled to <code>count</code> samples.
+     *
+     * <p>
+     * A line which shrinks gives every new pixel the mean of the stretch of pixels behind it,
+     * weighted by how much of each it covers. A line which grows by a whole factor repeats each
+     * pixel that many times, unless a <code>Resampling</code> method is given; a line which grows
+     * by any other factor, or with <code>"Linear"</code>, is interpolated linearly between the pixel
+     * centres, and with <code>"Cubic"</code> by the interpolating cubic spline. Each direction is
+     * decided on its own, so a whole factor across and another one down still repeat across.
+     */
+    private static double[] resample(double[] line, int count, String resampling) {
+      int n = line.length;
+      if (count == n) {
+        return line.clone();
+      }
+      double[] result = new double[count];
+      double scale = (double) n / count;
+      if (count > n) {
+        if ("Automatic".equals(resampling) && count % n == 0) {
+          int factor = count / n;
+          for (int i = 0; i < count; i++) {
+            result[i] = line[i / factor];
+          }
+          return result;
+        }
+        if ("Cubic".equals(resampling)) {
+          return cubicSpline(line, count);
+        }
+        for (int i = 0; i < count; i++) {
+          // the centre of the new pixel, in the coordinates of the old pixel centres
+          double position = (i + 0.5) * scale - 0.5;
+          if (position <= 0.0) {
+            result[i] = line[0];
+          } else if (position >= n - 1) {
+            result[i] = line[n - 1];
+          } else {
+            int left = (int) Math.floor(position);
+            double fraction = position - left;
+            // written so that two equal samples give that sample exactly
+            result[i] = line[left] + fraction * (line[left + 1] - line[left]);
+          }
+        }
+        return result;
+      }
+      for (int i = 0; i < count; i++) {
+        double from = i * scale;
+        double to = Math.min(n, (i + 1) * scale);
+        double sum = 0.0;
+        double covered = 0.0;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int k = (int) Math.floor(from); k < n && k < to; k++) {
+          double weight = Math.min(to, k + 1.0) - Math.max(from, k);
+          if (weight > 0.0) {
+            sum += weight * line[k];
+            covered += weight;
+            min = Math.min(min, line[k]);
+            max = Math.max(max, line[k]);
+          }
+        }
+        // a stretch of equal samples keeps their value exactly, without rounding noise
+        result[i] = covered <= 0.0 ? 0.0 : min == max ? min : sum / covered;
+      }
+      return result;
+    }
+
+    /**
+     * One line of samples enlarged to <code>count</code> samples by the interpolating cubic
+     * B-spline, the line being continued beyond its ends as its mirror image about the outer pixel
+     * edges. The spline passes through every sample and may overshoot their range between them.
+     */
+    private static double[] cubicSpline(double[] line, int count) {
+      int n = line.length;
+      // the spline coefficients c solve (c[k-1] + 4 c[k] + c[k+1]) / 6 = line[k], with the
+      // mirrored ends c[-1] = c[0] and c[n] = c[n-1]: a tridiagonal system, solved by elimination
+      double[] diagonal = new double[n];
+      double[] coefficients = new double[n];
+      for (int k = 0; k < n; k++) {
+        diagonal[k] = (k == 0 || k == n - 1) ? 5.0 : 4.0;
+        coefficients[k] = 6.0 * line[k];
+      }
+      if (n == 1) {
+        diagonal[0] = 6.0;
+      }
+      for (int k = 1; k < n; k++) {
+        double factor = 1.0 / diagonal[k - 1];
+        diagonal[k] -= factor;
+        coefficients[k] -= factor * coefficients[k - 1];
+      }
+      coefficients[n - 1] /= diagonal[n - 1];
+      for (int k = n - 2; k >= 0; k--) {
+        coefficients[k] = (coefficients[k] - coefficients[k + 1]) / diagonal[k];
+      }
+      double[] result = new double[count];
+      double scale = (double) n / count;
+      for (int i = 0; i < count; i++) {
+        double position = (i + 0.5) * scale - 0.5;
+        int left = (int) Math.floor(position);
+        double sum = 0.0;
+        for (int k = left - 1; k <= left + 2; k++) {
+          sum += coefficients[mirror(k, n)] * cubicBSpline(position - k);
+        }
+        result[i] = sum;
+      }
+      return result;
+    }
+
+    /** The index of the sample at <code>k</code> of a line continued by mirror images. */
+    private static int mirror(int k, int n) {
+      int period = 2 * n;
+      int m = Math.floorMod(k, period);
+      return m < n ? m : period - 1 - m;
+    }
+
+    /** The cubic B-spline, which is not zero on <code>-2 &lt; d &lt; 2</code>. */
+    private static double cubicBSpline(double d) {
+      d = Math.abs(d);
+      if (d < 1.0) {
+        return 2.0 / 3.0 - d * d + 0.5 * d * d * d;
+      }
+      if (d < 2.0) {
+        double e = 2.0 - d;
+        return e * e * e / 6.0;
+      }
+      return 0.0;
     }
 
     /**

@@ -127,6 +127,11 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     IExpr edgeLabelStyle = getOption(options, S.EdgeLabelStyle, S.Automatic);
     IExpr graphLayout = getOption(options, S.GraphLayout, S.Automatic);
     IExpr directedEdgesOption = getOption(options, S.DirectedEdges, S.Automatic);
+    // the options of the older graph plots: VertexRenderingFunction -> f draws a vertex as
+    // f({x, y, z}, v), -> None keeps the spheres; VertexLabeling -> True writes the names
+    IExpr vertexRendering = GraphGraphics.vertexRenderingFunction(options, 1);
+    boolean vertexLabeling = options.exists(
+        x -> x.isRuleAST() && GraphGraphics.isVertexLabeling(x.first()) && x.second().isTrue());
 
     // an arrowhead is what tells a directed edge apart from an undirected one, so it follows the
     // graph unless the call says otherwise
@@ -248,11 +253,30 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
         if (fraction > 0.0) {
           radius = fraction * distance / 2.0;
         }
+        IAST position = F.List(F.num(p.x), F.num(p.y), F.num(p.z));
+        if (vertexRendering.isPresent()) {
+          primitives
+              .append(EvalEngine.get().evaluate(F.binaryAST2(vertexRendering, position, v)));
+          continue;
+        }
         // Sphere is the standard 3D representation for graph vertices
-        IAST sphere = F.Sphere(F.List(F.num(p.x), F.num(p.y), F.num(p.z)), F.num(radius));
+        IAST sphere = F.Sphere(position, F.num(radius));
         IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
         primitives.append(style.isPresent() ? F.List(style, sphere) : sphere);
       }
+    }
+    if (vertexLabeling) {
+      // each name at its vertex, in a small font, written to the upper right of it
+      IASTAppendable labels = F.ListAlloc(vertices.size() + 1);
+      labels.append(F.Black);
+      for (IExpr v : vertices) {
+        Vector3D p = coordinates.get(v);
+        if (p != null) {
+          labels.append(F.Text(F.Style(v, F.ZZ(10)),
+              F.List(F.num(p.x), F.num(p.y), F.num(p.z)), F.List(F.CN1, F.CN1)));
+        }
+      }
+      primitives.append(labels);
     }
 
     appendVertexLabels(primitives, vertices, coordinates, vertexLabels, vertexLabelStyle,
@@ -265,13 +289,23 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     for (int i = 1; i < options.size(); i++) {
       IExpr option = options.get(i);
       // the graph's own options describe the graph, not the picture
-      if (option.isRuleAST() && !GraphGraphics.isGraphOption(option.first())) {
+      if (option.isRuleAST() && !GraphGraphics.isGraphOption(option.first())
+          && !isPlotOnlyOption(option.first())) {
         result.append(option);
       }
     }
     result.append(F.Rule(S.Boxed, boxed ? S.True : S.False));
     result.append(F.Rule(S.Axes, S.False));
     return result;
+  }
+
+  /**
+   * Whether an option of the call says how the graph is laid out or drawn, and so is no option of
+   * the <code>Graphics3D</code>.
+   */
+  private static boolean isPlotOnlyOption(IExpr name) {
+    return name == S.Method || name == S.EdgeRenderingFunction
+        || GraphGraphics.isVertexLabeling(name) || GraphGraphics.isVertexRenderingFunction(name);
   }
 
   /**

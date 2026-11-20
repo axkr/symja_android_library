@@ -100,6 +100,7 @@ public class PDEFamiliesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPowerTowerIntegral() {
     check("Integrate(x^(3*x), {x, 0, 1})", //
         "Sum(1/((-3)^(1-n)*n^n),{n,1,Infinity})");

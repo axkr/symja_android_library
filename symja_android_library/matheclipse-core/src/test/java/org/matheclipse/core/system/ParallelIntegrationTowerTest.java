@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Integrands over a tower of <code>Log</code> and <code>Exp</code> kernels, which the rules split
@@ -18,6 +19,7 @@ public class ParallelIntegrationTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExponentialQuotients() {
     checkDerivativeOf("x*E^(3*x)/(2 + E^(3*x))");
     checkDerivativeOf("x^2*E^x/(3 + E^x)");
@@ -34,6 +36,7 @@ public class ParallelIntegrationTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLogarithmsOverExponentials() {
     checkDerivativeOf("E^x/Log(5 + x)");
     checkDerivativeOf("x*Log(x + E^(2*x))");
@@ -41,6 +44,7 @@ public class ParallelIntegrationTowerTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testReducedForm() {
     // the rational part in lowest terms
     check("Integrate(D(x*E^(3*x)/(2 + E^(3*x)), x), x)", //

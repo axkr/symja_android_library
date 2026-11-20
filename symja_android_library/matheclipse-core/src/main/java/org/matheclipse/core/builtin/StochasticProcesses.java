@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Random;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -45,7 +46,7 @@ public final class StochasticProcesses {
    */
   public static final class WienerProcess extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // proc(t)
       if (ast.head().isAST(S.WienerProcess) && ast.isAST1()) {
         IAST process = (IAST) ast.head();
@@ -78,7 +79,7 @@ public final class StochasticProcesses {
    */
   public static final class OrnsteinUhlenbeckProcess extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // proc(t)
       if (ast.head().isAST(S.OrnsteinUhlenbeckProcess) && ast.isAST1()) {
         IAST process = (IAST) ast.head();
@@ -119,7 +120,7 @@ public final class StochasticProcesses {
    */
   public static final class ARMAProcess extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // proc(t)
       if (ast.head().isAST(S.ARMAProcess) && ast.isAST1()) {
         Arma arma = Arma.of((IAST) ast.head());
@@ -153,7 +154,7 @@ public final class StochasticProcesses {
     private static final int MAX_LAG = 100_000;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }
@@ -297,7 +298,7 @@ public final class StochasticProcesses {
    */
   public static final class WeakStationarity extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr process = ast.arg1();
       if (process.isAST(S.WhiteNoiseProcess)) {
         return isWhiteNoise(process) ? S.True : F.NIL;
@@ -682,7 +683,7 @@ public final class StochasticProcesses {
    * The distribution <code>dist</code> of <code>WhiteNoiseProcess(dist)</code>, otherwise
    * {@link F#NIL}. Its values are drawn with <code>RandomVariate</code>.
    */
-  public static IExpr whiteNoiseDistribution(IExpr process) {
+  public static @AllowNIL IExpr whiteNoiseDistribution(IExpr process) {
     return process.isAST(S.WhiteNoiseProcess, 2) && process.first().isDistribution()
         ? process.first()
         : F.NIL;

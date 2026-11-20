@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.parser.client.ParserConfig;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apfloat;
@@ -149,7 +150,7 @@ public class PolynomialFunctions {
    *         lowest precision of the arguments; {@link F#NIL} if an argument isn't a number, all are
    *         exact or the recurrence isn't defined
    */
-  static IExpr recurrenceValue(IAST ast, ApcomplexFunction function) {
+  static @AllowNIL IExpr recurrenceValue(IAST ast, ApcomplexFunction function) {
     boolean machine = false;
     boolean inexact = false;
     long precision = Long.MAX_VALUE;
@@ -246,7 +247,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
 
@@ -285,7 +286,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 2) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
@@ -296,7 +297,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -370,7 +371,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
 
@@ -436,7 +437,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 2) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
@@ -454,7 +455,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -510,7 +511,7 @@ public class PolynomialFunctions {
    */
   private static class Coefficient extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr cached = engine.getCache(ast);
       if (cached != null) {
         return cached;
@@ -1066,7 +1067,7 @@ public class PolynomialFunctions {
    * @return <code>null</code> if the last argument is no {@link S#Modulus} option, {@link F#NIL}
    *         if the call stays unevaluated, the result otherwise
    */
-  private static IExpr evaluateModulus(final IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr evaluateModulus(final IAST ast, EvalEngine engine) {
     IExpr last = ast.last();
     if (!last.isRuleAST() || last.first() != S.Modulus) {
       return ast.argSize() > (ast.isAST(S.Coefficient) ? 3 : 2) ? F.NIL : null;
@@ -1207,7 +1208,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
         return arg1.mapThread(ast, 1);
@@ -1375,7 +1376,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int n = ast.arg1().toIntDefault(-1);
       if (n >= 0) {
         if (n / 100 > Config.MAX_POLYNOMIAL_DEGREE) {
@@ -1545,7 +1546,7 @@ public class PolynomialFunctions {
     private ISymbol[] vars = {F.a, F.b, F.c, F.d, F.e, F.f};
 
     @Override
-    public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg2 = ast.arg2();
       if (!arg2.isSymbol()) {
@@ -1712,7 +1713,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr cached = engine.getCache(ast);
       if (cached != null) {
         return cached;
@@ -1841,7 +1842,7 @@ public class PolynomialFunctions {
   private static class FromCoefficientRules extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, final EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -1956,7 +1957,7 @@ public class PolynomialFunctions {
      * </ul>
      */
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
 
       if (argSize >= 2) {
@@ -2034,7 +2035,7 @@ public class PolynomialFunctions {
      * code only knows symbols as variables; <code>PolynomialReduce</code> accepts such kernels, and
      * the two should agree on what an indeterminate is.
      */
-    private IExpr kernelVariables(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
+    private @AllowNIL IExpr kernelVariables(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
       IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
       IAST eliminated =
           argSize >= 3 ? (ast.arg3().isList() ? (IAST) ast.arg3() : F.list(ast.arg3()))
@@ -2135,7 +2136,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -2158,7 +2159,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       int ni = n.toIntDefault();
       if (F.isPresent(ni) && ni < 0) {
@@ -2209,7 +2210,7 @@ public class PolynomialFunctions {
      * <code>HermiteH(nu, z)</code> for an argument large enough that the series the library routine
      * uses is not the way to reach it, or {@link F#NIL} to leave it to that routine.
      */
-    private static IExpr hermiteHLargeArgument(IInexactNumber n, IInexactNumber z) {
+    private static @AllowNIL IExpr hermiteHLargeArgument(IInexactNumber n, IInexactNumber z) {
       double argument = z.isReal() ? z.evalf() : z.evalfc().norm();
       if (!Double.isFinite(argument) || argument < MIN_ASYMPTOTIC_HERMITEH_ARGUMENT) {
         return F.NIL;
@@ -2219,7 +2220,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2()) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -2311,7 +2312,7 @@ public class PolynomialFunctions {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -2355,7 +2356,7 @@ public class PolynomialFunctions {
       return engine.evaluate(jacobiP);
     }
 
-    private IExpr jacobiPSum(INumber n, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
+    private @AllowNIL IExpr jacobiPSum(INumber n, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
       // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
       // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
       int ni = n.toIntDefault();
@@ -2393,7 +2394,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -2497,7 +2498,7 @@ public class PolynomialFunctions {
    * @return {@link F#NIL} for a small degree, for exact arguments and where the exact evaluation
    *         gives no number
    */
-  static IExpr exactArguments(IAST ast, EvalEngine engine) {
+  static @AllowNIL IExpr exactArguments(IAST ast, EvalEngine engine) {
     IExpr n = ast.arg1();
     if (!n.isNumIntValue()) {
       return F.NIL;
@@ -2595,7 +2596,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       int degree = n.toIntDefault();
       if (degree >= 0) {
@@ -2651,7 +2652,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
@@ -2683,7 +2684,7 @@ public class PolynomialFunctions {
      * <code>Sum((-1)^k*n!/(k!*(n-k)!)*(l+k+1)*...*(l+n)*z^k, {k,0,n})</code>, which has integer
      * coefficients.
      */
-    private static IExpr generalizedLaguerreL(int n, IExpr l, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr generalizedLaguerreL(int n, IExpr l, IExpr z, EvalEngine engine) {
       if (n >= 1 && (z.isInfinity() || z.isNegativeInfinity())) {
         // the leading term (-z)^n/n! decides
         return z.isNegativeInfinity() || (n & 1) == 0 ? F.CInfinity : F.CNInfinity;
@@ -2836,7 +2837,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
         final IInexactNumber l;
@@ -2958,7 +2959,7 @@ public class PolynomialFunctions {
           apcomplex(ast.last()), precision);
     }
 
-    private static IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
+    private static @AllowNIL IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
         int mi = m.toIntDefault();
@@ -3026,7 +3027,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -3079,7 +3080,7 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    private IExpr legendreP4(IExpr arg1, final IExpr arg2, IExpr arg3, IExpr z, EvalEngine engine) {
+    private @AllowNIL IExpr legendreP4(IExpr arg1, final IExpr arg2, IExpr arg3, IExpr z, EvalEngine engine) {
       if (arg3.isOne()) {
         return legendreP(arg1, arg2, z, 1, engine);
       }
@@ -3103,7 +3104,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 4 //
           && ast.arg3().isNumEqualInteger(F.C2)) {
         IExpr m = ast.arg1();
@@ -3122,7 +3123,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -3228,7 +3229,7 @@ public class PolynomialFunctions {
       return degree == Math.rint(degree) && degree % 2.0 == 0.0;
     }
 
-    private static IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
+    private static @AllowNIL IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
       int ni = n.toIntDefault();
       if (F.isPresent(ni)) {
         int mi = m.toIntDefault();
@@ -3322,7 +3323,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -3372,7 +3373,7 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    private IExpr legendreQ4(IExpr n, IExpr m, IExpr arg3, IExpr z, EvalEngine engine) {
+    private @AllowNIL IExpr legendreQ4(IExpr n, IExpr m, IExpr arg3, IExpr z, EvalEngine engine) {
       if (arg3.isOne()) {
         // the type of the form with three arguments
         return F.ternaryAST3(S.LegendreQ, n, m, z);
@@ -3405,7 +3406,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       if (argSize == 2 && ast.arg2().isZero()) {
         IExpr l = ast.arg1();
@@ -3466,7 +3467,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -3572,7 +3573,7 @@ public class PolynomialFunctions {
      */
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       IAST symbolList = polynomialVariableList(ast, argSize, engine);
@@ -3693,7 +3694,7 @@ public class PolynomialFunctions {
       }
     }
 
-    private static IExpr resultantExpr(IExpr a, IExpr b, VariablesSet eVar) {
+    private static @AllowNIL IExpr resultantExpr(IExpr a, IExpr b, VariablesSet eVar) {
       try {
         if (eVar.size() == 0) {
           return F.NIL;
@@ -3718,7 +3719,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       // TODO allow multinomials
       IExpr arg1 = ast.arg1();
@@ -3768,7 +3769,7 @@ public class PolynomialFunctions {
       return ARGS_3_3;
     }
 
-    private IExpr resultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
+    private @AllowNIL IExpr resultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
       IExpr aExp = S.Exponent.ofNIL(engine, a, x);
       IExpr bExp = S.Exponent.ofNIL(engine, b, x);
       if (aExp.isPresent() && bExp.isPresent()) {
@@ -3903,7 +3904,7 @@ public class PolynomialFunctions {
   private static class Subresultants extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -3935,7 +3936,7 @@ public class PolynomialFunctions {
      * @param engine the evaluation engine
      * @return the list of principal subresultant coefficients or {@link F#NIL}
      */
-    private static IExpr subresultantList(IExpr a, IExpr b, IExpr x, IExpr modulus,
+    private static @AllowNIL IExpr subresultantList(IExpr a, IExpr b, IExpr x, IExpr modulus,
         EvalEngine engine) {
       IExpr clA = engine.evaluate(F.CoefficientList(a, x));
       IExpr clB = engine.evaluate(F.CoefficientList(b, x));
@@ -4117,7 +4118,7 @@ public class PolynomialFunctions {
     private static final int MAX_SPHERICAL_DEGREE = 5000;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -4158,7 +4159,7 @@ public class PolynomialFunctions {
      * @param p
      * @return
      */
-    private IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
+    private @AllowNIL IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
         EvalEngine engine) {
       if (l.isMathematicalIntegerNegative()) {
         l = l.negate().subtract(F.C1);
@@ -4208,7 +4209,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -4299,7 +4300,7 @@ public class PolynomialFunctions {
      * The value from the recurrence relation of the Jacobi polynomial for integers
      * <code>0 &lt;= m &lt;= n</code> and an inexact number <code>r</code>, or {@link F#NIL}.
      */
-    private static IExpr recurrenceValue(IAST ast) {
+    private static @AllowNIL IExpr recurrenceValue(IAST ast) {
       final int n = inexactIntegerDegree(ast.arg1());
       final int m = inexactIntegerDegree(ast.arg2());
       if (m < 0 || m > n) {
@@ -4311,7 +4312,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr m = ast.arg2();
       IExpr r = ast.arg3();
@@ -4337,7 +4338,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 3) {
         IExpr n = ast.arg1();
         IExpr m = ast.arg2();
@@ -4348,7 +4349,7 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         IExpr value = recurrenceValue(ast);
         if (value.isPresent()) {

@@ -177,9 +177,9 @@ public class DerivativeRules {
     // Derivative(1)[Identity]=1&
     ISet($(Derivative(C1),Identity),
       Function(C1), true),
-    // Derivative(1)[IntegerPart]=0&
+    // Derivative(1)[IntegerPart]=Piecewise({{0,(Re(#1)==0||Re(#1)∉Integers)&&(Im(#1)==0||Im(#1)∉Integers)}},Indeterminate)&
     ISet($(Derivative(C1),IntegerPart),
-      Function(C0), true),
+      Function(Piecewise(list(list(C0,And(Or(Equal(Re(Slot1),C0),NotElement(Re(Slot1),Integers)),Or(Equal(Im(Slot1),C0),NotElement(Im(Slot1),Integers))))),Indeterminate)), true),
     // Derivative(1)[InverseErf]=1/2*Sqrt(Pi)*E^InverseErf(#1)^2&
     ISet($(Derivative(C1),InverseErf),
       Function(Times(C1D2,CSqrtPi,Exp(Sqr(InverseErf(Slot1))))), true),
@@ -372,15 +372,15 @@ public class DerivativeRules {
     // Derivative(0,0,1)[CarlsonRF]=-CarlsonRD(#1,#2,#3)/6&
     ISet($(Derivative(C0,C0,C1),CarlsonRF),
       Function(Times(QQ(-1L,6L),CarlsonRD(Slot1,Slot2,Slot(C3)))), true),
-    // Derivative(1,0,0)[CarlsonRD]=(-CarlsonRD(#1,#2,#3)+CarlsonRD(#2,#3,#1))/(2*(#1-#3))&
+    // Derivative(1,0,0)[CarlsonRD]=Piecewise({{(CarlsonRD(#2,#3,#1)-CarlsonRD(#1,#2,#3))/(2*(#1-#3)), #1!=#3}, {-3/(10*#1^(5/2)), #1==#2}}, (3*(-3*CarlsonRF(#2,#1,#1)+Sqrt(#2)*(5*#1-2*#2)/#1^2))/(16*(#1-#2)^2)) &
     ISet($(Derivative(C1,C0,C0),CarlsonRD),
-      Function(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot1,Slot(C3))),CN1))), true),
-    // Derivative(0,1,0)[CarlsonRD]=(-CarlsonRD(#1,#2,#3)+CarlsonRD(#1,#3,#2))/(2*(#2-#3))&
+      Function(Piecewise(List(List(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot1,Slot(C3))),CN1)),Unequal(Slot1,Slot(C3))),List(Times(QQ(-3L,10L),Power(Slot1,QQ(-5L,2L))),Equal(Slot1,Slot2))),Times(C3,Power(Times(ZZ(16L),Sqr(Subtract(Slot1,Slot2))),CN1),Plus(Times(CN3,CarlsonRF(Slot2,Slot1,Slot1)),Times(Sqrt(Slot2),Subtract(Times(ZZ(5L),Slot1),Times(C2,Slot2)),Power(Slot1,CN2)))))), true),
+    // Derivative(0,1,0)[CarlsonRD]=Piecewise({{(CarlsonRD(#1,#3,#2)-CarlsonRD(#1,#2,#3))/(2*(#2-#3)), #2!=#3}, {-3/(10*#2^(5/2)), #1==#2}}, (3*(-3*CarlsonRF(#1,#2,#2)+Sqrt(#1)*(5*#2-2*#1)/#2^2))/(16*(#2-#1)^2)) &
     ISet($(Derivative(C0,C1,C0),CarlsonRD),
-      Function(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot2,Slot(C3))),CN1))), true),
-    // Derivative(0,0,1)[CarlsonRD]=-(1/(-#1+#3)+1/(-#2+#3))*CarlsonRD(#1,#2,#3)+(-3*Sqrt(#1)*Sqrt(#2))/(2*#3^(3/2)*(-#1+#3)*(-#2+#3))+(3*CarlsonRF(#1,#2,#3))/(2*(-#1+#3)*(-#2+#3))&
+      Function(Piecewise(List(List(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot2,Slot(C3))),CN1)),Unequal(Slot2,Slot(C3))),List(Times(QQ(-3L,10L),Power(Slot2,QQ(-5L,2L))),Equal(Slot1,Slot2))),Times(C3,Power(Times(ZZ(16L),Sqr(Subtract(Slot2,Slot1))),CN1),Plus(Times(CN3,CarlsonRF(Slot1,Slot2,Slot2)),Times(Sqrt(Slot1),Subtract(Times(ZZ(5L),Slot2),Times(C2,Slot1)),Power(Slot2,CN2)))))), true),
+    // Derivative(0,0,1)[CarlsonRD]=Piecewise({{(-3*Sqrt(#1)*Sqrt(#2))/(2*#3^(3/2)*(#3-#1)*(#3-#2)) - (1/(#3-#1)+1/(#3-#2))*CarlsonRD(#1,#2,#3) + (3*CarlsonRF(#1,#2,#3))/(2*(#3-#1)*(#3-#2)), #1!=#3&&#2!=#3}, {-9/(10*#3^(5/2)), #1==#2}, {(-9*(3*CarlsonRF(#2,#3,#3)+Sqrt(#2)*(2*#2-5*#3)/#3^2))/(16*(#2-#3)^2), #1==#3}}, (-9*(3*CarlsonRF(#1,#3,#3)+Sqrt(#1)*(2*#1-5*#3)/#3^2))/(16*(#1-#3)^2)) &
     ISet($(Derivative(C0,C0,C1),CarlsonRD),
-      Function(Plus(Times(CN1,Plus(Power(Plus(Negate(Slot1),Slot(C3)),CN1),Power(Plus(Negate(Slot2),Slot(C3)),CN1)),CarlsonRD(Slot1,Slot2,Slot(C3))),Times(CN3,Sqrt(Slot1),Sqrt(Slot2),Power(Times(C2,Power(Slot(C3),QQ(3L,2L)),Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)),Times(C3,CarlsonRF(Slot1,Slot2,Slot(C3)),Power(Times(C2,Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)))), true),
+      Function(Piecewise(List(List(Plus(Times(CN1,Plus(Power(Plus(Negate(Slot1),Slot(C3)),CN1),Power(Plus(Negate(Slot2),Slot(C3)),CN1)),CarlsonRD(Slot1,Slot2,Slot(C3))),Times(CN3,Sqrt(Slot1),Sqrt(Slot2),Power(Times(C2,Power(Slot(C3),QQ(3L,2L)),Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)),Times(C3,CarlsonRF(Slot1,Slot2,Slot(C3)),Power(Times(C2,Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1))),And(Unequal(Slot1,Slot(C3)),Unequal(Slot2,Slot(C3)))),List(Times(QQ(-9L,10L),Power(Slot(C3),QQ(-5L,2L))),Equal(Slot1,Slot2)),List(Times(ZZ(-9L),Power(Times(ZZ(16L),Sqr(Subtract(Slot2,Slot(C3)))),CN1),Plus(Times(C3,CarlsonRF(Slot2,Slot(C3),Slot(C3))),Times(Sqrt(Slot2),Subtract(Times(C2,Slot2),Times(ZZ(5L),Slot(C3))),Power(Slot(C3),CN2)))),Equal(Slot1,Slot(C3)))),Times(ZZ(-9L),Power(Times(ZZ(16L),Sqr(Subtract(Slot1,Slot(C3)))),CN1),Plus(Times(C3,CarlsonRF(Slot1,Slot(C3),Slot(C3))),Times(Sqrt(Slot1),Subtract(Times(C2,Slot1),Times(ZZ(5L),Slot(C3))),Power(Slot(C3),CN2)))))), true),
     // Derivative(1,0,0)[CarlsonRG]=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#2,#3,#1)*#1&
     ISet($(Derivative(C1,C0,C0),CarlsonRG),
       Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot2,Slot(C3),Slot1),Slot1))), true),
@@ -390,18 +390,18 @@ public class DerivativeRules {
     // Derivative(0,0,1)[CarlsonRG]=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#1,#2,#3)*#3&
     ISet($(Derivative(C0,C0,C1),CarlsonRG),
       Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot1,Slot2,Slot(C3)),Slot(C3)))), true),
-    // Derivative(1,0,0,0)[CarlsonRJ]=(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#2,#3,#1))/(2*(#4-#1))&
+    // Derivative(1,0,0,0)[CarlsonRJ]=Piecewise({{(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#2,#3,#1))/(2*(#4-#1)), #1!=#4}, {-3/(10*#1^(5/2)), #1==#2&&#1==#3}, {(-9*CarlsonRC(#3,#1)*#1^2+3*Sqrt(#3)*(5*#1-2*#3))/(16*#1^2*(#1-#3)^2), #1==#2}, {(-9*CarlsonRC(#2,#1)*#1^2+3*Sqrt(#2)*(5*#1-2*#2))/(16*#1^2*(#1-#2)^2), #1==#3}}, Derivative(0,0,1)[CarlsonRD][#2,#3,#1]/3) &
     ISet($(Derivative(C1,C0,C0,C0),S.CarlsonRJ),
-      Function(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot(C4),Slot1)),CN1))), true),
-    // Derivative(0,1,0,0)[CarlsonRJ]=(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#3,#2))/(2*(#4-#2))&
+      Function(Piecewise(List(list(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot(C4),Slot1)),CN1)),Unequal(Slot1,Slot(C4))),list(Times(QQ(-3L,10L),Power(Slot1,QQ(-5L,2L))),And(Equal(Slot1,Slot2),Equal(Slot1,Slot(C3)))),list(Times(Power(Times(ZZ(16L),Sqr(Slot1),Sqr(Subtract(Slot1,Slot(C3)))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot(C3),Slot1),Sqr(Slot1)),Times(C3,Sqrt(Slot(C3)),Subtract(Times(ZZ(5L),Slot1),Times(C2,Slot(C3)))))),Equal(Slot1,Slot2)),list(Times(Power(Times(ZZ(16L),Sqr(Slot1),Sqr(Subtract(Slot1,Slot2))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot2,Slot1),Sqr(Slot1)),Times(C3,Sqrt(Slot2),Subtract(Times(ZZ(5L),Slot1),Times(C2,Slot2))))),Equal(Slot1,Slot(C3)))),Times(C1D3,$($(Derivative(C0,C0,C1),CarlsonRD),Slot2,Slot(C3),Slot1)))), true),
+    // Derivative(0,1,0,0)[CarlsonRJ]=Piecewise({{(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#3,#2))/(2*(#4-#2)), #2!=#4}, {-3/(10*#2^(5/2)), #2==#1&&#2==#3}, {(-9*CarlsonRC(#3,#2)*#2^2+3*Sqrt(#3)*(5*#2-2*#3))/(16*#2^2*(#2-#3)^2), #2==#1}, {(-9*CarlsonRC(#1,#2)*#2^2+3*Sqrt(#1)*(5*#2-2*#1))/(16*#2^2*(#2-#1)^2), #2==#3}}, Derivative(0,0,1)[CarlsonRD][#1,#3,#2]/3) &
     ISet($(Derivative(C0,C1,C0,C0),S.CarlsonRJ),
-      Function(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot(C4),Slot2)),CN1))), true),
-    // Derivative(0,0,1,0)[CarlsonRJ]=(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#2,#3))/(2*(#4-#3))&
+      Function(Piecewise(List(list(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot(C4),Slot2)),CN1)),Unequal(Slot2,Slot(C4))),list(Times(QQ(-3L,10L),Power(Slot2,QQ(-5L,2L))),And(Equal(Slot2,Slot1),Equal(Slot2,Slot(C3)))),list(Times(Power(Times(ZZ(16L),Sqr(Slot2),Sqr(Subtract(Slot2,Slot(C3)))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot(C3),Slot2),Sqr(Slot2)),Times(C3,Sqrt(Slot(C3)),Subtract(Times(ZZ(5L),Slot2),Times(C2,Slot(C3)))))),Equal(Slot2,Slot1)),list(Times(Power(Times(ZZ(16L),Sqr(Slot2),Sqr(Subtract(Slot2,Slot1))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot1,Slot2),Sqr(Slot2)),Times(C3,Sqrt(Slot1),Subtract(Times(ZZ(5L),Slot2),Times(C2,Slot1))))),Equal(Slot2,Slot(C3)))),Times(C1D3,$($(Derivative(C0,C0,C1),CarlsonRD),Slot1,Slot(C3),Slot2)))), true),
+    // Derivative(0,0,1,0)[CarlsonRJ]=Piecewise({{(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#2,#3))/(2*(#4-#3)), #3!=#4}, {-3/(10*#3^(5/2)), #3==#1&&#3==#2}, {(-9*CarlsonRC(#2,#3)*#3^2+3*Sqrt(#2)*(5*#3-2*#2))/(16*#3^2*(#3-#2)^2), #3==#1}, {(-9*CarlsonRC(#1,#3)*#3^2+3*Sqrt(#1)*(5*#3-2*#1))/(16*#3^2*(#3-#1)^2), #3==#2}}, Derivative(0,0,1)[CarlsonRD][#1,#2,#3]/3) &
     ISet($(Derivative(C0,C0,C1,C0),S.CarlsonRJ),
-      Function(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot2,Slot(C3))),Power(Times(C2,Subtract(Slot(C4),Slot(C3))),CN1))), true),
-    // Derivative(0,0,0,1)[CarlsonRJ]=(-3/2*CarlsonRJ(#1,#2,#3,#4)+(-(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#2,#3,#1))*#1)/(2*(#4-#1))+(-(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#3,#2))*#2)/(2*(#4-#2))+(-(CarlsonRJ(#1,#2,#3,#4)-CarlsonRD(#1,#2,#3))*#3)/(2*(#4-#3)))/#4&
+      Function(Piecewise(List(list(Times(Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot2,Slot(C3))),Power(Times(C2,Subtract(Slot(C4),Slot(C3))),CN1)),Unequal(Slot(C3),Slot(C4))),list(Times(QQ(-3L,10L),Power(Slot(C3),QQ(-5L,2L))),And(Equal(Slot(C3),Slot1),Equal(Slot(C3),Slot2))),list(Times(Power(Times(ZZ(16L),Sqr(Slot(C3)),Sqr(Subtract(Slot(C3),Slot2))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot2,Slot(C3)),Sqr(Slot(C3))),Times(C3,Sqrt(Slot2),Subtract(Times(ZZ(5L),Slot(C3)),Times(C2,Slot2))))),Equal(Slot(C3),Slot1)),list(Times(Power(Times(ZZ(16L),Sqr(Slot(C3)),Sqr(Subtract(Slot(C3),Slot1))),CN1),Plus(Times(ZZ(-9L),CarlsonRC(Slot1,Slot(C3)),Sqr(Slot(C3))),Times(C3,Sqrt(Slot1),Subtract(Times(ZZ(5L),Slot(C3)),Times(C2,Slot1))))),Equal(Slot(C3),Slot2))),Times(C1D3,$($(Derivative(C0,C0,C1),CarlsonRD),Slot1,Slot2,Slot(C3))))), true),
+    // Derivative(0,0,0,1)[CarlsonRJ]=(-3/2*CarlsonRJ(#1,#2,#3,#4)-#1*Derivative(1,0,0,0)[CarlsonRJ][#1,#2,#3,#4]-#2*Derivative(0,1,0,0)[CarlsonRJ][#1,#2,#3,#4]-#3*Derivative(0,0,1,0)[CarlsonRJ][#1,#2,#3,#4])/#4&
     ISet($(Derivative(C0,C0,C0,C1),S.CarlsonRJ),
-      Function(Times(Plus(Times(QQ(-3L,2L),quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4))),Times(CN1,Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot(C4),Slot1)),CN1),Slot1),Times(CN1,Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot(C4),Slot2)),CN1),Slot2),Times(CN1,Subtract(quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4)),CarlsonRD(Slot1,Slot2,Slot(C3))),Power(Times(C2,Subtract(Slot(C4),Slot(C3))),CN1),Slot(C3))),Power(Slot(C4),CN1))), true),
+      Function(Times(Power(Slot(C4),CN1),Plus(Times(QQ(-3L,2L),quaternary(S.CarlsonRJ,Slot1,Slot2,Slot(C3),Slot(C4))),Times(CN1,Slot1,$($(Derivative(C1,C0,C0,C0),S.CarlsonRJ),Slot1,Slot2,Slot(C3),Slot(C4))),Times(CN1,Slot2,$($(Derivative(C0,C1,C0,C0),S.CarlsonRJ),Slot1,Slot2,Slot(C3),Slot(C4))),Times(CN1,Slot(C3),$($(Derivative(C0,C0,C1,C0),S.CarlsonRJ),Slot1,Slot2,Slot(C3),Slot(C4)))))), true),
     // Derivative(1,0)[EllipticE]=Sqrt(1-Sin(#1)^2*#2)&
     ISet($(Derivative(C1,C0),EllipticE),
       Function(Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot1)),Slot2)))), true),
@@ -432,9 +432,9 @@ public class DerivativeRules {
     // Derivative(1,0)[JacobiZeta]=Sqrt(1-Sin(#1)^2*#2)-EllipticE(#2)/(EllipticK(#2)*Sqrt(1-Sin(#1)^2*#2))&
     ISet($(Derivative(C1,C0),S.JacobiZeta),
       Function(Plus(Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot1)),Slot2))),Times(CN1,EllipticE(Slot2),Power(Times(EllipticK(Slot2),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot1)),Slot2)))),CN1)))), true),
-    // Derivative(1)[EllipticNomeQ]=(Pi^2*EllipticNomeQ(#1))/(4*(1-#1)*#1*EllipticK(#1)^2)&
+    // Derivative(1)[EllipticNomeQ]=Piecewise({{(Pi^2*EllipticNomeQ(#1))/(4*(1-#1)*#1*EllipticK(#1)^2),#1!=0}},1/16)&
     ISet($(Derivative(C1),S.EllipticNomeQ),
-      Function(Times(Sqr(Pi),Power(Times(C4,Subtract(C1,Slot1),Slot1,Sqr(EllipticK(Slot1))),CN1),unaryAST1(S.EllipticNomeQ,Slot1))), true),
+      Function(Piecewise(list(list(Times(Sqr(Pi),Power(Times(C4,Subtract(C1,Slot1),Slot1,Sqr(EllipticK(Slot1))),CN1),unaryAST1(S.EllipticNomeQ,Slot1)),Unequal(Slot1,C0))),QQ(1L,16L))), true),
     // Derivative(0,1,0)[EllipticTheta]=EllipticThetaPrime(#1,#2,#3)&
     ISet($(Derivative(C0,C1,C0),S.EllipticTheta),
       Function(ternaryAST3(S.EllipticThetaPrime,Slot1,Slot2,Slot(C3))), true),

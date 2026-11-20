@@ -268,8 +268,24 @@ public class ModuleReplaceAll extends VisitorExpr {
     for (ISymbol symbol : patternSymbols) {
       variables.put(symbol, reachedScopeName(symbol));
     }
-    return visitAST(ast, new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
-        renameFunctionParameters, true, reachedScopeNames, scopeIndex, colliders), fOffset);
+    // a rule or an assignment inside the left-hand side is a pattern there, not a scope of its own:
+    // the names it holds are bound by this rule, as in Hold(Set(a_, b_)) :> f(l, a)
+    ModuleReplaceAll patternRenaming = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
+        renameFunctionParameters, false, reachedScopeNames, scopeIndex, colliders);
+    ModuleReplaceAll bodyRenaming = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
+        renameFunctionParameters, true, reachedScopeNames, scopeIndex, colliders);
+    IASTMutable result = null;
+    for (int i = fOffset; i < ast.size(); i++) {
+      IExpr temp = ast.get(i).accept(i == 1 ? patternRenaming : bodyRenaming);
+      if (temp.isPresent()) {
+        if (result == null) {
+          result = ast.setAtCopy(i, temp);
+        } else {
+          result.set(i, temp);
+        }
+      }
+    }
+    return result == null ? F.NIL : result;
   }
 
   /**

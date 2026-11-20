@@ -174,6 +174,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHalfRangeSeries() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");

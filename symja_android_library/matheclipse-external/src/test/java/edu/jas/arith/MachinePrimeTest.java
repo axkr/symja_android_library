@@ -54,6 +54,7 @@ public class MachinePrimeTest {
   }
 
   @Test
+  @Tag("slow")
   public void testSieveBelow2Pow24() {
     // pi(2^24) = 1077871
     assertEquals(1077871L, checkSegment(0, 1 << 24, smallPrimes()));

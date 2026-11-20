@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.Optional;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.OperatorFormLayout;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -11,6 +12,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.PrefixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 
 /** ASCII pretty printer which tries to create a pretty printer ASCII form on 3 lines. */
@@ -125,6 +127,39 @@ public class ASCIIPrettyPrinter3 {
       convert(((IAST) expr).arg1(), precedence, caller);
       return;
     }
+    OperatorFormLayout layout = OperatorFormLayout.of(expr);
+    if (layout != null) {
+      // the display wrappers Infix, Prefix and Postfix: operands and operators in a row
+      if (caller == PLUS_CALL) {
+        print(" + ");
+      }
+      final boolean parenthesized = layout.isParenthesized(precedence);
+      if (parenthesized) {
+        print("(");
+      }
+      for (OperatorFormLayout.Piece piece : layout.pieces) {
+        switch (piece.kind) {
+          case SIGN:
+            print(" " + layout.defaultSign + " ");
+            break;
+          case OPERATOR:
+            if (piece.isText()) {
+              print(piece.expr.toString());
+            } else {
+              convert(piece.expr, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            }
+            break;
+          default:
+            convert(piece.expr, piece.precedence == Integer.MIN_VALUE ? Precedence.NO_PRECEDENCE
+                : piece.precedence, NO_PLUS_CALL);
+            break;
+        }
+      }
+      if (parenthesized) {
+        print(")");
+      }
+      return;
+    }
     if (expr.isPlus()) {
       if (Precedence.PLUS < precedence) {
         print(" ( ");
@@ -153,6 +188,41 @@ public class ASCIIPrettyPrinter3 {
         // a run of elements left out
         print("<<" + ast.arg1().toString() + ">>");
         return;
+      }
+      if (head == S.Row && ast.argSize() >= 1 && ast.arg1().isList()) {
+        // the elements side by side with the optional separator between them; style options at
+        // the end don't change the text
+        int args = ast.argSize();
+        while (args > 1 && ast.get(args).isRuleAST()) {
+          args--;
+        }
+        if (args <= 2) {
+          IAST row = (IAST) ast.arg1();
+          for (int i = 1; i < row.size(); i++) {
+            if (i > 1 && args == 2) {
+              convert(ast.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            }
+            convert(row.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+          }
+          return;
+        }
+      }
+      if (head == S.PlusMinus && ast.isAST1()) {
+        Operator operator = OutputFormFactory.getOperator(head, 1);
+        if (operator instanceof PrefixOperator) {
+          // ±x: the sign is written in front of its operand
+          int own = operator.getPrecedence();
+          if (own < precedence) {
+            print("(");
+          }
+          print(operator.getOperatorString());
+          // a sum as operand is bracketed: ±(a + b)
+          convert(ast.arg1(), own + 1, NO_PLUS_CALL);
+          if (own < precedence) {
+            print(")");
+          }
+          return;
+        }
       }
       if (head != S.List && ast.argSize() >= 2) {
         Operator operator = OutputFormFactory.getOperator(head, ast.argSize());

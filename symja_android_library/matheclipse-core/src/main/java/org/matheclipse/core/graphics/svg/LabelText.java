@@ -431,6 +431,22 @@ public final class LabelText {
     if (box.isAST(S.RowBox, 2)) {
       return boxes(box.first());
     }
+    if (box.isAST(S.TemplateBox) && box.argSize() >= 2 && box.first().isList()
+        && box.second().isString() && (box.second().toString().equals("RowWithSeparators")
+            || box.second().toString().equals("RowWithSeparator"))) {
+      // the items joined by the separator; the separator comes first, a string one as drawn and
+      // as written, any other one once
+      IAST parts = (IAST) box.first();
+      int first = box.second().toString().equals("RowWithSeparators") ? 3 : 2;
+      StringBuilder text = new StringBuilder();
+      for (int i = first; i < parts.size(); i++) {
+        if (i > first) {
+          text.append(boxes(parts.arg1()));
+        }
+        text.append(boxes(parts.get(i)));
+      }
+      return text.toString();
+    }
     if (box.isAST(S.SqrtBox) && box.argSize() >= 1) {
       String radicand = boxes(box.first());
       return radicand.length() > 1 ? "\u221A(" + radicand + ")" : "\u221A" + radicand;

@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Numerical functions with a <code>WorkingPrecision</code> option, and arithmetic with their
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSumEulerMaclaurin() {
     check("Abs(NSum(1/(n^2+1), {n,1,Infinity}, WorkingPrecision->40) - (Pi*Coth(Pi)-1)/2) < 10^-38", //
         "True");
@@ -46,6 +48,7 @@ public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testArithmeticKeepsPrecision() {
     // an exact number next to a list of arbitrary-precision numbers
     check("Floor(Precision({N(1/7,50), N(2/7,50)} - 1))", //
@@ -88,6 +91,7 @@ public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFindRootWithoutDerivative() {
     check("g(s_?NumericQ) := N(Zeta(s), 40);"
         + "Abs((s/.FindRoot(g(s) == 3, {s, 1.5}, WorkingPrecision->35)) - 1.41784593578735729296211253832) < 10^-30", //
@@ -133,6 +137,7 @@ public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFoldLongList() {
     check("Length(FoldList(#1+1/#2&, 0, Range(5000)))", //
         "5001");
@@ -143,6 +148,7 @@ public class WorkingPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrateInexactEnds() {
     // an end of the working precision (a FindRoot result) is taken as exact to its digits: the
     // integral keeps the working precision

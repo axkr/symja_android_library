@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Linear partial differential equations of first order by their characteristics: a characteristic
@@ -78,6 +79,7 @@ public class PDECharacteristicsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQPiecewiseConstant() {
     // the derivative is 0 and the value at 0 is 0, but not the value at -1
     check("Table(PossibleZeroQ(ArcTan(x) + ArcTan(1/x) - Pi/2), {8})//Union", //

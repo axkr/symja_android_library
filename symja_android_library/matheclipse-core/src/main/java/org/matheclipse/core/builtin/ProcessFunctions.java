@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -116,7 +117,7 @@ public class ProcessFunctions {
   private static class StartProcess extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
@@ -213,7 +214,7 @@ public class ProcessFunctions {
 
   private static class RunProcess extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
       }
@@ -281,7 +282,7 @@ public class ProcessFunctions {
    */
   private static class ProcessObject extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1() instanceof ProcessObjectExpr) {
         return F.NIL;
       }
@@ -310,7 +311,7 @@ public class ProcessFunctions {
   /** <code>ProcessStatus[process]</code>: <code>"Running"</code> or <code>"Finished"</code>. */
   private static class ProcessStatus extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof ProcessObjectExpr)) {
         return F.NIL;
       }
@@ -331,7 +332,7 @@ public class ProcessFunctions {
   /** <code>ProcessInformation[process]</code>: what the operating system knows about it. */
   private static class ProcessInformation extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof ProcessObjectExpr)) {
         return F.NIL;
       }
@@ -362,7 +363,7 @@ public class ProcessFunctions {
   /** <code>KillProcess[process]</code>: end it, and wait briefly for it to go. */
   private static class KillProcess extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof ProcessObjectExpr)) {
         return F.NIL;
       }
@@ -385,7 +386,7 @@ public class ProcessFunctions {
   /** <code>Run["command"]</code>: run a command line and answer its exit code. */
   private static class Run extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return sandbox(ast, engine);
       }

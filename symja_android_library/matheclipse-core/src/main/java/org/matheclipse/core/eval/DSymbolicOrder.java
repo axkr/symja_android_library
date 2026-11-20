@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -63,7 +64,7 @@ public class DSymbolicOrder {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if no part of <code>f</code> has a closed form
    */
-  public static IExpr nThDerivative(IExpr f, IExpr x, IExpr n, EvalEngine engine) {
+  public static @AllowNIL IExpr nThDerivative(IExpr f, IExpr x, IExpr n, EvalEngine engine) {
     if (f.leafCount() > MAX_LEAF_COUNT) {
       return F.NIL;
     }
@@ -87,7 +88,7 @@ public class DSymbolicOrder {
    *        rewritten again
    * @return {@link F#NIL} if there is no closed form
    */
-  private IExpr closedForm(IExpr f, IExpr n, boolean linearised) {
+  private @AllowNIL IExpr closedForm(IExpr f, IExpr n, boolean linearised) {
     if (f.isFree(x, true)) {
       // Piecewise({{f, n == 0}}, 0)
       return orderAtLeastOne && n.isSymbol() ? F.C0
@@ -131,7 +132,7 @@ public class DSymbolicOrder {
    * <code>c * P(x) * r</code> - pull out the constant factors <code>c</code> and apply the Leibniz
    * rule to a polynomial factor <code>P(x)</code>.
    */
-  private IExpr times(IAST times, IExpr n, boolean linearised) {
+  private @AllowNIL IExpr times(IAST times, IExpr n, boolean linearised) {
     IASTAppendable[] filter = times.filter(factor -> factor.isFree(x, true));
     if (filter[0].argSize() > 0) {
       IExpr rest = closedForm(filter[1].oneIdentity1(), n, linearised);
@@ -158,7 +159,7 @@ public class DSymbolicOrder {
    * for a polynomial <code>p</code>; only the terms with <code>k &lt;= Exponent(p, x)</code> are
    * non-zero.
    */
-  private IExpr leibniz(IExpr p, IExpr r, IExpr n, boolean linearised) {
+  private @AllowNIL IExpr leibniz(IExpr p, IExpr r, IExpr n, boolean linearised) {
     int degree = engine.evaluate(F.Exponent(p, x)).toIntDefault();
     if (degree < 1 || degree > MAX_POLYNOMIAL_DEGREE) {
       return F.NIL;
@@ -188,7 +189,7 @@ public class DSymbolicOrder {
    * E^(a*x + b) * x^(m-n) * Binomial(m, n) * n! * Hypergeometric1F1(-n, 1+m-n, -a*x)
    * </pre>
    */
-  private IExpr xPowerTimesExp(IAST times, IExpr n) {
+  private @AllowNIL IExpr xPowerTimesExp(IAST times, IExpr n) {
     if (!times.isAST2()) {
       return F.NIL;
     }
@@ -223,7 +224,7 @@ public class DSymbolicOrder {
   /**
    * <code>base^exponent</code> with a linear exponent or a linear base.
    */
-  private IExpr power(IExpr base, IExpr exponent, IExpr n) {
+  private @AllowNIL IExpr power(IExpr base, IExpr exponent, IExpr n) {
     if (base.isFree(x, true)) {
       IExpr[] linear = linear(exponent);
       if (linear == null) {
@@ -253,7 +254,7 @@ public class DSymbolicOrder {
    * <code>Sin</code>, <code>Cos</code>, <code>Sinh</code>, <code>Cosh</code> and <code>Log</code>
    * of a linear argument.
    */
-  private IExpr function(IAST function, IExpr n) {
+  private @AllowNIL IExpr function(IAST function, IExpr n) {
     IExpr u = function.arg1();
     IExpr[] linear = linear(u);
     if (linear == null) {
@@ -289,7 +290,7 @@ public class DSymbolicOrder {
    * Rewrite a product or power of trigonometric, hyperbolic and exponential functions into a sum
    * of such functions with linear arguments.
    */
-  private IExpr linearise(IExpr f, IExpr n, boolean linearised) {
+  private @AllowNIL IExpr linearise(IExpr f, IExpr n, boolean linearised) {
     if (linearised) {
       return F.NIL;
     }

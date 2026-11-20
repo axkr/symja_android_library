@@ -23,6 +23,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -36,6 +37,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
@@ -54,6 +56,7 @@ import org.matheclipse.core.numerics.integral.NewtonCotes;
 import org.matheclipse.core.numerics.integral.OscillatoryTail;
 import org.matheclipse.core.numerics.integral.Quadrature;
 import org.matheclipse.core.numerics.integral.Quadrature.QuadratureResult;
+import org.matheclipse.core.numerics.integral.SphericalQuadrature;
 import org.matheclipse.core.numerics.integral.TanhSinh;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -903,6 +906,224 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * A multidimensional integral over a box with numeric limits whose integrand has a variable
+   * which is no integration variable can't be sampled: print <code>NIntegrate::inumr</code> for
+   * the whole region once, instead of a message for every inner integral.
+   *
+   * @param ast <code>NIntegrate(f, {x, x0, x1}, {y, y0, y1}, ...)</code>
+   * @param argSize the number of arguments without the options
+   * @param integrand the evaluated integrand
+   * @return <code>true</code> if the message was printed
+   */
+  private static boolean isNonNumericIntegrand(IAST ast, int argSize, IExpr integrand,
+      EvalEngine engine) {
+    IASTAppendable boundaries = F.ListAlloc(argSize - 1);
+    for (int i = 2; i <= argSize; i++) {
+      IAST iterator = (IAST) ast.get(i);
+      if (!Double.isFinite(iterator.arg2().evalfNaN())
+          || !Double.isFinite(iterator.arg3().evalfNaN())) {
+        return false;
+      }
+      boundaries.append(F.List(iterator.arg2(), iterator.arg3()));
+    }
+    IAST variables = new VariablesSet(integrand).getVarList();
+    if (!variables.exists(v -> {
+      for (int i = 2; i <= argSize; i++) {
+        if (ast.get(i).first().equals(v)) {
+          return false;
+        }
+      }
+      return true;
+    })) {
+      return false;
+    }
+    // a variable bound inside the integrand, as k of an unevaluated Sum(f(k, x), {k, 1, n}), is
+    // not free: the integrand is non-numerical only if its value at the centre of the box is
+    IASTAppendable centre = F.ListAlloc(argSize - 1);
+    for (int i = 2; i <= argSize; i++) {
+      IAST iterator = (IAST) ast.get(i);
+      centre.append(F.Rule(iterator.arg1(),
+          F.num((iterator.arg2().evalf() + iterator.arg3().evalf()) / 2.0)));
+    }
+    try {
+      IExpr sample = engine.evalN(F.subst(integrand, centre));
+      if (sample.isNumber()) {
+        return false;
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+    // The integrand `1` has evaluated to non-numerical values for all sampling points in the
+    // region with boundaries `2`.
+    Errors.printMessage(ast.topHead(), "inumr", F.List(integrand, boundaries), engine);
+    return true;
+  }
+
+  /**
+   * Whether <code>spec</code> is <code>Element({x, y, z}, region)</code> with three distinct
+   * variables and a <code>Sphere</code> or <code>Ball</code> of <code>0</code> to <code>2</code>
+   * arguments as the region.
+   */
+  private static boolean isSphericalRegionSpec(IExpr spec) {
+    if (!spec.isAST(S.Element, 3) || !spec.first().isList() || spec.first().argSize() != 3) {
+      return false;
+    }
+    IAST variables = (IAST) spec.first();
+    if (!variables.forAll(x -> x.isVariable() && !x.isBuiltInSymbol())
+        || variables.arg1().equals(variables.arg2()) || variables.arg1().equals(variables.arg3())
+        || variables.arg2().equals(variables.arg3())) {
+      return false;
+    }
+    IExpr region = spec.second();
+    return (region.isAST(S.Sphere) || region.isAST(S.Ball)) && region.argSize() <= 2;
+  }
+
+  /**
+   * A unit vector in no symmetry plane of the Lebedev rules: the point where the integrand is first
+   * sampled is no node of the rules, which contain the points on the axes.
+   */
+  private static final double[] SAMPLE_DIRECTION = {0.6, 0.48, 0.64};
+
+  /**
+   * <code>NIntegrate(f, Element({x, y, z}, Sphere(c, r)))</code> over the surface of the sphere or
+   * <code>NIntegrate(f, Element({x, y, z}, Ball(c, r)))</code> over the ball. The center
+   * <code>c</code> is <code>{0, 0, 0}</code> and the radius <code>r</code> is <code>1</code> by
+   * default.
+   *
+   * <p>
+   * The Lebedev rules on the sphere integrate a smooth integrand in machine precision; a
+   * <code>WorkingPrecision</code> above it gives message <code>precgt</code>. An integrand with a
+   * value which isn't finite at a node, and a sphere or ball on which the rules don't converge,
+   * take the iterated integral in spherical coordinates instead.
+   */
+  private static IExpr sphericalRegionIntegral(IAST ast, IExpr function, IAST spec, double epsrel,
+      double epsabs, IExpr workingPrecision, IAST originalAST, EvalEngine engine) {
+    IAST variables = (IAST) spec.first();
+    IAST region = (IAST) spec.second();
+    final boolean sphere = region.isAST(S.Sphere);
+    IExpr exactCenter = region.argSize() >= 1 ? region.arg1() : F.List(F.C0, F.C0, F.C0);
+    IExpr exactRadius = region.argSize() == 2 ? region.arg2() : F.C1;
+    IExpr c = engine.evalN(exactCenter);
+    if (c.isList() && c.argSize() != 3) {
+      // The number of variables `1` should match the region embedding dimension `2`.
+      return Errors.printMessage(ast.topHead(), "vedim", F.List(F.C3, F.ZZ(c.argSize())),
+          engine);
+    }
+    if (!c.isList()) {
+      // Invalid integration variable or limit(s) in `1`.
+      return Errors.printMessage(ast.topHead(), "ilim", F.List(spec), engine);
+    }
+    double[] center = new double[3];
+    for (int i = 0; i < 3; i++) {
+      center[i] = c.getAt(i + 1).evalfNaN();
+    }
+    double radius = exactRadius.evalfNaN();
+    if (!Double.isFinite(center[0]) || !Double.isFinite(center[1]) || !Double.isFinite(center[2])
+        || !(radius > 0.0) || !Double.isFinite(radius)) {
+      // Invalid integration variable or limit(s) in `1`.
+      return Errors.printMessage(ast.topHead(), "ilim", F.List(spec), engine);
+    }
+    if (workingPrecision != S.MachinePrecision && !workingPrecision.isAutomatic()) {
+      double digits = workingPrecision.evalfNaN();
+      if (!Double.isFinite(digits) || digits <= 0.0) {
+        // The value of the option WorkingPrecision -> `1` is not a positive machine-sized real or
+        // integer.
+        return Errors.printMessage(ast.topHead(), "wprec", F.List(workingPrecision), engine);
+      }
+      if (digits > ParserConfig.MACHINE_PRECISION) {
+        // the rules only exist in machine precision, and the iterated integral in a higher
+        // precision takes minutes
+        // Requested precision `1` is greater than `2`.
+        Errors.printMessage(ast.topHead(), "precgt",
+            F.List(workingPrecision, S.MachinePrecision), engine);
+      }
+    }
+    IExpr integrand = engine.evaluate(function);
+    IExpr sample = engine.evalN(F.subst(integrand,
+        F.List(F.Rule(variables.arg1(), F.num(center[0] + radius * SAMPLE_DIRECTION[0])),
+            F.Rule(variables.arg2(), F.num(center[1] + radius * SAMPLE_DIRECTION[1])),
+            F.Rule(variables.arg3(), F.num(center[2] + radius * SAMPLE_DIRECTION[2])))));
+    if (!sample.isNumber()) {
+      // The integrand `1` has evaluated to non-numerical values for all sampling points in the
+      // region with boundaries `2`.
+      return Errors.printMessage(ast.topHead(), "inumr", F.List(integrand, F.List(region)),
+          engine);
+    }
+    MultiVariateNumerical numerical = new MultiVariateNumerical(integrand, variables);
+    double[] point = new double[3];
+    SphericalQuadrature.Integrand f = (x, y, z) -> {
+      point[0] = x;
+      point[1] = y;
+      point[2] = z;
+      return numerical.complexValue(point);
+    };
+    SphericalQuadrature.Result result = sphere
+        ? SphericalQuadrature.sphere(f, center[0], center[1], center[2], radius, epsrel, epsabs)
+        : SphericalQuadrature.ball(f, center[0], center[1], center[2], radius, epsrel, epsabs);
+    if (result.converged) {
+      return machineNumber(result.value);
+    }
+    // a singular point at a node, or an integrand which isn't smooth enough for the rules: the
+    // adaptive rules of the iterated integral
+    IExpr iterated = iteratedSphericalIntegral(integrand, variables, sphere, exactCenter,
+        exactRadius, originalAST, engine);
+    if (iterated.isNumber()) {
+      return iterated;
+    }
+    if (!result.isFinite()) {
+      // The integrand `1` has evaluated to non-numerical values for all sampling points in the
+      // region with boundaries `2`.
+      return Errors.printMessage(ast.topHead(), "inumr", F.List(integrand, F.List(region)),
+          engine);
+    }
+    // Numerical integration converging too slowly; suspect one of the following: singularity,
+    // value of the integration is 0, highly oscillatory integrand, or WorkingPrecision too small.
+    Errors.printMessage(ast.topHead(), "slwcon", F.CEmptyList, engine);
+    return machineNumber(result.value);
+  }
+
+  /** A real machine number for a value with the imaginary part 0, else a complex one. */
+  private static INumber machineNumber(Complex value) {
+    return value.getImaginary() == 0.0 ? F.num(value.getReal()) : F.complexNum(value);
+  }
+
+  /**
+   * The integral of <code>function</code> of the <code>variables</code> over the surface of the
+   * sphere (<code>sphere == true</code>) or over the ball with the center <code>center</code> and
+   * the radius <code>radius</code>, as the iterated <code>NIntegrate</code> in spherical
+   * coordinates with the polar axis along the first variable, with the options of
+   * <code>originalAST</code> except <code>WorkingPrecision</code>.
+   */
+  private static IExpr iteratedSphericalIntegral(IExpr function, IAST variables, boolean sphere,
+      IExpr center, IExpr radius, IAST originalAST, EvalEngine engine) {
+    ISymbol theta = F.Dummy("theta");
+    ISymbol phi = F.Dummy("phi");
+    ISymbol rho = F.Dummy("rho");
+    IExpr r = sphere ? radius : rho;
+    IExpr integrand = F.subst(function,
+        F.List(F.Rule(variables.arg1(), F.Plus(center.first(), F.Times(r, F.Cos(theta)))),
+            F.Rule(variables.arg2(),
+                F.Plus(center.second(), F.Times(r, F.Sin(theta), F.Cos(phi)))),
+            F.Rule(variables.arg3(),
+                F.Plus(center.getAt(3), F.Times(r, F.Sin(theta), F.Sin(phi))))));
+    IASTAppendable call = F.ast(S.NIntegrate, originalAST.argSize() + 2);
+    call.append(F.Times(F.Sqr(r), F.Sin(theta), integrand));
+    if (!sphere) {
+      call.append(F.List(rho, F.C0, radius));
+    }
+    call.append(F.List(theta, F.C0, F.Pi));
+    call.append(F.List(phi, F.C0, F.C2Pi));
+    for (int i = 3; i <= originalAST.argSize(); i++) {
+      // in machine precision like the rules on the sphere
+      if (originalAST.get(i).isRuleAST() && originalAST.get(i).first() != S.WorkingPrecision) {
+        call.append(originalAST.get(i));
+      }
+    }
+    return engine.evaluate(call);
+  }
+
+  /**
    * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
    * integration</a> of univariate real functions.
    *
@@ -912,7 +1133,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine,
       IAST originalAST) {
-    if (!ast.arg2().isList()) {
+    final boolean regionSpec = argSize == 2 && isSphericalRegionSpec(ast.arg2());
+    if (!ast.arg2().isList() && !regionSpec) {
       // Invalid integration variable or limit(s) in `1`.
       return Errors.printMessage(ast.topHead(), "ilim", F.List(ast.arg2()), engine);
     }
@@ -955,6 +1177,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
     }
 
+    if (regionSpec) {
+      return sphericalRegionIntegral(ast, function, (IAST) ast.arg2(), epsrel, epsabs,
+          option[5], originalAST, engine);
+    }
+
     if (argSize > 2) {
       // NIntegrate(f, {x,...}, {y,...}, ...) - multidimensional integration by nesting: the
       // first iterator is the outermost integral (its integrand is the NIntegrate() over the
@@ -975,6 +1202,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           && iterator.first().isSymbol() && ((ISymbol) iterator.first()).hasAssignedSymbolValue(),
           2)) {
         IExpr integrand = engine.evaluate(ast.arg1());
+        if (isNonNumericIntegrand(ast, argSize, integrand, engine)) {
+          return F.NIL;
+        }
         if (integrand.isFree(S.Function, true)) {
           // the half angle form before the outer value is substituted: Cos(0.001) is a number
           inner.set(1, withoutCosineCancellation(integrand));
@@ -1022,8 +1252,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     if (option[5] != S.MachinePrecision && !option[5].isAutomatic()) {
       double digits = option[5].evalfNaN();
       if (!Double.isFinite(digits) || digits <= 0.0) {
-        // Requested precision `1` is not a machine-sized real number.
-        return Errors.printMessage(ast.topHead(), "precbd", F.List(option[5]), engine);
+        // The value of the option WorkingPrecision -> `1` is not a positive machine-sized real or
+        // integer.
+        return Errors.printMessage(ast.topHead(), "wprec", F.List(option[5]), engine);
       }
       workingPrecision = (int) Math.ceil(digits);
     }
@@ -1074,16 +1305,10 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           ? sampleValues(function, xSymbol, minDouble, maxDouble, engine)
           : new IExpr[0];
       if (argSize <= 2 && isComplexValued(samples)) {
-        // the quadrature rules sample real values: integrate the real and imaginary parts.
-        // Newton-Leibniz on a complex antiderivative may jump across a branch cut
-        // a part which vanishes at every sample point isn't integrated: a relative error goal
-        // can't be met for a zero integral
-        IExpr re = isZeroAtSamples(F.Re(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
-            : engine.evaluate(ast.setAtCopy(1, F.Re(function)));
-        IExpr im = isZeroAtSamples(F.Im(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
-            : engine.evaluate(ast.setAtCopy(1, F.Im(function)));
-        if (re.isReal() && im.isReal()) {
-          return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+        IExpr parts =
+            integrateComplexParts(ast, function, xSymbol, minDouble, maxDouble, samples, engine);
+        if (parts.isPresent()) {
+          return parts;
         }
         // a part which isn't integrated numerically: the integral of the whole integrand below
       }
@@ -1142,6 +1367,16 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           return Num.valueOf(sign * roundToGoal(result.estimate, roundingDigits));
         }
         failed = result;
+      }
+
+      if (argSize <= 2 && mayBeComplexValued(function)) {
+        // the sample points of the test above found real values only, but the quadrature met a
+        // complex one: integrate the real and imaginary parts before trying it symbolically
+        IExpr parts = integrateComplexParts(ast, function, xSymbol, minDouble, maxDouble,
+            sampleValues(function, xSymbol, minDouble, maxDouble, engine), engine);
+        if (parts.isPresent()) {
+          return parts;
+        }
       }
 
       // CAS "SymbolicProcessing" fallback for oscillatory/infinite integrals: solve
@@ -1240,6 +1475,69 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       values[i] = engine.evalQuiet(F.N(F.subst(function, x, F.num(points[i]))));
     }
     return values;
+  }
+
+  /**
+   * Integrate the real and the imaginary part of <code>function</code> separately, since the
+   * quadrature rules sample real values; Newton-Leibniz on a complex antiderivative may jump across
+   * a branch cut. A part which vanishes at every sample point, or is only rounding noise there
+   * compared to the size of the integrand, isn't integrated: a relative error goal can't be met
+   * for a zero integral. A part which evaluates back to the integrand isn't integrated either: it
+   * would come back here.
+   *
+   * @param ast the <code>NIntegrate(function, {x, a, b})</code> call
+   * @param samples the values of <code>function</code> at the sample points
+   * @return {@link F#NIL} if a part isn't integrated numerically
+   */
+  private static @AllowNIL IExpr integrateComplexParts(IAST ast, IExpr function, ISymbol x,
+      double min, double max, IExpr[] samples, EvalEngine engine) {
+    // the largest size of the real and of the imaginary part at the sample points
+    double reMax = 0.0;
+    double imMax = 0.0;
+    for (IExpr value : samples) {
+      if (value.isNumber()) {
+        reMax = Math.max(reMax, Math.abs(((INumber) value).reDoubleValue()));
+        imMax = Math.max(imMax, Math.abs(((INumber) value).imDoubleValue()));
+      } else {
+        reMax = imMax = Double.NaN;
+        break;
+      }
+    }
+    final double noise = 64.0 * Math.ulp(1.0) * Math.max(reMax, imMax);
+    IExpr re = integratePart(ast, function, F.Re(function), reMax <= noise, x, min, max, engine);
+    IExpr im = integratePart(ast, function, F.Im(function), imMax <= noise, x, min, max, engine);
+    if (re.isReal() && im.isReal()) {
+      return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The integral of the real or imaginary <code>part</code> of <code>function</code>: 0 if it is
+   * <code>noise</code> or vanishes at the sample points, {@link F#NIL} if it evaluates back to
+   * <code>function</code>.
+   */
+  private static @AllowNIL IExpr integratePart(IAST ast, IExpr function, IExpr part,
+      boolean noise, ISymbol x, double min, double max, EvalEngine engine) {
+    if (noise || isZeroAtSamples(part, x, min, max, engine)) {
+      return F.CD0;
+    }
+    IExpr evaluated = engine.evaluate(part);
+    if (evaluated.equals(function)) {
+      return F.NIL;
+    }
+    return engine.evaluate(ast.setAtCopy(1, evaluated));
+  }
+
+  /**
+   * <code>true</code> if <code>function</code> has a complex number or a <code>Conjugate</code>,
+   * so that it may have complex values, and isn't already the real or imaginary part of one.
+   */
+  private static boolean mayBeComplexValued(IExpr function) {
+    if (function.isAST(S.Re, 2) || function.isAST(S.Im, 2)) {
+      return false;
+    }
+    return function.has(e -> e.isComplex() || e.isComplexNumeric() || e == S.Conjugate, true);
   }
 
   /** Test if one of the sample values is a number which isn't real. */

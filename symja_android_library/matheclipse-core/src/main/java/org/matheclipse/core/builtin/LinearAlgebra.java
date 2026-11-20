@@ -22,7 +22,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.ComplexSchurTransformer;
-// import org.hipparchus.linear.ComplexSchurTransformer;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
 import org.hipparchus.linear.EigenDecompositionNonSymmetric;
@@ -193,7 +192,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr placement = S.Right;
       IAST coefficients;
@@ -271,7 +270,7 @@ public final class LinearAlgebra {
      * The first row of <code>Inverse(Transpose(a).a).Transpose(a)</code> for the matrix
      * <code>a(i, p) = (i-r)^p</code>: the value of the fitted polynomial at the center.
      */
-    private static IExpr kernel(int radius, int degree, EvalEngine engine) {
+    private static @AllowNIL IExpr kernel(int radius, int degree, EvalEngine engine) {
       final int size = 2 * radius + 1;
       final int columns = Math.min(degree, 2 * radius) + 1;
       final IInteger[] sums = new IInteger[2 * columns - 1];
@@ -324,7 +323,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr radiusSpec = ast.arg1();
       // a number describes the square matrix
@@ -572,7 +571,7 @@ public final class LinearAlgebra {
   private static final class ArrayFlatten extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int rank = 2;
       if (ast.isAST2()) {
@@ -779,7 +778,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dimensions = ast.arg1().isMatrix();
       if (dimensions != null && dimensions[0] == dimensions[1]) {
         // a matrix with nXn square dimensions
@@ -824,7 +823,7 @@ public final class LinearAlgebra {
   private static final class CholeskyDecomposition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         int[] dimension = arg1.isMatrix(false);
@@ -1009,7 +1008,7 @@ public final class LinearAlgebra {
   public static class Cofactor extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       int[] dims = arg1.isMatrix();
@@ -1136,7 +1135,7 @@ public final class LinearAlgebra {
   public static final class Cross extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int dim1 = arg1.isVector();
       if (dim1 < 0) {
@@ -1184,7 +1183,7 @@ public final class LinearAlgebra {
   private static class DesignMatrix extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
       if (m.isVector() > 0 && ast.arg3().isSymbol()) {
         // the values y1, y2, ... are the points {1, y1}, {2, y2}, ...
@@ -1269,7 +1268,7 @@ public final class LinearAlgebra {
   public static class Det extends AbstractMatrix1Expr {
 
     @Override
-    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         return SymbolicArrayFunctions.detSymbolic(arg1, engine);
@@ -1316,7 +1315,7 @@ public final class LinearAlgebra {
   private static class Diagonal extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList() || arg1.isSparseArray()) {
         final int diff;
@@ -1471,7 +1470,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    protected IExpr generate(IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int offset = ast.size() > 2 ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
       int dimension = arg1.isVector();
@@ -1580,7 +1579,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maximumLevel = Integer.MAX_VALUE;
       if (ast.isAST2()) {
         maximumLevel = ast.arg2().toMachineInt();
@@ -1688,7 +1687,7 @@ public final class LinearAlgebra {
   public static class Dot extends AbstractNonOrderlessArgMultiple {
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
       if (SymbolicArrayUtil.isArrayValued(arg1) || SymbolicArrayUtil.isArrayValued(arg2)) {
         // a symbolic array has size() == 1 like every other atom, so it would be swallowed by the
         // empty-argument test below
@@ -1725,7 +1724,16 @@ public final class LinearAlgebra {
         }
         IExpr temp = numericalDot(arg1, arg2);
         if (temp.isPresent()) {
-          return temp;
+          if (Convert.isFiniteResult(temp)) {
+            return temp;
+          }
+          // the doubles overflowed: the evaluator's Times and Plus carry the products over to
+          // arbitrary precision
+          IExpr inner = S.Inner.ofNIL(engine, S.Times, arg1, arg2, S.Plus);
+          if (inner.isPresent()) {
+            return inner;
+          }
+          // Inner of a sparse array stays unevaluated: the general path below
         }
 
         final IntList dimensions1 =
@@ -1805,7 +1813,7 @@ public final class LinearAlgebra {
       return ast.arg1();
     }
 
-    private IExpr numericalDot(final IExpr o0, final IExpr o1) throws MathIllegalArgumentException {
+    private @AllowNIL IExpr numericalDot(final IExpr o0, final IExpr o1) throws MathIllegalArgumentException {
       if (o0.isRealMatrix()) {
         if (o1.isMatrix() != null) {
           RealMatrix m1 = o1.toRealMatrix();
@@ -1929,7 +1937,7 @@ public final class LinearAlgebra {
     protected abstract IAST[] split(IExpr result);
 
     /** Take the positions of the sequence specification out of the complete result. */
-    private IExpr take(IExpr result, IAST ast, int[] spec, EvalEngine engine) {
+    private @AllowNIL IExpr take(IExpr result, IAST ast, int[] spec, EvalEngine engine) {
       if (!result.isList()) {
         return F.NIL;
       }
@@ -2015,7 +2023,7 @@ public final class LinearAlgebra {
      * singular <code>b</code>: the reciprocals of the eigenvalues of <code>Inverse(a).b</code>, and
      * <code>Infinity</code> for its zero eigenvalues, by decreasing size.
      */
-    private IExpr singularPencil(IAST pencil, EvalEngine engine) {
+    private @AllowNIL IExpr singularPencil(IAST pencil, EvalEngine engine) {
       if (pencil.isFree(x -> x.isInexactNumber(), false)
           || !isInvertibleNumber(engine.evaluate(F.Det(pencil.arg1())))) {
         return F.NIL;
@@ -2050,7 +2058,7 @@ public final class LinearAlgebra {
     }
 
     /** The result of one of the forms in the description of the class, or {@link F#NIL}. */
-    private IExpr evaluateForms(final IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr evaluateForms(final IAST ast, EvalEngine engine) {
       if (hasMethodOption(ast)) {
         return engine.evaluate(ast.most());
       }
@@ -2097,7 +2105,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public final IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public final @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
       IExpr result = evaluateForms(ast, engine);
       if (result.isPresent()) {
         return result;
@@ -2210,7 +2218,6 @@ public final class LinearAlgebra {
    * ascending imaginary part.
    */
   private static Complex[] sortedComplexEigenvalues(FieldMatrix<Complex> matrix) {
-    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
     Complex[] values = ComplexSchurTransformer.getEigenvalues(matrix);
     Arrays.sort(values, (a, b) -> Double.compare(b.norm(), a.norm()));
     int start = 0;
@@ -2400,7 +2407,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(arg1);
@@ -2427,12 +2434,12 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
+    public @AllowNIL IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+    public @AllowNIL IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
       int maxValues = eigenvalueCount(ast, EvalEngine.get());
       if (F.isNotPresent(maxValues)) {
         return F.NIL;
@@ -2617,7 +2624,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
       int maxValues = eigenvalueCount(ast, engine);
       if (F.isNotPresent(maxValues)) {
@@ -2709,7 +2716,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
+    public @AllowNIL IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
@@ -2930,7 +2937,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    protected IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr evaluateMatrix(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IAST zero = zeroMatrixEigensystem(ast.arg1());
         if (zero.isPresent()) {
@@ -2973,12 +2980,12 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
+    public @AllowNIL IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+    public @AllowNIL IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
       int maxValues = eigenvalueCount(ast, EvalEngine.get());
       if (F.isNotPresent(maxValues)) {
         return F.NIL;
@@ -3824,7 +3831,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int m = arg1.toMachineInt();
       if (m <= 0) {
@@ -3883,7 +3890,7 @@ public final class LinearAlgebra {
   public static class FromPolarCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
       if (vector.argSize() == 2) {
         return fromPolarCoordinates2(vector.arg1(), vector.arg2(), ast, engine);
       } else if (vector.argSize() == 3) {
@@ -3917,7 +3924,7 @@ public final class LinearAlgebra {
   private abstract static class AbstractCoordinateConversion extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (arg1.isVector() > 0) {
         return convert(denseVector(arg1), ast, engine);
@@ -3987,7 +3994,7 @@ public final class LinearAlgebra {
   public static class FromSphericalCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
       if (vector.argSize() == 3) {
         return fromSphericalCoordinates(vector.arg1(), vector.arg2(), vector.arg3(), ast, engine);
       }
@@ -4049,7 +4056,7 @@ public final class LinearAlgebra {
     private static final int SPARSE = 1;
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       IExpr arg1 = ast.arg1();
       int order = arg1.toIntDefault();
@@ -4161,7 +4168,7 @@ public final class LinearAlgebra {
      *
      * @return {@link F#NIL} if the option value isn't supported
      */
-    private static IExpr scaleFactor(int order, IExpr workingPrecision, EvalEngine engine) {
+    private static @AllowNIL IExpr scaleFactor(int order, IExpr workingPrecision, EvalEngine engine) {
       IExpr exact = engine.evaluate(F.Power(F.ZZ(order), F.CN1D2));
       if (workingPrecision.isInfinity() || workingPrecision == S.Automatic) {
         return exact;
@@ -4205,7 +4212,7 @@ public final class LinearAlgebra {
   private static class HankelMatrix extends AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       final int length1 = arg1.isVector();
       if (length1 >= 0) {
@@ -4274,7 +4281,7 @@ public final class LinearAlgebra {
   private static class HessenbergDecomposition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       RealMatrix matrix;
       boolean togetherMode = engine.isTogetherMode();
       try {
@@ -4301,6 +4308,26 @@ public final class LinearAlgebra {
                 return F.list(m1, m2);
               }
             }
+          } else if (decomposesComplexMatrix() && arg1.isList() && ((IAST) arg1)
+              .forAll(row -> ((IAST) row).forAll(x -> x.isNumericFunction(true)))) {
+            if (arg1.isFree(x -> x.isInexactNumber(), false)) {
+              // `1` has received a matrix with infinite precision.
+              return Errors.printMessage(ast.topHead(), "schurf", F.list(ast.topHead()), engine);
+            }
+            FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
+            if (complexMatrix != null) {
+              FieldMatrix<Complex>[] pt = decompose(complexMatrix);
+              IASTAppendable m1 = Convert.complexMatrix2List(pt[0]);
+              if (m1.isPresent()) {
+                IASTAppendable m2 = Convert.complexMatrix2List(pt[1]);
+                if (m2.isPresent()) {
+                  return F.list(m1, m2);
+                }
+              }
+            }
+          } else if (decomposesComplexMatrix() && arg1.isList()) {
+            // `1` has received a matrix with non-numeric elements.
+            return Errors.printMessage(ast.topHead(), "schurn", F.list(ast.topHead()), engine);
           }
         }
       } catch (IndexOutOfBoundsException | ClassCastException e) {
@@ -4323,6 +4350,22 @@ public final class LinearAlgebra {
     protected RealMatrix[] decompose(RealMatrix matrix) {
       HessenbergTransformer hessenbergTransformer = new HessenbergTransformer(matrix);
       return new RealMatrix[] {hessenbergTransformer.getP(), hessenbergTransformer.getH()};
+    }
+
+    /**
+     * Whether a numeric matrix with complex entries is decomposed by
+     * {@link #decompose(FieldMatrix)}; otherwise it stays unevaluated.
+     */
+    protected boolean decomposesComplexMatrix() {
+      return false;
+    }
+
+    /**
+     * The decomposition of the complex machine matrix <code>matrix</code>, only called if
+     * {@link #decomposesComplexMatrix()} is <code>true</code>.
+     */
+    protected FieldMatrix<Complex>[] decompose(FieldMatrix<Complex> matrix) {
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -4403,7 +4446,7 @@ public final class LinearAlgebra {
   private static class IdentityMatrix extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dimension = LinearAlgebraUtil.dimensionMatrix(ast.arg1(), engine);
       if (dimension == null) {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
@@ -4633,7 +4676,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg2 = ast.arg2();
       IExpr arg3 = ast.arg3();
       if ((arg2.isAST() || arg2.isSparseArray()) //
@@ -4767,7 +4810,7 @@ public final class LinearAlgebra {
      * Invert the matrix over the integers modulo <code>modulus</code>, by reducing the matrix
      * augmented with the identity matrix.
      */
-    private static IExpr inverseModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
+    private static @AllowNIL IExpr inverseModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
       int[] dim = Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
       if (dim == null) {
         return F.NIL;
@@ -4887,7 +4930,7 @@ public final class LinearAlgebra {
   private static class JacobiMatrix extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isVector() >= 0) {
         IAST variables = F.NIL;
         if (ast.arg2().isSymbol()) {
@@ -4949,7 +4992,7 @@ public final class LinearAlgebra {
   private static class LeastSquares extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         // the exact and the pseudo-inverse solutions have no tolerance to set
         return ast.arg3().isRuleAST() && ast.arg3().first() == S.Tolerance
@@ -5070,7 +5113,7 @@ public final class LinearAlgebra {
      * reducing the augmented matrix. If the system is underdetermined, the free variables are set
      * to <code>0</code>, which is the convention the exact case uses too.
      */
-    private static IExpr linearSolveModulus(IExpr arg1, IAST vector, int[] matrixDims,
+    private static @AllowNIL IExpr linearSolveModulus(IExpr arg1, IAST vector, int[] matrixDims,
         IInteger modulus, EvalEngine engine) {
       final int rows = matrixDims[0];
       final int cols = matrixDims[1];
@@ -5108,7 +5151,7 @@ public final class LinearAlgebra {
     }
 
     /** The unique solution of a nonsingular rational system, or {@link F#NIL}. */
-    private static IExpr exactRationalSolve(IExpr matrixList, IExpr vectorList) {
+    private static @AllowNIL IExpr exactRationalSolve(IExpr matrixList, IExpr vectorList) {
       final FieldMatrix<IExpr> matrix = Convert.list2Matrix(matrixList, false);
       final FieldVector<IExpr> vector = Convert.list2Vector(vectorList);
       if (matrix == null || vector == null) {
@@ -5130,7 +5173,7 @@ public final class LinearAlgebra {
      *        declined it
      * @return {@link F#NIL} if the system isn't of this kind or the solver declined
      */
-    private static IExpr sparseNumericSolve(SparseArrayExpr matrix, IExpr vector,
+    private static @AllowNIL IExpr sparseNumericSolve(SparseArrayExpr matrix, IExpr vector,
         boolean[] declined, EvalEngine engine) {
       IExpr b = vector.isSparseArray() ? vector.normal(false) : vector;
       if (!b.isList() || !((IAST) b).forAll(IExpr::isReal)) {
@@ -5216,7 +5259,7 @@ public final class LinearAlgebra {
       return true;
     }
 
-    private static IExpr createLinearSolveFunction(final IAST ast, final int argSize,
+    private static @AllowNIL IExpr createLinearSolveFunction(final IAST ast, final int argSize,
         final int[] matrixDims, Predicate<IExpr> zeroChecker, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
         if (argSize == 1) {
@@ -5274,7 +5317,7 @@ public final class LinearAlgebra {
      *
      * @return {@link F#NIL} if an entry evaluates to <code>Indeterminate</code> or an infinity
      */
-    private static IExpr solutionOrNil(IASTAppendable result, int columns, EvalEngine engine) {
+    private static @AllowNIL IExpr solutionOrNil(IASTAppendable result, int columns, EvalEngine engine) {
       for (int i = result.argSize(); i < columns; i++) {
         result.append(F.C0);
       }
@@ -5365,7 +5408,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       if (!options[3].isAutomatic() && !validMethod(ast.arg1(), options[3], engine)) {
         return F.NIL;
@@ -5428,6 +5471,8 @@ public final class LinearAlgebra {
             return linearSolve(lsf, ast.arg2(), ast, engine);
           }
         } catch (final RuntimeException e) {
+          // a time limit ends the solve, it isn't a failure of this path
+          Errors.rethrowsInterruptException(e);
           // fall through to general path below
         } finally {
           engine.setTogetherMode(togetherMode);
@@ -5489,6 +5534,7 @@ public final class LinearAlgebra {
         } catch (LimitException le) {
           throw le;
         } catch (final RuntimeException e) {
+          Errors.rethrowsInterruptException(e);
           return Errors.printMessage(ast.topHead(), e, engine);
         }
       }
@@ -5518,7 +5564,7 @@ public final class LinearAlgebra {
      * @param engine
      * @return {@link F#NIL} if the system has no solution
      */
-    private IExpr underdeterminedSystem(final FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector,
+    private @AllowNIL IExpr underdeterminedSystem(final FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector,
         EvalEngine engine) {
       FieldMatrix<IExpr> augmentedMatrix = Convert.augmentedFieldMatrix(matrix, vector);
       if (augmentedMatrix != null) {
@@ -5550,7 +5596,7 @@ public final class LinearAlgebra {
      *
      * @return {@link F#NIL} if the method can't be used
      */
-    private static IExpr leastSquaresSolution(FieldMatrix<IExpr> matrix,
+    private static @AllowNIL IExpr leastSquaresSolution(FieldMatrix<IExpr> matrix,
         FieldVector<IExpr> vector) {
       if (matrix.getRowDimension() > matrix.getColumnDimension()) {
         RealMatrix realMatrix = Convert.matrix2List(matrix).toRealMatrix();
@@ -5587,7 +5633,7 @@ public final class LinearAlgebra {
   private static class LinearSolveFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() instanceof LinearSolveFunctionExpr && ast.isAST1()) {
         LinearSolveFunctionExpr<?> lsf = (LinearSolveFunctionExpr<?>) ast.head();
         IExpr arg1 = ast.arg1();
@@ -5618,7 +5664,7 @@ public final class LinearAlgebra {
    *
    * @param lower <code>true</code> for <code>LowerTriangularize</code>
    */
-  private static IExpr triangularize(final IAST ast, EvalEngine engine, boolean lower) {
+  private static @AllowNIL IExpr triangularize(final IAST ast, EvalEngine engine, boolean lower) {
     int[] dim = ast.arg1().isMatrix(false);
     if (dim == null) {
       // Argument `1` at position `2` is not a non-empty rectangular matrix.
@@ -5696,7 +5742,7 @@ public final class LinearAlgebra {
   private static class LUDecomposition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       FieldMatrix<IExpr> matrix;
       boolean togetherMode = engine.isTogetherMode();
       try {
@@ -5854,7 +5900,7 @@ public final class LinearAlgebra {
   private static class MatrixMinimalPolynomial extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dimensions = ast.arg1().isMatrix(false);
       if (dimensions != null && dimensions[0] == dimensions[1] && dimensions[0] > 0) {
         // a matrix with square dimensions
@@ -5928,7 +5974,7 @@ public final class LinearAlgebra {
   public static class MatrixPower extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       FieldMatrix<IExpr> matrix;
       FieldMatrix<IExpr> resultMatrix;
       boolean togetherMode = engine.isTogetherMode();
@@ -6006,7 +6052,7 @@ public final class LinearAlgebra {
      * non-integer exponent <code>p</code>: the power function <code>#^p&amp;</code> applied to the
      * square matrix <code>m</code> through its eigen or Jordan decomposition.
      */
-    private static IExpr matrixPowerFunction(final IAST ast, int[] dimensions, EvalEngine engine) {
+    private static @AllowNIL IExpr matrixPowerFunction(final IAST ast, int[] dimensions, EvalEngine engine) {
       final IExpr exponent = ast.arg2();
       if (dimensions[0] != dimensions[1] || exponent.isInteger() || exponent.isList()
           || exponent.isInterval() || exponent.isString()) {
@@ -6028,7 +6074,7 @@ public final class LinearAlgebra {
      * <code>m</code> applied to the vector <code>v</code>, by <code>|p|</code> matrix-vector
      * products instead of matrix products.
      */
-    private static IExpr matrixPowerApply(FieldMatrix<IExpr> matrix, int p, final IAST ast,
+    private static @AllowNIL IExpr matrixPowerApply(FieldMatrix<IExpr> matrix, int p, final IAST ast,
         EvalEngine engine) {
       if (matrix.getRowDimension() != matrix.getColumnDimension()) {
         // Argument `1` at position `2` is not a non-empty square matrix.
@@ -6117,7 +6163,7 @@ public final class LinearAlgebra {
   public static class MatrixRank extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       try {
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -6187,7 +6233,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int[] dims = arg1.isMatrix();
       if (dims != null) {
@@ -6356,8 +6402,47 @@ public final class LinearAlgebra {
    */
   public static class Norm extends AbstractEvaluator {
 
+    /**
+     * The 2-norm of a vector of machine numbers, scaled by the largest absolute value so that
+     * tiny or huge entries neither underflow nor overflow when they are squared.
+     *
+     * @return <code>F.NIL</code> if an entry isn't a finite machine number or the norm is too
+     *         large for a machine number
+     */
+    private static @AllowNIL IExpr machineVectorNorm(IAST vector) {
+      final int n = vector.argSize();
+      double[] absValues = new double[n];
+      double scale = 0.0;
+      for (int i = 1; i <= n; i++) {
+        IExpr x = vector.get(i);
+        double d;
+        if (x instanceof Num) {
+          d = Math.abs(((Num) x).doubleValue());
+        } else if (x instanceof ComplexNum) {
+          d = ((ComplexNum) x).dabs();
+        } else {
+          return F.NIL;
+        }
+        if (!Double.isFinite(d)) {
+          return F.NIL;
+        }
+        absValues[i - 1] = d;
+        scale = Math.max(scale, d);
+      }
+      if (scale == 0.0) {
+        return F.CD0;
+      }
+      double sum = 0.0;
+      for (double d : absValues) {
+        double q = d / scale;
+        sum += q * q;
+      }
+      double norm = scale * Math.sqrt(sum);
+      return Double.isFinite(norm) ? F.num(norm) : F.NIL;
+    }
+
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         // the norm of a symbolic array has no closed form; stay unevaluated without complaining
@@ -6420,6 +6505,15 @@ public final class LinearAlgebra {
             // The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater
             // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
             return Errors.printMessage(S.Norm, "ptype", F.List(p), engine);
+          }
+          IExpr machineNorm = machineVectorNorm(vector);
+          if (machineNorm.isPresent()) {
+            return machineNorm;
+          }
+          if (vector.forAll(x -> x instanceof Num || x instanceof ComplexNum)) {
+            // too large for a machine number: Power carries the squares over to arbitrary
+            // precision
+            return F.Sqrt(vector.map(S.Plus, x -> F.Power(x.abs(), F.C2)));
           }
           return F.Sqrt(vector.map(S.Plus, x -> x.abs().sqr()));
         }
@@ -6604,7 +6698,7 @@ public final class LinearAlgebra {
   private static final class Normalize extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isEmptyList()) {
         return arg1;
@@ -6749,7 +6843,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       FieldMatrix<IExpr> matrix;
       // options: Method (not used), Modulus, Tolerance, ZeroTest
@@ -6803,7 +6897,7 @@ public final class LinearAlgebra {
      * A basis of the null space of the matrix over the integers modulo <code>modulus</code>. The
      * free columns of the reduced row echelon form give one basis vector each.
      */
-    private static IExpr nullSpaceModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
+    private static @AllowNIL IExpr nullSpaceModulus(IExpr arg1, IInteger modulus, EvalEngine engine) {
       int[] dim = arg1.isMatrix();
       if (dim == null) {
         return F.NIL;
@@ -6993,7 +7087,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2() && !ast.arg2().isRuleAST() && arg1.isList()) {
         // an inner product function
@@ -7079,7 +7173,7 @@ public final class LinearAlgebra {
   private static class PauliMatrix extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       int m = ast.arg1().toMachineInt();
       if (m < 0) {
@@ -7166,7 +7260,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       int dim1 = arg1.isVector();
@@ -7458,7 +7552,7 @@ public final class LinearAlgebra {
     // }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         return ast.arg2() == S.Full ? fullDecomposition(ast.arg1(), engine) : F.NIL;
       }
@@ -7541,7 +7635,7 @@ public final class LinearAlgebra {
      * rows are an orthonormal basis of the orthogonal complement of the rows of the reduced
      * <code>q</code>, and <code>r</code> padded with rows of zeros.
      */
-    private static IExpr fullDecomposition(IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr fullDecomposition(IExpr m, EvalEngine engine) {
       int[] dim = m.isMatrix();
       if (dim == null || dim[0] < dim[1]) {
         return F.NIL;
@@ -7658,7 +7752,7 @@ public final class LinearAlgebra {
      *
      * @return {@link F#NIL} if a coefficient can't be decided to be zero
      */
-    private static IExpr exactQR(IAST matrix, int[] dim, EvalEngine engine) {
+    private static @AllowNIL IExpr exactQR(IAST matrix, int[] dim, EvalEngine engine) {
       final int m = dim[0];
       final int n = dim[1];
       // the orthogonal (not normalized) vectors, their squared norms and their pivot columns
@@ -7759,7 +7853,7 @@ public final class LinearAlgebra {
   private static class RiccatiSolve extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().argSize() == 2 && ast.arg1().isListOfMatrices() && //
           ast.arg2().argSize() == 2 && ast.arg2().isListOfMatrices()) {
         try {
@@ -7826,7 +7920,7 @@ public final class LinearAlgebra {
     public RowReduce() {}
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       FieldMatrix<IExpr> matrix;
       boolean togetherMode = engine.isTogetherMode();
@@ -7856,13 +7950,24 @@ public final class LinearAlgebra {
             }
 
             // Path 3: Standard ("OneStepRowReduction" / Default)
+            final boolean numeric = ast.arg1().isNumericMode();
+            // with the default zero test a symbolic entry which is zero, like a/(1-a)+a/(a-1), is
+            // never a pivot: it must be 0, else it stays in a column the elimination skips. An
+            // explicit ZeroTest only decides the pivots.
+            final boolean zeroEntries = !numeric && (zeroTest.isNIL() || zeroTest == S.Automatic);
+            if (zeroEntries) {
+              zeroSymbolicEntries(matrix, zeroChecker);
+            }
             FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
             FieldMatrix<IExpr> result = fmw.getRowReducedMatrix();
+            if (zeroEntries) {
+              zeroSymbolicEntries(result, zeroChecker);
+            }
 
             // FieldReducedRowEchelonForm only uses the zero-checker for pivot detection.
             // Floating-point arithmetic leaves residuals (e.g. 5.40786e-16) in entries
             // that should be exactly 0. Apply the checker to every output entry.
-            if (ast.arg1().isNumericMode() && !fmw.isScaled()) {
+            if (numeric && !fmw.isScaled()) {
               final int rows = result.getRowDimension();
               final int cols = result.getColumnDimension();
               for (int i = 0; i < rows; i++) {
@@ -7885,6 +7990,21 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    /** Set the entries which aren't numbers but which <code>zeroChecker</code> finds zero to 0. */
+    private static void zeroSymbolicEntries(FieldMatrix<IExpr> matrix,
+        Predicate<IExpr> zeroChecker) {
+      final int rows = matrix.getRowDimension();
+      final int cols = matrix.getColumnDimension();
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          IExpr entry = matrix.getEntry(i, j);
+          if (!entry.isNumber() && zeroChecker.test(entry)) {
+            matrix.setEntry(i, j, F.C0);
+          }
+        }
+      }
+    }
+
     /**
      * Row reduce over the integers modulo <code>modulus</code>, with the same conversion and
      * elimination as <code>MatrixRank</code>, <code>NullSpace</code> and <code>Inverse</code>.
@@ -7893,7 +8013,7 @@ public final class LinearAlgebra {
      * @return {@link F#NIL} if the modulus isn't an integer greater than 1, or an entry isn't a
      *         rational number with a denominator invertible modulo <code>modulus</code>
      */
-    private static IExpr rowReduceModulus(IExpr arg1, IExpr modulusValue, EvalEngine engine) {
+    private static @AllowNIL IExpr rowReduceModulus(IExpr arg1, IExpr modulusValue, EvalEngine engine) {
       IInteger modulus = modulusOption(modulusValue);
       if (modulus == null) {
         return F.NIL;
@@ -7942,6 +8062,29 @@ public final class LinearAlgebra {
     protected RealMatrix[] decompose(RealMatrix matrix) {
       SchurTransformer schurTransformer = new SchurTransformer(matrix);
       return new RealMatrix[] {schurTransformer.getP(), schurTransformer.getT()};
+    }
+
+    @Override
+    protected boolean decomposesComplexMatrix() {
+      return true;
+    }
+
+    /**
+     * The unitary matrix <code>p</code> and the upper triangular matrix <code>t</code> with the
+     * eigenvalues on its diagonal, <code>matrix == p.t.ConjugateTranspose(p)</code>.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected FieldMatrix<Complex>[] decompose(FieldMatrix<Complex> matrix) {
+      ComplexSchurTransformer schurTransformer = new ComplexSchurTransformer(matrix);
+      FieldMatrix<Complex> t = schurTransformer.getT();
+      // the rounding noise the iteration leaves below the diagonal of the triangular matrix
+      for (int i = 1; i < t.getRowDimension(); i++) {
+        for (int j = 0; j < i; j++) {
+          t.setEntry(i, j, Complex.ZERO);
+        }
+      }
+      return new FieldMatrix[] {schurTransformer.getP(), t};
     }
   }
 
@@ -8152,7 +8295,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int[] dims = arg1.isMatrix();
       if (dims != null) {
@@ -8253,7 +8396,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST call, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST call, final int argSize, final IExpr[] options,
         EvalEngine engine, IAST originalAST) {
       final IAST ast = argSize == call.argSize() ? call : call.copyUntil(argSize + 1);
       double tolerance = 0.0;
@@ -8347,7 +8490,7 @@ public final class LinearAlgebra {
      * @param zero the value of a zero singular value
      * @param engine the evaluation engine
      */
-    private static IExpr takeValues(IAST ast, IAST values, int size, IExpr zero,
+    private static @AllowNIL IExpr takeValues(IAST ast, IAST values, int size, IExpr zero,
         EvalEngine engine) {
       IASTAppendable all = values.copyAppendable();
       while (all.argSize() < size) {
@@ -8546,7 +8689,7 @@ public final class LinearAlgebra {
   private static class ToeplitzMatrix extends AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         if (ast.arg1().isList() && ast.arg2().isList()) {
           IAST vector1 = (IAST) ast.arg1();
@@ -8622,7 +8765,7 @@ public final class LinearAlgebra {
   public static class ToPolarCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
       if (vector.argSize() == 2) {
         return toPolarCoordinates(vector.arg1(), vector.arg2());
       } else if (vector.argSize() == 3) {
@@ -8636,7 +8779,7 @@ public final class LinearAlgebra {
   public static class ToSphericalCoordinates extends AbstractCoordinateConversion {
 
     @Override
-    protected IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr convert(IAST vector, final IAST ast, EvalEngine engine) {
       if (vector.argSize() == 3) {
         return toSphericalCoordinates(vector.arg1(), vector.arg2(), vector.arg3());
       }
@@ -8647,7 +8790,7 @@ public final class LinearAlgebra {
   private static class Tr extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr header = S.Plus;
       int level = -1;
@@ -8865,7 +9008,7 @@ public final class LinearAlgebra {
      * <code>&lt;|x-&gt;&lt;|a-&gt;1,b-&gt;3|&gt;,y-&gt;&lt;|a-&gt;2,b-&gt;4|&gt;|&gt;</code>.
      * Anything else gives the message <code>nmtx</code>.
      */
-    private IExpr transposeAssociation(IAssociation assoc, IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr transposeAssociation(IAssociation assoc, IAST ast, EvalEngine engine) {
       IAST innerKeys = F.NIL;
       for (int i = 1; i < assoc.size(); i++) {
         IExpr value = assoc.get(i);
@@ -8899,7 +9042,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       IExpr arg2;
       if (ast.isAST2()) {
@@ -9046,7 +9189,7 @@ public final class LinearAlgebra {
   public static class UnitVector extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         int n = arg1.toMachineInt();
@@ -9162,7 +9305,7 @@ public final class LinearAlgebra {
   private static class VandermondeMatrix extends AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         final IAST list = (IAST) ast.arg1();
         final int columns = ast.isAST2() ? ast.arg2().toIntDefault() : list.argSize();
@@ -9240,7 +9383,7 @@ public final class LinearAlgebra {
   public static class VectorAngle extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -9445,7 +9588,7 @@ public final class LinearAlgebra {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if the expansion is not applicable or grew too large
    */
-  private static IExpr laplaceDeterminant(final FieldMatrix<IExpr> matrix, EvalEngine engine) {
+  private static @AllowNIL IExpr laplaceDeterminant(final FieldMatrix<IExpr> matrix, EvalEngine engine) {
     final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
     if (expansion == null) {
       return F.NIL;
@@ -10052,7 +10195,7 @@ public final class LinearAlgebra {
         engine);
   }
 
-  private static IExpr linearSolve(LinearSolveFunctionExpr<?> linearSolveFunction,
+  private static @AllowNIL IExpr linearSolve(LinearSolveFunctionExpr<?> linearSolveFunction,
       IExpr vectorOrMatrix, final IAST ast, EvalEngine engine) {
     int vectorSize = vectorOrMatrix.isVector();
     if (vectorSize < 1) {
@@ -10458,6 +10601,60 @@ public final class LinearAlgebra {
   }
 
   /**
+   * The number of units in the last place of the products, which the determinant of machine numbers
+   * may be off for its matrix to count as singular.
+   */
+  private static final double SINGULAR_DETERMINANT_ULPS = 8.0;
+
+  /**
+   * Whether the coefficient matrix of the <code>2 x 3</code> or <code>3 x 4</code> augmented
+   * <code>matrix</code> of machine numbers is singular: its determinant is no larger than the
+   * rounding error of the products which cancel in it. <code>{{0.1, 0.3}, {0.7, 2.1}}</code> has
+   * the determinant <code>2.8*10^-17</code>.
+   *
+   * @return <code>false</code> if an entry is no machine number or the matrix has another size
+   */
+  private static boolean isMachineSingular(FieldMatrix<IExpr> matrix) {
+    final int n = matrix.getRowDimension();
+    if ((n != 2 && n != 3) || matrix.getColumnDimension() != n + 1) {
+      return false;
+    }
+    final double[][] a = new double[n][n];
+    boolean machine = false;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        final IExpr entry = matrix.getEntry(i, j);
+        if (!entry.isReal() || !(entry.isRational() || entry.isMachineNumber())) {
+          return false;
+        }
+        machine |= entry.isMachineNumber();
+        a[i][j] = entry.evalf();
+      }
+    }
+    if (!machine) {
+      return false;
+    }
+    double determinant;
+    double size;
+    if (n == 2) {
+      determinant = a[0][0] * a[1][1] - a[0][1] * a[1][0];
+      size = Math.abs(a[0][0] * a[1][1]) + Math.abs(a[0][1] * a[1][0]);
+    } else {
+      determinant = 0.0;
+      size = 0.0;
+      for (int j = 0; j < 3; j++) {
+        // the products of the diagonals, which the determinant adds and subtracts
+        double plus = a[0][j] * a[1][(j + 1) % 3] * a[2][(j + 2) % 3];
+        double minus = a[0][j] * a[1][(j + 2) % 3] * a[2][(j + 1) % 3];
+        determinant += plus - minus;
+        size += Math.abs(plus) + Math.abs(minus);
+      }
+    }
+    return Double.isFinite(size) && size > 0.0
+        && Math.abs(determinant) <= SINGULAR_DETERMINANT_ULPS * Math.ulp(size);
+  }
+
+  /**
    * Row reduce the given (augmented-)<code>matrix</code> and append the result as rules for the
    * given <code>variableList</code>.
    *
@@ -10475,9 +10672,11 @@ public final class LinearAlgebra {
     int rows = matrix.getRowDimension();
     int cols = matrix.getColumnDimension();
     IAST smallList = null;
-    if (rows == 2 && cols == 3) {
+    // a determinant of machine numbers which is rounding noise is no divisor for Cramer's rule
+    final boolean singular = isMachineSingular(matrix);
+    if (!singular && rows == 2 && cols == 3) {
       smallList = cramersRule2x3(matrix, true, engine);
-    } else if (rows == 3 && cols == 4) {
+    } else if (!singular && rows == 3 && cols == 4) {
       smallList = cramersRule3x4(matrix, true, engine);
     }
     // A determinant of zero does not say that there is no solution: {x+y==2, x+y==2} has the
@@ -10504,6 +10703,11 @@ public final class LinearAlgebra {
     FieldReducedRowEchelonForm ref =
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
+    // a matrix of machine numbers was reduced with its columns scaled, where what the rounding
+    // leaves of a zero was set to zero relative to the size of each column - so that a small
+    // coefficient or right-hand side is no zero just because another column is large
+    final Predicate<IExpr> isZero = ref.isScaled() ? IExpr::isZero
+        : entry -> entry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE);
     IASTAppendable list = F.ListAlloc(rows);
     if (additionalRule.isPresent()) {
       list.append(additionalRule);
@@ -10513,15 +10717,13 @@ public final class LinearAlgebra {
       // before it moves every later pivot one column along
       int pivot = -1;
       for (int col = 0; col < cols - 1; col++) {
-        if (!rowReduced.getEntry(row, col).isPossibleZero(true,
-            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (!isZero.test(rowReduced.getEntry(row, col))) {
           pivot = col;
           break;
         }
       }
       if (pivot < 0) {
-        if (!rowReduced.getEntry(row, cols - 1).isPossibleZero(true,
-            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (!isZero.test(rowReduced.getEntry(row, cols - 1))) {
           // 0 == c with c != 0: no solution
           return F.ListAlloc();
         }
@@ -10529,15 +10731,22 @@ public final class LinearAlgebra {
       }
       IASTAppendable plus = F.PlusAlloc(cols);
       plus.append(rowReduced.getEntry(row, cols - 1));
-      for (int col = pivot + 1; col < cols - 1; col++) {
+      boolean inexactNumbers = false;
+      boolean numbers = true;
+      for (int col = pivot + 1; col < cols; col++) {
         IExpr rowEntry = rowReduced.getEntry(row, col);
-        if (rowEntry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        numbers &= rowEntry.isNumber();
+        inexactNumbers |= rowEntry.isInexactNumber();
+        if (col == cols - 1 || isZero.test(rowEntry)) {
           continue;
         }
         plus.append(F.Times(rowEntry.negate(), listOfVariables.get(col + 1)));
       }
-      list.append(
-          F.Rule(listOfVariables.get(pivot + 1), S.Together.of(engine, plus.oneIdentity0())));
+      // a row of machine numbers is the linear form itself: a common denominator would only
+      // factor out a number, 0.5*(3.0-x) instead of 1.5-0.5*x
+      IExpr value = numbers && inexactNumbers ? engine.evaluate(plus.oneIdentity0())
+          : S.Together.of(engine, plus.oneIdentity0());
+      list.append(F.Rule(listOfVariables.get(pivot + 1), value));
     }
     resultList.append(list);
     return resultList;
@@ -10572,7 +10781,7 @@ public final class LinearAlgebra {
         F.ArcTan(x, y));
   }
 
-  public static IExpr transpose(final ITensorAccess tensor, final IExpr permutation,
+  public static @AllowNIL IExpr transpose(final ITensorAccess tensor, final IExpr permutation,
       final IntList dimensions, Function<? super IExpr, ? extends IExpr> function, final IAST ast,
       EvalEngine engine) {
     final int length = dimensions.size();

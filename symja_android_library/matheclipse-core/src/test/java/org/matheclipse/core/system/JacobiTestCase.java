@@ -198,8 +198,9 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
     // System.out.println(je.arcdn(new Complex(0.3)));
     // FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(new Complex(0.3));
     // System.out.println(je.arcdn(new Complex(10.0)));
+    // between 0 and Sqrt(1-m) the inverse in the upper half plane
     check("InverseJacobiDN(0.3,0.7)", //
-        "2.07536+I*(-1.12475)");
+        "2.07536+I*1.12475");
     check("JacobiDN(2.07536-I*(1.12475),0.7)", //
         "0.299999+I*1.37059*10^-6");
     check("InverseJacobiDN(4.0,2/3)", //

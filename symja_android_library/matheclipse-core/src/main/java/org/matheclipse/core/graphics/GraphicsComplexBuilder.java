@@ -75,7 +75,9 @@ public class GraphicsComplexBuilder {
     if (useNormals && normals.argSize() > 0) {
       gc.append(F.Rule(S.VertexNormals, normals));
     }
-    if (useColors && colors.argSize() > 0) {
+    if (vertexColorList.isPresent()) {
+      gc.append(F.Rule(S.VertexColors, vertexColorList));
+    } else if (useColors && colors.argSize() > 0) {
       gc.append(F.Rule(S.VertexColors, colors));
     }
 
@@ -124,6 +126,25 @@ public class GraphicsComplexBuilder {
       }
     }
     return vertexMap.get(key);
+  }
+
+  /**
+   * The colours of all vertices at once, which take the place of the colours given with
+   * {@link #addVertex}; {@link F#NIL} for those.
+   */
+  private IAST vertexColorList = F.NIL;
+
+  /**
+   * Give every vertex added so far its colour, in the order the vertices were added; written as the
+   * <code>VertexColors</code> of the complex.
+   */
+  public void setVertexColors(IAST colorList) {
+    this.vertexColorList = colorList;
+  }
+
+  /** The number of vertices added so far. */
+  public int vertexCount() {
+    return coordinates.size();
   }
 
   /** The normal of vertex {@code index}, counted from one, or {@code null} when there is none. */
@@ -254,6 +275,103 @@ public class GraphicsComplexBuilder {
     return curves;
   }
 
+  /** The number of polygons added so far. */
+  public int polygonCount() {
+    return polygonIndices.argSize();
+  }
+
+  /** The vertex numbers of polygon {@code p}, counted from one. */
+  public int[] polygon(int p) {
+    IAST polygon = (IAST) polygonIndices.get(p);
+    int[] indices = new int[polygon.argSize()];
+    for (int k = 0; k < indices.length; k++) {
+      indices[k] = polygon.get(k + 1).toIntDefault();
+    }
+    return indices;
+  }
+
+  /** The coordinates {@code {x, y, z}} of vertex {@code index}, counted from one. */
+  public double[] coordinatesOf(int index) {
+    return coordinates.get(index - 1);
+  }
+
+  /**
+   * The rim of an open surface as curves of vertex numbers: the {@link #openEdges() open edges}
+   * joined where they meet. A closed rim returns to its first vertex.
+   */
+  public List<int[]> openEdgeLoops() {
+    return joinEdges(openEdges());
+  }
+
+  /**
+   * Edges given as pairs <code>{a, b}</code> of vertex numbers, joined into curves where they meet:
+   * a curve with ends is traced from one of them, a closed one returns to its first vertex.
+   *
+   * @param edges the list of edges
+   * @return the curves as lists of vertex numbers
+   */
+  public static List<int[]> joinEdges(IAST edges) {
+    Map<Integer, List<Integer>> neighbours = new LinkedHashMap<>();
+    for (IExpr edge : edges) {
+      int a = edge.first().toIntDefault();
+      int b = edge.second().toIntDefault();
+      neighbours.computeIfAbsent(a, k -> new ArrayList<>(2)).add(b);
+      neighbours.computeIfAbsent(b, k -> new ArrayList<>(2)).add(a);
+    }
+    List<int[]> curves = new ArrayList<>();
+    java.util.Set<Long> used = new java.util.HashSet<>();
+    // the curves which end somewhere are traced from an end, then the closed ones
+    for (int pass = 0; pass < 2; pass++) {
+      for (Map.Entry<Integer, List<Integer>> entry : neighbours.entrySet()) {
+        int start = entry.getKey();
+        if (pass == 0 && entry.getValue().size() % 2 == 0) {
+          continue;
+        }
+        while (true) {
+          List<Integer> curve = new ArrayList<>();
+          curve.add(start);
+          int current = start;
+          while (true) {
+            Integer next = null;
+            for (Integer candidate : neighbours.get(current)) {
+              long key = ((long) Math.min(current, candidate) << 32) | Math.max(current, candidate);
+              if (used.add(key)) {
+                next = candidate;
+                break;
+              }
+            }
+            if (next == null) {
+              break;
+            }
+            curve.add(next);
+            current = next;
+          }
+          if (curve.size() < 2) {
+            break;
+          }
+          curves.add(curve.stream().mapToInt(Integer::intValue).toArray());
+        }
+      }
+    }
+    return curves;
+  }
+
+  /**
+   * The rim of an open surface as a <code>Line</code> of vertex numbers: one curve as a list of
+   * numbers, several as a list of such lists. {@link F#NIL} if the surface is closed.
+   */
+  public IExpr openEdgeLine() {
+    List<int[]> loops = openEdgeLoops();
+    if (loops.isEmpty()) {
+      return F.NIL;
+    }
+    IASTAppendable lines = F.ListAlloc(loops.size());
+    for (int[] loop : loops) {
+      lines.append(F.mapRange(0, loop.length, k -> F.ZZ(loop[k])));
+    }
+    return F.Line(lines.argSize() == 1 ? lines.arg1() : lines);
+  }
+
   /**
    * The edges that belong to one polygon only, as pairs of vertex numbers: the rim of an open
    * surface. An edge two polygons share lies inside the surface; welding the vertices in
@@ -267,6 +385,10 @@ public class GraphicsComplexBuilder {
       for (int k = 1; k <= corners; k++) {
         int a = polygon.get(k).toIntDefault();
         int b = polygon.get(k % corners + 1).toIntDefault();
+        if (a == b) {
+          // a corner repeated by welding is no edge
+          continue;
+        }
         long key = ((long) Math.min(a, b) << 32) | Math.max(a, b);
         uses.merge(key, 1, Integer::sum);
       }

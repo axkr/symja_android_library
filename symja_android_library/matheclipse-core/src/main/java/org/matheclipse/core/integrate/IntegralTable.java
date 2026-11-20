@@ -104,6 +104,63 @@ public class IntegralTable {
     matcher.caseOf(Integrate(lhsIntegrand, x_Symbol), Condition(rhs, condition));
   }
 
+  /**
+   * <code>E^(c+d*x)*Erf(a+b*x)</code>, <code>Erfc(a+b*x)</code> and <code>Erfi(a+b*x)</code>: by
+   * parts, the remaining integrand is a Gaussian in <code>a+b*x</code> shifted by
+   * <code>d/(2*b)</code>.
+   */
+  private static void errorFunctionRules(Matcher matcher) {
+    final IExpr u_ = Plus(a_DEFAULT, Times(b_DEFAULT, x_));
+    final IExpr u = Plus(a, Times(b, x));
+    final IExpr ed_ = Power(S.E, Plus(c_DEFAULT, Times(F.d_DEFAULT, x_)));
+    final IExpr ed = Exp(Plus(c, Times(S.d, x)));
+    final IExpr shift = Times(S.d, Power(Times(C2, b), CN1));
+    final IExpr exponent = Plus(c, Times(CN1, a, S.d, Power(b, CN1)));
+    final IExpr erfTerm =
+        Times(Exp(Plus(exponent, Sqr(shift))), F.Erf(Plus(u, Times(CN1, shift))));
+    final IExpr erfiTerm =
+        Times(Exp(Plus(exponent, Times(CN1, Sqr(shift)))), Erfi(Plus(u, shift)));
+    // b and d are not 0: a linear argument has a coefficient of x
+    final IExpr freeABCD = FreeQ(F.List(a, b, c, S.d), x);
+    rule(matcher, Times(ed_, F.Erf(u_)),
+        Times(Power(S.d, CN1), Plus(Times(ed, F.Erf(u)), Times(CN1, erfTerm))), freeABCD);
+    rule(matcher, Times(ed_, F.Erfc(u_)),
+        Times(Power(S.d, CN1), Plus(Times(ed, F.Erfc(u)), erfTerm)), freeABCD);
+    rule(matcher, Times(ed_, Erfi(u_)),
+        Times(Power(S.d, CN1), Plus(Times(ed, Erfi(u)), Times(CN1, erfiTerm))), freeABCD);
+  }
+
+  /**
+   * The integral of an exponential of a linear argument times an error function
+   * <code>Erf</code>, <code>Erfc</code> or <code>Erfi</code> of a linear argument.
+   *
+   * @param f the integrand
+   * @param x the integration variable
+   * @param engine the evaluation engine
+   * @return the antiderivative or {@link F#NIL}
+   */
+  public static IExpr exponentialTimesErrorFunction(IExpr f, IExpr x, EvalEngine engine) {
+    if (!f.isTimes() || f.size() != 3 || f.isFree(
+        e -> e.isAST(S.Erf, 2) || e.isAST(S.Erfc, 2) || e.isAST(S.Erfi, 2), true)) {
+      return F.NIL;
+    }
+    IExpr result = ErrorFunctionHolder.MATCHER.apply(F.Integrate(f, x));
+    if (result.isPresent()) {
+      return engine.evaluate(result);
+    }
+    return F.NIL;
+  }
+
+  private static class ErrorFunctionHolder {
+    static final Matcher MATCHER = initErrorFunction();
+
+    private static Matcher initErrorFunction() {
+      Matcher matcher = new Matcher();
+      errorFunctionRules(matcher);
+      return matcher;
+    }
+  }
+
   private static Matcher init() {
     Matcher matcher = new Matcher();
     // linear argument u = a+b*x
@@ -163,6 +220,8 @@ public class IntegralTable {
     // E^(a+b*x^2) -> E^a*Sqrt(Pi)*Erfi(Sqrt(b)*x)/(2*Sqrt(b))
     rule(matcher, Power(S.E, Plus(a_DEFAULT, Times(b_DEFAULT, Sqr(x_)))),
         Times(Exp(a), Sqrt(S.Pi), Power(Times(C2, Sqrt(b)), CN1), Erfi(Times(Sqrt(b), x))), freeAB);
+
+    errorFunctionRules(matcher);
 
     // Log(a+b*x) -> (a+b*x)*(Log(a+b*x)-1)/b
     rule(matcher, Log(u_), Times(Power(b, CN1), u, Plus(Log(u), CN1)), freeAB);

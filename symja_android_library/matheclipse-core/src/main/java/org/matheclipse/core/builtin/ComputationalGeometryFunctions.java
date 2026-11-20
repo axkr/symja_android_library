@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -230,7 +231,7 @@ public class ComputationalGeometryFunctions {
   private static class HalfSpace extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1 && ast.arg1().isList() && !ast.arg1().isListOfLists()) {
         return F.binaryAST2(S.HalfSpace, ast.arg1(), F.C0);
       }
@@ -760,7 +761,7 @@ public class ComputationalGeometryFunctions {
   }
 
   /** The convex hull of a list of one dimensional points as a <code>BoundaryMeshRegion</code>. */
-  private static IExpr convexHullMesh1D(IAST listOfPoints, EvalEngine engine) {
+  private static @AllowNIL IExpr convexHullMesh1D(IAST listOfPoints, EvalEngine engine) {
     int[] hull = hullIndices1D(listOfPoints);
     if (hull == null) {
       return F.NIL;
@@ -778,7 +779,7 @@ public class ComputationalGeometryFunctions {
    * <code>Line</code> boundary cells. The boundary walk starts at the first hull vertex and runs
    * counter-clockwise.
    */
-  private static IExpr convexHullMesh2D(IAST listOfPoints, EvalEngine engine) {
+  private static @AllowNIL IExpr convexHullMesh2D(IAST listOfPoints, EvalEngine engine) {
     int[] cycle = hullIndices2D(listOfPoints, false);
     if (cycle == null) {
       return F.NIL;
@@ -877,7 +878,7 @@ public class ComputationalGeometryFunctions {
    * and not in twelve triangles. Every face is listed counter-clockwise seen from outside the hull
    * and starts at its smallest vertex; the faces are sorted by their vertex indices.
    */
-  private static IExpr convexHullMesh3D(IAST listOfPoints, EvalEngine engine) {
+  private static @AllowNIL IExpr convexHullMesh3D(IAST listOfPoints, EvalEngine engine) {
     ConvexHull3D hull = new ConvexHull3D();
     hull.build(listOfPoints);
     int[] hullVertices = hull.getVertexPointIndices();
@@ -982,7 +983,7 @@ public class ComputationalGeometryFunctions {
   }
 
   /** The evaluated dot product; {@link F#NIL} for a missing vector or different dimensions. */
-  private static IExpr dot(IAST u, IAST v, EvalEngine engine) {
+  private static @AllowNIL IExpr dot(IAST u, IAST v, EvalEngine engine) {
     if (u.isNIL() || v.isNIL() || u.argSize() != v.argSize()) {
       return F.NIL;
     }
@@ -1168,7 +1169,7 @@ public class ComputationalGeometryFunctions {
   private static class ConvexHullRegion extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       // Unwrap Region display wrapper if present
       if (arg1.isAST(S.Region, 2)) {
@@ -1270,13 +1271,14 @@ public class ComputationalGeometryFunctions {
   }
 
   /**
-   * The planar convex hull as a list of point indices in counter-clockwise order. This is the
-   * function of the legacy <code>ComputationalGeometry</code> package.
+   * The planar convex hull as a list of point indices in counter-clockwise order, starting at the
+   * rightmost point (the lowest one of several rightmost points). This is the function of the
+   * legacy <code>ComputationalGeometry</code> package.
    */
   private static class ConvexHull extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isListOfLists()) {
@@ -1290,12 +1292,27 @@ public class ComputationalGeometryFunctions {
       boolean allPoints = !options[0].isFalse();
       int[] hull = hullIndices2D(listOfPoints, allPoints);
       if (hull == null) {
+        IExpr collinear = collinearHull(listOfPoints, allPoints);
+        if (collinear.isPresent()) {
+          return collinear;
+        }
         // `1` should be a list of `2` or more affinely independent points.
         return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3), engine);
       }
+      // the cycle starts at the rightmost point, the lowest one of several rightmost points
+      int start = 0;
+      for (int i = 1; i < hull.length; i++) {
+        IAST point = (IAST) listOfPoints.get(hull[i]);
+        IAST startPoint = (IAST) listOfPoints.get(hull[start]);
+        int cmp = Double.compare(point.arg1().evalf(), startPoint.arg1().evalf());
+        if (cmp > 0
+            || (cmp == 0 && Double.compare(point.arg2().evalf(), startPoint.arg2().evalf()) < 0)) {
+          start = i;
+        }
+      }
       IASTAppendable result = F.ListAlloc(hull.length);
       for (int i = 0; i < hull.length; i++) {
-        result.append(F.ZZ(hull[i]));
+        result.append(F.ZZ(hull[(start + i) % hull.length]));
       }
       return result;
     }
@@ -1310,6 +1327,56 @@ public class ComputationalGeometryFunctions {
       return ARGS_1_1;
     }
 
+    /**
+     * The hull of two or more distinct real points on one line: the points ordered along the line
+     * by their coordinates, or only its two end points for <code>AllPoints-&gt;False</code>.
+     *
+     * @return {@link F#NIL} if the points are no such list
+     */
+    private static @AllowNIL IExpr collinearHull(IAST listOfPoints, boolean allPoints) {
+      if (!isRealPointList(listOfPoints)) {
+        return F.NIL;
+      }
+      IntArrayList candidates = distinctPointIndices(listOfPoints);
+      if (candidates.size() < 2) {
+        return F.NIL;
+      }
+      // ordered by value; of several points with equal coordinates, as 1 and 1.0, the first one
+      // is kept
+      List<Integer> sorted = new ArrayList<Integer>(candidates);
+      Collections.sort(sorted, (index1, index2) -> {
+        int cmp = compareByValue((IAST) listOfPoints.get(index1), (IAST) listOfPoints.get(index2));
+        return cmp != 0 ? cmp : Integer.compare(index1, index2);
+      });
+      for (int k = sorted.size() - 1; k > 0; k--) {
+        if (compareByValue((IAST) listOfPoints.get(sorted.get(k - 1)),
+            (IAST) listOfPoints.get(sorted.get(k))) == 0) {
+          sorted.remove(k);
+        }
+      }
+      if (sorted.size() < 2) {
+        return F.NIL;
+      }
+      IAST first = (IAST) listOfPoints.get(sorted.get(0));
+      IAST last = (IAST) listOfPoints.get(sorted.get(sorted.size() - 1));
+      for (int index : sorted) {
+        if (!counterClockwise(first, last, (IAST) listOfPoints.get(index)).isZero()) {
+          // not one line
+          return F.NIL;
+        }
+      }
+      if (!allPoints) {
+        return F.List(F.ZZ(sorted.get(0)), F.ZZ(sorted.get(sorted.size() - 1)));
+      }
+      return F.mapRange(0, sorted.size(), i -> F.ZZ(sorted.get(i)));
+    }
+
+    /** Compare two planar points by the values of their x, then their y coordinates. */
+    private static int compareByValue(IAST point1, IAST point2) {
+      int cmp = Double.compare(point1.arg1().evalf(), point2.arg1().evalf());
+      return cmp != 0 ? cmp : Double.compare(point1.arg2().evalf(), point2.arg2().evalf());
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.AllPoints, S.True);
@@ -1320,7 +1387,7 @@ public class ComputationalGeometryFunctions {
   private static class ConvexRegionQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Region, 2)) {
         arg1 = arg1.first();
@@ -1380,7 +1447,7 @@ public class ComputationalGeometryFunctions {
   private static class RegionBoundary extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Region, 2)) {
         arg1 = arg1.first();
@@ -1443,7 +1510,7 @@ public class ComputationalGeometryFunctions {
      *
      * @param dimension the dimension of the default center
      */
-    private static IExpr roundBoundary(IAST region, IBuiltInSymbol head, int dimension) {
+    private static @AllowNIL IExpr roundBoundary(IAST region, IBuiltInSymbol head, int dimension) {
       if (region.argSize() > 2) {
         // a sector or an arc isn't bounded by a full circle
         return F.NIL;
@@ -1454,7 +1521,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** A line is its own boundary, written as a line of polylines. */
-    private static IExpr lineBoundary(IAST line) {
+    private static @AllowNIL IExpr lineBoundary(IAST line) {
       if (line.argSize() != 1 || !line.arg1().isListOfLists() || line.arg1().argSize() == 0) {
         return F.NIL;
       }
@@ -1463,7 +1530,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** The closed line around a parallelogram, from its corner along the first edge vector. */
-    private static IExpr parallelogramBoundary(IAST parallelogram) {
+    private static @AllowNIL IExpr parallelogramBoundary(IAST parallelogram) {
       if (parallelogram.argSize() != 2 || !parallelogram.arg1().isList()
           || !parallelogram.arg2().isListOfLists() || parallelogram.arg2().argSize() != 2) {
         return F.NIL;
@@ -1478,7 +1545,7 @@ public class ComputationalGeometryFunctions {
     /**
      * The closed line around a rectangle, counterclockwise from its lower left corner.
      */
-    private static IExpr rectangleBoundary(IAST rectangle) {
+    private static @AllowNIL IExpr rectangleBoundary(IAST rectangle) {
       IAST[] corners = boxCorners(rectangle, 2);
       if (corners == null) {
         return F.NIL;
@@ -1500,7 +1567,7 @@ public class ComputationalGeometryFunctions {
         {{2, 3, 4, 1}, {1, 4, 8, 5}, {4, 3, 7, 8}, {3, 2, 6, 7}, {2, 1, 5, 6}, {5, 8, 7, 6}};
 
     /** The six faces of a cuboid as one polygon. */
-    private static IExpr cuboidBoundary(IAST cuboid) {
+    private static @AllowNIL IExpr cuboidBoundary(IAST cuboid) {
       IAST[] corners = boxCorners(cuboid, 3);
       if (corners == null) {
         return F.NIL;
@@ -1561,7 +1628,7 @@ public class ComputationalGeometryFunctions {
   private static class ConvexHullMesh extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (MeshFunctions.isMeshRegion(arg1)) {
         arg1 = MeshFunctions.meshCoordinates((IAST) arg1);
@@ -1625,7 +1692,7 @@ public class ComputationalGeometryFunctions {
      * <code>MeshCellStyle</code> is written out cell by cell as <code>Properties</code> ahead of
      * <code>Method</code>; every other option is kept as given, gathered into one list at the end.
      */
-    private static IExpr withOptions(IAST mesh, IAST options) {
+    private static @AllowNIL IExpr withOptions(IAST mesh, IAST options) {
       if (options.argSize() == 0) {
         return mesh;
       }
@@ -1684,7 +1751,7 @@ public class ComputationalGeometryFunctions {
   private static final class AngleBisector extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr points = ast.arg1();
       if (!points.isList() || points.argSize() != 3
           || !((IAST) points).forAll(point -> point.isVector() == 2)) {
@@ -1755,7 +1822,7 @@ public class ComputationalGeometryFunctions {
      * @return <code>spec</code> or the element of the list <code>spec</code>; {@link F#NIL} for a
      *         list which hasn't one element for each dimension
      */
-    private static IExpr dimensionValue(IExpr spec, int index, int rank) {
+    private static @AllowNIL IExpr dimensionValue(IExpr spec, int index, int rank) {
       if (spec.isList()) {
         return spec.argSize() == rank ? ((IAST) spec).get(index) : F.NIL;
       }
@@ -1763,7 +1830,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** The step size for <code>spec</code> or {@link F#NIL} if the specification is invalid. */
-    private static IExpr step(IExpr spec, IExpr min, IExpr max, EvalEngine engine) {
+    private static @AllowNIL IExpr step(IExpr spec, IExpr min, IExpr max, EvalEngine engine) {
       if (spec.isAST(S.Into, 2)) {
         int parts = spec.first().toIntDefault();
         return parts > 0 ? engine.evaluate(F.Divide(F.Subtract(max, min), F.ZZ(parts))) : F.NIL;
@@ -1772,7 +1839,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** The offset for <code>spec</code> or {@link F#NIL} if the specification is invalid. */
-    private static IExpr offset(IExpr spec, IExpr step, EvalEngine engine) {
+    private static @AllowNIL IExpr offset(IExpr spec, IExpr step, EvalEngine engine) {
       if (spec == S.Center) {
         return engine.evaluate(F.Times(F.C1D2, step));
       }
@@ -1824,7 +1891,7 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST ranges = ranges(ast.arg1(), engine);
       if (ranges.isNIL()) {
         return invalidBounds(ast.arg1(), engine);
@@ -1915,7 +1982,7 @@ public class ComputationalGeometryFunctions {
   private static class CoordinateBoundingBox extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isListOfLists()) {
         IASTAppendable listOfPoints = F.ListAlloc();
         if (!collectPoints(ast.arg1(), listOfPoints)) {
@@ -2059,7 +2126,7 @@ public class ComputationalGeometryFunctions {
   private static class CoordinateBounds extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isListOfLists()) {
         IAST listOfPoints = (IAST) arg1;
@@ -2131,7 +2198,7 @@ public class ComputationalGeometryFunctions {
   private static class CoplanarPoints extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST listOfPoints = (IAST) ast.arg1();
         if (listOfPoints.argSize() == 0) {
@@ -2168,7 +2235,7 @@ public class ComputationalGeometryFunctions {
      * @param listOfPoints a list of at least four points with 3 coordinates each
      * @param engine
      */
-    private static IExpr coplanarPoints(IAST listOfPoints, EvalEngine engine) {
+    private static @AllowNIL IExpr coplanarPoints(IAST listOfPoints, EvalEngine engine) {
       IAST p1 = (IAST) listOfPoints.arg1();
       // the first point which is different from p1 spans a line together with p1
       int lineIndex = firstPointDifferentFrom(listOfPoints);
@@ -2322,7 +2389,7 @@ public class ComputationalGeometryFunctions {
   private static class CollinearPoints extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST listOfPoints = (IAST) ast.arg1();
         if (listOfPoints.argSize() > 0 && listOfPoints.argSize() <= 2) {
@@ -2358,7 +2425,7 @@ public class ComputationalGeometryFunctions {
      * @param dimension the number of coordinates of each point; <code>2</code> or <code>3</code>
      * @param engine
      */
-    private static IExpr collinearPoints(IAST listOfPoints, int dimension, EvalEngine engine) {
+    private static @AllowNIL IExpr collinearPoints(IAST listOfPoints, int dimension, EvalEngine engine) {
       IAST p1 = (IAST) listOfPoints.arg1();
       // the first point which is different from p1 defines the line together with p1
       int lineIndex = firstPointDifferentFrom(listOfPoints);
@@ -2412,7 +2479,7 @@ public class ComputationalGeometryFunctions {
     }
 
     // CPD-OFF short difference components, a helper would read worse
-    private static IExpr collinearPoints3D(IAST p1, IAST p2, IAST p3, EvalEngine engine) {
+    private static @AllowNIL IExpr collinearPoints3D(IAST p1, IAST p2, IAST p3, EvalEngine engine) {
       IExpr x1 = p1.arg1();
       IExpr y1 = p1.arg2();
       IExpr z1 = p1.arg3();
@@ -2538,7 +2605,7 @@ public class ComputationalGeometryFunctions {
   private static class CircularArcThrough extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -2635,7 +2702,7 @@ public class ComputationalGeometryFunctions {
   private static class VectorGreater extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList2()) {
         IAST listOfVectors = (IAST) arg1;
@@ -2647,7 +2714,7 @@ public class ComputationalGeometryFunctions {
     }
 
 
-    private IExpr compareRecursive(IExpr arg11, IExpr arg12, EvalEngine engine) {
+    private @AllowNIL IExpr compareRecursive(IExpr arg11, IExpr arg12, EvalEngine engine) {
       int n1 = -1;
       int n2 = -1;
       ITensorAccess v1 = F.NIL;
@@ -2779,7 +2846,7 @@ public class ComputationalGeometryFunctions {
   private static class GeometricTest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr objects = ast.arg1();
       IASTAppendable result = F.ast(S.And, ast.argSize() - 1);
       for (int i = 2; i < ast.size(); i++) {
@@ -2800,7 +2867,7 @@ public class ComputationalGeometryFunctions {
       return engine.evaluate(result);
     }
 
-    private static IExpr test(IExpr objects, String property, EvalEngine engine) {
+    private static @AllowNIL IExpr test(IExpr objects, String property, EvalEngine engine) {
       switch (property) {
         case "Collinear":
           return S.CollinearPoints.ofNIL(engine, objects);
@@ -2836,7 +2903,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** Equilateral and equiangular: equal side lengths alone would also admit a rhombus. */
-    private static IExpr regularQ(IAST corners, EvalEngine engine) {
+    private static @AllowNIL IExpr regularQ(IAST corners, EvalEngine engine) {
       if (corners.isNIL() || corners.argSize() < 3) {
         return F.NIL;
       }
@@ -2851,7 +2918,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** Four corners meeting at four right angles. */
-    private static IExpr rectangleQ(IAST corners, EvalEngine engine) {
+    private static @AllowNIL IExpr rectangleQ(IAST corners, EvalEngine engine) {
       if (corners.isNIL() || corners.argSize() != 4) {
         return corners.isNIL() ? F.NIL : S.False;
       }
@@ -2872,7 +2939,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** Parallel or perpendicular directions of two lines. */
-    private static IExpr directionTest(IExpr objects, boolean parallel, EvalEngine engine) {
+    private static @AllowNIL IExpr directionTest(IExpr objects, boolean parallel, EvalEngine engine) {
       IAST pair = objectPair(objects);
       if (pair.isNIL()) {
         return F.NIL;
@@ -2903,7 +2970,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** Equal side lengths (congruent) or proportional side lengths (similar). */
-    private static IExpr shapeTest(IExpr objects, boolean congruent, EvalEngine engine) {
+    private static @AllowNIL IExpr shapeTest(IExpr objects, boolean congruent, EvalEngine engine) {
       IAST pair = objectPair(objects);
       if (pair.isNIL()) {
         return F.NIL;
@@ -3056,7 +3123,7 @@ public class ComputationalGeometryFunctions {
   private static class ConvexPolyhedronQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Region, 2)) {
         arg1 = arg1.first();
@@ -3106,7 +3173,7 @@ public class ComputationalGeometryFunctions {
      * It is convex exactly when the base is convex and the top is the base shifted by one constant
      * vector; any other top makes the lateral faces non-planar.
      */
-    private static IExpr prismConvexQ(IAST prism, EvalEngine engine) {
+    private static @AllowNIL IExpr prismConvexQ(IAST prism, EvalEngine engine) {
       if (!prism.isAST1() || !prism.arg1().isListOfLists()) {
         return F.NIL;
       }
@@ -3140,7 +3207,7 @@ public class ComputationalGeometryFunctions {
      * is a cross product rather than a scalar: the polygon is convex when every turn points the
      * same way, i.e. no two cross products oppose each other.
      */
-    private static IExpr convexPlanarCycleQ(IAST points, EvalEngine engine) {
+    private static @AllowNIL IExpr convexPlanarCycleQ(IAST points, EvalEngine engine) {
       int size = points.argSize();
       if (size < 3) {
         return F.NIL;
@@ -3215,7 +3282,7 @@ public class ComputationalGeometryFunctions {
   private static class RegionProduct extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr first = MeshFunctions.normalizeRegion(ast.arg1());
       IExpr second = MeshFunctions.normalizeRegion(ast.arg2());
 
@@ -3252,7 +3319,7 @@ public class ComputationalGeometryFunctions {
     }
 
     /** Sweep a planar region from height {@code low} to {@code high}. */
-    private static IExpr extrude(IExpr base, IExpr low, IExpr high, EvalEngine engine) {
+    private static @AllowNIL IExpr extrude(IExpr base, IExpr low, IExpr high, EvalEngine engine) {
       if (base.isAST(S.Disk, 2) || base.isAST(S.Disk, 3)) {
         IExpr center = base.first();
         if (!center.isList2()) {
@@ -3321,7 +3388,7 @@ public class ComputationalGeometryFunctions {
   private static class Circumsphere extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.RegularPolygon)) {
         RegionPrimitives.RegularPolygonSpec spec =
@@ -3366,7 +3433,7 @@ public class ComputationalGeometryFunctions {
      *
      * @return {@link F#NIL} if the points are not of that shape or if they are degenerate
      */
-    private static IExpr circumsphere(IAST points, EvalEngine engine) {
+    private static @AllowNIL IExpr circumsphere(IAST points, EvalEngine engine) {
       int count = points.argSize();
       if (count < 2 || !points.arg1().isList()) {
         return F.NIL;
@@ -3435,7 +3502,7 @@ public class ComputationalGeometryFunctions {
   private static class CircleThrough extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr points = ast.arg1();
       if (!points.isListOfLists() || points.argSize() < 1) {
         return F.NIL;
@@ -3492,7 +3559,7 @@ public class ComputationalGeometryFunctions {
   private static class Insphere extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.RegularPolygon)) {
         IAST regularPolygon = (IAST) arg1;
@@ -3535,7 +3602,7 @@ public class ComputationalGeometryFunctions {
      * @return {@link F#NIL} if the polygon is not strictly convex or no inner point has the same
      *         distance from all edge lines, <code>null</code> if a sign can't be decided
      */
-    private static IExpr insphere(IAST vertices, EvalEngine engine) {
+    private static @AllowNIL IExpr insphere(IAST vertices, EvalEngine engine) {
       final int n = vertices.argSize();
       // twice the signed area gives the orientation
       IASTAppendable doubleArea = F.PlusAlloc(n);
@@ -3755,7 +3822,7 @@ public class ComputationalGeometryFunctions {
         "hexagonal", "heptagonal", "octagonal", "nonagonal", "decagonal"};
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0() || (ast.isAST1() && ast.arg1() == S.All)) {
         return entities();
       }
@@ -4010,7 +4077,7 @@ public class ComputationalGeometryFunctions {
      * <code>Missing(NotAvailable)</code> when it has no name here. Any other three-argument form
      * stays unevaluated.
      */
-    private static IExpr dualName(IAST ast, IExpr solid) {
+    private static @AllowNIL IExpr dualName(IAST ast, IExpr solid) {
       IExpr propertySpec = Entities.propertyOf(ast.arg2(), POLYHEDRON);
       if (!propertySpec.isString("Dual") || !ast.arg3().isString("Name")) {
         return F.NIL;
@@ -4201,7 +4268,7 @@ public class ComputationalGeometryFunctions {
      * <code>Pi / n</code>) numbered in the canonical order of their coordinates. Their faces are the
      * bottom and the top <code>n</code>-gon and then the lateral faces.
      */
-    private static IExpr family(final IAST ast, String kind, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr family(final IAST ast, String kind, int n, EvalEngine engine) {
       boolean cone = PYRAMID.equals(kind) || DIPYRAMID.equals(kind);
       if (!(ANTIPRISM.equals(kind) || PRISM.equals(kind) || cone) || n < 3
           || n > MAX_PRISM_SIDES || (cone && n > 5)) {

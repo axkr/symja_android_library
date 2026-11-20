@@ -287,7 +287,7 @@ public class ReduceVariableIntervalSet {
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
-  private IExpr extractVariable(IExpr expr, IExpr variable, boolean multipleValues) {
+  private @AllowNIL IExpr extractVariable(IExpr expr, IExpr variable, boolean multipleValues) {
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
@@ -323,7 +323,7 @@ public class ReduceVariableIntervalSet {
    * @param variable the variable which should be eliminated.
    * @return <code>F.NIL</code> if we can't find an equation for the given variable <code>x</code>.
    */
-  private IExpr extractVariableRecursive(IExpr exprWithVariable, IAST exprWithoutVariable,
+  private @AllowNIL IExpr extractVariableRecursive(IExpr exprWithVariable, IAST exprWithoutVariable,
       Predicate<IExpr> predicate, IExpr variable) {
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -67,7 +68,7 @@ public class DefinitionFunctions {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isNIL()) {
         return F.NIL;
@@ -115,7 +116,7 @@ public class DefinitionFunctions {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr named = symbolOfName(ast.arg1(), engine);
       if (named.isPresent()) {
         return engine.evaluate(F.unaryAST1(S.NValues, named));
@@ -151,7 +152,7 @@ public class DefinitionFunctions {
   }
 
   /** The left-hand side a rule matches, with its <code>HoldPattern</code> taken off. */
-  private static IExpr leftHandSideOf(IExpr rule) {
+  private static @AllowNIL IExpr leftHandSideOf(IExpr rule) {
     if (rule.isRuleAST()) {
       IExpr lhs = rule.first();
       if (lhs.isAST(S.HoldPattern, 2) || lhs.isAST(S.Literal, 2)) {
@@ -175,7 +176,7 @@ public class DefinitionFunctions {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isNIL()) {
         return F.NIL;
@@ -196,7 +197,7 @@ public class DefinitionFunctions {
     }
 
     @Override
-    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+    public @AllowNIL IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (!leftHandSide.isAST(S.ExtendedFullDefinition, 2)) {
         return F.NIL;
@@ -301,7 +302,7 @@ public class DefinitionFunctions {
    * @param engine the evaluation engine
    * @return the symbol or <code>F.NIL</code>
    */
-  static IExpr symbolOfName(IExpr arg, EvalEngine engine) {
+  static @AllowNIL IExpr symbolOfName(IExpr arg, EvalEngine engine) {
     if (arg.isString()) {
       String name = arg.toString();
       if (SYMBOL_NAME.matcher(name).matches()) {
@@ -345,7 +346,7 @@ public class DefinitionFunctions {
    * @param upRules whether the rules are attached to the symbol as up values
    * @param nValues whether the rules are N-values, <code>NValues[f] = rules</code>
    */
-  private static IExpr assignValues(final IExpr leftHandSide, IExpr rightHandSide,
+  private static @AllowNIL IExpr assignValues(final IExpr leftHandSide, IExpr rightHandSide,
       IBuiltInSymbol builtinSymbol, EvalEngine engine, boolean upRules, boolean nValues) {
     if (!leftHandSide.isAST() || leftHandSide.argSize() < 1 || !leftHandSide.first().isSymbol()) {
       return F.NIL;
@@ -443,7 +444,7 @@ public class DefinitionFunctions {
    * objects, and the first type to be used would claim them: every later type's constructor would
    * then be refused.
    */
-  private static IExpr freshOptionsPatterns(IExpr expr) {
+  private static @AllowNIL IExpr freshOptionsPatterns(IExpr expr) {
     if (expr instanceof OptionsPattern) {
       OptionsPattern options = (OptionsPattern) expr;
       return OptionsPattern.valueOf(options.getSymbol(), options.getDefaultOptions());
@@ -558,7 +559,7 @@ public class DefinitionFunctions {
       implements ISetEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the argument is held, as in an assignment: ValueFunction(x) is the function of x, even
       // where x has a value
       ISymbol symbol = trackedSymbol(ast.arg1(), false, engine);

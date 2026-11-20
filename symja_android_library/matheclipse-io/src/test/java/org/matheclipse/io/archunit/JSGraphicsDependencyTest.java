@@ -2,6 +2,7 @@ package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -17,6 +18,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * <code>JSFormData</code> result through that interface only, so a deployment can leave the module
  * out of its war and the servlets still load.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class JSGraphicsDependencyTest {
 

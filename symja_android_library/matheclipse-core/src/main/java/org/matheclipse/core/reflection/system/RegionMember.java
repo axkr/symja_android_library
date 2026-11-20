@@ -539,8 +539,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
   }
 
   /**
-   * The angular condition of a sector which runs counter-clockwise from <code>t1</code> to
-   * <code>t2</code>. The polar angle of the point is measured relative to <code>t1</code> and
+   * The angular condition of a sector which runs counter-clockwise from the smaller to the larger
+   * of the angles <code>t1</code> and <code>t2</code>. The polar angle of the point is measured relative to <code>t1</code> and
    * wrapped into one turn, so that a range which crosses the negative x axis is handled and a
    * range of a full turn or more covers everything.
    *
@@ -553,15 +553,14 @@ public class RegionMember extends AbstractFunctionEvaluator {
     if (!angleRange.isList2() || !center.isList2() || coordinates(point, 2).isNIL()) {
       return F.NIL;
     }
-    IExpr t1 = ((IAST) angleRange).arg1();
-    IExpr t2 = ((IAST) angleRange).arg2();
+    // a range which runs backwards is the same sector as the range running forwards
+    IAST angles = RegionPrimitives.orderedAngles((IAST) angleRange, engine);
+    IExpr t1 = angles.arg1();
+    IExpr t2 = angles.arg2();
     IExpr extent = engine.evaluate(F.Subtract(t2, t1));
     if (engine.evaluate(F.GreaterEqual(extent, F.C2Pi)).isTrue()) {
       // a full turn or more covers every angle
       return S.True;
-    }
-    if (engine.evaluate(F.Less(extent, F.C0)).isTrue()) {
-      return S.False;
     }
     IAST c = (IAST) center;
     IAST p = (IAST) point;

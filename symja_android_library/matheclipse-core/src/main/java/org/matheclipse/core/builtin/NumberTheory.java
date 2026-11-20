@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
@@ -13,6 +14,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
+import org.hipparchus.fraction.BigFraction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,7 +37,6 @@ import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -201,7 +202,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -299,7 +300,7 @@ public final class NumberTheory {
   private static class BernoulliB extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (n.isNegative()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
@@ -477,7 +478,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
+    public @AllowNIL IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       try {
         return F.num(h.binomial(a1.apfloatValue(), a2.apfloatValue()));
@@ -488,7 +489,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
+    public @AllowNIL IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
       FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
       try {
         return F.complexNum(h.binomial(a1.apcomplexValue(), a2.apcomplexValue()));
@@ -529,7 +530,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr e2ObjArg(IAST ast, IExpr n, IExpr k) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, IExpr n, IExpr k) {
       if (n.isInteger() && k.isInteger()) {
         // use e2IntArg() method
         return F.NIL;
@@ -542,7 +543,7 @@ public final class NumberTheory {
       return binomialExpr(n, k).eval(EvalEngine.get());
     }
 
-    private static IExpr binomialExpr(IExpr n, IExpr k) {
+    private static @AllowNIL IExpr binomialExpr(IExpr n, IExpr k) {
       if (k.isZero()) {
         // 1 for every n, as a real number of the precision of an inexact argument
         if (k.isInexactNumber()) {
@@ -709,7 +710,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
           return ((IInteger) arg1).charmichaelLambda();
@@ -769,7 +770,7 @@ public final class NumberTheory {
   private static class CatalanNumber extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
         // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
@@ -780,7 +781,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (n.isInteger()) {
         return AbstractIntegerSym.catalanNumber((IInteger) n);
@@ -794,7 +795,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
         if (arg1.isInexactNumber()) {
@@ -856,144 +857,43 @@ public final class NumberTheory {
    * </pre>
    */
   private static class ChineseRemainder extends AbstractFunctionEvaluator {
-    private static long bezout0(long a, long b) {
-      long s = 0, old_s = 1;
-      long r = b, old_r = a;
-
-      long q;
-      long tmp;
-      while (r != 0) {
-        q = old_r / r;
-
-        tmp = old_r;
-        old_r = r;
-        r = subtractExact(tmp, multiplyExact(q, r));
-
-        tmp = old_s;
-        old_s = s;
-        s = subtractExact(tmp, multiplyExact(q, s));
-      }
-      if (old_r != 1) {
-        throw new ArithmeticException();
-      }
-      // assert old_r == 1 : "a = " + a + " b = " + b;
-      return old_s;
-    }
-
-    private static BigInteger bezout0(BigInteger a, BigInteger b) {
-      BigInteger s = BigInteger.ZERO, old_s = BigInteger.ONE;
-      BigInteger r = b, old_r = a;
-
-      BigInteger q;
-      BigInteger tmp;
-      while (r.signum() != 0) {
-        q = old_r.divide(r);
-
-        tmp = old_r;
-        old_r = r;
-        r = tmp.subtract(q.multiply(r));
-
-        tmp = old_s;
-        old_s = s;
-        s = tmp.subtract(q.multiply(s));
-      }
-      if (!old_r.equals(BigInteger.ONE)) {
-        throw new ArithmeticException();
-      }
-      // assert old_r.isOne();
-      return old_s;
-    }
 
     /**
-     * Runs Chinese Remainders algorithm
+     * Merge the congruences <code>x == a[i] (mod n[i])</code>; the moduli need not be coprime.
      *
-     * @param primes list of coprime numbers
-     * @param remainders remainder
-     * @return the result
+     * @return <code>{r, lcm}</code> with <code>0 &lt;= r &lt; lcm</code>, or <code>null</code> if
+     *         the congruences are inconsistent
      */
-    private static long chineseRemaindersInt(final int[] primes, final int[] remainders) {
-      if (primes.length != remainders.length) {
-        // The arguments to `1` must be two lists of integers of identical length, with the second
-        // list only
-        // containing positive integers.
-        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-        throw new ArgumentTypeException(message);
-      }
-      long modulus = primes[0];
-      for (int i = 1; i < primes.length; ++i) {
-        if (primes[i] <= 0) {
-          // The arguments to `1` must be two lists of integers of identical length, with the second
-          // list only containing positive integers.
-          String message =
-              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-          throw new ArgumentTypeException(message);
+    private static BigInteger[] chineseRemainders(final BigInteger[] n, final BigInteger[] a) {
+      BigInteger r = a[0].mod(n[0]);
+      BigInteger m = n[0];
+      for (int i = 1; i < n.length; i++) {
+        BigInteger ni = n[i];
+        BigInteger ai = a[i].mod(ni);
+        BigInteger g = m.gcd(ni);
+        BigInteger difference = ai.subtract(r);
+        if (difference.mod(g).signum() != 0) {
+          return null;
         }
-        modulus = Math.multiplyExact(primes[i], modulus);
+        BigInteger niReduced = ni.divide(g);
+        // r + m*t == ai (mod ni) <=> (m/g)*t == (ai-r)/g (mod ni/g)
+        BigInteger t = BigInteger.ZERO;
+        if (!niReduced.equals(BigInteger.ONE)) {
+          t = difference.divide(g).multiply(m.divide(g).modInverse(niReduced)).mod(niReduced);
+        }
+        r = r.add(m.multiply(t));
+        m = m.multiply(niReduced);
+        r = r.mod(m);
       }
-
-      long result = 0;
-      for (int i = 0; i < primes.length; ++i) {
-        long iModulus = modulus / primes[i];
-        long bezout = bezout0(iModulus, primes[i]);
-        result =
-            floorMod(
-                addExact(result,
-                    floorMod(multiplyExact(iModulus,
-                        floorMod(multiplyExact(bezout, remainders[i]), primes[i])), modulus)),
-                modulus);
-      }
-      return result;
+      return new BigInteger[] {r, m};
     }
 
     /**
-     * Runs Chinese Remainders algorithm
-     *
-     * @param primes list of coprime numbers
-     * @param remainders remainder
-     * @return the result
-     */
-    private static BigInteger chineseRemainders(final BigInteger[] primes,
-        final BigInteger[] remainders) {
-      if (primes.length != remainders.length) {
-        // The arguments to `1` must be two lists of integers of identical length, with the second
-        // list only
-        // containing positive integers.
-        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-        throw new ArgumentTypeException(message);
-      }
-      BigInteger m = primes[0];
-      for (int i = 1; i < primes.length; i++) {
-        if (primes[i].signum() <= 0) {
-          // The arguments to `1` must be two lists of integers of identical length, with the second
-          // list only
-          // containing positive integers.
-          String message =
-              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-          throw new ArgumentTypeException(message);
-        }
-        m = primes[i].multiply(m);
-      }
-
-      BigInteger result = BigInteger.ZERO;
-      for (int i = 0; i < primes.length; i++) {
-        BigInteger mi = m.divide(primes[i]);
-        BigInteger eea = bezout0(mi, primes[i]);
-        result = result.add(mi.multiply(eea.multiply(remainders[i]).mod(primes[i]))).mod(m);
-      }
-      return result;
-    }
-
-    /**
-     * Calculate the chinese remainder of 2 integer lists.
-     *
-     * <p>
-     * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese
-     * remainder theorem</a><br>
-     * <a href=
-     * "https://github.com/PoslavskySV/rings/blob/master/rings/src/main/java/cc/redberry/rings/bigint/ChineseRemainders.java">cc/redberry/rings/bigint/ChineseRemainders.java</a>
+     * Calculate the chinese remainder of 2 integer lists. <code>ChineseRemainder(list1, list2,
+     * d)</code> gives the smallest solution which is at least <code>d</code>.
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg2().isList()) {
         for (int position = 1; position <= 2; position++) {
           IAST list = (IAST) ast.get(position);
@@ -1004,55 +904,50 @@ public final class NumberTheory {
                 engine);
           }
         }
-        try {
-          int[] a = Validate.checkListOfInts(ast, ast.arg1(), false, true, engine);
-          if (a == null) {
-            return chineseRemainderBigInteger(ast, engine);
+        BigInteger d = BigInteger.ZERO;
+        if (ast.isAST3()) {
+          if (!ast.arg3().isInteger()) {
+            // Integer expected at position `2` in `1`.
+            return ast.arg3().isNumber()
+                ? Errors.printMessage(S.ChineseRemainder, "int", F.list(ast, F.C3), engine)
+                : F.NIL;
           }
-          int[] n = Validate.checkListOfInts(ast, ast.arg2(), false, true, engine);
-          if (n == null) {
-            return chineseRemainderBigInteger(ast, engine);
-          }
-          if (a.length != n.length) {
-            return F.NIL;
-          }
-          if (a.length == 0) {
-            return F.NIL;
-          }
-          try {
-            return F.ZZ(chineseRemaindersInt(n, a));
-          } catch (ArithmeticException aex) {
-            // from Math.multiplyExact()
-            return chineseRemainderBigInteger(ast, engine);
-          }
-        } catch (ArithmeticException ae) {
-          Errors.printMessage(S.ChineseRemainder, ae, engine);
+          d = ((IInteger) ast.arg3()).toBigNumerator();
         }
+        BigInteger[] a = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
+        if (a == null) {
+          return F.NIL;
+        }
+        BigInteger[] n = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
+        if (n == null) {
+          return F.NIL;
+        }
+        if (n.length == 0) {
+          return F.NIL;
+        }
+        if (a.length != n.length) {
+          // The arguments to `1` must be two lists of integers of identical length, with the
+          // second list only containing positive integers.
+          return Errors.printMessage(S.ChineseRemainder, "pilist", F.list(S.ChineseRemainder),
+              engine);
+        }
+        for (BigInteger ni : n) {
+          if (ni.signum() <= 0) {
+            // The arguments to `1` must be two lists of integers of identical length, with the
+            // second list only containing positive integers.
+            return Errors.printMessage(S.ChineseRemainder, "pilist", F.list(S.ChineseRemainder),
+                engine);
+          }
+        }
+        BigInteger[] rm = chineseRemainders(n, a);
+        if (rm == null) {
+          return F.NIL;
+        }
+        // the smallest solution r + k*lcm which is at least d
+        return F.ZZ(d.add(rm[0].subtract(d).mod(rm[1])));
       }
       return F.NIL;
     }
-
-    private static IExpr chineseRemainderBigInteger(final IAST ast, EvalEngine engine) {
-      // try with BigIntegers
-      BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
-      if (aBig == null) {
-        return F.NIL;
-      }
-      BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
-      if (nBig == null) {
-        return F.NIL;
-      }
-      if (aBig.length != nBig.length) {
-        return F.NIL;
-      }
-      try {
-        return F.ZZ(chineseRemainders(nBig, aBig));
-      } catch (ArithmeticException ae) {
-        Errors.printMessage(S.ChineseRemainder, ae, engine);
-      }
-      return F.NIL;
-    }
-
 
     @Override
     public int status() {
@@ -1061,7 +956,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -1099,9 +994,84 @@ public final class NumberTheory {
   private static final class Convergents extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int n = -1;
+      if (ast.isAST2()) {
+        n = ast.arg2().toIntDefault();
+        if (n < 0) {
+          return F.NIL;
+        }
+      }
+      IExpr arg1 = ast.arg1();
+      IAST list;
+      if (arg1.isList()) {
+        list = (IAST) arg1;
+      } else if (arg1.isNumericFunction(true)) {
+        IExpr cf = engine.evaluate(n >= 0 ? F.binaryAST2(S.ContinuedFraction, arg1, F.ZZ(n))
+            : F.unaryAST1(S.ContinuedFraction, arg1));
+        if (!cf.isList()) {
+          return F.NIL;
+        }
+        list = (IAST) cf;
+      } else {
+        return F.NIL;
+      }
+      if (list.argSize() > 0 && list.last().isList()) {
+        // a periodic continued fraction {a0, a1, ..., {b1, b2, ...}}
+        if (n < 0) {
+          if (arg1.isList()) {
+            return F.NIL;
+          }
+          // a quadratic irrational: the convergents through the first period without its last
+          // term, then the number itself
+          IAST period = (IAST) list.last();
+          IAST terms = expandPeriodic(list, list.argSize() - 1 + period.argSize() - 1);
+          if (terms == null) {
+            return F.NIL;
+          }
+          IExpr result = terms.isEmpty() ? F.CEmptyList : convergents(terms, engine);
+          if (!result.isList()) {
+            return F.NIL;
+          }
+          return ((IAST) result).appendClone(arg1);
+        }
+        list = expandPeriodic(list, n);
+        if (list == null) {
+          return F.NIL;
+        }
+      }
+      if (n >= 0 && list.argSize() > n) {
+        list = list.subList(1, n + 1);
+      }
+      if (n >= 0 && list.isEmpty()) {
+        return F.CEmptyList;
+      }
+      return convergents(list, engine);
+    }
+
+    /** The first <code>n</code> terms of the periodic continued fraction <code>list</code>. */
+    private static IAST expandPeriodic(IAST list, int n) {
+      IAST period = (IAST) list.last();
+      if (period.isEmpty() || period.exists(x -> x.isList())) {
+        return null;
+      }
+      IASTAppendable result = F.ListAlloc(n);
+      for (int i = 1; i < list.argSize() && result.argSize() < n; i++) {
+        if (list.get(i).isList()) {
+          return null;
+        }
+        result.append(list.get(i));
+      }
+      int j = 1;
+      while (result.argSize() < n) {
+        result.append(period.get(j));
+        j = j == period.argSize() ? 1 : j + 1;
+      }
+      return result;
+    }
+
+    private static @AllowNIL IExpr convergents(IAST list, EvalEngine engine) {
+      {
         if (list.exists(x -> x.isList())) {
           return F.NIL;
         }
@@ -1156,7 +1126,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
 
@@ -1426,7 +1396,7 @@ public final class NumberTheory {
      * <code>ContinuedFraction(x)</code> or <code>ContinuedFraction(x, n)</code> for an evaluated
      * <code>x</code>.
      */
-    private IExpr evaluateArgument(final IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr evaluateArgument(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isComplex() || arg1.isComplexNumeric()) {
         // The value `1` is not a real number.
@@ -1447,6 +1417,15 @@ public final class NumberTheory {
       }
 
       IExpr[] surd = quadraticSurd(arg1);
+      if (surd == null && !arg1.isRational() && isExactNumber(arg1)) {
+        // GoldenRatio^2, a Root object or a nested radical of degree two is written a + b*Sqrt(d)
+        IExpr reduced = quadraticNormalForm(arg1, engine);
+        if (reduced.isRational()) {
+          arg1 = reduced;
+        } else if (reduced.isPresent()) {
+          surd = quadraticSurd(reduced);
+        }
+      }
       if (surd != null) {
         return continuedFractionQuadratic((IRational) surd[0], (IRational) surd[1],
             ((IInteger) surd[2]).toBigNumerator(), maxNTerms, engine);
@@ -1479,6 +1458,15 @@ public final class NumberTheory {
           }
           num = value;
         } else {
+          if (isExactNumber(arg1)) {
+            if (radicalDegreeBound(arg1) > MAX_RADICAL_DEGREE) {
+              // too many radicals to find out whether the number is a quadratic irrational
+              return F.NIL;
+            }
+            // an exact irrational which is no quadratic irrational has infinitely many terms
+            // without a period
+            return Errors.printMessage(S.ContinuedFraction, "noterms", F.list(arg1), engine);
+          }
           num = engine.evalN(arg1);
         }
 
@@ -1495,7 +1483,7 @@ public final class NumberTheory {
         if (isNegative) {
           numerator = numerator.negate();
         }
-        return rationalToContinuedFraction(numerator, denominator, isNegative, maxNTerms, false);
+        return rationalToContinuedFraction(numerator, denominator, isNegative, maxNTerms);
       }
 
       return F.NIL;
@@ -1531,8 +1519,10 @@ public final class NumberTheory {
 
     /**
      * The terms of the continued fraction which all numbers in the interval of uncertainty of an
-     * arbitrary precision number share: the value <code>x</code> stands for the numbers within
-     * <code>|x|*10^(-precision)</code>, and at least within one unit of its last digit.
+     * arbitrary precision number share: a number of <code>precision</code> decimal digits stands
+     * for the numbers which round to the same binary mantissa of
+     * <code>Ceiling(precision*Log2(10))</code> bits, see {@link #intervalContinuedFraction(
+     * BigFraction, BigFraction, boolean, EvalEngine)}.
      *
      * @param value the number, possibly with guard digits beyond <code>precision</code>
      * @param precision the number of significant decimal digits
@@ -1543,35 +1533,31 @@ public final class NumberTheory {
       if (x.signum() == 0) {
         return F.list(F.C0);
       }
-      java.math.BigDecimal radius = x.movePointLeft((int) precision);
-      java.math.BigDecimal ulp = x.ulp();
-      if (ulp.compareTo(radius) > 0) {
-        radius = ulp;
+      BigInteger[] fraction = toFraction(x);
+      BigFraction exact = new BigFraction(fraction[0], fraction[1]);
+      // the binary mantissa: exact = m * 2^e with an integer m of `bits` bits
+      int bits = (int) Math.ceil(precision * Math.log(10.0) / Math.log(2.0));
+      int exponent = fraction[0].bitLength() - fraction[1].bitLength();
+      // Floor(Log2(exact)): the bit lengths may give one more
+      if ((exponent >= 0 ? fraction[0].compareTo(fraction[1].shiftLeft(exponent))
+          : fraction[0].shiftLeft(-exponent).compareTo(fraction[1])) < 0) {
+        exponent--;
       }
-      BigInteger[] lo = toFraction(x.subtract(radius));
-      BigInteger[] hi = toFraction(x.add(radius));
-      IASTAppendable continuedFractionList = F.ListAlloc(10);
-      while (lo[1].signum() != 0 && hi[1].signum() != 0) {
-        BigInteger[] qrLo = lo[0].divideAndRemainder(lo[1]);
-        BigInteger[] qrHi = hi[0].divideAndRemainder(hi[1]);
-        if (!qrLo[0].equals(qrHi[0])) {
-          break;
-        }
-        continuedFractionList.append(F.ZZ(isNegative ? qrLo[0].negate() : qrLo[0]));
-        if (qrLo[1].signum() == 0 || qrHi[1].signum() == 0) {
-          break;
-        }
-        // the reciprocals of the remainders swap the ends of the interval
-        BigInteger[] nextLo = new BigInteger[] {hi[1], qrHi[1]};
-        hi = new BigInteger[] {lo[1], qrLo[1]};
-        lo = nextLo;
+      int shift = bits - 1 - exponent;
+      BigFraction scale = shift >= 0 ? new BigFraction(BigInteger.ONE.shiftLeft(shift))
+          : new BigFraction(BigInteger.ONE, BigInteger.ONE.shiftLeft(-shift));
+      BigFraction scaled = exact.multiply(scale);
+      // round half up to the mantissa
+      BigInteger mantissa = floor(scaled.add(new BigFraction(1, 2)));
+      BigFraction center = new BigFraction(mantissa).divide(scale);
+      BigFraction halfUlp = new BigFraction(1, 2).divide(scale);
+      IAST terms = intervalContinuedFraction(center, halfUlp, isNegative, EvalEngine.get());
+      if (terms.isPresent()) {
+        return terms;
       }
-      if (continuedFractionList.isEmpty()) {
-        // an interval around an integer
-        BigInteger integer = x.setScale(0, java.math.RoundingMode.HALF_EVEN).toBigInteger();
-        continuedFractionList.append(F.ZZ(isNegative ? integer.negate() : integer));
-      }
-      return continuedFractionList;
+      // an interval around an integer
+      BigInteger integer = x.setScale(0, java.math.RoundingMode.HALF_EVEN).toBigInteger();
+      return F.list(F.ZZ(isNegative ? integer.negate() : integer));
     }
 
     /** The numerator and denominator of a non-negative decimal number. */
@@ -1582,11 +1568,9 @@ public final class NumberTheory {
       return new BigInteger[] {decimal.unscaledValue(), BigInteger.TEN.pow(decimal.scale())};
     }
 
-    private static IAST realToContinuedFraction(INum value, int precision, EvalEngine engine) {
+    private static @AllowNIL IAST realToContinuedFraction(INum value, int precision,
+        EvalEngine engine) {
       double doubleValue = value.getRealPart();
-      if (value.isNumIntValue()) {
-        return F.list(F.ZZ((int) Math.rint(doubleValue)));
-      }
       if (Double.isInfinite(doubleValue)) {
         // an infinity has no continued fraction expansion to give.
         // BigFraction refuses it with "cannot convert infinite value", which used to escape.
@@ -1595,17 +1579,256 @@ public final class NumberTheory {
       if (Double.isNaN(doubleValue)) {
         return F.NIL;
       }
-      boolean isNegative = doubleValue < 0;
-      if (isNegative) {
-        doubleValue = Math.abs(doubleValue);
+      if (precision == Integer.MAX_VALUE) {
+        return machineContinuedFraction(doubleValue, engine);
       }
-      final BigFraction numeratorDenominator = new BigFraction(doubleValue);
-      return rationalToContinuedFraction(numeratorDenominator.getNumerator(),
-          numeratorDenominator.getDenominator(), isNegative, precision, true);
+      if (value.isNumIntValue()) {
+        // a large machine integer like 1.0*10^300 is beyond the int range
+        return F.list(F.ZZ(new java.math.BigDecimal(Math.rint(doubleValue)).toBigInteger()));
+      }
+      // the binary value of the machine number is expanded up to its first convergent which rounds
+      // to the same machine number: the terms after it depend on the rounding of the last bit
+      return continuedFractionToTolerance(new java.math.BigDecimal(doubleValue),
+          machineTolerance(doubleValue), precision, engine);
+    }
+
+    /**
+     * The terms of the continued fraction which every real number that rounds to the machine number
+     * <code>value</code> has, see {@link #intervalContinuedFraction(BigFraction, BigFraction,
+     * boolean, EvalEngine)}.
+     *
+     * @return {@link F#NIL} if not even the integer part is certain, as for <code>1.0*10^300</code>
+     */
+    private static @AllowNIL IAST machineContinuedFraction(double value, EvalEngine engine) {
+      return intervalContinuedFraction(new BigFraction(Math.abs(value)),
+          new BigFraction(Math.ulp(value)).divide(2), value < 0.0, engine);
+    }
+
+    /**
+     * The terms of the continued fraction which every real number in
+     * <code>center +- halfWidth</code> has: the expansions of the ends of the interval agree in
+     * them. Where the interval reaches over an integer, that integer is the last term if
+     * <code>center</code> lies above it - <code>0.55</code> is <code>{0, 1, 1, 4, 2}</code> - but
+     * not if it lies on it or below: <code>0.75</code> is <code>{0, 1}</code>.
+     *
+     * @param center the absolute value of the number
+     * @param isNegative if <code>true</code> the terms are negated
+     * @return {@link F#NIL} if not even the integer part is certain
+     */
+    private static @AllowNIL IAST intervalContinuedFraction(BigFraction center,
+        BigFraction halfWidth, boolean isNegative, EvalEngine engine) {
+      BigFraction low = center.subtract(halfWidth);
+      BigFraction high = center.add(halfWidth);
+      IASTAppendable terms = F.ListAlloc(24);
+      while (true) {
+        engine.checkTimeLimit();
+        BigInteger lowTerm = floor(low);
+        BigInteger highTerm = floor(high);
+        if (!lowTerm.equals(highTerm)) {
+          if (floor(center).equals(highTerm) && center.compareTo(new BigFraction(highTerm)) > 0) {
+            terms.append(F.ZZ(isNegative ? highTerm.negate() : highTerm));
+          }
+          break;
+        }
+        terms.append(F.ZZ(isNegative ? lowTerm.negate() : lowTerm));
+        BigFraction term = new BigFraction(lowTerm);
+        low = low.subtract(term);
+        high = high.subtract(term);
+        center = center.subtract(term);
+        if (low.signum() <= 0 || center.signum() == 0) {
+          break;
+        }
+        BigFraction reciprocalOfLow = low.reciprocal();
+        low = high.reciprocal();
+        high = reciprocalOfLow;
+        center = center.reciprocal();
+      }
+      return terms.argSize() == 0 ? F.NIL : terms;
+    }
+
+    /** <code>Floor(x)</code> of a fraction. */
+    private static BigInteger floor(BigFraction x) {
+      BigInteger[] quotientRemainder = x.getNumerator().divideAndRemainder(x.getDenominator());
+      return quotientRemainder[1].signum() < 0 ? quotientRemainder[0].subtract(BigInteger.ONE)
+          : quotientRemainder[0];
+    }
+
+    /** Half a unit in the last place of a machine number, as an exact decimal. */
+    private static java.math.BigDecimal machineTolerance(double value) {
+      return new java.math.BigDecimal(Math.ulp(value)).divide(java.math.BigDecimal.valueOf(2));
+    }
+
+    /**
+     * The terms of the continued fraction of the exact decimal <code>x</code> up to the first
+     * convergent <code>p/q</code> with <code>|x - p/q| &lt;= tolerance</code>, or to the end of the
+     * expansion. The terms of a negative <code>x</code> are the negated terms of <code>-x</code>.
+     *
+     * @param maxTerms the largest number of terms
+     */
+    private static IAST continuedFractionToTolerance(java.math.BigDecimal x,
+        java.math.BigDecimal tolerance, int maxTerms, EvalEngine engine) {
+      final boolean isNegative = x.signum() < 0;
+      BigInteger[] fraction = toFraction(x.abs());
+      final BigInteger xNumerator = fraction[0];
+      final BigInteger xDenominator = fraction[1];
+      BigInteger[] toleranceFraction = toFraction(tolerance);
+      // |x - p/q| <= tolerance is
+      // |xNumerator*q - p*xDenominator| * toleranceDenominator <= scaledNumerator * q
+      final BigInteger scaledNumerator = toleranceFraction[0].multiply(xDenominator);
+      final BigInteger toleranceDenominator = toleranceFraction[1];
+      BigInteger numerator = xNumerator;
+      BigInteger denominator = xDenominator;
+      // the convergents p(n-1)/q(n-1) and p(n-2)/q(n-2)
+      BigInteger p1 = BigInteger.ONE;
+      BigInteger q1 = BigInteger.ZERO;
+      BigInteger p2 = BigInteger.ZERO;
+      BigInteger q2 = BigInteger.ONE;
+      IASTAppendable continuedFractionList = F.ListAlloc(10);
+      while (continuedFractionList.argSize() < maxTerms) {
+        engine.checkTimeLimit();
+        BigInteger[] quotientRemainder = numerator.divideAndRemainder(denominator);
+        BigInteger term = quotientRemainder[0];
+        continuedFractionList.append(F.ZZ(isNegative ? term.negate() : term));
+        if (quotientRemainder[1].signum() == 0) {
+          break;
+        }
+        BigInteger p = term.multiply(p1).add(p2);
+        BigInteger q = term.multiply(q1).add(q2);
+        p2 = p1;
+        q2 = q1;
+        p1 = p;
+        q1 = q;
+        BigInteger error = xNumerator.multiply(q).subtract(p.multiply(xDenominator)).abs();
+        if (error.multiply(toleranceDenominator).compareTo(scaledNumerator.multiply(q)) <= 0) {
+          break;
+        }
+        numerator = denominator;
+        denominator = quotientRemainder[1];
+      }
+      return continuedFractionList;
+    }
+
+    /** Test if <code>x</code> is a numeric expression without an inexact number in it. */
+    private static boolean isExactNumber(IExpr x) {
+      return x.isNumericFunction(true) && x.isFree(y -> y.isInexactNumber(), true);
+    }
+
+    /**
+     * The largest product of the orders of the radicals of an algebraic number for which its
+     * minimal polynomial is computed to see whether it is of degree two.
+     */
+    private static final int MAX_RADICAL_DEGREE = 8;
+
+    /**
+     * An algebraic number of degree at most two written as a rational or as
+     * <code>a + b*Sqrt(d)</code>: the root of its minimal polynomial which has the value of
+     * <code>x</code>.
+     *
+     * @return {@link F#NIL} if <code>x</code> is no real algebraic number of degree at most two, or
+     *         if its minimal polynomial would take too long
+     */
+    @AllowNIL
+    private static IExpr quadraticNormalForm(IExpr x, EvalEngine engine) {
+      if (radicalDegreeBound(x) > MAX_RADICAL_DEGREE) {
+        return F.NIL;
+      }
+      IRational[] coefficients =
+          org.matheclipse.core.numbertheory.NumberFieldUtils.minimalPolynomialCoefficients(x,
+              engine);
+      if (coefficients == null) {
+        return F.NIL;
+      }
+      if (coefficients.length == 2) {
+        // x + c
+        return coefficients[0].negate();
+      }
+      if (coefficients.length != 3) {
+        return F.NIL;
+      }
+      // x^2 + b*x + c has the roots -b/2 +/- Sqrt(b^2/4 - c)
+      IRational center = coefficients[1].multiply(F.CN1D2);
+      IRational radicand = center.multiply(center).subtract(coefficients[0]);
+      if (radicand.isNegative() || radicand.isZero()) {
+        return F.NIL;
+      }
+      // the sign of x - center, from a value of x precise enough to tell the two roots apart
+      double distance = Math.sqrt(radicand.doubleValue());
+      double magnitude = Math.abs(center.doubleValue()) + distance;
+      if (!(distance > 0.0) || !Double.isFinite(magnitude)) {
+        return F.NIL;
+      }
+      long digits = org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 10L
+          + Math.max(0L, (long) Math.ceil(Math.log10(magnitude / distance)));
+      if (digits > Config.MAX_PRECISION_APFLOAT) {
+        return F.NIL;
+      }
+      IExpr difference = engine.evalN(F.Subtract(x, center), digits);
+      if (!difference.isReal() || difference.isZero()) {
+        return F.NIL;
+      }
+      IExpr root = F.Sqrt(radicand);
+      return engine.evaluate(
+          F.Plus(center, ((IReal) difference).isNegative() ? F.Negate(root) : root));
+    }
+
+    /**
+     * An upper bound of the degree of the algebraic number <code>expr</code>: the product over the
+     * distinct radicands of the least common multiple of the orders of their radicals, with
+     * <code>GoldenRatio</code> a square root and a <code>Root</code> object of the degree of its
+     * polynomial. <code>Sqrt(2)</code> and <code>2^(1/4)</code> together count <code>4</code>, the
+     * degree of the field they generate.
+     */
+    private static long radicalDegreeBound(IExpr expr) {
+      java.util.Map<IExpr, Long> orders = new java.util.HashMap<IExpr, Long>();
+      long bound = radicalOrders(expr, orders);
+      for (long order : orders.values()) {
+        bound = Math.min(Integer.MAX_VALUE, bound * order);
+      }
+      return bound;
+    }
+
+    /**
+     * Collect the orders of the radicals in <code>expr</code> by radicand into <code>orders</code>
+     * as least common multiples.
+     *
+     * @return the product of the degrees of the other algebraic parts: <code>GoldenRatio</code>
+     *         and <code>Root</code> objects
+     */
+    private static long radicalOrders(IExpr expr, java.util.Map<IExpr, Long> orders) {
+      if (expr == S.GoldenRatio) {
+        // (1 + Sqrt(5))/2
+        orders.merge(F.C5, 2L, org.hipparchus.util.ArithmeticUtils::lcm);
+        return 1L;
+      }
+      if (!expr.isAST()) {
+        return 1L;
+      }
+      if (expr.isAST(S.Root, 3, 4)) {
+        if (!expr.first().isFunction()) {
+          return 1L;
+        }
+        IExpr[] coefficients =
+            org.matheclipse.core.reflection.system.Root.polynomialCoefficients(
+                expr.first().first());
+        return coefficients == null ? Integer.MAX_VALUE : Math.max(1, coefficients.length - 1);
+      }
+      if (expr.isPower() && expr.exponent().isRational() && !expr.exponent().isInteger()) {
+        long order = ((IRational) expr.exponent()).denominator().toLongDefault();
+        if (order <= 0 || order > MAX_RADICAL_DEGREE) {
+          return Integer.MAX_VALUE;
+        }
+        orders.merge(expr.base(), order, org.hipparchus.util.ArithmeticUtils::lcm);
+        return radicalOrders(expr.base(), orders);
+      }
+      long bound = 1L;
+      for (IExpr arg : (IAST) expr) {
+        bound = Math.min(Integer.MAX_VALUE, bound * radicalOrders(arg, orders));
+      }
+      return bound;
     }
 
     private static IAST rationalToContinuedFraction(BigInteger numerator, BigInteger denominator,
-        boolean isNegative, int iterationLimit, boolean checkNumericZero) {
+        boolean isNegative, int iterationLimit) {
       IASTAppendable continuedFractionList;
       if (denominator.equals(BigInteger.ONE)) {
         continuedFractionList = F.ListAlloc(1);
@@ -1624,10 +1847,6 @@ public final class NumberTheory {
           denominator = divideAndRemainder[1];
           if (denominator.equals(BigInteger.ONE)) {
             continuedFractionList.append(isNegative ? F.ZZ(numerator.negate()) : F.ZZ(numerator));
-          }
-          if (checkNumericZero && F.isZero(denominator.doubleValue() / numerator.doubleValue(),
-              Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            break;
           }
         }
       }
@@ -1737,7 +1956,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isNonNegativeResult()) {
         int n = arg1.toIntDefault();
         if (n >= 0) {
@@ -1797,7 +2016,7 @@ public final class NumberTheory {
     public DiracDelta() {}
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 1) {
         IASTAppendable newArgs = F.ast(S.DiracDelta);
         IExpr globalMultiplier = F.C1;
@@ -1959,7 +2178,7 @@ public final class NumberTheory {
   private static class Divisible extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       for (int i = 2; i < ast.size(); i++) {
         if (ast.get(i).isZero()) {
           // The argument `1` in `2` should be nonzero.
@@ -2030,7 +2249,7 @@ public final class NumberTheory {
      * @param result
      * @return
      */
-    private IExpr isRealDivisible(IReal result) {
+    private @AllowNIL IExpr isRealDivisible(IReal result) {
       if (result.isInteger()) {
         return S.True;
       }
@@ -2051,7 +2270,7 @@ public final class NumberTheory {
   private static class DivisorSum extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr head = ast.arg2();
       IExpr condition = F.NIL;
@@ -2167,7 +2386,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -2231,7 +2450,7 @@ public final class NumberTheory {
       return ARGS_2_2;
     }
 
-    private static IExpr divisorSigma(IExpr arg1, IInteger n) {
+    private static @AllowNIL IExpr divisorSigma(IExpr arg1, IInteger n) {
       IAST list = n.divisors();
       if (list.isList()) {
         int size = list.size();
@@ -2309,7 +2528,7 @@ public final class NumberTheory {
   private static class EulerE extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr z = ast.arg2();
@@ -2508,7 +2727,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
           return ((IInteger) arg1).eulerPhi();
@@ -2611,7 +2830,7 @@ public final class NumberTheory {
      * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return ast.arg1().isInteger() ? signedExtendedGCD(ast, engine) : F.NIL;
       }
@@ -2690,7 +2909,7 @@ public final class NumberTheory {
      * The extended gcd of integers which may be negative or zero: the one of their absolute values,
      * with the sign of an argument on its coefficient and <code>0</code> for a zero argument.
      */
-    private static IExpr signedExtendedGCD(IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr signedExtendedGCD(IAST ast, EvalEngine engine) {
       final int n = ast.argSize();
       java.util.List<Integer> nonZero = new java.util.ArrayList<Integer>();
       for (int i = 1; i <= n; i++) {
@@ -2893,7 +3112,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.factorial();
@@ -2902,7 +3121,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr z = ast.arg1();
         // Gamma(1+z)
@@ -2920,7 +3139,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isInteger()) {
         if (z.isNegative()) {
@@ -3007,7 +3226,7 @@ public final class NumberTheory {
   private static class FactorialPower extends AbstractEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2() && ast.arg2().isInteger() && ast.arg2().isNonNegativeResult()) {
         return factorialPower2(ast.arg1(), ast.arg2(), engine);
       }
@@ -3015,7 +3234,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr v = ast.arg1();
       IExpr n = ast.arg2();
       if (ast.isAST2()) {
@@ -3302,7 +3521,7 @@ public final class NumberTheory {
    */
   private static class Factorial2 extends AbstractEvaluator implements IFunctionExpand {
     @Override
-    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return functionExpand(ast, engine);
       }
@@ -3310,7 +3529,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
         // 2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
@@ -3323,7 +3542,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       long n = arg1.toLongDefault();
       if (F.isPresent(n)) {
@@ -3459,7 +3678,7 @@ public final class NumberTheory {
   public static class FactorInteger extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() >= 2 && ast.size() <= 4) {
         IExpr arg1 = ast.arg1();
         if (ast.size() == 2) {
@@ -3761,7 +3980,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
         if (n.isPlus() && n.first().isInteger()) {
@@ -3792,7 +4011,7 @@ public final class NumberTheory {
      * Fibonacci sequence.</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         int n = arg1.toIntDefault();
@@ -3910,13 +4129,30 @@ public final class NumberTheory {
   private static class FindLinearRecurrence extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST1()) {
-        if (arg1.isList()) {
-          ISeqBase seq = Sequences.sequence(arg1);
-          return seq.find_linear_recurrence(arg1.argSize());
+      if (arg1.isList()) {
+        // a recurrence of order l is fitted to 2*l terms, which every list allows; at least one
+        // more term must confirm it
+        int n = arg1.argSize();
+        int order = (n - 1) / 2;
+        if (ast.isAST2()) {
+          // FindLinearRecurrence(list, maximumOrder)
+          int maximumOrder = ast.arg2().toIntDefault();
+          if (maximumOrder < 1) {
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          }
+          order = Math.min(order, maximumOrder);
         }
+        if (order < 1) {
+          return F.NIL;
+        }
+        ISeqBase seq = Sequences.sequence(arg1);
+        IAST result = seq.find_linear_recurrence(n, F.ZZ(order), F.NIL);
+        if (result.isPresent() && result.isEmpty()) {
+          return F.NIL;
+        }
+        return result;
       }
       return F.NIL;
     }
@@ -3975,7 +4211,7 @@ public final class NumberTheory {
   private static class FrobeniusNumber extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       BigInteger[] array = Validate.checkListOfBigIntegers(ast, ast.arg1(), true, engine);
       if (array != null && array.length > 0) {
         if (array.length == 1) {
@@ -4042,7 +4278,7 @@ public final class NumberTheory {
      * @see org.matheclipse.core.reflection.system.ContinuedFraction
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         if (list.size() > 1) {
@@ -4132,7 +4368,7 @@ public final class NumberTheory {
      * @param engine
      * @return
      */
-    private static IExpr continuedFractionReduce(IAST continuedFractionList, EvalEngine engine) {
+    private static @AllowNIL IExpr continuedFractionReduce(IAST continuedFractionList, EvalEngine engine) {
       try {
         int size = continuedFractionList.argSize();
         if (continuedFractionList.forAll(x -> x.isReal())) {
@@ -4173,7 +4409,7 @@ public final class NumberTheory {
   private static class GoldbachList extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maxPairs = Integer.MAX_VALUE;
       if (ast.isAST2()) {
         maxPairs = ast.arg2().toMachineInt();
@@ -4324,7 +4560,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         int n = arg1.toIntDefault();
@@ -4431,7 +4667,7 @@ public final class NumberTheory {
   private static class KroneckerSymbol extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isZero()) {
@@ -4503,7 +4739,7 @@ public final class NumberTheory {
   private static class LinearRecurrence extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr arg3 = ast.arg3();
@@ -4570,7 +4806,7 @@ public final class NumberTheory {
      *
      * @return {@link F#NIL} if the terms can't be computed
      */
-    private IExpr termsFromBefore(IAST list1, IAST list2, int nmin, int nmax, IAST ast,
+    private @AllowNIL IExpr termsFromBefore(IAST list1, IAST list2, int nmin, int nmax, IAST ast,
         EvalEngine engine) {
       final int k = list1.argSize();
       long size = (long) nmax - nmin + 1L;
@@ -4701,7 +4937,7 @@ public final class NumberTheory {
       implements IntUnaryOperator {
 
     /** The parity of the number of the Gaussian prime factors, the units don't count. */
-    private static IExpr gaussianLambda(IExpr n, EvalEngine engine) {
+    private static @AllowNIL IExpr gaussianLambda(IExpr n, EvalEngine engine) {
       if (n.isZero() || !n.isNumber() || !n.isExactNumber()) {
         return F.NIL;
       }
@@ -4733,7 +4969,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -4798,7 +5034,7 @@ public final class NumberTheory {
   private static class LucasL extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
         if (!n.isIntegerResult()) {
@@ -4821,7 +5057,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         int n = arg1.toIntDefault();
@@ -4962,7 +5198,7 @@ public final class NumberTheory {
   private static class MangoldtLambda extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
         return arg1.mapThread(ast, 1);
@@ -5045,7 +5281,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = arg1.toIntDefault();
         if (n > 0) {
@@ -5101,7 +5337,7 @@ public final class NumberTheory {
   private static class MersennePrimeExponentQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
         return S.False;
@@ -5219,7 +5455,7 @@ public final class NumberTheory {
      * The inverse of the Gaussian integer <code>k</code> modulo the Gaussian integer <code>n</code>
      * from their extended GCD, reduced with {@link S#Mod}.
      */
-    private static IExpr gaussianInverse(IExpr k, IExpr n, EvalEngine engine) {
+    private static @AllowNIL IExpr gaussianInverse(IExpr k, IExpr n, EvalEngine engine) {
       if (n.isZero()) {
         // Nonzero integer expected at position `1` in `2`.
         return Errors.printMessage(S.ModularInverse, "intnz", F.List(F.C2, F.binaryAST2(S.ModularInverse, k, n)),
@@ -5301,7 +5537,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
           return ((IInteger) arg1).moebiusMu();
@@ -5407,7 +5643,7 @@ public final class NumberTheory {
   private static class Multinomial extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST(S.Multinomial, 1, Integer.MAX_VALUE - 1)) {
         int size = ast.size();
         int n = size - 1;
@@ -5424,7 +5660,7 @@ public final class NumberTheory {
      * @param ast
      * @return <code>F.NIL</code> if the ast arguments couldn't be converted to an IInteger
      */
-    private static IExpr multinomial(final IAST ast) {
+    private static @AllowNIL IExpr multinomial(final IAST ast) {
       IInteger[] k = new IInteger[ast.argSize()];
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = ast.get(i);
@@ -5446,7 +5682,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() <= 2) {
         // (n) ==> 1
         return F.C1;
@@ -5545,7 +5781,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger() && ast.arg2().isInteger()) {
         try {
           IInteger k = ast.getInt(1);
@@ -5582,7 +5818,7 @@ public final class NumberTheory {
      * @return {@link F#NIL} if a residue is not an integer or no residue is a power of
      *         <code>k</code>
      */
-    private static IExpr smallestPowerIn(BigInteger k, BigInteger n, IAST residues,
+    private static @AllowNIL IExpr smallestPowerIn(BigInteger k, BigInteger n, IAST residues,
         EvalEngine engine) {
       final BigInteger base = k.mod(n);
       final List<BigInteger> units = new ArrayList<>(residues.argSize());
@@ -5675,7 +5911,7 @@ public final class NumberTheory {
   private static class NextPrime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       // lists thread like an outer product: first over the start values, then over k
       if (arg1.isList()) {
@@ -5855,7 +6091,7 @@ public final class NumberTheory {
   /**
    * <code>PartitionsP(n)</code> or (for <code>distinct</code>) <code>PartitionsQ(n)</code>.
    */
-  private static IExpr partitionNumber(IExpr arg1, boolean distinct) {
+  private static @AllowNIL IExpr partitionNumber(IExpr arg1, boolean distinct) {
     if (arg1.isInteger()) {
       if (arg1.isNegative()) {
         // http://fungrim.org/entry/cd3013/
@@ -5959,7 +6195,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = arg1.toIntDefault();
         if (n >= 0) {
@@ -6027,7 +6263,7 @@ public final class NumberTheory {
   private static class PerfectNumberQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
         return S.False;
@@ -6106,7 +6342,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         IInteger n = (IInteger) arg1;
@@ -6179,7 +6415,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
@@ -6392,7 +6628,7 @@ public final class NumberTheory {
   private static class PrimitiveRoot extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         try {
@@ -6511,7 +6747,7 @@ public final class NumberTheory {
      * Exploring Number Theory - Finding Primitive Roots</a>
      */
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
           // the primitive roots of -n are those of n
@@ -6643,7 +6879,7 @@ public final class NumberTheory {
   private static class RamseyNumber extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int r = ast.arg1().toMachineInt();
       int s = ast.arg2().toMachineInt();
       if (r <= 0 || s <= 0) {
@@ -6746,7 +6982,7 @@ public final class NumberTheory {
      * The first convergent within the precision of an inexact real or complex number, or
      * {@link F#NIL} for any other expression.
      */
-    private static IExpr convergent(IExpr x) {
+    private static @AllowNIL IExpr convergent(IExpr x) {
       if (x instanceof INum && x.isMachineNumber()) {
         double value = ((INum) x).doubleValue();
         return Double.isFinite(value)
@@ -6806,7 +7042,7 @@ public final class NumberTheory {
      *
      * @return {@link F#NIL} if <code>expr</code> contains no arbitrary precision real number
      */
-    private static IExpr simplestWithin(IExpr expr, org.hipparchus.fraction.BigFraction dx) {
+    private static @AllowNIL IExpr simplestWithin(IExpr expr, org.hipparchus.fraction.BigFraction dx) {
       java.util.function.Function<IExpr, IExpr> function = x -> {
         if (x instanceof ApfloatNum) {
           org.hipparchus.fraction.BigFraction value = exactFraction(((ApfloatNum) x).apfloatValue());
@@ -6897,7 +7133,7 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1 instanceof INum) {
         arg1 = ((INum) arg1).numericValue();
@@ -7008,7 +7244,7 @@ public final class NumberTheory {
   private static final class SquareFreeQ extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr modulus = options[0];
       IExpr gaussianIntegers = options[1];
@@ -7134,7 +7370,7 @@ public final class NumberTheory {
      *
      * @return {@link F#NIL} if <code>expr</code> is no polynomial in <code>variable</code>
      */
-    private static IExpr isSquarefreeIn(IExpr expr, IExpr variable, EvalEngine engine) {
+    private static @AllowNIL IExpr isSquarefreeIn(IExpr expr, IExpr variable, EvalEngine engine) {
       IExpr polynomial = F.evalExpandAll(expr, engine);
       if (polynomial.isZero() || !polynomial.isPolynomial(F.list(variable))) {
         return F.NIL;
@@ -7280,7 +7516,7 @@ public final class NumberTheory {
       return count;
     }
 
-    private IExpr squaresR2(IInteger n, EvalEngine engine) {
+    private @AllowNIL IExpr squaresR2(IInteger n, EvalEngine engine) {
       if (n.isZero()) {
         return F.C1;
       }
@@ -7315,7 +7551,7 @@ public final class NumberTheory {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int d = ast.arg1().toMachineInt();
       if (d <= 0) {
         // The value `1` in position `2` must be a non-negative machine sized integer
@@ -7555,7 +7791,7 @@ public final class NumberTheory {
    */
   private static class StirlingS1 extends AbstractFunctionEvaluator {
 
-    private static IExpr stirlingS1(IInteger n, IInteger m) {
+    private static @AllowNIL IExpr stirlingS1(IInteger n, IInteger m) {
       IInteger nSubtract1 = n.subtract(F.C1);
       if (n.isPositive() && m.isOne()) {
         return Times(F.Power(-1, nSubtract1), F.Factorial(nSubtract1));
@@ -7598,7 +7834,7 @@ public final class NumberTheory {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr m = ast.arg2();
       if (n.isNegativeResult() || m.isNegativeResult()) {
@@ -7678,7 +7914,7 @@ public final class NumberTheory {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr nArg1 = ast.arg1();
         IExpr kArg2 = ast.arg2();
@@ -7826,7 +8062,7 @@ public final class NumberTheory {
       return subfactorial(arg1, engine.isNumericMode()).eval(engine);
     }
 
-    protected IExpr subfactorial(IExpr arg1, boolean numericMode) {
+    protected @AllowNIL IExpr subfactorial(IExpr arg1, boolean numericMode) {
       if (arg1.isInteger() && arg1.isPositive()) {
         try {
           long n = ((IInteger) arg1).toLong();
@@ -7879,7 +8115,7 @@ public final class NumberTheory {
     private static final BigInteger TWENTY_FOUR = BigInteger.valueOf(24L);
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isInteger()) {
         return F.NIL;
       }
@@ -8100,7 +8336,7 @@ public final class NumberTheory {
    * @param m
    * @return <code>(n/m)</code>
    */
-  public static IExpr jacobiSymbol(final IInteger n, final IInteger m) {
+  public static @AllowNIL IExpr jacobiSymbol(final IInteger n, final IInteger m) {
     try {
       return n.jacobiSymbol(m);
     } catch (ArithmeticException e) {
@@ -8374,7 +8610,7 @@ public final class NumberTheory {
   }
 
 
-  public static IExpr factorialPower2(IExpr v, IExpr n, EvalEngine engine) {
+  public static @AllowNIL IExpr factorialPower2(IExpr v, IExpr n, EvalEngine engine) {
     IExpr result = F.C1;
     if (n.isNumber() && !n.isInteger() && !(n.isReal() && ((IReal) n).isNumIntValue())) {
       // not a product of n factors: Gamma(1+x)/Gamma(1-n+x)

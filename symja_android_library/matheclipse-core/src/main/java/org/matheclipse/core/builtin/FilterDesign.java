@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -33,7 +34,7 @@ public final class FilterDesign {
    */
   public static final class ButterworthFilterModel extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr s = ast.isAST2() ? ast.arg2() : S.s;
       if (!s.isVariable()) {
         return F.NIL;
@@ -129,7 +130,7 @@ public final class FilterDesign {
    */
   public static final class RecurrenceFilter extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg2().isList()) {
         return F.NIL;
       }
@@ -161,7 +162,7 @@ public final class FilterDesign {
     }
 
     /** The filter of a model: <code>{alpha, beta}</code> from its coefficients. */
-    private static IExpr ofModel(IExpr model, IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr ofModel(IExpr model, IAST ast, EvalEngine engine) {
       IExpr[] element = ControlSystems.singleElement(model, engine);
       if (element == null) {
         return F.NIL;

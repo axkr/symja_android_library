@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collectors;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -305,9 +306,12 @@ public class SvgGraphics2D {
         : new double[][] {{b.xMin, b.xMax}, {b.yMin, b.yMax}};
     double[][] option = renderer.options.plotRange;
     if (option != null) {
+      // end by end: an All or Automatic end of a given range is the end of the content
       for (int axis = 0; axis < 2; axis++) {
-        if (!Double.isNaN(option[axis][0]) && !Double.isNaN(option[axis][1])) {
-          range[axis] = option[axis].clone();
+        for (int side = 0; side < 2; side++) {
+          if (!Double.isNaN(option[axis][side])) {
+            range[axis][side] = option[axis][side];
+          }
         }
       }
     }
@@ -660,20 +664,26 @@ public class SvgGraphics2D {
     if (options.axesLabel != null) {
       String[] labels = labelPair(options.axesLabel);
       IExpr[] styled = labelParts(options.axesLabel);
+      // a font size of AxesStyle sizes the axes labels too
+      final double axesLabelSize =
+          Double.isNaN(options.axesFontSize) ? 12 : options.axesFontSize;
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(viewport.plotX2))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
-            .attr("text-anchor", "end"), styled[0], 12, false).withText(labels[0]));
+            .attr("text-anchor", "end"), styled[0], axesLabelSize, false).withText(labels[0]));
       }
       if (labels[1] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(viewport.plotX1))
             .attr("y", SvgRenderer2D.fmt(Math.max(12, viewport.plotY1 - 6)))
-            .attr("text-anchor", "middle"), styled[1], 12, false).withText(labels[1]));
+            .attr("text-anchor", "middle"), styled[1], axesLabelSize, false).withText(labels[1]));
       }
     }
     if (options.frameLabel != null) {
       String[] labels = labelPair(options.frameLabel);
       IExpr[] styled = labelParts(options.frameLabel);
+      // a font size of FrameStyle sizes the frame labels too
+      final double frameLabelSize =
+          Double.isNaN(options.frameFontSize) ? 12 : options.frameFontSize;
       double cx = (viewport.plotX1 + viewport.plotX2) / 2.0;
       double cy = (viewport.plotY1 + viewport.plotY2) / 2.0;
       double[] bottomBox = frameLabelBox(0);
@@ -691,7 +701,7 @@ public class SvgGraphics2D {
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
-            .attr("text-anchor", "middle"), styled[0], 12, false).withText(labels[0]));
+            .attr("text-anchor", "middle"), styled[0], frameLabelSize, false).withText(labels[0]));
       }
       if (labels[1] != null) {
         double x = Math.max(12, viewport.plotX1 - AXIS_LABEL_HEIGHT - 14);
@@ -699,7 +709,7 @@ public class SvgGraphics2D {
             labelled(tag("text").attr("x", SvgRenderer2D.fmt(x)).attr("y", SvgRenderer2D.fmt(cy))
                 .attr("text-anchor", "middle").attr("transform", String.format(Locale.US,
                     "rotate(-90 %s %s)", SvgRenderer2D.fmt(x), SvgRenderer2D.fmt(cy))),
-                styled[1], 12, false).withText(labels[1]));
+                styled[1], frameLabelSize, false).withText(labels[1]));
       }
     }
   }
@@ -892,10 +902,21 @@ public class SvgGraphics2D {
     return out;
   }
 
-  /** The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. */
+  /**
+   * The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. A label
+   * per edge, {@code {{left, right}, {bottom, top}}}, gives its bottom and left label; the right
+   * and top edges are not labelled.
+   */
   private IExpr[] labelParts(IExpr expr) {
     IExpr[] out = new IExpr[2];
-    if (expr.isList() && ((IAST) expr).argSize() >= 2) {
+    if (expr.isList2() && expr.first().isList2() && expr.second().isList2()) {
+      if (!unlabelled(expr.second().first())) {
+        out[0] = expr.second().first();
+      }
+      if (!unlabelled(expr.first().first())) {
+        out[1] = expr.first().first();
+      }
+    } else if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
       if (!unlabelled(list.arg1())) {
         out[0] = list.arg1();
@@ -1010,70 +1031,110 @@ public class SvgGraphics2D {
   }
 
   /**
-   * Narrow an automatic y range to the body of the data.
+   * Narrow an automatic y range to the body of the data, see
+   * {@link org.matheclipse.core.graphics.AutomaticPlotRange}. The body is measured on the scale of
+   * the y axis: on a logarithmic one an exponential is a straight line and keeps its whole range,
+   * while a pole is still cut. The points of curves count with the width in x they stand for; a
+   * point of another primitive, like a mesh point on a curve, with the width of the curve point
+   * nearest to it in x, and the extent of other primitives with the mean width of the curve points.
    *
    * <p>
    * Only ever shrinks the range, and only for plot generated graphics: see
    * {@link GraphicsOptions2D#plotGenerated}.
    */
   private void refineYRange(Bounds2D bounds) {
-    List<Double> values = new ArrayList<>();
+    DoubleUnaryOperator fx = GraphicsOptions.getScalingFunction(options.scalingX);
+    DoubleUnaryOperator fy = GraphicsOptions.getScalingFunction(options.scalingY);
+    DoubleUnaryOperator gy = GraphicsOptions.getInverseScalingFunction(options.scalingY);
+    List<double[]> weighted = new ArrayList<>();
     for (Prim2D p : primitives) {
-      collectYValues(p, values);
+      collectYValues(p, fx, weighted);
     }
-    if (values.size() < 10) {
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    // the curve points {x, width}, sorted by x
+    List<double[]> curve = new ArrayList<>();
+    List<double[]> scaled = new ArrayList<>(weighted.size());
+    for (double[] entry : weighted) {
+      double y = fy.applyAsDouble(entry[0]);
+      if (Double.isFinite(y)) {
+        scaled.add(new double[] {y, entry[1], entry[2]});
+        min = Math.min(min, y);
+        max = Math.max(max, y);
+        if (!Double.isNaN(entry[1]) && Double.isFinite(entry[2])) {
+          curve.add(new double[] {entry[2], entry[1]});
+        }
+      }
+    }
+    int n = scaled.size();
+    double[] values = new double[n];
+    double[] weights = curve.isEmpty() ? null : new double[n];
+    double[] curveX = null;
+    double meanWidth = 0.0;
+    if (weights != null) {
+      curve.sort((a, b) -> Double.compare(a[0], b[0]));
+      curveX = new double[curve.size()];
+      for (int i = 0; i < curveX.length; i++) {
+        curveX[i] = curve.get(i)[0];
+        meanWidth += curve.get(i)[1] / curveX.length;
+      }
+    }
+    for (int i = 0; i < n; i++) {
+      double[] entry = scaled.get(i);
+      values[i] = entry[0];
+      if (weights != null) {
+        weights[i] = !Double.isNaN(entry[1]) ? entry[1]
+            : Double.isFinite(entry[2]) ? curve.get(nearest(curveX, entry[2]))[1] : meanWidth;
+      }
+    }
+    double[] range =
+        org.matheclipse.core.graphics.AutomaticPlotRange.narrow(values, weights, min, max);
+    if (range == null) {
       return;
     }
-    Collections.sort(values);
-    int n = values.size();
-    double p10 = values.get(n / 10);
-    double p90 = values.get(9 * n / 10);
-    double body = p90 - p10;
-    if (body <= 1e-10) {
-      double q1 = values.get(n / 4);
-      double q3 = values.get(3 * n / 4);
-      if (q3 - q1 <= 1e-10) {
-        return;
-      }
-      p10 = q1;
-      p90 = q3;
-      body = q3 - q1;
+    // the ends are mapped back only where they moved: the round trip through the scale could
+    // shift an end that stays by an ulp
+    if (range[0] > min) {
+      bounds.yMin = Math.max(bounds.yMin, gy.applyAsDouble(range[0]));
     }
-    double q1 = values.get(n / 4);
-    double q3 = values.get(3 * n / 4);
-    double iqr = q3 - q1;
-    double targetMin = Math.max(p10 - body, q1 - 3.0 * iqr);
-    double targetMax = Math.min(p90 + body, q3 + 3.0 * iqr);
-
-    double newMin = bounds.yMin;
-    double newMax = bounds.yMax;
-    for (int i = 0; i < n; i++) {
-      if (values.get(i) >= targetMin) {
-        newMin = values.get(i);
-        break;
-      }
-    }
-    for (int i = n - 1; i >= 0; i--) {
-      if (values.get(i) <= targetMax) {
-        newMax = values.get(i);
-        break;
-      }
-    }
-    if (newMin > bounds.yMin) {
-      bounds.yMin = newMin;
-    }
-    if (newMax < bounds.yMax) {
-      bounds.yMax = newMax;
+    if (range[1] < max) {
+      bounds.yMax = Math.min(bounds.yMax, gy.applyAsDouble(range[1]));
     }
   }
 
-  private void collectYValues(Prim2D prim, List<Double> out) {
-    Bounds2D single = new Bounds2D();
+  /** The index of the value of the sorted <code>xs</code> nearest to <code>x</code>. */
+  private static int nearest(double[] xs, double x) {
+    int i = java.util.Arrays.binarySearch(xs, x);
+    if (i >= 0) {
+      return i;
+    }
+    i = -i - 1;
+    if (i == 0) {
+      return 0;
+    }
+    if (i == xs.length) {
+      return xs.length - 1;
+    }
+    return x - xs[i - 1] <= xs[i] - x ? i - 1 : i;
+  }
+
+  /**
+   * Add <code>{y, width, x}</code> for the finite y values of a primitive, <code>x</code> on the x
+   * scale: for a curve the width is half the distance on the x scale to its neighbours on the same
+   * segment; NaN for the values of other primitives, whose x is NaN unless they are points.
+   */
+  private static void collectYValues(Prim2D prim, DoubleUnaryOperator fx, List<double[]> out) {
     if (prim instanceof Prim2D.LinePrim) {
       for (List<double[]> segment : ((Prim2D.LinePrim) prim).segments) {
-        for (double[] p : segment) {
+        int size = segment.size();
+        for (int i = 0; i < size; i++) {
+          double[] p = segment.get(i);
           if (Double.isFinite(p[1])) {
-            out.add(p[1]);
+            double left = fx.applyAsDouble(i > 0 ? segment.get(i - 1)[0] : p[0]);
+            double right = fx.applyAsDouble(i < size - 1 ? segment.get(i + 1)[0] : p[0]);
+            double width = 0.5 * Math.abs(right - left);
+            out.add(new double[] {p[1], Double.isFinite(width) ? width : 0.0,
+                fx.applyAsDouble(p[0])});
           }
         }
       }
@@ -1082,15 +1143,16 @@ public class SvgGraphics2D {
     if (prim instanceof Prim2D.PointsPrim) {
       for (double[] p : ((Prim2D.PointsPrim) prim).points) {
         if (Double.isFinite(p[1])) {
-          out.add(p[1]);
+          out.add(new double[] {p[1], Double.NaN, fx.applyAsDouble(p[0])});
         }
       }
       return;
     }
+    Bounds2D single = new Bounds2D();
     prim.accumulate(single);
     if (!single.isEmpty()) {
-      out.add(single.yMin);
-      out.add(single.yMax);
+      out.add(new double[] {single.yMin, Double.NaN, Double.NaN});
+      out.add(new double[] {single.yMax, Double.NaN, Double.NaN});
     }
   }
 

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.matheclipse.core.basic.Config;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.Tag;
 
 /**
  * <code>URLExecute</code> against a server on the loopback address, so that no test depends on the
@@ -153,6 +154,7 @@ public class URLExecuteTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTimeConstrainedStopsASlowServer() {
     long start = System.nanoTime();
     check("TimeConstrained(URLExecute(" + base + "/slow\"), 1, \"stopped\")", //

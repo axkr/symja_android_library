@@ -132,7 +132,7 @@ public class RootSumTest extends ExprEvaluatorTestCase {
   @Test
   public void testRootSumNumeric() {
     check("N(RootSum(#^5 - 3 # - 7 &, Sin))", //
-        "0.292188+I*(-4.44089*10^-16)");
+        "0.292188");
     // A Sin summand is not a rational function, but the roots of a quadratic are plain radicals, so
     // the sum is written out over them.
     check("RootSum(#^2 - # + a &, Sin(#) &)", //

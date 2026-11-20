@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
@@ -115,7 +116,7 @@ public final class DirichletFunctions {
   private static final class DirichletCharacter extends AbstractDirichletEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg3().isNumber()) {
         // a symbolic argument: nothing to evaluate, and no message about labels which N may
         // have made inexact - N(DirichletCharacter(7, 2, x))
@@ -153,7 +154,7 @@ public final class DirichletFunctions {
   private static final class DirichletL extends AbstractDirichletEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DirichletCharacterTable table = labels(ast, engine);
       if (table == null) {
         return F.NIL;
@@ -221,7 +222,7 @@ public final class DirichletFunctions {
    * there it is evaluated with that many guard digits. At <code>s = 1</code> itself the closed form
    * is used.
    */
-  private static IExpr numericValue(DirichletCharacterTable table, IExpr s, EvalEngine engine) {
+  private static @AllowNIL IExpr numericValue(DirichletCharacterTable table, IExpr s, EvalEngine engine) {
     if (s instanceof ApfloatNum) {
       // an integer s <= 0 at a precision above machine: the exact value, which may be a trivial
       // zero the Hurwitz sum could only approach through cancellation. Integer means the exact
@@ -273,7 +274,7 @@ public final class DirichletFunctions {
    * A value computed with guard digits, rounded to the precision of <code>s</code>: a machine
    * number for a machine number <code>s</code>.
    */
-  private static IExpr rounded(IExpr value, IExpr s, long digits, boolean realResult,
+  private static @AllowNIL IExpr rounded(IExpr value, IExpr s, long digits, boolean realResult,
       EvalEngine engine) {
     if (!value.isNumber()) {
       return F.NIL;
@@ -298,7 +299,7 @@ public final class DirichletFunctions {
    * @param realResult a real character at a real <code>s</code>: return a real number
    * @return {@link F#NIL} if the principal character's zeta value has no machine value here
    */
-  private static IExpr machineValue(DirichletCharacterTable table, Complex s,
+  private static @AllowNIL IExpr machineValue(DirichletCharacterTable table, Complex s,
       boolean realResult) {
     final long f = table.conductor();
     final long order = table.order();

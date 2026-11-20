@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -75,7 +76,7 @@ public class CodeParserFunctions {
   /** <code>CodeTokenize[str]</code>: every token of the source, in order. */
   private static class CodeTokenize extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isString()) {
         return F.NIL;
       }
@@ -106,7 +107,7 @@ public class CodeParserFunctions {
    */
   private static class CodeConcreteParse extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isString()) {
         return F.NIL;
       }
@@ -175,7 +176,7 @@ public class CodeParserFunctions {
    */
   private static class CodeParse extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isString()) {
         return F.NIL;
       }

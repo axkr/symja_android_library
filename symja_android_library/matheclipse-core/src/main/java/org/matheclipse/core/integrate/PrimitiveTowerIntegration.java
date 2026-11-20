@@ -96,9 +96,10 @@ public class PrimitiveTowerIntegration {
    *
    * <p>
    * The relations are exposed by {@code PowerExpand} ({@code Log(u^n) -> n*Log(u)},
-   * {@code Log(u*v) -> Log(u)+Log(v)}). That is only valid up to a branch constant, but a constant
-   * is irrelevant for an antiderivative and the result is diff-back verified against the
-   * <em>original</em> integrand, so an incorrect expansion is rejected. Fires only when the tower
+   * {@code Log(u*v) -> Log(u)+Log(v)}). That is only valid up to a branch constant, which is
+   * constant on one side of a cut only, so the result is diff-back verified against the
+   * <em>original</em> integrand on the real line and off it, and an incorrect expansion is
+   * rejected. Fires only when the tower
    * genuinely has several monomials that the expansion collapses to fewer, so it cannot disturb an
    * integrand whose logs are already independent.
    */
@@ -116,8 +117,14 @@ public class PrimitiveTowerIntegration {
       return F.NIL; // the logs were independent - nothing collapsed
     }
     IExpr result = integrateByEngine(normalized, x, engine);
-    return result.isPresent() && AntiderivativeCheck.verifyWithNumericFallback(result, integrand,
-        x, SAMPLE_POINTS, engine) ? result : F.NIL;
+    // the expansion may hold on one side of a branch cut only: Log(-x) is Log(x)+I*Pi below the
+    // positive reals and Log(x)-I*Pi above them, which changes the integrand by a multiple of 1/x
+    // there, no constant
+    return result.isPresent()
+        && AntiderivativeCheck.verifyWithNumericFallback(result, integrand, x, SAMPLE_POINTS,
+            engine)
+        && !AntiderivativeCheck.contradictedOffTheRealLine(result, integrand, x, engine) ? result
+            : F.NIL;
   }
 
   private static IExpr integrateTower(IExpr integrand, IExpr x, EvalEngine engine) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -610,7 +611,7 @@ public class SequenceFunctions {
   private static class Subsequences extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() <= 3) {
         IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
@@ -707,7 +708,7 @@ public class SequenceFunctions {
   private static final class AllSameBy extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (!ast.arg1().isListOrAssociation()) {
         return F.NIL;
       }
@@ -739,7 +740,7 @@ public class SequenceFunctions {
   private static final class ComapApply extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       if (argSize != 2) {
         return F.NIL;
@@ -896,7 +897,7 @@ public class SequenceFunctions {
   private static final class FindTransientRepeat extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       int minRepeats = ast.arg2().toIntDefault();
       if (minRepeats < 1) {
@@ -965,7 +966,7 @@ public class SequenceFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isAssociation() && ast.arg1().argSize() > 0) {
         // the positions of the values of an association
         IAssociation association = (IAssociation) ast.arg1();
@@ -1084,7 +1085,7 @@ public class SequenceFunctions {
   private static final class SymmetricDifference extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       for (int i = 1; i <= argSize; i++) {
         if (!ast.get(i).isAST()) {
@@ -1177,7 +1178,7 @@ public class SequenceFunctions {
   private static final class Upsample extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList() || ((IAST) ast.arg1()).exists(x -> x.isList())) {
         return F.NIL;
       }

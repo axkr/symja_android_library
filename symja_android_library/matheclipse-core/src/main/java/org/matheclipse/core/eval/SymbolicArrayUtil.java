@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.NILSafe;
 import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
@@ -598,7 +599,8 @@ public class SymbolicArrayUtil {
    *
    * @return {@link F#NIL} if one of the arguments is {@link F#NIL}
    */
-  public static @AllowNIL IAST joinDimensions(IAST dimensions1, IAST dimensions2) {
+  public static @AllowNIL IAST joinDimensions(@NILSafe IAST dimensions1,
+      @NILSafe IAST dimensions2) {
     if (dimensions1.isNIL() || dimensions2.isNIL()) {
       return F.NIL;
     }
@@ -613,7 +615,8 @@ public class SymbolicArrayUtil {
    *
    * @return <code>false</code> if one of the arguments is {@link F#NIL}
    */
-  public static boolean sameDimensions(IAST dimensions1, IAST dimensions2) {
+  public static boolean sameDimensions(@NILSafe IAST dimensions1,
+      @NILSafe IAST dimensions2) {
     return dimensions1.isPresent() && dimensions2.isPresent() && dimensions1.equals(dimensions2);
   }
 }

@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * A pole of the integrand at a zero of a transcendental denominator inside the interval, and the
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 public class TranscendentalPoleTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPoleAtLogarithm() {
     // E^x == 3 at x == Log(3), inside both intervals: the integrals diverge
     check("Integrate(x/(E^x - 3), {x, 0, Infinity})", //

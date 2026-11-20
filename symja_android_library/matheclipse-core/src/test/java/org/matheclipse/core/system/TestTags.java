@@ -24,6 +24,10 @@ public final class TestTags {
    * {@code .github/scripts/check-test-budget.py} fails the build over an untagged slow test.
    *
    * <p>
+   * The ArchUnit rules of matheclipse-io run on ArchUnit's own JUnit engine, which reads
+   * {@code @ArchTag("slow")} instead; every one of them is in this tier.
+   *
+   * <p>
    * Run this tier with {@code mvn test -Pslow-tests}, or together with the fast tier using
    * {@code mvn verify -Pall-tests}.
    */

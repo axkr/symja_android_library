@@ -119,6 +119,12 @@ public final class GraphicsOptions2D {
   /** Whether {@code LabelStyle} asked for a font size, as opposed to only a colour or weight. */
   public boolean labelFontSizeSet = false;
 
+  /** The font size {@code AxesStyle} gives the tick labels and axes labels, NaN if none. */
+  public double axesFontSize = Double.NaN;
+
+  /** The font size {@code FrameStyle} gives the frame tick labels and frame labels, NaN if none. */
+  public double frameFontSize = Double.NaN;
+
   /**
    * {@code ClippingStyle}: how the parts of a curve that leave the plot range are drawn. Null
    * leaves them out altogether, which is the default.
@@ -244,6 +250,7 @@ public final class GraphicsOptions2D {
         break;
       case ID.AxesStyle:
         applyStyle(value, axesStyle, collector);
+        axesFontSize = fontSizeOf(value, collector);
         break;
       case ID.AxesLabel:
         axesLabel = value;
@@ -253,6 +260,7 @@ public final class GraphicsOptions2D {
         break;
       case ID.FrameStyle:
         applyStyle(value, frameStyle, collector);
+        frameFontSize = fontSizeOf(value, collector);
         break;
       case ID.LabelStyle:
         applyLabelStyle(value, collector);
@@ -404,6 +412,33 @@ public final class GraphicsOptions2D {
         // options that do not affect the drawing are accepted and ignored
         break;
     }
+  }
+
+  /**
+   * The font size in a style like <code>Directive(Thick, 14)</code>, <code>22</code>,
+   * <code>FontSize -> 16</code>, <code>Large</code> or a list of styles per direction: the first
+   * entry which sets one. A bare number counts, as in {@code LabelStyle}.
+   *
+   * @return NaN if the style names no font size
+   */
+  private double fontSizeOf(IExpr value, PrimitiveCollector collector) {
+    if (value.isReal()) {
+      double size = value.evalfNaN();
+      return size > 0.0 ? size : Double.NaN;
+    }
+    if (value.isList() || value.isAST(S.Directive)) {
+      for (IExpr entry : (IAST) value) {
+        double size = fontSizeOf(entry, collector);
+        if (!Double.isNaN(size)) {
+          return size;
+        }
+      }
+      return Double.NaN;
+    }
+    Style2D probe = new Style2D();
+    double before = probe.fontSize;
+    applyStyle(value, probe, collector);
+    return probe.fontSize != before ? probe.fontSize : Double.NaN;
   }
 
   private void applyStyle(IExpr value, Style2D target, PrimitiveCollector collector) {
@@ -614,8 +649,10 @@ public final class GraphicsOptions2D {
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
       plotRange = new double[][] {{Double.NaN, Double.NaN}, {Double.NaN, Double.NaN}};
-      if (list.arg1().isList() || list.arg2().isList() || isAxisRangeName(list.arg1())
-          || isAxisRangeName(list.arg2())) {
+      if (org.matheclipse.core.graphics.GraphicsOptions.isVerticalRangePair(list)) {
+        // a bare {min, max} constrains the y axis only; an All or Automatic end stays open
+        setRange(plotRange[1], list);
+      } else {
         // {xspec, yspec}: an axis given as All, Full or Automatic keeps its own range
         if (list.arg1().isList()) {
           setRange(plotRange[0], (IAST) list.arg1());
@@ -623,17 +660,9 @@ public final class GraphicsOptions2D {
         if (list.arg2().isList()) {
           setRange(plotRange[1], (IAST) list.arg2());
         }
-      } else {
-        // a bare {min, max} constrains the y axis only
-        setRange(plotRange[1], list);
       }
       plotRangeAutomatic = false;
     }
-  }
-
-  /** Whether the entry of a <code>PlotRange</code> pair leaves its axis to the content. */
-  private static boolean isAxisRangeName(IExpr spec) {
-    return spec == S.All || spec == S.Full || spec == S.Automatic;
   }
 
   private void setRange(double[] target, IAST pair) {

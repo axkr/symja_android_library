@@ -1,6 +1,7 @@
 package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -21,6 +22,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * <code>Image[...]</code> turns the result into a bitmap for the callers that need one. This rule
  * keeps the second rendering path from growing back.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class JFreeChartDependencyTest {
 

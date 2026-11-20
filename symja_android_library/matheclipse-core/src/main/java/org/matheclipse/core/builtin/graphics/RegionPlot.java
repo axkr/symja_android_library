@@ -32,6 +32,9 @@ public class RegionPlot extends ContourPlot {
   /** The colour of a single region. */
   private static final IAST REGION_COLOR = F.RGBColor(F.num(0.24), F.num(0.6), F.num(0.8));
 
+  /** The thickness of the boundary lines, which the default styles of the fills carry too. */
+  private static final IAST THICKNESS = F.AbsoluteThickness(F.num(2.0));
+
   /** How often a cell the boundary crosses twice is split into four. */
   private static final int MAX_SPLIT_DEPTH = 2;
 
@@ -77,8 +80,13 @@ public class RegionPlot extends ContourPlot {
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
 
     IAST conditions = ast.arg1().isList() ? (IAST) ast.arg1() : F.list(ast.arg1());
-    IASTAppendable primitives = F.ListAlloc(conditions.argSize() + 1);
+    // the regions share the points of one GraphicsComplex; every fill comes before the boundary
+    // lines, so that no region is painted over the outline of another
+    Tracer.Points points = new Tracer.Points();
+    IASTAppendable fills = F.ListAlloc(conditions.argSize());
+    IASTAppendable lines = F.ListAlloc(conditions.argSize());
     for (int k = 1; k < conditions.size(); k++) {
+      engine.checkTimeLimit();
       final IExpr condition = conditions.get(k);
       RegionClip.Membership member = (x, y) -> engine.evalTrue(
           condition.replaceAll(F.List(F.Rule(xVar, F.num(x)), F.Rule(yVar, F.num(y)))));
@@ -87,15 +95,30 @@ public class RegionPlot extends ContourPlot {
       if (style.isList()) {
         style = GraphicsOptions.getPlotStyle(style, k - 1);
       }
-      IExpr region = new Tracer(member, xRange, yRange, plotPoints).trace(color, style,
-          boundaryStyle);
-      if (region.isPresent()) {
-        primitives.append(region);
-      }
+      new Tracer(member, xRange, yRange, plotPoints, points).trace(color, style, boundaryStyle,
+          fills, lines);
     }
-    // the second part of Mathematica's content list, which holds the labels
+    IASTAppendable primitives = F.ListAlloc(2);
+    if (fills.argSize() > 0) {
+      IASTAppendable content = F.ListAlloc(fills.argSize() + lines.argSize());
+      content.appendArgs(fills);
+      content.appendArgs(lines);
+      primitives.append(F.GraphicsComplex(points.list, content));
+    }
+    // the second part of the content list, which holds the labels
     primitives.append(F.CEmptyList);
     return createGraphicsFunction(primitives, graphicsOptions, ast);
+  }
+
+  /** Append the directives of a style, with nested lists and directives taken apart. */
+  private static void flattenDirective(IExpr style, IASTAppendable directive) {
+    if (style.isList() || style.isAST(S.Directive)) {
+      for (IExpr d : (IAST) style) {
+        flattenDirective(d, directive);
+      }
+    } else {
+      directive.append(style);
+    }
   }
 
   /** The numeric range of <code>{x, xmin, xmax}</code>, or <code>null</code>. */
@@ -120,14 +143,20 @@ public class RegionPlot extends ContourPlot {
     private final int n;
 
     /** The points of the <code>GraphicsComplex</code>, and the index each of them has. */
-    private final IASTAppendable points = F.ListAlloc(256);
-    private final Map<Long, Map<Long, Integer>> index = new HashMap<Long, Map<Long, Integer>>();
+    static final class Points {
+      final IASTAppendable list = F.ListAlloc(256);
+      final Map<Long, Map<Long, Integer>> index = new HashMap<Long, Map<Long, Integer>>();
+    }
+
+    private final Points points;
     private final IASTAppendable polygons = F.ListAlloc(256);
     /** The pieces of the outline, as pairs of point indices. */
     private final List<int[]> outline = new ArrayList<int[]>();
 
-    Tracer(RegionClip.Membership member, double[] xRange, double[] yRange, int plotPoints) {
+    Tracer(RegionClip.Membership member, double[] xRange, double[] yRange, int plotPoints,
+        Points points) {
       this.member = member;
+      this.points = points;
       this.n = plotPoints;
       this.x0 = xRange[0];
       this.y0 = yRange[0];
@@ -135,8 +164,12 @@ public class RegionPlot extends ContourPlot {
       this.dy = (yRange[1] - yRange[0]) / plotPoints;
     }
 
-    /** The <code>GraphicsComplex</code> of the region, or {@link F#NIL} if it is empty. */
-    IExpr trace(IExpr color, IExpr plotStyle, IExpr boundaryStyle) {
+    /**
+     * Appends the fill of the region to <code>fills</code> and its outline to <code>lines</code>;
+     * nothing if the region is empty.
+     */
+    void trace(IExpr color, IExpr plotStyle, IExpr boundaryStyle, IASTAppendable fills,
+        IASTAppendable lines) {
       boolean[][] inside = new boolean[n + 1][n + 1];
       for (int i = 0; i <= n; i++) {
         for (int j = 0; j <= n; j++) {
@@ -173,22 +206,37 @@ public class RegionPlot extends ContourPlot {
         }
       }
       if (polygons.isEmpty()) {
-        return F.NIL;
+        return;
       }
-      IExpr fillStyle = plotStyle.isAutomatic() || plotStyle.isNone()
-          ? F.Directive(color, F.AbsoluteThickness(F.num(2.0)), F.Opacity(F.num(0.3)))
-          : F.Directive(plotStyle);
-      IASTAppendable content = F.ListAlloc(2);
-      content.append(
-          F.List(F.headAST0(S.EdgeForm), fillStyle,
-              F.unaryAST1(S.GraphicsGroup, F.List(F.Polygon(polygons)))));
+      IExpr fillStyle;
+      if (plotStyle.isAutomatic() || plotStyle.isNone()) {
+        fillStyle = F.Directive(color, THICKNESS, F.Opacity(F.num(0.3)));
+      } else {
+        // a style that is given is opaque unless it says otherwise
+        IASTAppendable directive = F.ast(S.Directive);
+        directive.append(THICKNESS);
+        IASTAppendable given = F.ast(S.Directive);
+        flattenDirective(plotStyle, given);
+        if (!given.exists(d -> d.isAST(S.Opacity))) {
+          directive.append(F.Opacity(F.C1));
+        }
+        directive.appendArgs(given);
+        fillStyle = directive;
+      }
+      fills.append(F.List(F.headAST0(S.EdgeForm), fillStyle,
+          F.unaryAST1(S.GraphicsGroup, F.List(F.Polygon(polygons)))));
       if (!boundaryStyle.isNone() && !outline.isEmpty()) {
-        IExpr lineStyle = boundaryStyle.isAutomatic()
-            ? F.Directive(color, F.AbsoluteThickness(F.num(2.0)))
-            : F.Directive(boundaryStyle);
-        content.append(F.List(lineStyle, F.Line(outlineLoops())));
+        // a style that is given is added to the default one
+        IASTAppendable lineStyle = F.ast(S.Directive);
+        lineStyle.append(color);
+        lineStyle.append(THICKNESS);
+        if (!boundaryStyle.isAutomatic()) {
+          flattenDirective(boundaryStyle, lineStyle);
+        }
+        IAST loops = outlineLoops();
+        // a boundary of one piece is a single list of point indices
+        lines.append(F.List(lineStyle, F.Line(loops.argSize() == 1 ? loops.arg1() : loops)));
       }
-      return F.GraphicsComplex(points, content);
     }
 
     /**
@@ -240,15 +288,15 @@ public class RegionPlot extends ContourPlot {
 
     /** The index of a point, which is added to the points if it is new. */
     private int point(double[] p) {
-      Map<Long, Integer> column =
-          index.computeIfAbsent(Double.doubleToLongBits(p[0]), k -> new HashMap<Long, Integer>());
+      Map<Long, Integer> column = points.index
+          .computeIfAbsent(Double.doubleToLongBits(p[0]), k -> new HashMap<Long, Integer>());
       Integer known = column.get(Double.doubleToLongBits(p[1]));
       if (known != null) {
         return known.intValue();
       }
-      points.append(F.List(F.num(p[0]), F.num(p[1])));
-      column.put(Double.doubleToLongBits(p[1]), Integer.valueOf(points.argSize()));
-      return points.argSize();
+      points.list.append(F.List(F.num(p[0]), F.num(p[1])));
+      column.put(Double.doubleToLongBits(p[1]), Integer.valueOf(points.list.argSize()));
+      return points.list.argSize();
     }
 
     /** The pieces of the outline joined end to end, as the index lists of a <code>Line</code>. */

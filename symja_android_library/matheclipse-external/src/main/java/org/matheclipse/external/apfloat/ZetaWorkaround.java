@@ -66,27 +66,15 @@ public class ZetaWorkaround
              workingPrecision = ApfloatHelperShim.extendPrecision(s.precision(), extraPrecision);
         s = ApfloatHelperShim.ensurePrecision(s, workingPrecision);
         Apint one = ApfloatHelperShim.ONES[radix],
-              two = new Apint(2, radix),
-              four = new Apint(4, radix);
+              two = new Apint(2, radix);
         // 1 - 2^(1 - s) is (s - 1) log(2) to the first order, and the difference s - 1 is exact
         double t = Math.abs(s.imag().doubleValue()),
                logS12 = ApfloatMath.log(ApcomplexMath.abs(s.subtract(one)).precision(doublePrecision)).doubleValue() + Math.log(Math.log(2));
-        long n = (long) ((workingPrecision * Math.log(radix) + t * Math.PI / 2 + Math.log(1 + 2 * t) - logS12) / Math.log(3 + Math.sqrt(8))),
-             n2 = Util.multiplyExact(n, 2);
-        // In apfloat: ApfloatMath.factorial(n2, workingPrecision, radix), which is package-private
-        Apfloat denominator = ApfloatMath.gamma(new Apint(n2 + 1, radix).precision(workingPrecision)),
-                numerator = new Apint(n, radix).multiply(denominator).multiply(ApfloatMath.pow(four.precision(workingPrecision), n)),
-                d = Apfloat.ZERO;
-        Apcomplex sum = Apcomplex.ZERO;
-        for (long k = n; k > 0; k--)
-        {
-            numerator = numerator.divide(new Apint(n + k, radix));
-            d = d.add(numerator.divide(denominator));
-            numerator = numerator.divide(four);
-            denominator = denominator.multiply(new Apint(n - k + 1, radix)).divide(new Apint(2 * k, radix)).divide(new Apint(2 * k - 1, radix));
-            sum = sum.add(((k & 1) == 0 ? d.negate() : d).multiply(ApcomplexMath.pow(new Apint(k, radix), s.negate())));
-        }
-        d = d.add(numerator.divide(denominator));
+        long n = (long) ((workingPrecision * Math.log(radix) + t * Math.PI / 2 + Math.log(1 + 2 * t) - logS12) / Math.log(3 + Math.sqrt(8)));
+        Apcomplex exponent = s.negate();
+        Apcomplex[] sumAndD = ApcomplexZetaMath.borweinSum(n, workingPrecision, radix, k -> ApcomplexMath.pow(new Apint(k, radix), exponent));
+        Apcomplex sum = sumAndD[0];
+        Apfloat d = sumAndD[1].real();
         Apcomplex result = one.divide(d.multiply(one.subtract(ApcomplexMath.pow(two, one.subtract(s))))).multiply(sum);
         long precision = result.precision();
         return (precision == Apfloat.INFINITE || precision <= extraPrecision ? result : ApfloatHelperShim.limitPrecision(result, precision - extraPrecision));

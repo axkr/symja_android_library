@@ -40,6 +40,7 @@ public class ApcomplexZetaMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testPolylogOfImaginaryOrder()
     {
         // an order on the imaginary axis with an argument between 0 and 1
@@ -50,6 +51,7 @@ public class ApcomplexZetaMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testHurwitzZeta()
     {
         // a positive real part of the second argument is the function of apfloat
@@ -119,6 +121,7 @@ public class ApcomplexZetaMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testLerchPhiOfSquares()
     {
         // the terms with a negative k + a are real, where those of lerchPhi() are complex

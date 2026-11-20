@@ -74,6 +74,7 @@ public class ApfloatInverseGammaBetaMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testInverseGamma()
     {
         assertClose("Q^-1(5/2, 1/3)", new Apfloat("2.865242596071248371845701106924432254215"),

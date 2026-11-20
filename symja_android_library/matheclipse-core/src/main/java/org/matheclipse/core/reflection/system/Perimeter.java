@@ -237,6 +237,10 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
     if (spec.t1 != null) {
       IExpr t1 = spec.t1;
       IExpr t2 = spec.t2;
+      if (engine.evaluate(F.GreaterEqual(F.Abs(F.Subtract(t2, t1)), F.C2Pi)).isTrue()) {
+        // a sector of a full turn or more is the whole disk, whose boundary is counted once
+        return RegionPrimitives.ellipsePerimeter(r1, r2, engine);
+      }
       return engine.evaluate(
           // [$ (r2*(-EllipticE(t1, 1 - r1^2/r2^2) + EllipticE(t2, 1 - r1^2/r2^2)) +
           // Sqrt(r1^2*Cos(t1)^2 + r2^2*Sin(t1)^2) +

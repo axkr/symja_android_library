@@ -612,6 +612,31 @@ public class GraphicsOptions {
   }
 
   /**
+   * The pair <code>{min, max}</code> with both ends as machine numbers if both are numeric, else
+   * the pair as it is: an <code>All</code> or <code>Automatic</code> end stays open.
+   */
+  public static IExpr numericRangePair(IExpr pair) {
+    if (Double.isFinite(pair.first().evalfNaN()) && Double.isFinite(pair.second().evalfNaN())) {
+      return F.list(F.num(pair.first().evalf()), F.num(pair.second().evalf()));
+    }
+    return pair;
+  }
+
+  /**
+   * Whether a two dimensional <code>PlotRange -&gt; {a, b}</code> is the range of the vertical
+   * axis alone: neither entry is a list and at least one is a number. The other entry may be
+   * <code>All</code>, <code>Automatic</code> or <code>Full</code>, which leaves that end of the
+   * range to the content. A pair of two such names is <code>{xspec, yspec}</code>.
+   */
+  public static boolean isVerticalRangePair(IExpr plotRange) {
+    if (!plotRange.isList2() || plotRange.first().isList() || plotRange.second().isList()) {
+      return false;
+    }
+    return Double.isFinite(plotRange.first().evalfNaN())
+        || Double.isFinite(plotRange.second().evalfNaN());
+  }
+
+  /**
    * A {@code Raster} covering the rectangle from {@code (x0, y0)} to {@code (x1, y1)}, painted from
    * a grid of colours given with the top row first.
    *
@@ -1908,19 +1933,20 @@ public class GraphicsOptions {
    * A curve painted along its length by {@code ColorFunction}.
    *
    * <p>
-   * Each step of the curve becomes its own piece, coloured from where that piece sits. The colour
-   * function is given the two coordinates of that place, and a named gradient is given the second
-   * of them - the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of the
-   * curve rather than sweeping across the picture. The positions are scaled into 0..1 over the
-   * curve unless {@code ColorFunctionScaling -> False} asks for the raw values.
+   * A joined curve is one <code>Line(points, VertexColors -&gt; colors)</code>, every point in the
+   * colour of its place; unjoined points are each drawn in their own colour. The colour function is
+   * given the two coordinates of that place, and a named gradient is given the second of them -
+   * the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of the curve
+   * rather than sweeping across the picture. The positions are scaled into 0..1 over the curve
+   * unless {@code ColorFunctionScaling -> False} asks for the raw values.
    *
    * <p>
-   * A step the function has nothing to say about keeps the colour the curve would have had, rather
+   * A point the function has nothing to say about keeps the colour the curve would have had, rather
    * than costing the whole curve its colouring: a function with a hole in it should leave a mostly
    * right picture.
    *
    * @param points the curve, as a list of {@code {x, y}} pairs
-   * @return the coloured pieces, or {@link F#NIL} when no colour function applies
+   * @return the coloured line or points, or {@link F#NIL} when no colour function applies
    */
   private IAST colorFunctionCurve(IAST points) {
     if (points.argSize() < 1) {
@@ -1963,71 +1989,66 @@ public class GraphicsOptions {
       return F.NIL;
     }
 
-    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
-    boolean painted = false;
-    int last = joined ? points.argSize() - 1 : points.argSize();
-    for (int i = 1; i <= last; i++) {
-      IAST from = (IAST) points.get(i);
-      double x = from.arg1().evalfNaN();
-      double y = from.arg2().evalfNaN();
-      if (joined) {
-        // colour a step from its middle, so the two ends of it agree
-        IAST to = (IAST) points.get(i + 1);
-        x = (x + to.arg1().evalfNaN()) / 2.0;
-        y = (y + to.arg2().evalfNaN()) / 2.0;
+    if (joined) {
+      // one line through all the points, each point in the colour of its own place
+      IASTAppendable vertexColors = F.ListAlloc(points.argSize());
+      EvalEngine engine = EvalEngine.get();
+      for (int i = 1; i < points.size(); i++) {
+        engine.checkTimeLimit();
+        IAST at = (IAST) points.get(i);
+        vertexColors.append(flatColor(colors.color(
+            colorTuple(i, at.arg1().evalfNaN(), at.arg2().evalfNaN(), pointParameters(at)))));
       }
-      double[] tuple = new double[colorFamily.arity];
-      tuple[0] = x;
-      tuple[1] = y;
-      if (colorFamily == PlotColorFunction.Family.POLAR_2D) {
-        // the angle and the radius are the point itself in another form, so they need no plumbing
-        tuple[2] = Math.atan2(y, x);
-        tuple[3] = Math.hypot(x, y);
-      } else if (colorFamily.arity > 2 && recordedParameters(points, i) != null) {
-        // a parametric curve carries the parameter it was drawn at on the point itself
-        double[] parameters = recordedParameters(points, i);
-        for (int slot = 2; slot < colorFamily.arity && slot - 2 < parameters.length; slot++) {
-          tuple[slot] = parameters[slot - 2];
-        }
-      } else if (colorFamily.arity > 2 && colorExtras != null) {
-        double[] extras = colorExtras.apply(i);
-        for (int slot = 2; slot < colorFamily.arity && slot - 2 < extras.length; slot++) {
-          tuple[slot] = extras[slot - 2];
-        }
-      }
-      IExpr color = colors.color(tuple);
-      painted = true;
-      out.append(F.List(color, joined ? F.Line(F.List(from, points.get(i + 1))) : F.Point(from)));
+      return F.binaryAST2(S.Line, points, F.Rule(S.VertexColors, vertexColors));
     }
-    return painted ? out : F.NIL;
+    IASTAppendable out = F.ListAlloc(Math.max(1, points.argSize()));
+    for (int i = 1; i < points.size(); i++) {
+      IAST at = (IAST) points.get(i);
+      IExpr color = colors.color(colorTuple(i, at.arg1().evalfNaN(), at.arg2().evalfNaN(),
+          pointParameters(at)));
+      out.append(F.List(color, F.Point(at)));
+    }
+    return out;
   }
 
   /**
-   * The parameters of the piece of curve that starts at point {@code i}.
+   * The arguments of the colour function at point <code>i</code> of a curve, at
+   * <code>{x, y}</code>.
    *
-   * <p>
-   * A joined step is coloured from its middle, so its parameter is the middle one too - the same
-   * rule its coordinates follow, which is what keeps the two ends of a step agreeing.
-   *
-   * @return the parameters, or {@code null} when this curve carries none
+   * @param parameters the parameters the point was drawn at, or <code>null</code>
    */
-  private double[] recordedParameters(IAST points, int i) {
-    double[] from = pointParameters(points.get(i));
-    if (from == null) {
-      return null;
+  private double[] colorTuple(int i, double x, double y, double[] parameters) {
+    double[] tuple = new double[colorFamily.arity];
+    tuple[0] = x;
+    tuple[1] = y;
+    if (colorFamily == PlotColorFunction.Family.POLAR_2D) {
+      // the angle and the radius are the point itself in another form, so they need no plumbing
+      tuple[2] = Math.atan2(y, x);
+      tuple[3] = Math.hypot(x, y);
+    } else if (colorFamily.arity > 2 && parameters != null) {
+      // a parametric curve carries the parameter it was drawn at on the point itself
+      for (int slot = 2; slot < colorFamily.arity && slot - 2 < parameters.length; slot++) {
+        tuple[slot] = parameters[slot - 2];
+      }
+    } else if (colorFamily.arity > 2 && colorExtras != null) {
+      double[] extras = colorExtras.apply(i);
+      for (int slot = 2; slot < colorFamily.arity && slot - 2 < extras.length; slot++) {
+        tuple[slot] = extras[slot - 2];
+      }
     }
-    if (!joined || i + 1 >= points.size()) {
-      return from;
+    return tuple;
+  }
+
+  /**
+   * A colour as a vertex can hold it: a colour of its own as it is, a directive folded into one
+   * colour.
+   */
+  private static IExpr flatColor(IExpr color) {
+    if (org.matheclipse.core.graphics.svg.ColorUtil.parse(color) != null) {
+      return color;
     }
-    double[] to = pointParameters(points.get(i + 1));
-    if (to == null || to.length != from.length) {
-      return from;
-    }
-    double[] middle = new double[from.length];
-    for (int k = 0; k < middle.length; k++) {
-      middle[k] = (from[k] + to[k]) / 2.0;
-    }
-    return middle;
+    IExpr flat = toColorExpr(color, F.NIL);
+    return flat.isPresent() ? flat : color;
   }
 
   /**
@@ -2217,7 +2238,13 @@ public class GraphicsOptions {
    * <p>
    * On a grid of cells {@code Mesh} means something different from what it means on a curve. There
    * it marks the sample positions; here it outlines the cells, so the resolution of the underlying
-   * grid becomes visible.
+   * grid becomes visible. A pair <code>{rowSpec, columnSpec}</code> gives the horizontal lines
+   * between the rows and the vertical lines between the columns separately; each spec is
+   * <code>True</code>/<code>All</code> (every boundary, the edges included), <code>False</code>/
+   * <code>None</code> (no line), a count <code>n</code> of evenly spaced lines which divide the
+   * extent into <code>n+1</code> equal parts, or the list of the boundaries to draw, where boundary
+   * <code>i</code> lies below row <code>i</code> (right of column <code>i</code>), <code>0</code>
+   * being the top (left) edge.
    *
    * @param mesh the option value; {@code All} outlines every cell, an integer draws that many lines
    * @param x0 left edge, {@code x1} right edge, {@code y0} bottom, {@code y1} top
@@ -2229,28 +2256,127 @@ public class GraphicsOptions {
     if (mesh == null || mesh.isNone() || mesh.isFalse() || mesh == S.Automatic) {
       return F.NIL;
     }
-    int requested = mesh.toIntDefault(-1);
-    int verticals = requested > 0 ? requested : columns;
-    int horizontals = requested > 0 ? requested : rows;
-    if (verticals <= 0 && horizontals <= 0) {
+    IExpr rowSpec = meshSpec(mesh, true);
+    IExpr columnSpec = meshSpec(mesh, false);
+    IAST horizontals = meshFractions(rowSpec, rows);
+    IAST verticals = meshFractions(columnSpec, columns);
+    if ((horizontals == null || horizontals.isEmpty())
+        && (verticals == null || verticals.isEmpty())) {
       return F.NIL;
     }
-    // a mesh over hundreds of cells would be a solid block of ink rather than a grid
-    verticals = Math.min(verticals, 200);
-    horizontals = Math.min(horizontals, 200);
-
-    IASTAppendable lines = F.ListAlloc(verticals + horizontals + 2);
+    IASTAppendable lines = F.ListAlloc(8);
     lines.append(F.RGBColor(0.5, 0.5, 0.5));
     lines.append(F.AbsoluteThickness(F.num(0.5)));
-    for (int i = 0; i <= verticals; i++) {
-      double x = x0 + (x1 - x0) * i / verticals;
-      lines.append(F.Line(F.List(F.List(F.num(x), F.num(y0)), F.List(F.num(x), F.num(y1)))));
+    if (verticals != null) {
+      for (IExpr fraction : verticals) {
+        double x = x0 + (x1 - x0) * fraction.evalf();
+        lines.append(F.Line(F.List(F.List(F.num(x), F.num(y0)), F.List(F.num(x), F.num(y1)))));
+      }
     }
-    for (int j = 0; j <= horizontals; j++) {
-      double y = y0 + (y1 - y0) * j / horizontals;
-      lines.append(F.Line(F.List(F.List(F.num(x0), F.num(y)), F.List(F.num(x1), F.num(y)))));
+    if (horizontals != null) {
+      // from the bottom edge upwards, unless the boundaries are listed
+      final boolean bottomUp = !rowSpec.isList();
+      for (int i = 1; i < horizontals.size(); i++) {
+        IExpr fraction = horizontals.get(bottomUp ? horizontals.size() - i : i);
+        double y = y1 - (y1 - y0) * fraction.evalf();
+        lines.append(F.Line(F.List(F.List(F.num(x0), F.num(y)), F.List(F.num(x1), F.num(y)))));
+      }
     }
     return lines;
+  }
+
+  /**
+   * The {@code Mesh} lines of a matrix of <code>rows</code> by <code>columns</code> unit cells,
+   * whose corners are integers: <code>{Directive(GrayLevel(0.5, 0.4)), Line(horizontals),
+   * Line(verticals)}</code> with exact coordinates, the horizontal segments from the top, the
+   * vertical ones from the left. A direction with <code>None</code> or <code>False</code> has no
+   * <code>Line</code>, a count of <code>0</code> an empty one.
+   *
+   * @return the mesh primitives, or {@link F#NIL} when no mesh was asked for
+   * @see #meshGrid(IExpr, double, double, double, double, int, int)
+   */
+  public static IExpr meshGridCells(IExpr mesh, int columns, int rows) {
+    if (mesh == null || mesh.isNone() || mesh.isFalse() || mesh == S.Automatic) {
+      return F.NIL;
+    }
+    IAST horizontals = meshFractions(meshSpec(mesh, true), rows);
+    IAST verticals = meshFractions(meshSpec(mesh, false), columns);
+    if (horizontals == null && verticals == null) {
+      return F.NIL;
+    }
+    IASTAppendable lines = F.ListAlloc(3);
+    lines.append(F.Directive(F.binaryAST2(S.GrayLevel, F.num(0.5), F.num(0.4))));
+    if (horizontals != null) {
+      IASTAppendable segments = F.ListAlloc(horizontals.argSize());
+      for (IExpr fraction : horizontals) {
+        IExpr y = F.Times(F.ZZ(rows), F.Subtract(F.C1, fraction)).eval();
+        segments.append(F.List(F.List(F.C0, y), F.List(F.ZZ(columns), y)));
+      }
+      lines.append(F.Line(segments));
+    }
+    if (verticals != null) {
+      IASTAppendable segments = F.ListAlloc(verticals.argSize());
+      for (IExpr fraction : verticals) {
+        IExpr x = F.Times(F.ZZ(columns), fraction).eval();
+        segments.append(F.List(F.List(x, F.C0), F.List(x, F.ZZ(rows))));
+      }
+      lines.append(F.Line(segments));
+    }
+    return lines;
+  }
+
+  /**
+   * The spec of the rows (<code>rows == true</code>) or the columns: the first or the second entry
+   * of a list of specs, else the option value itself.
+   */
+  private static IExpr meshSpec(IExpr mesh, boolean rows) {
+    if (mesh.isList() && mesh.argSize() >= 2) {
+      return rows ? mesh.first() : mesh.second();
+    }
+    return mesh;
+  }
+
+  /**
+   * The positions of the lines one direction of a cell mesh draws, as exact fractions of the
+   * extent counted from the top or the left edge, in the order they are drawn.
+   *
+   * @param spec the mesh spec of the direction
+   * @param cells the number of cells in the direction
+   * @return <code>null</code> if the direction has no lines
+   */
+  private static IAST meshFractions(IExpr spec, int cells) {
+    if (cells <= 0 || spec.isNone() || spec.isFalse()) {
+      return null;
+    }
+    if (spec.isList()) {
+      IAST list = (IAST) spec;
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        int boundary = list.get(i).toIntDefault(-1);
+        if (boundary >= 0 && boundary <= cells) {
+          result.append(F.QQ(boundary, cells));
+        }
+      }
+      return result;
+    }
+    int requested = spec.toIntDefault(-1);
+    if (requested >= 0) {
+      // n lines divide the extent into n+1 equal parts; a mesh of hundreds of lines would be a
+      // solid block of ink rather than a grid
+      int count = Math.min(requested, 200);
+      IASTAppendable result = F.ListAlloc(count);
+      for (int i = 1; i <= count; i++) {
+        result.append(F.QQ(i, count + 1));
+      }
+      return result;
+    }
+    // every boundary, the edges included
+    int parts = Math.min(cells, 200);
+    IASTAppendable result = F.ListAlloc(parts + 1);
+    for (int i = 0; i <= parts; i++) {
+      result.append(F.QQ(i, parts));
+    }
+    return result;
   }
 
   /** {@code BarOrigin -> Bottom}: bars grow upwards from the x axis. This is the default. */
@@ -2556,8 +2682,16 @@ public class GraphicsOptions {
     }
     IExpr dataRange = optionValue(originalAST, S.DataRange, S.Automatic);
     final double[] extent = rasterExtent(dataRange, rows, cols);
-    primitives.append(rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
-    IExpr meshLines = meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows);
+    IAST raster = rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]);
+    if (!dataRange.isList()) {
+      // the cells are the unit squares of the array, whose corners are integers
+      raster = raster.setAtCopy(2,
+          F.List(F.List(F.C0, F.C0), F.List(F.ZZ(cols), F.ZZ(rows))));
+    }
+    primitives.append(raster);
+    IExpr meshLines = dataRange.isList()
+        ? meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows)
+        : meshGridCells(mesh, cols, rows);
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }

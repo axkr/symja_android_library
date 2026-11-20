@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Locale;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -43,7 +44,7 @@ public class AssumptionFunctions {
   private static final class Arrays extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.size() == 2 && ast.arg1().isAST()) {
         return F.Arrays((IAST) ast.arg1());
@@ -67,7 +68,7 @@ public class AssumptionFunctions {
   private static final class Matrices extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr dimensions = ast.arg1();
       if (!dimensions.isList() || dimensions.argSize() != 2) {
         // The list `1` of dimensions `3` must have length `2`.
@@ -104,7 +105,7 @@ public class AssumptionFunctions {
   private static final class Vectors extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr dimension = ast.arg1();
       if (dimension.isList()) {
         if (dimension.argSize() != 1) {
@@ -204,7 +205,7 @@ public class AssumptionFunctions {
   private static class Element extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (arg1.isUndefined()) {
         return S.Undefined;
@@ -263,7 +264,7 @@ public class AssumptionFunctions {
      * @return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
      *         the <code>domain</code>. In all other cases return {@link F#NIL}.
      */
-    private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
+    private @AllowNIL IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
       if (expr.isAST(S.Indexed, 3) && expr.first() instanceof IArraySymbol) {
         // a component of a symbolic array lies in the element domain the array declares
         return SymbolicArrayFunctions.domainSubset(((IArraySymbol) expr.first()).getDomain(),
@@ -359,7 +360,7 @@ public class AssumptionFunctions {
    *
    * @return {@link F#NIL} if the membership isn't decided
    */
-  private static IExpr exactConstantInDomain(IExpr expr, boolean integers, EvalEngine engine) {
+  private static @AllowNIL IExpr exactConstantInDomain(IExpr expr, boolean integers, EvalEngine engine) {
     if (isTranscendentalConstant(expr, engine)) {
       return S.False;
     }
@@ -378,7 +379,7 @@ public class AssumptionFunctions {
    *
    * @return {@link F#NIL} if the minimal polynomial isn't found
    */
-  private static IExpr algebraicRational(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr algebraicRational(IExpr expr, EvalEngine engine) {
     if (expr.leafCount() > 200L) {
       return F.NIL;
     }
@@ -394,7 +395,7 @@ public class AssumptionFunctions {
     return result;
   }
 
-  private static IExpr algebraicRationalUncached(IExpr expr, EvalEngine engine) {
+  private static @AllowNIL IExpr algebraicRationalUncached(IExpr expr, EvalEngine engine) {
     ISymbol x = F.Dummy("x");
     IExpr polynomial = engine.evalQuiet(
         F.TimeConstrained(F.binaryAST2(S.MinimalPolynomial, expr, x), F.C1));
@@ -497,7 +498,7 @@ public class AssumptionFunctions {
    * @param zero whether <code>0</code> belongs to the domain
    * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the membership is undecided
    */
-  private static IExpr signDomain(IExpr expr, int sign, boolean zero, EvalEngine engine) {
+  private static @AllowNIL IExpr signDomain(IExpr expr, int sign, boolean zero, EvalEngine engine) {
     if (expr.isZero()) {
       return F.booleSymbol(zero);
     }
@@ -516,7 +517,7 @@ public class AssumptionFunctions {
   private static class NotElement extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (arg1.isUndefined()) {
         return S.Undefined;
@@ -543,7 +544,7 @@ public class AssumptionFunctions {
       return F.NIL;
     }
 
-    private static IExpr notElement(final IExpr arg1, final IExpr arg2, final EvalEngine engine) {
+    private static @AllowNIL IExpr notElement(final IExpr arg1, final IExpr arg2, final EvalEngine engine) {
       IExpr element = engine.evaluate(F.Element(arg1, arg2));
       if (element.isTrue()) {
         return S.False;
@@ -679,7 +680,7 @@ public class AssumptionFunctions {
    *
    * @return {@link F#NIL} if <code>expr</code> is not such a root, or no factor leaves it
    */
-  private static IExpr rootsOfProducts(IExpr expr) {
+  private static @AllowNIL IExpr rootsOfProducts(IExpr expr) {
     if (!expr.isAST()) {
       return F.NIL;
     }
@@ -705,7 +706,7 @@ public class AssumptionFunctions {
     return copy == null ? F.NIL : copy;
   }
 
-  private static IExpr rootOfProduct(IExpr expr) {
+  private static @AllowNIL IExpr rootOfProduct(IExpr expr) {
     if (!expr.isPower() || !expr.exponent().isFraction() || !expr.exponent().isPositive()) {
       return F.NIL;
     }
@@ -761,7 +762,7 @@ public class AssumptionFunctions {
    *
    * @return {@link F#NIL} if the relation isn't decided
    */
-  private static IExpr decideRelation(IExpr expr, IAssumptions assumptions, EvalEngine engine) {
+  private static @AllowNIL IExpr decideRelation(IExpr expr, IAssumptions assumptions, EvalEngine engine) {
     if (expr.isAST(S.Element, 3) && expr.second() == S.Reals && expr.first().isVariable()) {
       IExpr x = expr.first();
       return assumptions.relationalKeys().exists(key -> !key.isFree(x)) ? S.True : F.NIL;

@@ -20,6 +20,56 @@ import org.junit.jupiter.api.Test;
  */
 public class NDSolveTest extends ExprEvaluatorTestCase {
 
+  /**
+   * A <code>WhenEvent</code> whose first argument is a real valued expression fires where it
+   * changes its sign, in both directions; <code>"StopIntegration"</code>, also thrown, ends the
+   * solution there.
+   */
+  @Test
+  public void testStopIntegrationDomainEndsAtEvent() {
+    check("te = 0; s = NDSolve({y'(t) == -y(t), y(0) == 4, "
+        + "WhenEvent(y(t) == 1, te = t; \"StopIntegration\")}, y, {t, 0, 3}); "
+        + "{te, (y(\"Domain\") /. First(s))[[1, 2]] == te}", //
+        "{1.38629,True}");
+  }
+
+  @Test
+  public void testWhenEventRealValuedExpression() {
+    check("tt = 0; s = NDSolve({y''(t) == -4*y(t), y(0) == 2, y'(0) == 0, "
+        + "WhenEvent(y(t) - 1, Throw(tt = t, \"StopIntegration\"))}, y, {t, 0, 5});"
+        + "{Round(10^6*tt), Round(10^6*(y(\"Domain\") /. First(s))), Round(10^6*Pi/6)}", //
+        "{523599,{{0,523599}},523599}");
+    check("tt = 0; NDSolve({y'(t) == -2*y(t), y(0) == 3, "
+        + "WhenEvent(3*(y(t) - 1), tt = t; \"StopIntegration\")}, y, {t, 0, 4});"
+        + "{Round(10^6*tt), Round(10^6*Log(3)/2)}", //
+        "{549306,549306}");
+    // Pi/6, 5*Pi/6 and 13*Pi/6, upwards and downwards
+    check("tt = {}; NDSolve({y'(t) == Cos(t), y(0) == 0, WhenEvent(y(t) - 1/2, AppendTo(tt, t))}, "
+        + "y, {t, 0, 7}); Round(10^5*tt)", //
+        "{52360,261799,680678}");
+  }
+
+  /** The first event of a fast oscillator is located, with the derivative there. */
+  @Test
+  public void testWhenEventFastOscillator() {
+    check("Table(tt = 0; s = NDSolve({y''(t) == -w^2*y(t), y(0) == 1, y'(0) == 0, "
+        + "WhenEvent(y(t) - 1/4, tt = t; \"StopIntegration\")}, y, {t, 0, 50}); f = y /. First(s);"
+        + "{Round(10^6*(tt - ArcCos(1/4)/w)), Round(10^3*(f'(tt)/w + Sin(ArcCos(1/4))))}, "
+        + "{w, {30, 150, 400}})", //
+        "{{0,0},{0,0},{0,0}}");
+  }
+
+  /** A machine number initial value of a constant solution is its value everywhere. */
+  @Test
+  public void testNDSolveConstantSolutionKeepsInitialValue() {
+    check("s = y /. First(NDSolve({y'(t) == 0, y(0) == 0.3}, y, {t, 0, 40}));"
+        + "Union(Table(s(t) - 0.3, {t, 0, 40, 0.23}))", //
+        "{0.0}");
+    check("s = y /. First(NDSolve({y'(t) == 0, y(0) == 0.7}, y, {t, -2, 9}));"
+        + "Union(Table(s(t) - 0.7, {t, -2, 9, 0.11}))", //
+        "{0.0}");
+  }
+
   @Test
   public void testNDSolveAlgebraicEquationWithConsistentDerivativeValue() {
     // w(t) == 3*v(t) fixes w; v'(0) == 3 only repeats what the equations give at t == 0

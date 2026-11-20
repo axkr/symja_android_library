@@ -743,7 +743,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("N(Det({{Pi,2.0},{3,4}}))", //
         "6.56637");
     check("N(Det({{Pi,2.0},{3,4}}),50)", //
-        "6.566370614359172");
+        "6.5663706143591725");
 
     check("Det({{1,2},{3,4}})", //
         "-2");
@@ -1788,7 +1788,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {(5-4*s)/(-10+s+4*s^2+s^3),(-2+s^2)/(-10+s+4*s^2+s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n"
             + " {s/(-10+s+4*s^2+s^3),(2+s)/(-10+s+4*s^2+s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
     check("N(Inverse({{1,2.0},{3,4}}),50)", //
-        "{{-2,1},{1.5,-0.5}}");
+        "{{-2.0,1.0},{1.5,-0.5}}");
 
     check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
     check("Inverse({{1,2.0},{3,4}})", "{{-2.0,1.0},\n" + " {1.5,-0.5}}");
@@ -3197,6 +3197,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRowReduceSymbolicZeroEntries() {
+    // an entry which is zero but not written as 0 is no pivot and becomes 0
+    check("RowReduce({{b/(2 - b) + b/(b - 2), 3}, {2, 5}})", //
+        "{{1,0},\n" //
+            + " {0,1}}");
+    check("RowReduce({{1, b}, {0, b/(2 - b) + b/(b - 2)}})", //
+        "{{1,b},\n" //
+            + " {0,0}}");
+    check("RowReduce({{1, b, 1}, {2, 2*b, c/(1 + c) - 1 + 1/(1 + c)}})", //
+        "{{1,b,0},\n" //
+            + " {0,0,1}}");
+  }
+
+  @Test
   public void testRowReduce001() {
     check("RowReduce({{1.0, 2.0}, {2.0, 4.0}})", //
         "{{1.0,2.0},\n" //
@@ -3510,6 +3524,31 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSchurDecomposition() {
+    // a complex matrix: a unitary p and an upper triangular t with the eigenvalues on its diagonal
+    check("m={{1.5+I, 2, -0.5*I}, {0.25, 3-2*I, 1}, {I, 0.75, -1+0.5*I}};" //
+        + "{p,t}=SchurDecomposition(m);" //
+        + "{Chop(p.t.ConjugateTranspose(p)-m), Chop(p.ConjugateTranspose(p)-IdentityMatrix(3))," //
+        + " Chop({t[[2,1]], t[[3,1]], t[[3,2]]})," //
+        + " Chop(Sort(Diagonal(t)) - Sort(Eigenvalues(m)))}", //
+        "{{{0,0,0},{0,0,0},{0,0,0}},{{0,0,0},{0,0,0},{0,0,0}},{0,0,0},{0,0,0}}");
+    check("m={{0.5, 2*I}, {-3*I, 1.25}};" //
+        + "{p,t}=SchurDecomposition(m);" //
+        + "{Chop(p.t.ConjugateTranspose(p)-m), t[[2,1]], Chop(Diagonal(t))}", //
+        "{{{0,0},{0,0}},0.0,{-1.60303,3.35303}}");
+    // the entries below the diagonal are exactly zero
+    check("Last(SchurDecomposition({{1.5+I, 2, -0.5*I}, {0.25, 3-2*I, 1}, {I, 0.75, -1+0.5*I}}))" //
+        + "[[{2,3,3},{1,1,2}]] // Diagonal", //
+        "{0.0,0.0,0.0}");
+    // SchurDecomposition: SchurDecomposition has received a matrix with infinite precision.
+    check("SchurDecomposition({{1+I, 2}, {3, 4}})", //
+        "SchurDecomposition(\n" //
+            + "{{1+I,2},\n" //
+            + " {3,4}})");
+    check("SchurDecomposition({{1.0+I, x}, {3, 4}})", //
+        "SchurDecomposition(\n" //
+            + "{{1.0+I*1.0,x},\n" //
+            + " {3,4}})");
+
     check("m={{2.7, 4.8, 8.1}, {-.6, 0, 0}, {.1, 0, .3}};", //
         "");
     check("{q,t}=SchurDecomposition(m)", //

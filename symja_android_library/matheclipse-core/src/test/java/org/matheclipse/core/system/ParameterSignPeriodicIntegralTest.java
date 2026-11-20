@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Integrals whose value depends on the order or the signs of the parameters, integrals of a decay
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 public class ParameterSignPeriodicIntegralTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testOrderOfTheParameters() {
     // Pi*Min(p,q)/2: the samples of the parameters must not all have p < q
     check("Integrate(Sin(p*x)*Sin(q*x)/x^2, {x,0,Infinity}, Assumptions->p>0&&q>0) /. {p->3, q->1}", //
@@ -33,6 +35,7 @@ public class ParameterSignPeriodicIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDecayTimesPeriodicFactor() {
     check("Integrate(Abs(Sin(2*x))*E^(-x), {x,0,Infinity})", //
         "2/5*(1+E^(Pi/2))/(-1+E^(Pi/2))");
@@ -49,6 +52,7 @@ public class ParameterSignPeriodicIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNoFalseDivergence() {
     // the unevaluated Limit(..., x->Infinity) of the antiderivative isn't a divergence
     check("Check(Integrate(Log(1+5*x^2)/(1+3*x^2)^2, {x,0,Infinity}), failed)", //

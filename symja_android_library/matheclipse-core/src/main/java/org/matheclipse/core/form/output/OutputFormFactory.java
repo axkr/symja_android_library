@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.PatternNested;
+import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -38,6 +39,7 @@ import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.OperatorFormLayout;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -349,6 +351,55 @@ public class OutputFormFactory {
     }
     convertDoubleString(buf, convertDoubleToFormattedString(doubleValue), Precedence.NO_PRECEDENCE,
         false);
+  }
+
+  /**
+   * Write the display wrapper <code>Infix</code>, <code>Prefix</code> or <code>Postfix</code> as
+   * the row of operands and operators {@link OperatorFormLayout} lays out. A string operator is
+   * written as its characters, the sign of the default operator with a space on its outer side:
+   * <code>a ~f~ b</code>, <code>f @ x</code>, <code>x // f</code>.
+   *
+   * @return <code>false</code> if the wrapper has arguments it can't be shown with; it is then
+   *         written as it stands
+   */
+  private boolean convertOperatorForm(final Appendable buf, final IAST wrapper,
+      final int precedence) throws IOException {
+    OperatorFormLayout layout = OperatorFormLayout.of(wrapper);
+    if (layout == null) {
+      return false;
+    }
+    final boolean parenthesized = layout.isParenthesized(precedence);
+    if (parenthesized) {
+      append(buf, "(");
+    }
+    // the operator a ~f~ b has a space only on the outside of its two signs
+    boolean opening = true;
+    for (OperatorFormLayout.Piece piece : layout.pieces) {
+      switch (piece.kind) {
+        case SIGN:
+          if (layout.defaultSign.equals("~")) {
+            append(buf, opening ? " ~" : "~ ");
+            opening = !opening;
+          } else {
+            append(buf, " " + layout.defaultSign + " ");
+          }
+          break;
+        case OPERATOR:
+          if (piece.isText()) {
+            append(buf, piece.expr.toString());
+          } else {
+            convert(buf, piece.expr, Integer.MIN_VALUE, false);
+          }
+          break;
+        default:
+          convert(buf, piece.expr, piece.precedence, false);
+          break;
+      }
+    }
+    if (parenthesized) {
+      append(buf, ")");
+    }
+    return true;
   }
 
   /**
@@ -1208,7 +1259,8 @@ public class OutputFormFactory {
   /**
    * The text of a string literal for <code>str</code>, without the enclosing quotes:
    * <code>"</code> and <code>\</code> are written <code>\"</code> and <code>\\</code>, a control
-   * character as in {@link Characters#appendControlEscape(StringBuilder, char)}. Inside a box
+   * character as in {@link Characters#appendControlEscape(StringBuilder, char)} and a private use
+   * character with a name as the named character <code>\[Name]</code>. Inside a box
    * escape <code>\( ... \)</code> an operator of the linear box syntax like <code>\^</code> or
    * <code>\&amp;</code> is kept as it is.
    */
@@ -1235,7 +1287,7 @@ public class OutputFormFactory {
         Characters.appendControlEscape(control, ch);
         escape = control.toString();
       } else {
-        escape = null;
+        escape = privateUseEscape(ch);
       }
       if (escape != null && buf == null) {
         buf = new StringBuilder(str.length() + 16).append(str, 0, i);
@@ -1249,6 +1301,22 @@ public class OutputFormFactory {
       }
     }
     return buf == null ? str : buf.toString();
+  }
+
+  /**
+   * The named character <code>\[Name]</code> of a private use character, like
+   * <code>\[ExponentialE]</code>: it has no glyph of its own outside of a notebook.
+   *
+   * @return <code>null</code> for any other character
+   */
+  private static String privateUseEscape(char ch) {
+    if (ch >= '\uE000' && ch <= '\uF8FF') {
+      String name = Characters.unicodeName(ch);
+      if (name != null) {
+        return "\\[" + name + "]";
+      }
+    }
+    return null;
   }
 
   /** Whether an operator of the linear box syntax, <code>\^</code> or another, starts here. */
@@ -1790,6 +1858,9 @@ public class OutputFormFactory {
       final boolean groupArg2 = (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE
           && (arg2.head().equals(list.head()) || isInfixOfPrecedence(arg2, oper.getPrecedence())))
           || isNestedSameOperator(list, arg2, oper)
+          // an implication on the right of an implication keeps its parentheses:
+          // Implies(a, Implies(b, c)) is a\[Implies](b\[Implies]c)
+          || (list.isAST(S.Implies, 3) && arg2.isAST(S.Implies, 3))
           // a - (Complex(1,2)), a - (Complex(0.0,2.0)): no complex number with a real part, which
           // is not an exact zero, directly after the minus
           || (isSubtract && numberObject.isPresent()
@@ -1941,8 +2012,20 @@ public class OutputFormFactory {
     if (oper.getPrecedence() <= precedence) {
       append(buf, "(");
     }
-    convert(buf, list.arg1(), oper.getPrecedence(), false);
-    append(buf, oper.getOperatorString());
+    final String operatorString = oper.getOperatorString();
+    if (operatorString.startsWith(".")) {
+      // _.. would read as the optional blank _. followed by a dot: _ .. and _Integer.. instead
+      StringBuilder operand = new StringBuilder();
+      convert(operand, list.arg1(), oper.getPrecedence(), false);
+      // the columns of the operand are counted by its conversion
+      buf.append(operand);
+      if (operand.length() > 0 && operand.charAt(operand.length() - 1) == '_') {
+        append(buf, " ");
+      }
+    } else {
+      convert(buf, list.arg1(), oper.getPrecedence(), false);
+    }
+    append(buf, operatorString);
     if (oper.getPrecedence() <= precedence) {
       append(buf, ")");
     }
@@ -2204,6 +2287,13 @@ public class OutputFormFactory {
                 return;
               }
               break;
+            case ID.Infix:
+            case ID.Prefix:
+            case ID.Postfix:
+              if (!fInputForm && convertOperatorForm(buf, list, precedence)) {
+                return;
+              }
+              break;
             case ID.Style:
               if (!fInputForm && list.size() > 1) {
                 // Style only changes how an expression looks, so OutputForm shows the expression
@@ -2417,6 +2507,10 @@ public class OutputFormFactory {
       convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
     } else if (o instanceof ISymbol) {
       convertSymbol(buf, (ISymbol) o);
+    } else if (o instanceof RepeatedPattern) {
+      // p.. and p... are postfix operators, whose operand is parenthesized by its precedence:
+      // (a->b).., (x_)..
+      convert(buf, ((RepeatedPattern) o).toFullFormAST(), precedence, false);
     } else if (o instanceof IPatternObject) {
       // a named pattern x_ or x:p and a pattern with a default _. are operators themselves, which
       // bind weaker than the operators they are an operand of: 2*(a_), (x_)|(y_), (_.)+1

@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * The form of the antiderivative of a rational function: <code>RootSum</code> for cubic and quartic
@@ -42,6 +43,7 @@ public class RationalIntegrateFormsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRadicalFriendlyCubicKeepsRadicals() {
     // a single cube root solves x^3+5: no RootSum
     check("FreeQ(Integrate(1/(x^3+5),x), RootSum)", //

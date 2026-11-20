@@ -203,4 +203,33 @@ public class EllipticIntegralsTest extends ExprEvaluatorTestCase {
     check("N(CarlsonRF(0, 0, 5), 30)", //
         "ComplexInfinity");
   }
+
+  @Test
+  public void testCarlsonRDEqualArguments() {
+    check("CarlsonRD(x, x, x)", //
+        "1/x^(3/2)");
+    check("CarlsonRD(2, 2, 2)", //
+        "1/(2*Sqrt(2))");
+    // the last argument equal to one of the others: with CarlsonRF(x, y, y) == CarlsonRC(x, y)
+    check("CarlsonRD(x, y, y)", //
+        "Piecewise({{1/y^(3/2),x==y}},3/2*(Sqrt(x)/y-CarlsonRF(x,y,y))/(x-y))");
+    check("CarlsonRD(y, x, y)", //
+        "Piecewise({{1/y^(3/2),x==y}},3/2*(Sqrt(x)/y-CarlsonRF(x,y,y))/(x-y))");
+    check("CarlsonRD(x, y, y) /. y->x", //
+        "1/x^(3/2)");
+    // numbers keep the numerical routine
+    check("CarlsonRD(1, 2, 2)", //
+        "CarlsonRD(1,2,2)");
+    check("CarlsonRD(1.0, 2.0, 2.0)", //
+        "0.428097");
+    // the values agree with mpmath
+    check("N(CarlsonRD(x, y, y) /. {x->1, y->2})", //
+        "0.428097");
+    check("N(CarlsonRD(x, y, y) /. {x->0, y->2})", //
+        "0.833041");
+    check("N(CarlsonRD(x, y, y) /. {x->1/2+I, y->3}, 20)", //
+        "0.25254776824519449898+I*(-0.065918467097349163624)");
+    check("N(CarlsonRD(x, x, x) /. x->-2+I, 20)", //
+        "-0.1916281804693552736+I*0.22961132278264457124");
+  }
 }

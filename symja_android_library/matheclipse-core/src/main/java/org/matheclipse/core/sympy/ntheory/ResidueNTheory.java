@@ -896,6 +896,125 @@ public class ResidueNTheory {
    * Enumerate every combination of one residue per component, CRT-combine and return the smallest
    * non-negative representative.
    */
+  /** Prime powers up to this size are searched exhaustively for the roots. */
+  private static final long EXHAUSTIVE_PRIME_POWER = 1L << 20;
+
+  /**
+   * Every solution <code>0 &lt;= x &lt; m</code> of <code>x^n == a (mod m)</code>, sorted.
+   * Corresponds to <code>PowerModList(a, 1/n, m)</code>.
+   *
+   * @param a the residue
+   * @param n a positive exponent
+   * @param m a positive modulus
+   * @return the sorted roots (empty if there is none), or <code>null</code> if a prime power of
+   *         <code>m</code> is too large for an exhaustive search and the lifting does not apply,
+   *         or if there are more than {@link #MAX_ROOTS} roots
+   */
+  public static List<BigInteger> allNthRootsMod(BigInteger a, BigInteger n, BigInteger m) {
+    if (m.equals(BigInteger.ONE)) {
+      List<BigInteger> result = new ArrayList<>(1);
+      result.add(BigInteger.ZERO);
+      return result;
+    }
+    SortedMap<BigInteger, Integer> factors = new Primality().factorInteger(m);
+    List<BigInteger> moduli = new ArrayList<>(factors.size());
+    List<List<BigInteger>> rootsPerComponent = new ArrayList<>(factors.size());
+    long total = 1L;
+    for (Map.Entry<BigInteger, Integer> e : factors.entrySet()) {
+      BigInteger p = e.getKey();
+      int k = e.getValue();
+      List<BigInteger> roots = allNthRootsModPrimePower(a, n, p, k);
+      if (roots == null) {
+        return null;
+      }
+      if (roots.isEmpty()) {
+        return new ArrayList<>();
+      }
+      total *= roots.size();
+      if (total > MAX_ROOTS) {
+        return null;
+      }
+      moduli.add(p.pow(k));
+      rootsPerComponent.add(roots);
+    }
+    int t = moduli.size();
+    BigInteger[] coeffs = new BigInteger[t];
+    for (int i = 0; i < t; i++) {
+      BigInteger mi = m.divide(moduli.get(i));
+      coeffs[i] = mi.multiply(mi.modInverse(moduli.get(i))).mod(m);
+    }
+    List<BigInteger> result = new ArrayList<>((int) total);
+    int[] idx = new int[t];
+    while (true) {
+      BigInteger acc = BigInteger.ZERO;
+      for (int i = 0; i < t; i++) {
+        acc = acc.add(rootsPerComponent.get(i).get(idx[i]).multiply(coeffs[i]));
+      }
+      result.add(acc.mod(m));
+      int i = 0;
+      while (i < t) {
+        idx[i]++;
+        if (idx[i] < rootsPerComponent.get(i).size()) {
+          break;
+        }
+        idx[i] = 0;
+        i++;
+      }
+      if (i == t) {
+        break;
+      }
+    }
+    result.sort(null);
+    return result;
+  }
+
+  /**
+   * Every root of <code>x^n == a (mod p^k)</code>, sorted; <code>null</code> if
+   * <code>p^k</code> is too large to search and <code>p</code> divides <code>n*a</code>.
+   */
+  private static List<BigInteger> allNthRootsModPrimePower(BigInteger a, BigInteger n,
+      BigInteger p, int k) {
+    BigInteger pk = p.pow(k);
+    BigInteger aMod = a.mod(pk);
+    if (pk.compareTo(BigInteger.valueOf(EXHAUSTIVE_PRIME_POWER)) <= 0) {
+      long modulus = pk.longValue();
+      long target = aMod.longValue();
+      long e = n.longValue();
+      boolean smallExponent = n.bitLength() < 63;
+      List<BigInteger> result = new ArrayList<>();
+      for (long x = 0; x < modulus; x++) {
+        long r = smallExponent ? powMod(x, e, modulus)
+            : BigInteger.valueOf(x).modPow(n, pk).longValue();
+        if (r == target) {
+          result.add(BigInteger.valueOf(x));
+        }
+      }
+      return result;
+    }
+    if (n.mod(p).signum() == 0 || aMod.mod(p).signum() == 0) {
+      return null;
+    }
+    // p does not divide n*a: every root modulo p lifts uniquely (Hensel)
+    List<BigInteger> roots = n.equals(TWO) ? sqrtModPrimePower(aMod, p, k)
+        : nthRootModPrimePower(aMod, n, p, k);
+    roots = new ArrayList<>(new TreeSet<>(roots));
+    return roots;
+  }
+
+  /** <code>x^e mod m</code> for <code>m &lt;= 2^20</code>. */
+  private static long powMod(long x, long e, long m) {
+    long result = 1 % m;
+    long base = x % m;
+    while (e > 0) {
+      if ((e & 1L) != 0) {
+        result = result * base % m;
+      }
+      base = base * base % m;
+      e >>= 1;
+    }
+    return result;
+  }
+
   private static BigInteger smallestCrt(List<List<BigInteger>> rootsPerComponent,
       List<BigInteger> moduli) {
     if (rootsPerComponent.isEmpty()) {

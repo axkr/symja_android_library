@@ -10,12 +10,14 @@ import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_
 import static com.tngtech.archunit.library.GeneralCodingRules.NO_CLASSES_SHOULD_USE_JODATIME;
 import org.apache.logging.log4j.Logger;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.CompositeArchRule;
 
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class CodingRulesTest {
 

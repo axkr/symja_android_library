@@ -36,9 +36,9 @@ a!!b==c	!syntax@4: End-of-file not reached.
 a!!(b!!c)	!syntax@8: ')' expected.
 a!!-b	Plus(Factorial2(a), Times(-1, b))
 a!!b^2	!syntax@4: End-of-file not reached.
-!!a	!syntax@2: Operator: !! is no prefix operator.
-!!a+b	!syntax@2: Operator: !! is no prefix operator.
-!!(a+b)	!syntax@2: Operator: !! is no prefix operator.
+!!a	Not(Not(a))
+!!a+b	Not(Not(Plus(a, b)))
+!!(a+b)	Not(Not(Plus(a, b)))
 a!!	Factorial2(a)
 a!!+b	Plus(Factorial2(a), b)
 (a+b)!!	Factorial2(Plus(a, b))

@@ -19,7 +19,7 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   @Test
   public void testTraditionalFormExponentialAndReciprocal() {
     check("ToBoxes(TraditionalForm(E^(2*y))) // InputForm", //
-        "TagBox(FormBox(SuperscriptBox(\"\uF74D\",RowBox({\"2\",\" \",\"y\"})),TraditionalForm),TraditionalForm,Editable->True)");
+        "TagBox(FormBox(SuperscriptBox(\"\\[ExponentialE]\",RowBox({\"2\",\" \",\"y\"})),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(TraditionalForm(1/Log(y))) // InputForm", //
         "TagBox(FormBox(FractionBox(\"1\",RowBox({\"log\",\"(\",\"y\",\")\"})),TraditionalForm),TraditionalForm,Editable->True)");
     // under the fraction line the power still goes on the function name
@@ -36,11 +36,11 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
   @Test
   public void testPiecewiseBox() {
     check("ToBoxes(Piecewise({{p, q > 0}, {s, q < -1}}, r)) // InputForm", //
-        "TagBox(GridBox({{\"\uF361\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"s\",RowBox({\"q\",\"<\",RowBox({\"-\",\"1\"})})},{\"r\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
+        "TagBox(GridBox({{\"\\[Piecewise]\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"s\",RowBox({\"q\",\"<\",RowBox({\"-\",\"1\"})})},{\"r\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->1.2`,ColumnWidths->Automatic,AllowedDimensions->{2,Automatic},Selectable->True,Editable->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->0.5`,ColumnWidths->Automatic),\"Piecewise\",SyntaxForm->Equal,SelectWithContents->True,StripWrapperBoxes->True,Selectable->False,Editable->False,DeleteWithContents->True)");
     check("ToBoxes(TraditionalForm(Piecewise({{p, q > 0}}))) // InputForm", //
-        "TagBox(FormBox(TagBox(GridBox({{\"\uF361\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"0\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
+        "TagBox(FormBox(TagBox(GridBox({{\"\\[Piecewise]\",GridBox({{\"p\",RowBox({\"q\",\">\",\"0\"})},{\"0\",TagBox(\"True\",\"PiecewiseDefault\",AutoDelete->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->1.2`,ColumnWidths->Automatic,AllowedDimensions->{2,Automatic},Selectable->True,Editable->True)}},"
             + "ColumnAlignments->{Left},ColumnSpacings->0.5`,ColumnWidths->Automatic),\"Piecewise\",SyntaxForm->Equal,SelectWithContents->True,StripWrapperBoxes->True,Selectable->False,Editable->False,DeleteWithContents->True),TraditionalForm),TraditionalForm,Editable->True)");
   }
@@ -52,6 +52,24 @@ public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
     // a LAB color among RGB colors is blended as an RGB color
     check("Head(Blend({LABColor(0.5, 0.0, 0.0), RGBColor(0, 0, 1)}, 0.5))", //
         "RGBColor");
+  }
+
+  @Test
+  public void testBlendOpacity() {
+    // the opacity is blended too, a color without one is opaque
+    check("Blend({Opacity(1/4, Green), Red}, 1/3)", //
+        "RGBColor(1/3,2/3,0,1/2)");
+    check("Blend({Red, Opacity(0.6, Blue)}, 0.5)", //
+        "RGBColor(0.5,0.0,0.5,0.8)");
+    check("Blend({Opacity(1/3, Red), Opacity(1/3, Blue), Green})", //
+        "RGBColor(1/3,1/3,1/3,5/9)");
+    check("Blend({GrayLevel(0), Opacity(1/2, GrayLevel(1))}, 1/2)", //
+        "GrayLevel(1/2,3/4)");
+    check("Blend({Opacity(1/2, Red), Blue}, {1, 3})", //
+        "RGBColor(1/4,0,3/4,7/8)");
+    // an end of the blend with an opacity is that color directive with the opacity
+    check("Blend({Opacity(1/3, Green), Blue}, -1)", //
+        "RGBColor(0,1,0,1/3)");
   }
 
   @Test

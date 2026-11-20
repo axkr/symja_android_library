@@ -3,6 +3,7 @@ package org.matheclipse.io.archunit;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import org.junit.jupiter.api.BeforeEach;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -36,6 +37,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * <code>org.matheclipse.core.rubi</code> are JUnit 3 classes where <code>setUp</code> is a naming
  * convention rather than an annotation.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse.io", importOptions = ImportOption.DoNotIncludeJars.class)
 public class LifecycleAnnotationTest {
 

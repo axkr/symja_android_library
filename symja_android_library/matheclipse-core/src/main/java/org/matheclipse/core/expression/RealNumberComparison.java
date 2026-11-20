@@ -159,6 +159,10 @@ public final class RealNumberComparison {
   }
 
   private static int exactCompare(IReal left, IReal right) {
+    if (left instanceof IRational && right instanceof IRational) {
+      // without the conversion of both to Apfloat, which costs more than the rest of Max(1, 2)
+      return left.compareTo(right);
+    }
     // Exact values make both signed zeros equal without changing either stored representation.
     // Apfloat.compareTo already dispatches to Aprational when an exact fraction is involved.
     return exactValue(left).compareTo(exactValue(right));

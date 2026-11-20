@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
@@ -177,7 +178,7 @@ public class Algebra {
   private static class Apart extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.last().isRuleAST()) {
         // the options with their default values change nothing; other settings are not
         // implemented
@@ -295,7 +296,7 @@ public class Algebra {
           x -> x.isPower() && x.exponent().isNegativeResult() && base.test(x.base()), true);
     }
 
-    private static IExpr apartTerm(IExpr arg1, IExpr variable, EvalEngine engine) {
+    private static @AllowNIL IExpr apartTerm(IExpr arg1, IExpr variable, EvalEngine engine) {
       if ((arg1.isTimes() || arg1.isPower())
           && !arg1.isFree(x -> x instanceof INum || x instanceof IComplexNum, true)
           && arg1.isFree(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum, true)) {
@@ -412,7 +413,7 @@ public class Algebra {
    */
   public static class Cancel extends AbstractFunctionEvaluator {
 
-    private static IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine)
+    private static @AllowNIL IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine)
         throws JASConversionException {
       Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(powerTimesAST, false);
       if (parts.isPresent()) {
@@ -505,7 +506,7 @@ public class Algebra {
     // return null;
     // }
 
-    private IExpr cancelFractionPowers(EvalEngine engine, IExpr arg1) {
+    private @AllowNIL IExpr cancelFractionPowers(EvalEngine engine, IExpr arg1) {
       IExpr temp;
       Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
       if (parts.isPresent()) {
@@ -580,7 +581,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the fraction keeps its form
      */
-    private static IExpr contentForm(IExpr fraction, EvalEngine engine) {
+    private static @AllowNIL IExpr contentForm(IExpr fraction, EvalEngine engine) {
       if (!fraction.isTimes() || ((IAST) fraction)
           .forAll(f -> f.isPower() && f.exponent().isInteger() && f.exponent().isNegative())) {
         // a reciprocal keeps its denominator
@@ -701,7 +702,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if no factor changes
      */
-    private static IExpr productForm(IAST denominator, IExpr numerator, IAST variables,
+    private static @AllowNIL IExpr productForm(IAST denominator, IExpr numerator, IAST variables,
         EvalEngine engine) {
       IRational numericFactor = F.C1;
       boolean negative = false;
@@ -751,7 +752,7 @@ public class Algebra {
      * @return {@link F#NIL} if the content is <code>1</code> or <code>-1</code>, or
      *         <code>p</code> has other coefficients
      */
-    private static IExpr numeratorContent(IExpr p, IAST variables, EvalEngine engine) {
+    private static @AllowNIL IExpr numeratorContent(IExpr p, IAST variables, EvalEngine engine) {
       IAST rules = coefficientRules(p, variables, engine);
       if (rules.isNIL()) {
         return F.NIL;
@@ -800,7 +801,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if an exponent is no non-negative integer
      */
-    private static IExpr commonMonomial(IAST rules, IAST variables) {
+    private static @AllowNIL IExpr commonMonomial(IAST rules, IAST variables) {
       int[] lowest = new int[variables.argSize()];
       java.util.Arrays.fill(lowest, Integer.MAX_VALUE);
       for (IExpr rule : rules) {
@@ -840,7 +841,7 @@ public class Algebra {
      * @param engine
      * @return {@link F#NIL} if no evaluations was possible
      */
-    private IExpr cancelNIL(IExpr arg1, EvalEngine engine) {
+    private @AllowNIL IExpr cancelNIL(IExpr arg1, EvalEngine engine) {
       try {
         if ((arg1.isTimes() || arg1.isPower()) && !engine.isTraceLevel(StepLevel.ALGEBRA)) {
           // a fraction of two polynomials with rational coefficients is divided by their GCD,
@@ -887,7 +888,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         IExpr byOption = trigOrExtension(S.Cancel, arg1, ast.arg2(), engine);
@@ -1041,7 +1042,7 @@ public class Algebra {
      * @param engine the evaluation engine
      * @return
      */
-    private IExpr collectSingleVariableRecursive(IExpr expr, IExpr x, final IAST listOfVariables,
+    private @AllowNIL IExpr collectSingleVariableRecursive(IExpr expr, IExpr x, final IAST listOfVariables,
         final int listPosition, IExpr head, EvalEngine engine) {
       if (expr.isAST()) {
         DefaultDict<IASTAppendable> defaultdict =
@@ -1242,7 +1243,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         IAST temp = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
@@ -1326,7 +1327,7 @@ public class Algebra {
      * Return <code>x</code> if it's a power expression without patterns, whose integer powers
      * should also be collected; {@link F#NIL} otherwise.
      */
-    private static IExpr powerTarget(IExpr x) {
+    private static @AllowNIL IExpr powerTarget(IExpr x) {
       if (x.isPower() && x.isFreeOfPatterns()) {
         return x;
       }
@@ -1608,7 +1609,7 @@ public class Algebra {
    *
    * @return <code>sum</code> if there are no such terms
    */
-  private static IExpr mergeLikeRadicals(IAST sum, EvalEngine engine) {
+  private static @AllowNIL IExpr mergeLikeRadicals(IAST sum, EvalEngine engine) {
     // the key of a term: the base, the exponent modulo 1 and the factors which are no numbers
     java.util.Map<IAST, java.util.List<Integer>> groups = new java.util.LinkedHashMap<>();
     IExpr[] coefficients = new IExpr[sum.size()];
@@ -1906,7 +1907,7 @@ public class Algebra {
       return isPossibleZeroQ;
     }
 
-    public static IExpr evaluateSolve(IExpr expr, SolveData solveData, EvalEngine engine) {
+    public static @AllowNIL IExpr evaluateSolve(IExpr expr, SolveData solveData, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet(expr);
       if (eVar.size() == 1 && !expr.isTimes() && !expr.isPower()) {
         IExpr variable = eVar.getArrayList().get(0);
@@ -1936,7 +1937,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    protected static IExpr factorExprSolve(final IAST ast, IExpr expr, IExpr variable,
+    protected static @AllowNIL IExpr factorExprSolve(final IAST ast, IExpr expr, IExpr variable,
         SolveData solveData, EvalEngine engine) {
       if (expr.isAST()) {
         if (expr.isTimes()) {
@@ -1976,7 +1977,7 @@ public class Algebra {
      *
      * @return <code>F.NIL</code> if the function has no result
      */
-    private static IExpr factorModulus(IBuiltInSymbol head, IExpr arg1, VariablesSet eVar,
+    private static @AllowNIL IExpr factorModulus(IBuiltInSymbol head, IExpr arg1, VariablesSet eVar,
         boolean factorSquareFree, IExpr modulus, EvalEngine engine) {
       if (JASModular.isModpMessage(head, modulus)) {
         return F.NIL;
@@ -2011,7 +2012,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if a base can't be factored
      */
-    private static IExpr factorModulusProduct(IBuiltInSymbol head, IExpr arg1, IInteger p,
+    private static @AllowNIL IExpr factorModulusProduct(IBuiltInSymbol head, IExpr arg1, IInteger p,
         EvalEngine engine) {
       IAST product = arg1.isTimes() ? (IAST) arg1 : F.Times(arg1);
       IInteger content = F.C1;
@@ -2065,7 +2066,7 @@ public class Algebra {
       return (IInteger) q.numerator().multiply(denominator.modInverse(p)).mod(p);
     }
 
-    public static IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
+    public static @AllowNIL IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
         boolean factorSquareFree, final IExpr[] options, final EvalEngine engine)
         throws JASConversionException {
       IExpr option = options[MODULUS_OPTION];
@@ -2089,7 +2090,7 @@ public class Algebra {
       return F.NIL; // no evaluation
     }
 
-    private static IExpr factorWithPolynomialHomogenizationSolve(IAST expr, IExpr variable,
+    private static @AllowNIL IExpr factorWithPolynomialHomogenizationSolve(IAST expr, IExpr variable,
         SolveData solveData, EvalEngine engine) {
       if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
         return expr;
@@ -2200,7 +2201,7 @@ public class Algebra {
       }, 1);
     }
 
-    private static IExpr getVariableValue(IExpr possibleList1, IExpr variable) {
+    private static @AllowNIL IExpr getVariableValue(IExpr possibleList1, IExpr variable) {
       if (possibleList1.isList1() && possibleList1.first().isRuleAST()
           && possibleList1.first().first().equals(variable)) {
         return possibleList1.first().second();
@@ -2297,7 +2298,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if nothing was factored
      */
-    private static IExpr factorRadicalGenerators(IExpr arg1, boolean trig, EvalEngine engine) {
+    private static @AllowNIL IExpr factorRadicalGenerators(IExpr arg1, boolean trig, EvalEngine engine) {
       java.util.Map<IExpr, IExpr> forward = new java.util.HashMap<IExpr, IExpr>();
       IASTAppendable backward = F.ListAlloc(4);
       IExpr masked = arg1.replaceAll(x -> {
@@ -2337,7 +2338,7 @@ public class Algebra {
      * @return {@link F#NIL} if <code>expanded</code> is no homogeneous sum of total degree at least
      *         <code>minDegree</code> or if <code>factor</code> fails
      */
-    private static IExpr factorHomogeneous(IExpr expanded, IAST vars,
+    private static @AllowNIL IExpr factorHomogeneous(IExpr expanded, IAST vars,
         java.util.function.BiFunction<IExpr, IAST, IExpr> factor, int minDegree,
         EvalEngine engine) {
       if (vars.argSize() < 2 || !expanded.isPlus()) {
@@ -2382,7 +2383,7 @@ public class Algebra {
      * @param multiplicity the exponent of <code>factored</code> in the whole product
      * @param degree receives the total degree of the product at index 0
      */
-    private static IExpr homogenize(IExpr factored, IAST rest, IExpr v, IAST rules,
+    private static @AllowNIL IExpr homogenize(IExpr factored, IAST rest, IExpr v, IAST rules,
         long multiplicity, long[] degree, EvalEngine engine) {
       if (factored.isTimes()) {
         IASTAppendable result = F.TimesAlloc(factored.size());
@@ -2421,7 +2422,7 @@ public class Algebra {
      * @param onlyGaussian accept no other field than <code>Q(I)</code>
      * @return {@link F#NIL} if the expression is no rational function over such a field
      */
-    private static IExpr factorNumberField(IExpr arg1, IAST extension, boolean onlyGaussian,
+    private static @AllowNIL IExpr factorNumberField(IExpr arg1, IAST extension, boolean onlyGaussian,
         EvalEngine engine) {
       IExpr together = engine.evaluate(F.Together(arg1));
       if (together.isZero()) {
@@ -2632,7 +2633,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if <code>expr</code> is no such sum or the content is <code>1</code>
      */
-    private static IExpr gaussianContent(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr gaussianContent(IExpr expr, EvalEngine engine) {
       if (!expr.isPlus()) {
         return F.NIL;
       }
@@ -2693,7 +2694,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if there is no such product
      */
-    protected static IExpr trigFactored(IExpr arg1, EvalEngine engine) {
+    protected static @AllowNIL IExpr trigFactored(IExpr arg1, EvalEngine engine) {
       if (!arg1.isPlus()) {
         return F.NIL;
       }
@@ -2825,7 +2826,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if <code>polynomial</code> isn't of that kind
      */
-    private static IExpr factorApproximate(IExpr polynomial, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr factorApproximate(IExpr polynomial, IExpr x, EvalEngine engine) {
       if (!x.isSymbol() || !polynomial.isPolynomial(F.list(x))) {
         return F.NIL;
       }
@@ -2899,7 +2900,7 @@ public class Algebra {
       return engine.evaluate(result);
     }
 
-    private IExpr factorArgument(final IAST ast, final IExpr[] options, final EvalEngine engine) {
+    private @AllowNIL IExpr factorArgument(final IAST ast, final IExpr[] options, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IAST list = CompareUtil.threadListLogicEquationRuleOperators(arg1, ast, 1);
       if (list.isPresent()) {
@@ -3316,7 +3317,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
 
       VariablesSet eVar = new VariablesSet(ast.arg1());
@@ -3422,7 +3423,7 @@ public class Algebra {
   static class FactorTerms extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr temp = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (temp.isPresent()) {
@@ -3599,7 +3600,7 @@ public class Algebra {
       return 0;
     }
 
-    private static IExpr factorTermsList(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr factorTermsList(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isFree(S.List)) {
         // `1` is not a polynomial.
@@ -3664,7 +3665,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the coefficients are not found
      */
-    private static IExpr factorTermsListIn(IAST poly, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr factorTermsListIn(IAST poly, IExpr x, EvalEngine engine) {
       IExpr coefficients = engine.evaluate(F.CoefficientList(poly, x));
       if (!coefficients.isList() || coefficients.argSize() < 1) {
         return F.NIL;
@@ -4064,7 +4065,7 @@ public class Algebra {
           true);
     }
 
-    private static IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
+    private static @AllowNIL IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
         EvalEngine engine) {
       try {
         ExprPolynomialRing ring = new ExprPolynomialRing(variables);
@@ -4093,7 +4094,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IExpr polynomialExtendedGCDModulus(IExpr expr1, IExpr expr2, IExpr modulus,
+    private static @AllowNIL IExpr polynomialExtendedGCDModulus(IExpr expr1, IExpr expr2, IExpr modulus,
         IAST varList, EvalEngine engine) {
       // the arguments are held, and the modulus may be the value of a variable
       modulus = engine.evaluate(modulus);
@@ -4120,7 +4121,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
       if (variables.size() != 2) {
@@ -4216,7 +4217,7 @@ public class Algebra {
    *        generator too, besides an <code>AlgebraicNumber</code>
    * @return {@link F#NIL} if no argument has such a number
    */
-  private static IExpr withAlgebraicGenerators(IAST ast, int argSize, boolean radicals,
+  private static @AllowNIL IExpr withAlgebraicGenerators(IAST ast, int argSize, boolean radicals,
       EvalEngine engine) {
     if (radicals) {
       boolean everyArgument = true;
@@ -4258,7 +4259,7 @@ public class Algebra {
    *
    * @return {@link F#NIL} if the arguments are polynomials in symbols, or no generators are found
    */
-  private static IExpr overGenerators(IAST ast, int argSize, EvalEngine engine) {
+  private static @AllowNIL IExpr overGenerators(IAST ast, int argSize, EvalEngine engine) {
     IAST arguments = ast.copyUntil(argSize + 1).setAtCopy(0, S.List);
     IAST symbols = new VariablesSet(arguments).getVarList();
     if (arguments.forAll(x -> x.isPolynomial(symbols))
@@ -4388,7 +4389,7 @@ public class Algebra {
    */
   private static class PolynomialGCD extends AbstractFunctionOptionEvaluator {
 
-    private static IExpr polynomialGCD(IAST ast, int argSize, VariablesSet eVar,
+    private static @AllowNIL IExpr polynomialGCD(IAST ast, int argSize, VariablesSet eVar,
         EvalEngine engine) {
       try {
         // CPD-OFF PolynomialGCD and PolynomialLCM fold their arguments with different operations
@@ -4473,7 +4474,7 @@ public class Algebra {
               new edu.jas.arith.BigInteger(denominator)));
     }
 
-    private static IExpr polynomialGCDExpr(final IAST ast, VariablesSet eVar, EvalEngine engine) {
+    private static @AllowNIL IExpr polynomialGCDExpr(final IAST ast, VariablesSet eVar, EvalEngine engine) {
       IExpr expr;
       try {
         if (eVar.size() == 0) {
@@ -4517,7 +4518,7 @@ public class Algebra {
      * @return {@link F#NIL} if no argument has an exposed factor or the arguments are no such
      *         polynomials
      */
-    private static IExpr exposedFactorsGCD(IAST ast, int argSize, EvalEngine engine) {
+    private static @AllowNIL IExpr exposedFactorsGCD(IAST ast, int argSize, EvalEngine engine) {
       boolean exposed = false;
       for (int i = 1; i <= argSize; i++) {
         IExpr arg = ast.get(i);
@@ -4576,7 +4577,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if a division by a common factor isn't exact
      */
-    private static IExpr exposedGCD(IExpr p, IExpr q, IExpr x, EvalEngine engine) {
+    private static @AllowNIL IExpr exposedGCD(IExpr p, IExpr q, IExpr x, EvalEngine engine) {
       engine.checkTimeLimit();
       IAST factors = exposedFactors(p);
       IExpr remaining = q;
@@ -4688,7 +4689,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if no argument has an inexact number
      */
-    private static IExpr inexactGCD(IAST ast, int argSize, EvalEngine engine) {
+    private static @AllowNIL IExpr inexactGCD(IAST ast, int argSize, EvalEngine engine) {
       boolean inexact = false;
       for (int i = 1; i <= argSize; i++) {
         if (!ast.get(i).isFree(x -> x.isInexactNumber(), false)) {
@@ -4747,7 +4748,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
 
       if (argSize == 0) {
@@ -4822,7 +4823,7 @@ public class Algebra {
      * The GCD over the number field generated by the radicals, <code>AlgebraicNumber</code> and
      * <code>Root</code> objects in the coefficients - see {@link AlgebraicCoefficientGCD#gcd}.
      */
-    private static IExpr extensionGCD(IAST ast, int argSize, EvalEngine engine) {
+    private static @AllowNIL IExpr extensionGCD(IAST ast, int argSize, EvalEngine engine) {
       try {
         VariablesSet eVar = new VariablesSet();
         for (int i = 1; i <= argSize; i++) {
@@ -4857,7 +4858,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    private IExpr gcdWithOption(final IAST ast, int argSize, IAST variables, IExpr option,
+    private @AllowNIL IExpr gcdWithOption(final IAST ast, int argSize, IAST variables, IExpr option,
         final EvalEngine engine) {
       if (JASModular.isModpMessage(S.PolynomialGCD, option)) {
         return F.NIL;
@@ -5107,7 +5108,7 @@ public class Algebra {
      * @return <code>Times(lcmExpr/lastArg, lastArg)</code>, or {@link F#NIL} if the quotient is
      *         <code>1</code> or cannot be determined
      */
-    private static IExpr timesLastArgument(IExpr lcmExpr, IExpr lastArg, IAST varList) {
+    private static @AllowNIL IExpr timesLastArgument(IExpr lcmExpr, IExpr lastArg, IAST varList) {
       if (varList.argSize() == 0 || lastArg.isNumber()) {
         // a numeric last argument would only distribute back into the polynomial
         return F.NIL;
@@ -5137,7 +5138,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if there aren't that many arguments, or a later one has a common factor
      */
-    private static IExpr productOfCoprimeLCMs(IAST ast, int argSize, EvalEngine engine) {
+    private static @AllowNIL IExpr productOfCoprimeLCMs(IAST ast, int argSize, EvalEngine engine) {
       if (argSize < 3) {
         return F.NIL;
       }
@@ -5153,7 +5154,7 @@ public class Algebra {
       return product;
     }
 
-    private static IExpr polynomialLCMExpr(final IAST ast, int argSize, VariablesSet eVar,
+    private static @AllowNIL IExpr polynomialLCMExpr(final IAST ast, int argSize, VariablesSet eVar,
         EvalEngine engine) {
       IExpr result = polynomialLCMExprPoly(ast, argSize, eVar, engine);
       if (result.isPresent()) {
@@ -5188,7 +5189,7 @@ public class Algebra {
      *         <code>eVar</code>, or if an intermediate division is not exact. The caller then falls
      *         back to {@link AlgebraUtil#findCommonFactors(IAST, boolean)}.
      */
-    private static IExpr polynomialLCMExprPoly(final IAST ast, int argSize, VariablesSet eVar,
+    private static @AllowNIL IExpr polynomialLCMExprPoly(final IAST ast, int argSize, VariablesSet eVar,
         EvalEngine engine) {
       if (eVar.size() == 0 || argSize < 2) {
         return F.NIL;
@@ -5247,7 +5248,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if a GCD or a division over the extension is not determined
      */
-    private static IExpr extensionLCM(IAST ast, int argSize, IExpr extension, IAST variables,
+    private static @AllowNIL IExpr extensionLCM(IAST ast, int argSize, IExpr extension, IAST variables,
         EvalEngine engine) {
       IExpr lcm = F.evalExpandAll(ast.arg1(), engine);
       for (int i = 2; i <= argSize; i++) {
@@ -5272,7 +5273,7 @@ public class Algebra {
      * The quotient <code>dividend / divisor</code> of two polynomials over the coefficients'
      * number field, or {@link F#NIL} if the division is not shown to be exact.
      */
-    private static IExpr divideExactly(IExpr dividend, IExpr divisor, IAST variables,
+    private static @AllowNIL IExpr divideExactly(IExpr dividend, IExpr divisor, IAST variables,
         EvalEngine engine) {
       // a divisor made monic in its leading monomial keeps the sign and leading coefficient of the
       // dividend
@@ -5295,7 +5296,7 @@ public class Algebra {
       return variables.forAll(v -> denominator.isFree(v)) ? quotient : F.NIL;
     }
 
-    private static IExpr polynomialLCMModulus(IAST ast, int argSize, IExpr modulus, IAST varList) {
+    private static @AllowNIL IExpr polynomialLCMModulus(IAST ast, int argSize, IExpr modulus, IAST varList) {
       if (JASModular.isModpMessage(S.PolynomialLCM, modulus)) {
         return F.NIL;
       }
@@ -5343,7 +5344,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if every denominator is a number
      */
-    private static IExpr lcmOfQuotients(IAST ast, int argSize, EvalEngine engine) {
+    private static @AllowNIL IExpr lcmOfQuotients(IAST ast, int argSize, EvalEngine engine) {
       IASTAppendable numerators = F.ast(S.PolynomialLCM, argSize);
       IASTAppendable denominators = F.ast(S.PolynomialGCD, argSize);
       boolean symbolicDenominator = false;
@@ -5361,7 +5362,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       if (argSize == 0) {
         return F.NIL;
@@ -5450,7 +5451,7 @@ public class Algebra {
      * <code>a/b</code> as the integer <code>a * b^-1 mod m</code>, or {@link F#NIL} if
      * <code>b</code> has no inverse modulo <code>m</code>.
      */
-    private static IExpr rationalMod(IRational r, IInteger m) {
+    private static @AllowNIL IExpr rationalMod(IRational r, IInteger m) {
       IInteger numerator = r.numerator();
       IInteger denominator = r.denominator();
       if (denominator.isOne()) {
@@ -5469,7 +5470,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if a denominator has no inverse modulo <code>m</code>
      */
-    private static IExpr numberMod(IExpr c, IInteger m, EvalEngine engine) {
+    private static @AllowNIL IExpr numberMod(IExpr c, IInteger m, EvalEngine engine) {
       if (c.isRational()) {
         return rationalMod((IRational) c, m);
       }
@@ -5492,7 +5493,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the coefficient has no denominator or it has no inverse
      */
-    private static IExpr complexCoefficientMod(IComplex z, IInteger m) {
+    private static @AllowNIL IExpr complexCoefficientMod(IComplex z, IInteger m) {
       IInteger denominator = z.re().denominator().lcm(z.im().denominator());
       if (denominator.isOne() || !denominator.gcd(m).isOne()) {
         return F.NIL;
@@ -5502,7 +5503,7 @@ public class Algebra {
           z.im().multiply(denominator).multiply(inverse));
     }
 
-    private static IExpr applyModRecursively(IExpr expr, IInteger m, EvalEngine engine) {
+    private static @AllowNIL IExpr applyModRecursively(IExpr expr, IInteger m, EvalEngine engine) {
       if (expr.isInteger()) {
         return ((IInteger) expr).mod(m);
       }
@@ -5563,7 +5564,7 @@ public class Algebra {
      * <code>Plus</code>/<code>Times</code>/<code>Power</code> applying {@code Mod} to numeric
      * leaves.
      */
-    private static IExpr polynomialModInteger(IExpr expr, IInteger m, EvalEngine engine) {
+    private static @AllowNIL IExpr polynomialModInteger(IExpr expr, IInteger m, EvalEngine engine) {
       VariablesSet variablesSet = new VariablesSet(expr);
       IAST vars = variablesSet.getVarList();
       if (vars.argSize() == 0) {
@@ -5599,7 +5600,7 @@ public class Algebra {
      * leading coefficient of the current polynomial. As soon as the division is not exact in
      * <code>Z</code>, the current polynomial is returned unchanged (no divisions are performed).
      */
-    private static IExpr polynomialModIntegerDomain(IExpr poly, IExpr m, IExpr var,
+    private static @AllowNIL IExpr polynomialModIntegerDomain(IExpr poly, IExpr m, IExpr var,
         EvalEngine engine) {
       IExpr current = poly;
       // Safety bound: each iteration strictly decreases the degree of `current`.
@@ -5650,7 +5651,7 @@ public class Algebra {
      * is non-zero mod <code>p</code>); the standard polynomial remainder is then computed and
      * reduced mod <code>p</code> a final time.
      */
-    private static IExpr polynomialModPrime(IExpr poly, IExpr m, IExpr var, IInteger p,
+    private static @AllowNIL IExpr polynomialModPrime(IExpr poly, IExpr m, IExpr var, IInteger p,
         EvalEngine engine) {
       IExpr polyMod = polynomialModInteger(poly, p, engine);
       IExpr mMod = polynomialModInteger(m, p, engine);
@@ -5693,7 +5694,7 @@ public class Algebra {
      *        must be an integer which isn't a multiple of <code>p</code>
      * @return {@link F#NIL} if the arguments don't have this form
      */
-    private static IExpr remainderModPrime(IExpr poly, IExpr m, IInteger p,
+    private static @AllowNIL IExpr remainderModPrime(IExpr poly, IExpr m, IInteger p,
         boolean unitLeadingCoefficient, EvalEngine engine) {
       if (!JASModular.isPrimeModulus(p) || !m.isPolynomialStruct()) {
         return F.NIL;
@@ -5726,7 +5727,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the moduli don't have this form
      */
-    private static IExpr polynomialModList(IExpr poly, IAST moduli, EvalEngine engine) {
+    private static @AllowNIL IExpr polynomialModList(IExpr poly, IAST moduli, EvalEngine engine) {
       IASTAppendable polynomials = F.ListAlloc(moduli.argSize());
       boolean hasInteger = false;
       for (int i = 1; i <= moduli.argSize(); i++) {
@@ -5785,7 +5786,7 @@ public class Algebra {
      * <code>g</code> (leading coefficient <code>lc &gt; 0</code>) loses
      * <code>Quotient(c, lc)*(t/lm)*g</code>, largest term first, until no term changes.
      */
-    private static IExpr reduceOverIntegers(IExpr p, IExpr g, IAST vars, EvalEngine engine) {
+    private static @AllowNIL IExpr reduceOverIntegers(IExpr p, IExpr g, IAST vars, EvalEngine engine) {
       IExpr gRules = engine.evaluate(F.CoefficientRules(F.evalExpandAll(g, engine), vars));
       if (!gRules.isList() || gRules.argSize() == 0) {
         return F.NIL;
@@ -5851,7 +5852,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr poly = ast.arg1();
       IExpr m = ast.arg2();
@@ -6028,7 +6029,7 @@ public class Algebra {
      * otherwise
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST variablesList = F.NIL;
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
@@ -6147,7 +6148,7 @@ public class Algebra {
   private static class PolynomialQuotient extends PolynomialQuotientRemainder {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
 
       IExpr variable = polynomialVariable(ast, engine);
@@ -6360,7 +6361,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr temp = engine.getCache(ast);
       if (temp != null) {
@@ -6440,7 +6441,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the modulus is no prime or the arguments are no polynomials
      */
-    static IExpr modularPart(IAST ast, IExpr variable, IExpr option, int part) {
+    static @AllowNIL IExpr modularPart(IAST ast, IExpr variable, IExpr option, int part) {
       Optional<IExpr[]> modular =
           quotientRemainderModPrime(ast.arg1(), ast.arg2(), variable, option, part == 1);
       return modular.isPresent() ? modular.get()[part] : F.NIL;
@@ -6528,7 +6529,7 @@ public class Algebra {
   private static class PolynomialRemainder extends PolynomialQuotientRemainder {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr variable = polynomialVariable(ast, engine);
       if (variable.isNIL()) {
@@ -6655,7 +6656,7 @@ public class Algebra {
 
       /** {@inheritDoc} */
       @Override
-      public IExpr visit2(IExpr head, IExpr arg1) {
+      public @AllowNIL IExpr visit2(IExpr head, IExpr arg1) {
         boolean evaled = false;
         IExpr result = arg1.accept(this);
         if (result.isPresent()) {
@@ -6725,7 +6726,7 @@ public class Algebra {
 
       /** {@inheritDoc} */
       @Override
-      public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
+      public @AllowNIL IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
         boolean evaled = false;
         IExpr x1 = arg1;
         IExpr result = arg1.accept(this);
@@ -6854,7 +6855,7 @@ public class Algebra {
   public static class Together extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IAST list = CompareUtil.threadListLogicEquationRuleOperators(arg1, ast, 1);
       if (list.isPresent()) {
@@ -6944,7 +6945,7 @@ public class Algebra {
      * integer: <code>2^n+2^(n+1)</code> is <code>3*2^n</code>, <code>x^n+x^(n+1)</code> is
      * <code>x^n*(1+x)</code>. A sum which is a factor of a product is treated alike.
      */
-    public static IExpr commonPowers(IExpr expr, EvalEngine engine) {
+    public static @AllowNIL IExpr commonPowers(IExpr expr, EvalEngine engine) {
       if (expr.isPlus()) {
         return commonPowersOfSum((IAST) expr, engine).orElse(expr);
       }
@@ -6967,7 +6968,7 @@ public class Algebra {
       return expr;
     }
 
-    private static IExpr commonPowersOfSum(IAST sum, EvalEngine engine) {
+    private static @AllowNIL IExpr commonPowersOfSum(IAST sum, EvalEngine engine) {
       java.util.Map<IExpr, IRational> common = null;
       final java.util.Set<IExpr> varying = new java.util.HashSet<IExpr>();
       for (IExpr term : sum) {
@@ -7027,7 +7028,7 @@ public class Algebra {
      *
      * @return {@link F#NIL} if the denominator has no such factor
      */
-    private static IExpr rationalDenominator(IExpr fraction, EvalEngine engine) {
+    private static @AllowNIL IExpr rationalDenominator(IExpr fraction, EvalEngine engine) {
       IExpr denominator = engine.evaluate(F.Denominator(fraction));
       IAST factors = denominator.isTimes() ? (IAST) denominator : F.list(denominator);
       IASTAppendable multiplier = F.TimesAlloc(factors.argSize());
@@ -7120,7 +7121,7 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST2()) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
@@ -7268,7 +7269,7 @@ public class Algebra {
    * cosine of each angle, which are symbols during the operation so that <code>1/Sin(x)</code>
    * stays a fraction.
    */
-  private static IExpr trigRationalFunction(IBuiltInSymbol head, IExpr arg1, EvalEngine engine) {
+  private static @AllowNIL IExpr trigRationalFunction(IBuiltInSymbol head, IExpr arg1, EvalEngine engine) {
     // the heads with the powers of the sine and the cosine they are; the hyperbolic ones last
     final IExpr[][] powers = {//
         {S.Sin, F.C1, F.C0}, {S.Cos, F.C0, F.C1}, {S.Tan, F.C1, F.CN1}, {S.Cot, F.CN1, F.C1},
@@ -7327,7 +7328,7 @@ public class Algebra {
    * <code>extension</code> cancelled, numerator and denominator multiplied out.
    * <code>(x^2-2)/(x-Sqrt(2))</code> is <code>Sqrt(2)+x</code>.
    */
-  private static IExpr cancelOverExtension(IExpr expr, IExpr extension, EvalEngine engine) {
+  private static @AllowNIL IExpr cancelOverExtension(IExpr expr, IExpr extension, EvalEngine engine) {
     IExpr together = engine.evaluate(F.Together(expr));
     IExpr factored =
         engine.evaluate(F.binaryAST2(S.Factor, together, F.Rule(S.Extension, extension)));
@@ -7345,7 +7346,7 @@ public class Algebra {
    *
    * @return <code>F.NIL</code> if the second argument is something else, which is reported
    */
-  private static IExpr modulusOption(IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr modulusOption(IAST ast, EvalEngine engine) {
     IExpr arg2 = ast.arg2();
     if (arg2.isRuleAST() && arg2.first() == S.Modulus) {
       return arg2.second();
@@ -7399,7 +7400,7 @@ public class Algebra {
    *
    * @return {@link F#NIL} if the modulus is no prime number
    */
-  private static IExpr residue(IRational number, IExpr modulus, IBuiltInSymbol head,
+  private static @AllowNIL IExpr residue(IRational number, IExpr modulus, IBuiltInSymbol head,
       EvalEngine engine) {
     if (JASModular.isModpMessage(head, modulus)) {
       return F.NIL;
@@ -7423,7 +7424,7 @@ public class Algebra {
    * @return <code>F.NIL</code> if the modulus is no prime number, or the expression no rational
    *         function with rational coefficients
    */
-  private static IExpr togetherModulus(IBuiltInSymbol head, IExpr expr, IExpr modulus,
+  private static @AllowNIL IExpr togetherModulus(IBuiltInSymbol head, IExpr expr, IExpr modulus,
       EvalEngine engine) {
     if (JASModular.isModpMessage(head, modulus)) {
       return F.NIL;
@@ -7452,6 +7453,7 @@ public class Algebra {
    *        it stays as it is unless its numerator and denominator have a common factor over
    *        <code>GF(p)</code>
    */
+  @AllowNIL
   private static <C extends GcdRingElem<C> & Modular> IExpr togetherModulus(JASModular<C> jas,
       IExpr numerator, IExpr denominator, IExpr fraction, EvalEngine engine)
       throws JASConversionException {
@@ -7504,7 +7506,7 @@ public class Algebra {
    * @return {@link F#NIL} if an expansion of <code>Log(numerator/denominator)</code> isn't
    *         possible.
    */
-  private static IExpr powerExpandLogRational(IRational rationalNumber) {
+  private static @AllowNIL IExpr powerExpandLogRational(IRational rationalNumber) {
     IASTAppendable factors = rationalNumber.factorInteger();
     IAST pair = (IAST) factors.first();
     if (pair.second().isOne()) {
@@ -7544,7 +7546,7 @@ public class Algebra {
    * <p>
    * This prevents {@code a^2} from becoming {@code a^(2 mod 2)} = {@code a^0} = {@code 1}.
    */
-  private static IExpr reduceCoefficients(IExpr expr, IInteger modulus, EvalEngine engine) {
+  private static @AllowNIL IExpr reduceCoefficients(IExpr expr, IInteger modulus, EvalEngine engine) {
     if (expr.isInteger()) {
       return ((IInteger) expr).mod(modulus);
     }
@@ -7778,7 +7780,7 @@ public class Algebra {
    *         other than in such powers (<code>x^3</code> is no power of <code>x^2</code>,
    *         <code>Sin(x^4)</code> is no polynomial in it)
    */
-  static IExpr substitutePowersOfVariable(IExpr polyExpr, IExpr variable, IAST variablesList,
+  static @AllowNIL IExpr substitutePowersOfVariable(IExpr polyExpr, IExpr variable, IAST variablesList,
       String dummyStr) {
     if (!variable.isPower() || !variable.base().isSymbol() || !variable.exponent().isInteger()) {
       return F.NIL;
@@ -7803,7 +7805,7 @@ public class Algebra {
    *
    * @return {@link F#NIL} if nothing was replaced
    */
-  private static IExpr substitutePowers(IExpr expr, IExpr base, int k, ISymbol dummy) {
+  private static @AllowNIL IExpr substitutePowers(IExpr expr, IExpr base, int k, ISymbol dummy) {
     if (expr.isPower() && expr.base().equals(base)) {
       int j = expr.exponent().toIntDefault();
       if (j > 0 && j % k == 0) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ final class CoprimeDenominators {
     return new CoprimeDenominators(x, engine).together(numerators, denominators);
   }
 
-  private IExpr together(IAST numerators, IAST denominators) {
+  private @AllowNIL IExpr together(IAST numerators, IAST denominators) {
     final int terms = numerators.argSize();
     for (IExpr numerator : numerators) {
       if (!isPolynomial(numerator)) {

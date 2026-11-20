@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -129,6 +131,38 @@ public class RischNorman {
     return hasTowerKernel(f, x);
   }
 
+  /**
+   * Is <code>f</code> a function of a <code>Tan(u)</code> or <code>Tanh(u)</code> and of another
+   * kernel - an exponential, a logarithm or a tangent of another argument - without a root and
+   * without parameters, like the derivative of <code>x*E^x/(1+Tanh(x)/x)</code>? The conditions
+   * of the rules simplify ever larger expressions for these without an answer, and the parallel
+   * integration settles them in a fraction of a second. A tangent of an exponential or logarithm,
+   * <code>E^x*Tan(E^x)</code>, is a substitution the rules write better; a parameter makes the
+   * linear system of the ansatz symbolic and slow.
+   */
+  public static boolean isMixedTangentTower(IExpr f, IExpr x) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || RischNormanRadical.hasRoot(f, x)) {
+      return false;
+    }
+    final Set<IExpr> tangents = tangentArguments(f, x);
+    if (tangents.isEmpty()) {
+      return false;
+    }
+    for (IExpr tangent : tangents) {
+      if (!tangent.first().isPolynomial(x)) {
+        return false;
+      }
+    }
+    if (!f.isFree(e -> e.isSymbol() && !e.equals(x) && !(e instanceof IBuiltInSymbol), true)) {
+      return false;
+    }
+    if (tangents.size() > 1) {
+      return true;
+    }
+    return !f.isFree(e -> (e.isAST(S.Log, 2) || (e.isPower() && e.base().isE()))
+        && !e.isFree(x, true), true);
+  }
+
   private static boolean hasTowerKernel(IExpr f, IExpr x) {
     return !f.isFree(e -> (e.isAST(S.Log, 2) || e.isAST(S.Tan, 2)
         || (e.isPower() && e.base().isE())) && !e.isFree(x, true), true);
@@ -137,6 +171,10 @@ public class RischNorman {
   private static IExpr integrateInternal(IExpr integrand, IExpr x, EvalEngine engine,
       long deadline) {
     // 1. collect the transcendental kernels
+    // Sec(u)^2 is 1+Tan(u)^2 over a tower with Tan(u): the derivative of Tan(u) and of E^Tan(u)
+    // must be rational in the kernels
+    final Set<IExpr> tangentArgs = tangentArguments(integrand, x);
+    integrand = tangentSquares(integrand, tangentArgs, engine);
     List<IExpr> kernels = collectKernels(integrand, x);
     // exponentials with commensurable exponents are powers of one generator
     Map<IExpr, IExpr[]> members = commonExponentials(kernels, engine);
@@ -160,7 +198,7 @@ public class RischNorman {
     // 3. derivatives of the kernels, expressed in x and the dummies
     IExpr[] derivatives = new IExpr[kernels.size()];
     for (int i = 0; i < kernels.size(); i++) {
-      IExpr d = engine.evaluate(F.D(kernels.get(i), x));
+      IExpr d = tangentSquares(engine.evaluate(F.D(kernels.get(i), x)), tangentArgs, engine);
       d = replaceMembers(replaceKernels(d, kernels, dummies), members, kernels, dummies);
       if (!isRationalIn(d, x, dummies)) {
         return F.NIL;
@@ -181,6 +219,7 @@ public class RischNorman {
 
     // degree bounds per variable
     int[] bounds = new int[dummies.length + 1];
+    int[] tightBounds = new int[dummies.length + 1];
     for (int v = 0; v < bounds.length; v++) {
       IExpr var = varsList.get(v + 1);
       int dn = degree(numer, var, engine);
@@ -188,11 +227,16 @@ public class RischNorman {
       if (dn < 0 || dd < 0) {
         return F.NIL;
       }
-      bounds[v] = Math.max(dn, dd) + 2;
+      final int d = Math.max(dn, dd);
+      bounds[v] = d + 2;
+      tightBounds[v] = v == 0 ? d + 1 : tightBound(kernels.get(v - 1), d);
     }
-    long count = 1;
-    for (int bound : bounds) {
-      count *= (bound + 1);
+    long count = monomialCount(bounds);
+    if (count > MAX_UNKNOWNS) {
+      // the bounds by the way each kind of kernel changes the degree under differentiation: the
+      // derivative of a polynomial in E^u has its degree, the one in Tan(u) a degree more
+      bounds = tightBounds;
+      count = monomialCount(bounds);
       if (count > MAX_UNKNOWNS) {
         return F.NIL;
       }
@@ -279,12 +323,17 @@ public class RischNorman {
       unknownsList.append(unknown);
     }
 
-    // 7. solve the linear system
-    IExpr solution = engine.evaluateNIL(F.SolveDistinct(equations, unknownsList));
-    if (solution.isNIL() || !solution.isListOfLists() || solution.argSize() == 0) {
+    // 7. solve the linear system; numeric coefficients directly, hundreds of equations are usual
+    IExpr rules = ExactLinearSystem.solve(equations, unknownsList, engine);
+    if (rules == null) {
+      IExpr solution = engine.evaluateNIL(F.SolveDistinct(equations, unknownsList));
+      if (solution.isNIL() || !solution.isListOfLists() || solution.argSize() == 0) {
+        return F.NIL;
+      }
+      rules = solution.first();
+    } else if (((IAST) rules).isEmpty()) {
       return F.NIL;
     }
-    IExpr rules = solution.first();
     IExpr resolved = engine.evaluate(F.ReplaceAll(ansatz, rules));
     // remaining free coefficients are set to zero
     for (IExpr unknown : unknowns) {
@@ -343,48 +392,138 @@ public class RischNorman {
   }
 
   /**
-   * The numerator of a sum of rational functions over a common multiple of the denominators of
-   * its terms, multiplied out. Each term is put over its own denominator, which is cheap for the
-   * small terms of the ansatz derivative; <code>Together</code> of the whole sum takes the gcd of
-   * polynomials in all the unknowns of the ansatz and needed seconds for 17 of them. The
-   * numerator over a multiple of the lowest denominator has the same zeros in the unknowns.
+   * The numerator of a rational function over a common multiple of the denominators of its parts,
+   * multiplied out. The numerator over a multiple of the lowest denominator has the same zeros in
+   * the unknowns, so no gcd is cancelled: <code>Together</code> takes the gcd of polynomials in all
+   * the unknowns of the ansatz, which needed seconds for 17 of them and exhausted the memory for a
+   * tower with an inverse tangent.
    *
    * @return {@link F#NIL} if the deadline passed
    */
   private static IExpr clearedNumerator(IExpr sum, EvalEngine engine, long deadline) {
-    IAST terms = sum.isPlus() ? (IAST) sum : F.List(sum);
-    List<IExpr> numerators = new ArrayList<>(terms.argSize());
-    List<IExpr> denominators = new ArrayList<>(terms.argSize());
-    // distinct denominators, the index of each term's one
-    List<IExpr> distinct = new ArrayList<>();
-    int[] index = new int[terms.argSize()];
-    for (int i = 1; i < terms.size(); i++) {
-      if (System.currentTimeMillis() > deadline) {
-        return F.NIL;
-      }
-      IExpr together = engine.evaluate(F.Together(terms.get(i)));
-      numerators.add(engine.evaluate(F.Numerator(together)));
-      IExpr denominator = engine.evaluate(F.Expand(F.Denominator(together)));
-      denominators.add(denominator);
-      int k = distinct.indexOf(denominator);
-      if (k < 0) {
-        k = distinct.size();
-        distinct.add(denominator);
-      }
-      index[i - 1] = k;
+    Fraction fraction = Fraction.of(sum, deadline);
+    if (fraction == null) {
+      return F.NIL;
     }
-    IASTAppendable result = F.PlusAlloc(numerators.size());
-    for (int i = 0; i < numerators.size(); i++) {
-      IASTAppendable product = F.TimesAlloc(distinct.size());
-      product.append(numerators.get(i));
-      for (int k = 0; k < distinct.size(); k++) {
-        if (k != index[i]) {
-          product.append(distinct.get(k));
+    return engine.evaluate(F.Expand(fraction.numerator));
+  }
+
+  /**
+   * A numerator over a denominator kept as its factors and their exponents. A sum is put over the
+   * least common multiple of the factors of its terms, compared by their form.
+   */
+  private static final class Fraction {
+    final IExpr numerator;
+    final Map<IExpr, Integer> denominator;
+
+    private Fraction(IExpr numerator, Map<IExpr, Integer> denominator) {
+      this.numerator = numerator;
+      this.denominator = denominator;
+    }
+
+    /** @return <code>null</code> if the deadline passed */
+    static Fraction of(IExpr expr, long deadline) {
+      if (System.currentTimeMillis() > deadline) {
+        return null;
+      }
+      if (expr.isPlus()) {
+        IAST plus = (IAST) expr;
+        List<Fraction> terms = new ArrayList<>(plus.argSize());
+        Map<IExpr, Integer> lcm = new LinkedHashMap<>();
+        for (IExpr term : plus) {
+          Fraction fraction = of(term, deadline);
+          if (fraction == null) {
+            return null;
+          }
+          terms.add(fraction);
+          fraction.denominator.forEach((base, exponent) -> lcm.merge(base, exponent, Math::max));
+        }
+        IASTAppendable numerator = F.PlusAlloc(terms.size());
+        for (Fraction fraction : terms) {
+          IASTAppendable product = F.TimesAlloc(lcm.size() + 1);
+          product.append(fraction.numerator);
+          lcm.forEach((base, exponent) -> appendPower(product, base,
+              exponent - fraction.denominator.getOrDefault(base, 0)));
+          numerator.append(product.oneIdentity1());
+        }
+        return new Fraction(numerator.oneIdentity0(), lcm);
+      }
+      if (expr.isTimes()) {
+        IAST times = (IAST) expr;
+        IASTAppendable numerator = F.TimesAlloc(times.argSize());
+        Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+        for (IExpr factor : times) {
+          Fraction fraction = of(factor, deadline);
+          if (fraction == null) {
+            return null;
+          }
+          numerator.append(fraction.numerator);
+          fraction.denominator
+              .forEach((base, exponent) -> denominator.merge(base, exponent, Integer::sum));
+        }
+        return new Fraction(numerator.oneIdentity1(), denominator);
+      }
+      if (expr.isPower() && expr.exponent().isInteger()) {
+        final int k = expr.exponent().toIntDefault();
+        if (k != Integer.MIN_VALUE && k != 0) {
+          Fraction base = of(expr.base(), deadline);
+          if (base == null) {
+            return null;
+          }
+          final int n = Math.abs(k);
+          if (k > 0) {
+            Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+            base.denominator.forEach((b, exponent) -> denominator.put(b, exponent * n));
+            return new Fraction(F.Power(base.numerator, F.ZZ(n)), denominator);
+          }
+          // the reciprocal: the factors of the denominator come up, the numerator goes down
+          IASTAppendable numerator = F.TimesAlloc(base.denominator.size() + 1);
+          numerator.append(F.C1);
+          base.denominator.forEach((b, exponent) -> appendPower(numerator, b, exponent * n));
+          Map<IExpr, Integer> denominator = new LinkedHashMap<>();
+          for (IExpr factor : base.numerator.isTimes() ? (IAST) base.numerator
+              : F.List(base.numerator)) {
+            denominator.merge(factor, n, Integer::sum);
+          }
+          return new Fraction(numerator.oneIdentity1(), denominator);
         }
       }
-      result.append(product.oneIdentity1());
+      return new Fraction(expr, new LinkedHashMap<>());
     }
-    return engine.evaluate(F.Expand(result.oneIdentity0()));
+
+    private static void appendPower(IASTAppendable product, IExpr base, int exponent) {
+      if (exponent == 1) {
+        product.append(base);
+      } else if (exponent > 1) {
+        product.append(F.Power(base, F.ZZ(exponent)));
+      }
+    }
+  }
+
+  /**
+   * The degree of the antiderivative's numerator in a kernel, if the integrand has degree
+   * <code>d</code> in it.
+   */
+  private static int tightBound(IExpr kernel, int d) {
+    if (kernel.isPower() && kernel.base().isE()) {
+      return d;
+    }
+    if (kernel.isAST(S.Tan, 2) || kernel.isAST(S.Tanh, 2)) {
+      return Math.max(d - 1, 1);
+    }
+    return d + 1;
+  }
+
+  /** The number of monomials with the exponents <code>0..bounds[v]</code> in each variable. */
+  private static long monomialCount(int[] bounds) {
+    long count = 1;
+    for (int bound : bounds) {
+      count *= (bound + 1);
+      if (count > MAX_UNKNOWNS) {
+        return count;
+      }
+    }
+    return count;
   }
 
   /** Determine the polynomial degree of <code>expr</code> in <code>var</code>. */
@@ -497,6 +636,60 @@ public class RischNorman {
     return result;
   }
 
+  /** The <code>Tan(u)</code> and <code>Tanh(u)</code> with <code>x</code> in <code>u</code>. */
+  private static Set<IExpr> tangentArguments(IExpr expr, IExpr x) {
+    final Set<IExpr> args = new LinkedHashSet<>();
+    // a predicate which never matches visits every subexpression
+    expr.isFree(e -> {
+      if ((e.isAST(S.Tan, 2) || e.isAST(S.Tanh, 2)) && !e.first().isFree(x, true)) {
+        args.add(e);
+      }
+      return false;
+    }, true);
+    return args;
+  }
+
+  /**
+   * Write even powers of <code>Sec(u), Cos(u)</code> as powers of <code>1+Tan(u)^2</code> and
+   * even powers of <code>Sech(u), Cosh(u)</code> as powers of <code>1-Tanh(u)^2</code>, if
+   * <code>Tan(u)</code> or <code>Tanh(u)</code> is in <code>tangents</code>. The squares are even,
+   * so <code>Tan(-u)</code>, which the evaluation may have made of <code>-Tan(u)</code>, serves
+   * too.
+   */
+  private static IExpr tangentSquares(IExpr expr, Set<IExpr> tangents, EvalEngine engine) {
+    if (tangents.isEmpty()) {
+      return expr;
+    }
+    return F.subst(expr, e -> {
+      if (e.isPower() && e.exponent().isInteger() && e.base().isAST1()) {
+        final int n = e.exponent().toIntDefault();
+        if (n == Integer.MIN_VALUE || (n & 1) != 0) {
+          return F.NIL;
+        }
+        final IExpr base = e.base();
+        final IExpr u = base.first();
+        final int sign = base.isAST(S.Sec, 2) || base.isAST(S.Sech, 2) ? 1
+            : base.isAST(S.Cos, 2) || base.isAST(S.Cosh, 2) ? -1 : 0;
+        if (sign == 0) {
+          return F.NIL;
+        }
+        final boolean circular = base.isAST(S.Sec, 2) || base.isAST(S.Cos, 2);
+        IExpr tangent = circular ? F.Tan(u) : F.Tanh(u);
+        if (!tangents.contains(tangent)) {
+          final IExpr minusU = engine.evaluate(F.Negate(u));
+          tangent = circular ? F.Tan(minusU) : F.Tanh(minusU);
+          if (!tangents.contains(tangent)) {
+            return F.NIL;
+          }
+        }
+        final IExpr square =
+            circular ? F.Plus(F.C1, F.Sqr(tangent)) : F.Subtract(F.C1, F.Sqr(tangent));
+        return F.Power(square, F.ZZ(sign * n / 2));
+      }
+      return F.NIL;
+    });
+  }
+
   /** Replace each kernel (largest first) by its dummy symbol. */
   private static IExpr replaceKernels(IExpr expr, List<IExpr> kernels, ISymbol[] dummies) {
     IExpr result = expr;
@@ -599,7 +792,11 @@ public class RischNorman {
     if (ast.argSize() != 1 || ast.arg1().isFree(x, true)) {
       return false;
     }
+    // an inverse tangent is a logarithmic kernel: its derivative u'/(1+u^2) or u'/(1-u^2) is
+    // rational in the kernels of u
     return ast.head() == S.Log || ast.head() == S.Tan || ast.head() == S.Tanh || ast.head() == S.Sin
-        || ast.head() == S.Cos || ast.head() == S.Sinh || ast.head() == S.Cosh;
+        || ast.head() == S.Cos || ast.head() == S.Sinh || ast.head() == S.Cosh
+        || ast.head() == S.ArcTan || ast.head() == S.ArcCot || ast.head() == S.ArcTanh
+        || ast.head() == S.ArcCoth;
   }
 }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -25,7 +26,7 @@ public class EntityFunctions {
   private static class Entity extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.head().isAST(S.Entity, 3)) {
         IExpr value = engine.evaluate(F.binaryAST2(S.EntityValue, ast.head(), ast.arg1()));
         return value.isAST(S.EntityValue) ? F.NIL : value;
@@ -37,7 +38,7 @@ public class EntityFunctions {
   private static class RGBColor extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isString()) {
         return hexStringToRGBColor(ast.arg1().toString());
       }
@@ -58,7 +59,7 @@ public class EntityFunctions {
    * @param hexString the color string including the leading <code>#</code> character
    * @return {@link F#NIL} if <code>hexString</code> isn't one of the supported notations
    */
-  private static IExpr hexStringToRGBColor(String hexString) {
+  private static @AllowNIL IExpr hexStringToRGBColor(String hexString) {
     if (hexString.length() < 2 || hexString.charAt(0) != '#') {
       return F.NIL;
     }

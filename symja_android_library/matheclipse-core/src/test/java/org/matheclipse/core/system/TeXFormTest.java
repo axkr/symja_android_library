@@ -361,6 +361,15 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSphericalHarmonicY() {
+    // the degree and the order as subscript and superscript, in braces if longer than a character
+    check("TeXForm(SphericalHarmonicY(l, m, t, w))", //
+        "Y_l^m(t,w)");
+    check("TeXForm(SphericalHarmonicY(2*l, m - 1, t, w))", //
+        "Y_{2 \\cdot l}^{-1 + m}(t,w)");
+  }
+
+  @Test
   public void testLegendreQ() {
     check("TeXForm(LegendreQ(a,b))", //
         "Q_a(b)");
@@ -648,8 +657,9 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTeXFormRow() {
+    // a row stays a row, so its elements are typeset with the separator between them
     check("TeXForm(Row({1,2,3,4}, \", \"))", //
-        "\\textnormal{1, 2, 3, 4}");
+        "1\\textnormal{, }2\\textnormal{, }3\\textnormal{, }4");
   }
 
   @Test
@@ -684,6 +694,22 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     // corrects it to the set-minus slash the character means.
     check("TeXForm(Backslash(a,b))", //
         "a \\setminus b");
+  }
+
+  @Test
+  public void testOperatorFormWrappers() {
+    // Infix, Prefix and Postfix are written as their row of operands and operators
+    check("TeXForm(Infix({p, q, r}, \"*\"))", //
+        "p*q*r");
+    check("TeXForm(Infix({p, q}, w^3))", //
+        "p{w}^{3}q");
+    check("TeXForm(Infix(g(p, q)))", //
+        "p\\sim g\\sim q");
+    // a string math mode doesn't show as it is is written as text
+    check("TeXForm(Infix({p, q}, \"&\"))", //
+        "p\\textnormal{\\&}q");
+    check("TeXForm(Postfix(g(p), \"!\"))", //
+        "p!");
   }
 
   @Test

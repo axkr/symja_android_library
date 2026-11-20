@@ -817,8 +817,9 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFiniteAbelianGroupCount002() {
-    // Out of bounds / invalid inputs should remain unevaluated
-    check("FiniteAbelianGroupCount(0)", "FiniteAbelianGroupCount(0)");
+    // there is no group of order 0
+    check("FiniteAbelianGroupCount(0)", "0");
+    // invalid inputs remain unevaluated
     check("FiniteAbelianGroupCount(-10)", "FiniteAbelianGroupCount(-10)");
     check("FiniteAbelianGroupCount(n)", "FiniteAbelianGroupCount(n)");
     check("FiniteAbelianGroupCount(36.0)", "FiniteAbelianGroupCount(36.0)");

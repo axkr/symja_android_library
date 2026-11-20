@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class StatisticsDerivedDistributions {
      * the width of that peak.
      */
     @Override
-    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(java.util.Random random, IAST dist, int size) {
       IAST iterator = iterator(dist);
       if (iterator == null || !dist.isAST2() || !iterator.arg1().isSymbol()) {
         return F.NIL;
@@ -241,7 +242,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IAST iterator = iterator(dist);
       if (iterator != null && dist.isAST2()) {
         IExpr x = iterator.arg1();
@@ -253,7 +254,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -263,22 +264,22 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return expectation(dist, F.NIL, EvalEngine.get());
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IAST iterator = iterator(dist);
       if (iterator != null && dist.isAST2()) {
         IExpr x = iterator.arg1();
@@ -291,12 +292,12 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       IAST iterator = iterator(dist);
       if (iterator != null && dist.isAST2()) {
         IExpr x = iterator.arg1();
@@ -308,7 +309,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
       IExpr mean = expectation(dist, F.NIL, engine);
       if (mean.isPresent()) {
@@ -328,7 +329,7 @@ public class StatisticsDerivedDistributions {
      * distribution. If <code>expr</code> is {@link F#NIL} the mean, i.e. the expectation of the
      * first variable, is computed.
      */
-    public static IExpr expectation(IAST dist, IExpr expr, EvalEngine engine) {
+    public static @AllowNIL IExpr expectation(IAST dist, IExpr expr, EvalEngine engine) {
       return expectation(dist, expr, F.NIL, engine);
     }
 
@@ -336,7 +337,7 @@ public class StatisticsDerivedDistributions {
      * @param variable the random variable used in <code>expr</code>; it is replaced by the variable
      *        of the density if the two differ
      */
-    public static IExpr expectation(IAST dist, IExpr expr, IExpr variable, EvalEngine engine) {
+    public static @AllowNIL IExpr expectation(IAST dist, IExpr expr, IExpr variable, EvalEngine engine) {
       IAST iterator = iterator(dist);
       if (iterator == null) {
         return F.NIL;
@@ -391,7 +392,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       dist = components(dist);
       if (dist.isPresent() && k.isPresent() && k.isList() && k.size() == dist.size()) {
         IASTAppendable product = F.TimesAlloc(dist.argSize());
@@ -404,7 +405,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -414,24 +415,24 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IAST components = components(dist);
       return components.isPresent() ? components.map(x -> F.Mean(x)) : F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IAST components = components(dist);
       return components.isPresent() ? components.map(x -> F.Median(x)) : F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       dist = components(dist);
       if (dist.isPresent() && k.isPresent() && k.isList() && k.size() == dist.size()) {
         IAST arguments = (IAST) k;
@@ -467,12 +468,12 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IAST components = components(dist);
       return components.isPresent() ? components.map(x -> F.Variance(x)) : F.NIL;
     }
@@ -496,7 +497,7 @@ public class StatisticsDerivedDistributions {
     }
 
     /** The weighted sum <code>Sum(w_i*f(dist_i))</code>. */
-    private static IExpr weightedSum(IAST dist, java.util.function.Function<IExpr, IExpr> f) {
+    private static @AllowNIL IExpr weightedSum(IAST dist, java.util.function.Function<IExpr, IExpr> f) {
       IAST weights = normalizedWeights(dist);
       if (weights == null) {
         return F.NIL;
@@ -510,7 +511,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (k.isPresent() && !k.isList()) {
         return weightedSum(dist, d -> F.CDF(d, k));
       }
@@ -518,7 +519,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -528,7 +529,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -538,12 +539,12 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (k.isPresent() && !k.isList()) {
         return weightedSum(dist, d -> F.PDF(d, k));
       }
@@ -554,12 +555,12 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       // law of total variance: Sum(w_i*(Var_i + Mean_i^2)) - Mean^2
       IExpr mean = mean(dist);
       if (mean.isNIL()) {
@@ -581,7 +582,7 @@ public class StatisticsDerivedDistributions {
   public static final class ParameterMixtureDistribution extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2() && ast.arg1().isAST() && ast.arg2().isAST(S.Distributed, 3)) {
         IAST dist = (IAST) ast.arg1();
         IAST distributed = (IAST) ast.arg2();
@@ -634,7 +635,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2() && ast.arg2().isAST(S.Distributed, 3)) {
         IAST distributed = (IAST) ast.arg2();
         IExpr x = distributed.arg1();
@@ -699,7 +700,7 @@ public class StatisticsDerivedDistributions {
    *
    * @return {@link F#NIL} if the inner distribution is unchanged or not a known distribution
    */
-  private static IExpr canonicalizeInner(final IAST ast, ISymbol head, EvalEngine engine) {
+  private static @AllowNIL IExpr canonicalizeInner(final IAST ast, ISymbol head, EvalEngine engine) {
     if (ast.isAST2() && ast.arg1().isList2() && ast.arg2().isAST()) {
       IExpr distribution = engine.evaluate(ast.arg2());
       IDistribution evaluator =
@@ -727,7 +728,7 @@ public class StatisticsDerivedDistributions {
      * <code>xmax</code> on.
      */
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       if (x.isNIL() || !dist.isAST2() || !dist.arg1().isList2()) {
         return F.NIL;
       }
@@ -757,7 +758,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -772,12 +773,12 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return expectation(dist, F.NIL, EvalEngine.get());
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -785,12 +786,12 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       return F.NIL;
     }
 
@@ -798,7 +799,7 @@ public class StatisticsDerivedDistributions {
      * <code>Expectation(expr(Min(Max(x, xmin), xmax)), x \[Distributed] dist)</code> - the
      * censoring is expressed as a transformation of the random variable.
      */
-    public static IExpr expectation(IAST dist, IExpr expr, EvalEngine engine) {
+    public static @AllowNIL IExpr expectation(IAST dist, IExpr expr, EvalEngine engine) {
       if (dist.isAST2() && dist.arg1().isList2() && dist.arg2().isAST()) {
         IAST bounds = (IAST) dist.arg1();
         IExpr min = bounds.arg1();
@@ -821,7 +822,7 @@ public class StatisticsDerivedDistributions {
     /**
      * <code>xmin*P(X &lt;= xmin) + Integrate(x*pdf, {x, xmin, xmax}) + xmax*P(X &gt;= xmax)</code>
      */
-    private static IExpr censoredExpectation(IAST inner, IExpr min, IExpr max, EvalEngine engine) {
+    private static @AllowNIL IExpr censoredExpectation(IAST inner, IExpr min, IExpr max, EvalEngine engine) {
       if (!inner.isAST2() || !inner.arg2().isList3()) {
         return F.NIL;
       }
@@ -913,7 +914,7 @@ public class StatisticsDerivedDistributions {
      * @return <code>CDF(dist, bound)</code>, shortcut to <code>0</code> or <code>1</code> for an
      *         infinite bound, or {@link F#NIL}
      */
-    private static IExpr cdfAt(IExpr distribution, IExpr bound, boolean upper, EvalEngine engine) {
+    private static @AllowNIL IExpr cdfAt(IExpr distribution, IExpr bound, boolean upper, EvalEngine engine) {
       if (bound.isNegativeInfinity()) {
         return upper ? F.NIL : F.C0;
       }
@@ -927,7 +928,7 @@ public class StatisticsDerivedDistributions {
      * @return the probability mass <code>CDF(dist,max) - CDF(dist,min)</code> which the truncation
      *         renormalizes by, or {@link F#NIL}
      */
-    private static IExpr normalization(IExpr distribution, IExpr min, IExpr max,
+    private static @AllowNIL IExpr normalization(IExpr distribution, IExpr min, IExpr max,
         EvalEngine engine) {
       IExpr lower = cdfAt(distribution, min, false, engine);
       IExpr upper = cdfAt(distribution, max, true, engine);
@@ -1000,7 +1001,7 @@ public class StatisticsDerivedDistributions {
       }
 
       /** <code>Sum(k^n*PDF(dist,k), {k,first,last})/mass</code>, or {@link F#NIL} */
-      IExpr rawMoment(int n, EvalEngine engine) {
+      @AllowNIL IExpr rawMoment(int n, EvalEngine engine) {
         ISymbol k = F.Dummy("k");
         IExpr density = S.PDF.ofNIL(engine, inner, k);
         if (density.isNIL()) {
@@ -1021,7 +1022,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
         DiscreteWindow window = DiscreteWindow.of(dist, engine);
@@ -1051,7 +1052,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
         DiscreteWindow window = DiscreteWindow.of(dist, engine);
@@ -1088,7 +1089,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
         DiscreteWindow window = DiscreteWindow.of(dist, engine);
@@ -1113,7 +1114,7 @@ public class StatisticsDerivedDistributions {
      *
      * @return {@link F#NIL} if the integral doesn't evaluate
      */
-    private static IExpr rawMoment(IAST dist, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr rawMoment(IAST dist, int n, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
         return F.NIL;
@@ -1133,7 +1134,7 @@ public class StatisticsDerivedDistributions {
     }
 
     /** The raw moment of a continuous or of a discrete truncation. */
-    private static IExpr moment(IAST dist, int n, EvalEngine engine) {
+    private static @AllowNIL IExpr moment(IAST dist, int n, EvalEngine engine) {
       if (parts(dist) == null) {
         DiscreteWindow window = DiscreteWindow.of(dist, engine);
         return window == null ? F.NIL : window.rawMoment(n, engine);
@@ -1147,7 +1148,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
       IExpr firstMoment;
       IExpr secondMoment;
@@ -1175,12 +1176,12 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(java.util.Random random, IAST dist, int size) {
       EvalEngine engine = EvalEngine.get();
       IExpr[] parts = parts(dist);
       if (parts == null) {
@@ -1220,7 +1221,7 @@ public class StatisticsDerivedDistributions {
      * need them, and searched for each sample; a window without a first value asks
      * <code>InverseCDF</code> for every sample.
      */
-    private static IExpr discreteVariates(java.util.Random random, DiscreteWindow window,
+    private static @AllowNIL IExpr discreteVariates(java.util.Random random, DiscreteWindow window,
         int size, EvalEngine engine) {
       double below = engine.evalN(window.below).evalfNaN();
       double mass = engine.evalN(window.mass).evalfNaN();
@@ -1288,7 +1289,7 @@ public class StatisticsDerivedDistributions {
   public static final class EmpiricalDistribution extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.isAST1()) {
         return F.NIL;
       }
@@ -1380,7 +1381,7 @@ public class StatisticsDerivedDistributions {
   public static final class HistogramDistribution extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 1 || ast.argSize() > 2 || !ast.arg1().isList() || ast.arg1().size() < 2) {
         return F.NIL;
       }
@@ -1500,7 +1501,7 @@ public class StatisticsDerivedDistributions {
      *
      * @return {@link F#NIL} if <code>dist</code> isn't an empirical distribution
      */
-    public static IExpr empiricalExpectation(IAST dist, IExpr expr, IExpr x, EvalEngine engine) {
+    public static @AllowNIL IExpr empiricalExpectation(IAST dist, IExpr expr, IExpr x, EvalEngine engine) {
       IAST[] e = empirical(dist);
       if (e == null || e[0].size() != e[1].size()) {
         return F.NIL;
@@ -1524,7 +1525,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (KernelMixtureDistribution.isKernelMixture(dist)) {
         return KernelMixtureDistribution.cdf(dist, k, engine);
       }
@@ -1572,7 +1573,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1587,7 +1588,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       EvalEngine engine = EvalEngine.get();
       if (KernelMixtureDistribution.isKernelMixture(dist)) {
         return KernelMixtureDistribution.mean(dist, engine);
@@ -1632,7 +1633,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (KernelMixtureDistribution.isKernelMixture(dist)) {
         return KernelMixtureDistribution.pdf(dist, k, engine);
       }
@@ -1669,7 +1670,7 @@ public class StatisticsDerivedDistributions {
     }
 
     /** The smallest value whose cumulative probability reaches <code>q</code>. */
-    private static IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
+    private static @AllowNIL IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
       if (q.isNIL()) {
         return F.NIL;
       }
@@ -1704,7 +1705,7 @@ public class StatisticsDerivedDistributions {
      * The inverse of the piecewise linear CDF of a histogram: the point of the first bin with
      * positive mass at which the accumulated mass reaches <code>q</code>.
      */
-    private static IExpr histogramQuantile(IAST densities, IAST bins, IExpr q,
+    private static @AllowNIL IExpr histogramQuantile(IAST densities, IAST bins, IExpr q,
         EvalEngine engine) {
       if (!q.isReal()) {
         return F.NIL;
@@ -1737,7 +1738,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(java.util.Random random, IAST dist, int size) {
       if (KernelMixtureDistribution.isKernelMixture(dist)) {
         return KernelMixtureDistribution.randomVariate(random, dist, size);
       }
@@ -1781,18 +1782,18 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       IExpr cdf = cdf(dist, k, engine);
       return cdf.isPresent() ? engine.evaluate(F.Subtract(F.C1, cdf)) : F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
       if (KernelMixtureDistribution.isKernelMixture(dist)) {
         return KernelMixtureDistribution.variance(dist, engine);
@@ -2184,7 +2185,7 @@ public class StatisticsDerivedDistributions {
     }
 
     /** Apply <code>function</code> to a real number <code>x</code> or to the elements of a list. */
-    private static IExpr map(IExpr x, java.util.function.DoubleUnaryOperator function) {
+    private static @AllowNIL IExpr map(IExpr x, java.util.function.DoubleUnaryOperator function) {
       if (x.isList()) {
         IAST list = (IAST) x;
         IASTAppendable result = F.ListAlloc(list.argSize());
@@ -2210,7 +2211,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
       Estimate estimate = estimate(dist);
       if (estimate == null || x.isNIL()) {
         return F.NIL;
@@ -2219,7 +2220,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2229,7 +2230,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr q, EvalEngine engine) {
       Estimate estimate = estimate(dist);
       if (estimate == null || !q.isReal()) {
         return F.NIL;
@@ -2251,19 +2252,19 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       Estimate estimate = estimate(dist);
       return estimate == null ? F.NIL : F.num(estimate.mean());
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       Estimate estimate = estimate(dist);
       return estimate == null ? F.NIL : F.num(estimate.quantile(0.5));
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
       Estimate estimate = estimate(dist);
       if (estimate == null || x.isNIL()) {
         return F.NIL;
@@ -2272,7 +2273,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr randomVariate(java.util.Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(java.util.Random random, IAST dist, int size) {
       Estimate estimate = estimate(dist);
       if (estimate == null) {
         return F.NIL;
@@ -2289,7 +2290,7 @@ public class StatisticsDerivedDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       Estimate estimate = estimate(dist);
       if (estimate == null) {
         return F.NIL;
@@ -2299,7 +2300,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       Estimate estimate = estimate(dist);
       return estimate == null ? F.NIL : F.num(estimate.variance());
     }
@@ -2348,7 +2349,7 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2358,17 +2359,17 @@ public class StatisticsDerivedDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IAST specs = specifications(dist);
       if (specs == null) {
         return F.NIL;

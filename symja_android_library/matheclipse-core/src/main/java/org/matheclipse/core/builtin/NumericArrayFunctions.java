@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -42,7 +43,7 @@ public class NumericArrayFunctions {
      * @param round integer types: round to the nearest integer instead of cutting off the fraction
      * @return {@link F#NIL} if there is an element which is no real number
      */
-    private static IExpr clip(IExpr element, String type, boolean round, EvalEngine engine) {
+    private static @AllowNIL IExpr clip(IExpr element, String type, boolean round, EvalEngine engine) {
       if (element.isList()) {
         IAST list = (IAST) element;
         IASTAppendable result = F.ListAlloc(list.argSize());
@@ -75,7 +76,7 @@ public class NumericArrayFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (ast.isAST3()) {
@@ -144,7 +145,7 @@ public class NumericArrayFunctions {
   private static class NumericArrayType extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumericArray()) {
         INumericArray numericArray = (INumericArray) arg1;

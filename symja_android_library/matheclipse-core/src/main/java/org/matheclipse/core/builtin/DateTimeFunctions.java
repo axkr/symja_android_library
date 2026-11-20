@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
 import java.time.DateTimeException;
 import java.time.DayOfWeek;
@@ -1122,7 +1123,7 @@ public class DateTimeFunctions {
    * @return {@link F#NIL} if the sum contains no date object, more than one date object or no
    *         quantity with a calendar unit
    */
-  public static IExpr plusDateObject(IAST ast) {
+  public static @AllowNIL IExpr plusDateObject(IAST ast) {
     int datePosition = -1;
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -1198,7 +1199,7 @@ public class DateTimeFunctions {
    *
    * @return {@link F#NIL} if the product is not a date or time object multiplied by a string
    */
-  public static IExpr timesDateObject(IAST ast) {
+  public static @AllowNIL IExpr timesDateObject(IAST ast) {
     if (ast.argSize() != 2) {
       return F.NIL;
     }
@@ -1223,7 +1224,7 @@ public class DateTimeFunctions {
    *
    * @return {@link F#NIL} if the two expressions are not comparable dates or times
    */
-  public static IExpr compareDateObject(IExpr a0, IExpr a1) {
+  public static @AllowNIL IExpr compareDateObject(IExpr a0, IExpr a1) {
     if (a0 instanceof DateObjectExpr && a1 instanceof DateObjectExpr) {
       return F.ZZ(((DateObjectExpr) a0).start().compareTo(((DateObjectExpr) a1).start()));
     }
@@ -1340,7 +1341,7 @@ public class DateTimeFunctions {
   private static final class Clock extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 1) {
         IExpr spec = ast.arg1();
         if (spec.isList()) {
@@ -1362,7 +1363,7 @@ public class DateTimeFunctions {
   private static final class AbsoluteTime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.num(absoluteTime(LocalDateTime.now(), true).evalf());
       }
@@ -1422,7 +1423,7 @@ public class DateTimeFunctions {
   private static final class FromAbsoluteTime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isNumber() || !arg1.isReal()) {
         return F.NIL;
@@ -1449,7 +1450,7 @@ public class DateTimeFunctions {
   private static final class UnixTime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         // the instant itself - LocalDateTime.now() is the wall clock of the local time zone
         return F.ZZ(Instant.now().getEpochSecond());
@@ -1493,7 +1494,7 @@ public class DateTimeFunctions {
   private static final class FromUnixTime extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isNumber() || !arg1.isReal()) {
         return F.NIL;
@@ -1533,7 +1534,7 @@ public class DateTimeFunctions {
   private static final class JulianDate extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.num(julianDate(LocalDateTime.now()));
       }
@@ -1572,7 +1573,7 @@ public class DateTimeFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       double epoch = 0.0;
       int optionStart = 2;
@@ -1649,7 +1650,7 @@ public class DateTimeFunctions {
   private static final class DateList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return dateListOf(LocalDateTime.now());
       }
@@ -1708,7 +1709,7 @@ public class DateTimeFunctions {
   private static final class DateObject extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() instanceof DateObjectExpr) {
         // property access, i.e. DateObject(...)("Year")
         return propertyValue((DateObjectExpr) ast.head(), ast);
@@ -1765,7 +1766,7 @@ public class DateTimeFunctions {
     }
 
     /** Evaluate <code>DateObject(...)("element")</code>. */
-    private static IExpr propertyValue(DateObjectExpr dateObject, IAST ast) {
+    private static @AllowNIL IExpr propertyValue(DateObjectExpr dateObject, IAST ast) {
       if (ast.argSize() != 1 || !ast.arg1().isString()) {
         return F.NIL;
       }
@@ -1805,7 +1806,7 @@ public class DateTimeFunctions {
   private static final class TimeObject extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() instanceof TimeObjectExpr) {
         TimeObjectExpr timeObject = (TimeObjectExpr) ast.head();
         if (ast.argSize() != 1 || !ast.arg1().isString()) {
@@ -1898,7 +1899,7 @@ public class DateTimeFunctions {
   private static final class DateString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // DateString(..., TimeZone -> tz): the date is expressed in the zone tz before formatting
       IExpr zone = F.NIL;
       if (ast.argSize() > 0 && ast.last().isRuleAST() && ast.last().first() == S.TimeZone) {
@@ -2028,7 +2029,7 @@ public class DateTimeFunctions {
   private static final class DateValue extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
@@ -2058,7 +2059,7 @@ public class DateTimeFunctions {
       return elementValue(spec, arg2);
     }
 
-    private static IExpr elementValue(DateSpec spec, IExpr element) {
+    private static @AllowNIL IExpr elementValue(DateSpec spec, IExpr element) {
       if (!element.isString()) {
         return F.NIL;
       }
@@ -2079,7 +2080,7 @@ public class DateTimeFunctions {
   private static final class FromDateString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -2102,7 +2103,7 @@ public class DateTimeFunctions {
   private static final class DayName extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return DateObjectExpr.weekdaySymbol(LocalDateTime.now().getDayOfWeek());
       }
@@ -2139,7 +2140,7 @@ public class DateTimeFunctions {
   private static final class LeapYearQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {
         return F.NIL;
@@ -2162,7 +2163,7 @@ public class DateTimeFunctions {
   private static final class DayCount extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec from = dateSpec(ast.arg1());
       DateSpec to = dateSpec(ast.arg2());
       if (from == null || to == null) {
@@ -2256,7 +2257,7 @@ public class DateTimeFunctions {
   private static final class DayMatchQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null || !isDaySpec(ast.arg2())) {
         return F.NIL;
@@ -2280,7 +2281,7 @@ public class DateTimeFunctions {
   private static final class DayPlus extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {
         return F.NIL;
@@ -2324,7 +2325,7 @@ public class DateTimeFunctions {
   private static final class DayRound extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {
         return F.NIL;
@@ -2372,7 +2373,7 @@ public class DateTimeFunctions {
   private static final class DayRange extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec from = dateSpec(ast.arg1());
       DateSpec to = dateSpec(ast.arg2());
       if (from == null || to == null) {
@@ -2420,7 +2421,7 @@ public class DateTimeFunctions {
   private static final class DateRange extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       DateSpec from = dateSpec(ast.arg1());
       DateSpec to = dateSpec(ast.arg2());
       if (from == null || to == null) {
@@ -2566,7 +2567,7 @@ public class DateTimeFunctions {
     }
   }
 
-  private static IExpr nextOrPreviousDate(IAST ast, boolean forward) {
+  private static @AllowNIL IExpr nextOrPreviousDate(IAST ast, boolean forward) {
     IExpr dateArgument;
     IExpr specArgument;
     if (ast.isAST1()) {
@@ -2607,7 +2608,7 @@ public class DateTimeFunctions {
   private static final class DatePlus extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         // DatePlus[increment] shifts the current instant, so the only argument is the increment
@@ -2721,7 +2722,7 @@ public class DateTimeFunctions {
   private static final class DateDifference extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // DateDifference[date] measures from the current instant to date, which is why it comes out
       // negative for a date in the past. dateSpec of the empty list is "now", the same reading
       // DateList[{}] uses. Like DatePlus this arity was advertised by expectedArgSize all along
@@ -2757,7 +2758,7 @@ public class DateTimeFunctions {
      * The difference of two dates in the given unit. Exact whenever the result is a whole number of
      * units.
      */
-    private static IExpr difference(LocalDateTime from, LocalDateTime to, String unit) {
+    private static @AllowNIL IExpr difference(LocalDateTime from, LocalDateTime to, String unit) {
       switch (unit) {
         case "Day":
           return exactOrReal(nanosBetween(from, to), NANOS_PER_DAY);
@@ -2845,7 +2846,7 @@ public class DateTimeFunctions {
   private static final class TimeZoneOffset extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.CD0;
       }
@@ -2882,7 +2883,7 @@ public class DateTimeFunctions {
   private static final class Dated extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Dated is an inert wrapper
       return F.NIL;
     }
@@ -2901,7 +2902,7 @@ public class DateTimeFunctions {
   private static final class DateInterval extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // DateInterval stays in its unevaluated form; the endpoints are interpreted by the functions
       // which consume it
       return F.NIL;
@@ -2966,7 +2967,7 @@ public class DateTimeFunctions {
   private static final class DateBounds extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         if (!isDateSpecList(arg1)) {
@@ -3027,7 +3028,7 @@ public class DateTimeFunctions {
    * Dates with an equal start instant are ordered by granularity, so that the finer date wins for
    * {@link S#MaxDate} and the coarser for {@link S#MinDate}.
    */
-  static IExpr extremeDate(IAST list, boolean maximum) {
+  static @AllowNIL IExpr extremeDate(IAST list, boolean maximum) {
     IExpr best = F.NIL;
     DateObjectExpr bestDate = null;
     for (int i = 1; i < list.size(); i++) {
@@ -3088,7 +3089,7 @@ public class DateTimeFunctions {
     }
   }
 
-  private static IExpr minMaxDate(IAST ast, boolean maximum) {
+  private static @AllowNIL IExpr minMaxDate(IAST ast, boolean maximum) {
     IExpr arg1 = ast.arg1();
     if (isInterval(arg1)) {
       // MinDate and MaxDate give the endpoints as they were specified, not the half open span
@@ -3108,7 +3109,7 @@ public class DateTimeFunctions {
   private static final class DateWithinQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!isDateOrInterval(arg1) || !isDateOrInterval(arg2)) {
@@ -3147,7 +3148,7 @@ public class DateTimeFunctions {
   private static final class DateOverlapsQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!isDateOrInterval(arg1) || !isDateOrInterval(arg2)) {
@@ -3191,7 +3192,7 @@ public class DateTimeFunctions {
   private static final class MidDate extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       DateGranularity granularity = null;
       if (ast.argSize() >= 2) {
@@ -3367,7 +3368,7 @@ public class DateTimeFunctions {
   private static final class DateSelect extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr criterion = ast.arg2();
       IAST dates;
@@ -3435,7 +3436,7 @@ public class DateTimeFunctions {
   private static final class CalendarConvert extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof DateObjectExpr) || !ast.arg2().isString()) {
         return F.NIL;
       }

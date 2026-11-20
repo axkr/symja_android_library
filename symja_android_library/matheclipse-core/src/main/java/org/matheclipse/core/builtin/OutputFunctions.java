@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -63,7 +64,7 @@ public final class OutputFunctions {
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
-      S.Infix.setEvaluator(new InfixEvaluator());
+      S.Infix.setEvaluator(new OperatorFormEvaluator());
       S.InputForm.setEvaluator(new InputForm());
       S.JavaForm.setEvaluator(new JavaForm());
       S.JSForm.setEvaluator(new JSForm());
@@ -71,8 +72,8 @@ public final class OutputFunctions {
       S.NumberForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.NUMBER));
       S.OutputForm.setEvaluator(new OutputForm());
       S.PaddedForm.setEvaluator(new NumberFormEvaluator(NumberFormatter.FormKind.PADDED));
-      S.Prefix.setEvaluator(new PrefixEvaluator());
-      S.Postfix.setEvaluator(new PostfixEvaluator());
+      S.Prefix.setEvaluator(new OperatorFormEvaluator());
+      S.Postfix.setEvaluator(new OperatorFormEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
       S.Grid.setEvaluator(new Grid());
       S.Item.setEvaluator(new Item());
@@ -83,33 +84,16 @@ public final class OutputFunctions {
     }
   }
 
-  private static class InfixEvaluator extends AbstractFunctionEvaluator {
+  /**
+   * <code>Infix(expr, ...)</code>, <code>Prefix(expr, ...)</code> and
+   * <code>Postfix(expr, ...)</code> are display wrappers: they stay unevaluated and the output
+   * forms write the operands of <code>expr</code> with the operators, see
+   * {@link org.matheclipse.core.form.OperatorFormLayout}.
+   */
+  private static class OperatorFormEvaluator extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.argSize() > 1) {
-        IAST function = (IAST) arg1;
-        if (ast.isAST2()) {
-          String infixOperator = ast.arg2().toString();
-          StringBuilder buf = new StringBuilder();
-          buf.append(function.arg1().toString());
-          for (int i = 2; i < function.size(); i++) {
-            buf.append(" " + infixOperator + " ");
-            buf.append(function.get(i).toString());
-          }
-          return F.stringx(buf.toString());
-        }
-        // the head is the operator: x ~h~ y
-        String infixOperator = " ~" + function.head().toString() + "~ ";
-        StringBuilder buf = new StringBuilder();
-        buf.append(function.arg1().toString());
-        for (int i = 2; i < function.size(); i++) {
-          buf.append(infixOperator);
-          buf.append(function.get(i).toString());
-        }
-        return F.stringx(buf.toString());
-      }
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -120,38 +104,13 @@ public final class OutputFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-  }
-
-  private static class PrefixEvaluator extends AbstractFunctionEvaluator {
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST1()) {
-        if (ast.isAST2()) {
-          String postfixOperator = ast.arg2().toString();
-          return F.stringx(postfixOperator + " " + arg1.first().toString());
-        }
-        return F.stringx(arg1.head() + " @ " + arg1.first().toString());
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_4;
     }
   }
 
   private static class OutputForm extends AbstractCoreFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
 
@@ -184,36 +143,10 @@ public final class OutputFunctions {
     public void setUp(ISymbol newSymbol) {}
   }
 
-  private static class PostfixEvaluator extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST1()) {
-        if (ast.isAST2()) {
-          String prefixOperator = ast.arg2().toString();
-          return F.stringx(arg1.first().toString() + " " + prefixOperator);
-        }
-        return F.stringx(arg1.first().toString() + " // " + arg1.head());
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-  }
-
   private static class BaseForm extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr arg2 = engine.evaluate(ast.arg2());
       if (arg1.isInteger() && arg2.isInteger()) {
@@ -246,7 +179,7 @@ public final class OutputFunctions {
   private static class CodeForm extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -308,7 +241,7 @@ public final class OutputFunctions {
   private static class FromRomanNumeral extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -330,7 +263,7 @@ public final class OutputFunctions {
      *
      * @return {@link F#NIL} for a character which is no Roman digit
      */
-    private static IExpr fromRoman(String str) {
+    private static @AllowNIL IExpr fromRoman(String str) {
       if (str.equals("N")) {
         // zero
         return F.C0;
@@ -408,7 +341,7 @@ public final class OutputFunctions {
   private static class HoldForm extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -559,7 +492,7 @@ public final class OutputFunctions {
      * @param engine
      * @return {@link F#NIL} if <code>expr</code> isn't a {@link S#Plus} expression
      */
-    private static IExpr hornerScheme(IExpr expr, IExpr variable, EvalEngine engine) {
+    private static @AllowNIL IExpr hornerScheme(IExpr expr, IExpr variable, EvalEngine engine) {
       if (expr.isPlus()) {
         HornerScheme scheme = new HornerScheme();
         return scheme.generate(engine.isNumericMode(), (IAST) expr, variable);
@@ -579,7 +512,7 @@ public final class OutputFunctions {
   private static class InputForm extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         // if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -828,7 +761,7 @@ public final class OutputFunctions {
   private static class RomanNumeral extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -871,15 +804,16 @@ public final class OutputFunctions {
    * <code>Row[{...}, separator]</code>.
    *
    * <p>
-   * With a string separator the row is joined into one string here, because that is a value rather
-   * than a layout. Every other form is a layout object and stays unevaluated for a front end to
-   * lay out; <code>Row[{"moves: ", Dynamic[moves]}]</code>, the usual way to write a live read-out,
-   * is the commonest of them.
+   * A row is a layout object, with or without a separator, and stays unevaluated for a front end to
+   * lay out; its boxes are a <code>RowDefault</code> or <code>RowWithSeparators</code> template and
+   * the text forms write the elements side by side.
+   * <code>Row[{"moves: ", Dynamic[moves]}]</code>, the usual way to write a live read-out, is the
+   * commonest of them.
    */
   private static class Row extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return F.NIL;
       }
@@ -889,21 +823,8 @@ public final class OutputFunctions {
           return Errors.printArgMessage(ast, ARGS_1_2, engine);
         }
       }
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isList() && arg2.isString()) {
-        IAST list = (IAST) arg1;
-        String separator = arg2.toString();
-        StringBuilder buf = new StringBuilder();
-        for (int i = 1; i < list.size(); i++) {
-          buf.append(list.getRule(i).toString());
-          if (i < list.argSize()) {
-            buf.append(separator);
-          }
-        }
-        return F.stringx(buf);
-      }
-
+      // a display wrapper: the row with its separator stays as it is, and only its printed forms
+      // and its boxes join the elements
       return F.NIL;
     }
 
@@ -936,7 +857,7 @@ public final class OutputFunctions {
   private static class Grid extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the wrapper must survive evaluation - it is resolved by the output factories
       return F.NIL;
     }
@@ -979,7 +900,7 @@ public final class OutputFunctions {
   private static class Item extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // read by org.matheclipse.core.graphics.svg.LayoutSpec, which needs the wrapper intact
       return F.NIL;
     }
@@ -1016,7 +937,7 @@ public final class OutputFunctions {
   private static class TableForm extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       // the wrapper must survive evaluation - it is resolved by the output factories
       return F.NIL;
@@ -1134,7 +1055,7 @@ public final class OutputFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
         IExpr arg2 = ast.arg2();
