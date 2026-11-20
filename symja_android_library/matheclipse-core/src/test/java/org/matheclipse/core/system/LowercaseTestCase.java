@@ -3115,6 +3115,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ChineseRemainder({1, 2}, {6, 10})", //
         "ChineseRemainder({1,2},{6,10})");
+    // moduli with common factors: the solution modulo their least common multiple
+    check("ChineseRemainder({5, 11}, {12, 18})", //
+        "29");
+    check("ChineseRemainder({3, 3, 3}, {4, 6, 10})", //
+        "3");
+    check("ChineseRemainder({5, 7^30 + 9}, {2*(7^30 + 4), 3*(7^30 + 4)})", //
+        "90157361162769032351453017");
+    // the smallest solution not less than the third argument
+    check("ChineseRemainder({2, 4}, {7, 9}, 2^80)", //
+        "1208925819614629174706230");
+    check("ChineseRemainder({2, 4}, {7, 9}, -50)", //
+        "-5");
+    check("ChineseRemainder({2, 4}, {7, 9}, 58)", //
+        "58");
+    check("ChineseRemainder({1, 6}, {5, 8}, 7/3)", //
+        "ChineseRemainder({1,6},{5,8},7/3)");
+    check("ChineseRemainder({1, 6, 2}, {5, 8})", //
+        "ChineseRemainder({1,6,2},{5,8})");
   }
 
   @Test
@@ -14150,6 +14168,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReplacePartFirstRuleWins() {
+    // a negative and a positive index which name the same part: the first rule is used
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{-1, 2} -> s, {2, 2} -> t})", //
+        "{{u,v,w},{p,s,r}}");
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{2, 2} -> t, {2, -2} -> s})", //
+        "{{u,v,w},{p,t,r}}");
+    check("ReplacePart({{u, v, w}, {p, q, r}}, {{1, -1} -> s, {1, 3} -> t, {-2, 3} -> z})", //
+        "{{u,v,s},{p,q,r}}");
+    // a pattern rule and literal rules
+    check("ReplacePart({{u, v}, {p, q}, {r, s}}, {{_?EvenQ, 1} -> a, {-1, -1} -> b})", //
+        "{{u,v},{a,q},{r,b}}");
+  }
+
+  @Test
+  public void testReplacePartLiteralPositions() {
+    check("Total(ReplacePart(ConstantArray(0, {120, 90}), 1, {7, 88}), 2)", //
+        "1");
+    check("ReplacePart(ConstantArray(0, {3, 4}), {{2, -1} -> c, {-3, 1} -> d})", //
+        "{{d,0,0,0},{0,0,0,c},{0,0,0,0}}");
+    // a position which does not exist is skipped
+    check("ReplacePart({{k, l}, {m}}, {{2, 2} -> c, {1, 2} -> d})", //
+        "{{k,d},{m}}");
+    check("ReplacePart(h(k, g(l, m)), {2, 1} -> c)", //
+        "h(k,g(c,m))");
+    // a replaced part isn't visited: the rule for a position inside it is dropped
+    check("ReplacePart(h(k, g(l, m)), {{2, 1} -> c, -1 -> d})", //
+        "h(k,d)");
+    check("ReplacePart(h(k, g(l, m)), {-1 -> d, {2, 1} -> c})", //
+        "h(k,d)");
+    check("ReplacePart({{e, f}, {g, h}}, {{_, 2} -> c, 1 -> d})", //
+        "{d,{g,c}}");
+    check("ReplacePart({{e, f}, {g, h}}, {{1, 1} -> c, 1 -> d})", //
+        "{d,{g,h}}");
+    // the pattern of an index doesn't reach the head
+    check("ReplacePart({{e, f}, {g, h}}, {-1, _} -> z)", //
+        "{{e,f},{z,z}}");
+    // a negative index in a position pattern of any length
+    check("ReplacePart({{e, f, g}, {h, k, l}}, {__, -2} -> z)", //
+        "{{e,z,g},{h,z,l}}");
+    check("ReplacePart({{e, f, g}, {h, k, l}}, {3 | -2, 1} -> z)", //
+        "{{z,f,g},{h,k,l}}");
+    check("ReplacePart(Derivative(1)[k][3], {-2, 1} -> h)", //
+        "h'(3)");
+  }
+
+  @Test
   public void testSimplifyFactoredContentTie() {
     check("Simplify((6-6*v)*u)", //
         "-6*u*(-1+v)");
@@ -17137,8 +17201,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("cp = ContourPlot(x - y, {x, 0, 1}, {y, 0, 1}, PlotPoints -> 4, Contours -> 1, "
         + "Mesh -> 1); {Head(cp[[1, 1]]), "
         + "Length(Cases(Normal(cp[[1, 1]]), _Polygon, Infinity)) > 0, Cases(cp[[1, 2]], _Line)}", //
-        "{GraphicsComplex,True,{Line({{0.0,0.0},{0.0,1.0}}),Line({{1.0,0.0},{1.0,1.0}}),"
-            + "Line({{0.0,0.0},{1.0,0.0}}),Line({{0.0,1.0},{1.0,1.0}})}}");
+        "{GraphicsComplex,True,{Line({{0.5,0.0},{0.5,1.0}}),Line({{0.0,0.5},{1.0,0.5}})}}");
   }
 
   @Test
@@ -17809,13 +17872,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testTraditionalFormBoxString() {
     check("ToString(TraditionalForm(y^3))", //
         "\\!\\(\\*FormBox[SuperscriptBox[\"y\", \"3\"], TraditionalForm]\\)");
+    // a number form on one line is written as its text
     check("ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))", //
-        "\\!\\(\\*FormBox[TagBox[InterpretationBox[StyleBox[\"\\\"3.142\\\"\", "
-            + "Rule[ShowStringCharacters, False]], 3.14159265`, Rule[AutoDelete, True]], "
-            + "Function[NumberForm[Slot[1], {5, 3}]]], TraditionalForm]\\)");
-    // the box escape reads back as the wrapper
-    check("FullForm(ToExpression(ToString(TraditionalForm(NumberForm(3.14159265, {5, 3})))))", //
-        "NumberForm(3.14159265`, List(5, 3))");
+        "3.142");
+    // the box escape of the standard form reads back as the wrapper
     check("FullForm(ToExpression(ToString(NumberForm(4.5*^9, {3, 1}), StandardForm)))", //
         "NumberForm(4.5`*^9, List(3, 1))");
     check("ToBoxes(NumberForm(4.5*^9, {3, 1}))[[1, 1, 1]]", //

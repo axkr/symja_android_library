@@ -5459,10 +5459,13 @@ public final class StringFunctions {
         // options like PageWidth -> Infinity: the string is written on one line anyway
         int end = ast.size();
         IExpr encoding = F.NIL;
+        IExpr formatType = F.NIL;
         int pageWidth = Integer.MAX_VALUE;
         while (end > 2 && ast.get(end - 1).isRuleAST()) {
           end--;
-          if (ast.get(end).first() == S.CharacterEncoding) {
+          if (ast.get(end).first() == S.FormatType) {
+            formatType = ast.get(end).second();
+          } else if (ast.get(end).first() == S.CharacterEncoding) {
             encoding = ast.get(end).second();
           } else if (ast.get(end).first() == S.PageWidth) {
             int width = ast.get(end).second().toIntDefault();
@@ -5476,7 +5479,12 @@ public final class StringFunctions {
           return F.stringx(CodeFormPrinter.breakLines(
               CodeFormPrinter.fortranForm(ast.arg1().first()), pageWidth));
         }
-        IExpr result = evaluate(ast.subList(1, end), engine);
+        IAST rest = ast.subList(1, end);
+        if (formatType.isPresent() && rest.isAST1()) {
+          // FormatType -> form is the form as second argument
+          rest = F.binaryAST2(S.ToString, rest.arg1(), formatType);
+        }
+        IExpr result = evaluate(rest, engine);
         return encoding.isPresent() && result.isString()
             ? F.stringx(encodeCharacters(result.toString(), encoding))
             : result;
@@ -5602,17 +5610,66 @@ public final class StringFunctions {
 
     /**
      * A traditional form is typeset: the box escape <code>\!\(\*FormBox[..., TraditionalForm]\)
-     * </code>.
+     * </code>. Boxes which are only text, and number forms on one line, are written as plain text
+     * with the displayed digits.
      *
      * @return {@link F#NIL} if no boxes were created
      */
     private static @AllowNIL IExpr traditionalForm(IExpr expr, EvalEngine engine) {
+      if (expr.isAST() && NumberFormatter.formKind(expr.head()) != null) {
+        String formatted = NumberFormPrinter.print((IAST) expr, engine);
+        // a typeset exponent puts the number on two lines: it stays boxed
+        if (formatted != null && formatted.indexOf('\n') < 0) {
+          return F.stringx(formatted);
+        }
+      }
       IExpr boxes =
           engine.evaluate(F.binaryAST2(S.ToBoxes, F.Unevaluated(expr), S.TraditionalForm));
+      if (boxes.isAST(S.FormBox, 3)) {
+        StringBuilder text = new StringBuilder();
+        if (appendTraditionalText(boxes.first(), text)) {
+          return F.stringx(text.toString());
+        }
+      }
       if (BoxNotation.isBox(boxes) || boxes.isString()) {
         return F.stringx(BoxNotation.toBoxString(boxes));
       }
       return F.NIL;
+    }
+
+    /** The box string of a machine real number, like <code>14.6325117`</code>. */
+    private static final java.util.regex.Pattern MACHINE_REAL_BOX =
+        java.util.regex.Pattern.compile("-?[0-9]*\\.[0-9]*`(\\*\\^-?[0-9]+)?");
+
+    /**
+     * Append the text of boxes which are a string or a row of strings, a machine real number with
+     * its displayed digits.
+     *
+     * @return <code>false</code> for any other box and for an arbitrary-precision number
+     */
+    private static boolean appendTraditionalText(IExpr boxes, StringBuilder text) {
+      if (boxes.isString()) {
+        String str = boxes.toString();
+        if (MACHINE_REAL_BOX.matcher(str).matches()) {
+          double value = Double.parseDouble(str.replace("`", "").replace("*^", "E"));
+          text.append(outputForm(F.num(value)));
+          return true;
+        }
+        if (str.indexOf('`') >= 0) {
+          return false;
+        }
+        text.append(str);
+        return true;
+      }
+      if (boxes.isAST(S.RowBox, 2) && boxes.first().isList()) {
+        for (IExpr box : (IAST) boxes.first()) {
+          if (!appendTraditionalText(box, text)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
     /** Print <code>expr</code> the way the console shows it. */

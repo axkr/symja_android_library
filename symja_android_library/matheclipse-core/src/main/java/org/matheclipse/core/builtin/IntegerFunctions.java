@@ -1482,7 +1482,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.NHOLDALL, Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
   }
 

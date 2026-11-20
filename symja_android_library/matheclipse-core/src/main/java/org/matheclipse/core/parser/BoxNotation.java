@@ -1123,8 +1123,8 @@ public final class BoxNotation {
   }
 
   /**
-   * A <code>TemplateBox[{slots...}, tag]</code>: the quantity and the row templates are written
-   * as what they are the box of, any other template as its first slot.
+   * A <code>TemplateBox[{slots...}, tag]</code>: the quantity, the row and the spacer templates
+   * are written as what they are the box of, any other template as its first slot.
    */
   private String templateSource(IAST box) {
     List<IExpr> args = positional(box);
@@ -1171,6 +1171,12 @@ public final class BoxNotation {
         buf.append(", ").append(separator);
       }
       return buf.append(']').toString();
+    }
+    if (tag.equals("Spacer1") && parts.size() == 1) {
+      return "Spacer[" + source(parts.get(0)) + "]";
+    }
+    if (tag.equals("Spacer2") && parts.size() == 2) {
+      return "Spacer[{" + source(parts.get(0)) + ", " + source(parts.get(1)) + "}]";
     }
     if (tag.equals("Mod") && parts.size() == 2) {
       // the notation m mod n

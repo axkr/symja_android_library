@@ -2238,7 +2238,13 @@ public class GraphicsOptions {
    * <p>
    * On a grid of cells {@code Mesh} means something different from what it means on a curve. There
    * it marks the sample positions; here it outlines the cells, so the resolution of the underlying
-   * grid becomes visible.
+   * grid becomes visible. A pair <code>{rowSpec, columnSpec}</code> gives the horizontal lines
+   * between the rows and the vertical lines between the columns separately; each spec is
+   * <code>True</code>/<code>All</code> (every boundary, the edges included), <code>False</code>/
+   * <code>None</code> (no line), a count <code>n</code> of evenly spaced lines which divide the
+   * extent into <code>n+1</code> equal parts, or the list of the boundaries to draw, where boundary
+   * <code>i</code> lies below row <code>i</code> (right of column <code>i</code>), <code>0</code>
+   * being the top (left) edge.
    *
    * @param mesh the option value; {@code All} outlines every cell, an integer draws that many lines
    * @param x0 left edge, {@code x1} right edge, {@code y0} bottom, {@code y1} top
@@ -2250,28 +2256,127 @@ public class GraphicsOptions {
     if (mesh == null || mesh.isNone() || mesh.isFalse() || mesh == S.Automatic) {
       return F.NIL;
     }
-    int requested = mesh.toIntDefault(-1);
-    int verticals = requested > 0 ? requested : columns;
-    int horizontals = requested > 0 ? requested : rows;
-    if (verticals <= 0 && horizontals <= 0) {
+    IExpr rowSpec = meshSpec(mesh, true);
+    IExpr columnSpec = meshSpec(mesh, false);
+    IAST horizontals = meshFractions(rowSpec, rows);
+    IAST verticals = meshFractions(columnSpec, columns);
+    if ((horizontals == null || horizontals.isEmpty())
+        && (verticals == null || verticals.isEmpty())) {
       return F.NIL;
     }
-    // a mesh over hundreds of cells would be a solid block of ink rather than a grid
-    verticals = Math.min(verticals, 200);
-    horizontals = Math.min(horizontals, 200);
-
-    IASTAppendable lines = F.ListAlloc(verticals + horizontals + 2);
+    IASTAppendable lines = F.ListAlloc(8);
     lines.append(F.RGBColor(0.5, 0.5, 0.5));
     lines.append(F.AbsoluteThickness(F.num(0.5)));
-    for (int i = 0; i <= verticals; i++) {
-      double x = x0 + (x1 - x0) * i / verticals;
-      lines.append(F.Line(F.List(F.List(F.num(x), F.num(y0)), F.List(F.num(x), F.num(y1)))));
+    if (verticals != null) {
+      for (IExpr fraction : verticals) {
+        double x = x0 + (x1 - x0) * fraction.evalf();
+        lines.append(F.Line(F.List(F.List(F.num(x), F.num(y0)), F.List(F.num(x), F.num(y1)))));
+      }
     }
-    for (int j = 0; j <= horizontals; j++) {
-      double y = y0 + (y1 - y0) * j / horizontals;
-      lines.append(F.Line(F.List(F.List(F.num(x0), F.num(y)), F.List(F.num(x1), F.num(y)))));
+    if (horizontals != null) {
+      // from the bottom edge upwards, unless the boundaries are listed
+      final boolean bottomUp = !rowSpec.isList();
+      for (int i = 1; i < horizontals.size(); i++) {
+        IExpr fraction = horizontals.get(bottomUp ? horizontals.size() - i : i);
+        double y = y1 - (y1 - y0) * fraction.evalf();
+        lines.append(F.Line(F.List(F.List(F.num(x0), F.num(y)), F.List(F.num(x1), F.num(y)))));
+      }
     }
     return lines;
+  }
+
+  /**
+   * The {@code Mesh} lines of a matrix of <code>rows</code> by <code>columns</code> unit cells,
+   * whose corners are integers: <code>{Directive(GrayLevel(0.5, 0.4)), Line(horizontals),
+   * Line(verticals)}</code> with exact coordinates, the horizontal segments from the top, the
+   * vertical ones from the left. A direction with <code>None</code> or <code>False</code> has no
+   * <code>Line</code>, a count of <code>0</code> an empty one.
+   *
+   * @return the mesh primitives, or {@link F#NIL} when no mesh was asked for
+   * @see #meshGrid(IExpr, double, double, double, double, int, int)
+   */
+  public static IExpr meshGridCells(IExpr mesh, int columns, int rows) {
+    if (mesh == null || mesh.isNone() || mesh.isFalse() || mesh == S.Automatic) {
+      return F.NIL;
+    }
+    IAST horizontals = meshFractions(meshSpec(mesh, true), rows);
+    IAST verticals = meshFractions(meshSpec(mesh, false), columns);
+    if (horizontals == null && verticals == null) {
+      return F.NIL;
+    }
+    IASTAppendable lines = F.ListAlloc(3);
+    lines.append(F.Directive(F.binaryAST2(S.GrayLevel, F.num(0.5), F.num(0.4))));
+    if (horizontals != null) {
+      IASTAppendable segments = F.ListAlloc(horizontals.argSize());
+      for (IExpr fraction : horizontals) {
+        IExpr y = F.Times(F.ZZ(rows), F.Subtract(F.C1, fraction)).eval();
+        segments.append(F.List(F.List(F.C0, y), F.List(F.ZZ(columns), y)));
+      }
+      lines.append(F.Line(segments));
+    }
+    if (verticals != null) {
+      IASTAppendable segments = F.ListAlloc(verticals.argSize());
+      for (IExpr fraction : verticals) {
+        IExpr x = F.Times(F.ZZ(columns), fraction).eval();
+        segments.append(F.List(F.List(x, F.C0), F.List(x, F.ZZ(rows))));
+      }
+      lines.append(F.Line(segments));
+    }
+    return lines;
+  }
+
+  /**
+   * The spec of the rows (<code>rows == true</code>) or the columns: the first or the second entry
+   * of a list of specs, else the option value itself.
+   */
+  private static IExpr meshSpec(IExpr mesh, boolean rows) {
+    if (mesh.isList() && mesh.argSize() >= 2) {
+      return rows ? mesh.first() : mesh.second();
+    }
+    return mesh;
+  }
+
+  /**
+   * The positions of the lines one direction of a cell mesh draws, as exact fractions of the
+   * extent counted from the top or the left edge, in the order they are drawn.
+   *
+   * @param spec the mesh spec of the direction
+   * @param cells the number of cells in the direction
+   * @return <code>null</code> if the direction has no lines
+   */
+  private static IAST meshFractions(IExpr spec, int cells) {
+    if (cells <= 0 || spec.isNone() || spec.isFalse()) {
+      return null;
+    }
+    if (spec.isList()) {
+      IAST list = (IAST) spec;
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        int boundary = list.get(i).toIntDefault(-1);
+        if (boundary >= 0 && boundary <= cells) {
+          result.append(F.QQ(boundary, cells));
+        }
+      }
+      return result;
+    }
+    int requested = spec.toIntDefault(-1);
+    if (requested >= 0) {
+      // n lines divide the extent into n+1 equal parts; a mesh of hundreds of lines would be a
+      // solid block of ink rather than a grid
+      int count = Math.min(requested, 200);
+      IASTAppendable result = F.ListAlloc(count);
+      for (int i = 1; i <= count; i++) {
+        result.append(F.QQ(i, count + 1));
+      }
+      return result;
+    }
+    // every boundary, the edges included
+    int parts = Math.min(cells, 200);
+    IASTAppendable result = F.ListAlloc(parts + 1);
+    for (int i = 0; i <= parts; i++) {
+      result.append(F.QQ(i, parts));
+    }
+    return result;
   }
 
   /** {@code BarOrigin -> Bottom}: bars grow upwards from the x axis. This is the default. */
@@ -2584,7 +2689,9 @@ public class GraphicsOptions {
           F.List(F.List(F.C0, F.C0), F.List(F.ZZ(cols), F.ZZ(rows))));
     }
     primitives.append(raster);
-    IExpr meshLines = meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows);
+    IExpr meshLines = dataRange.isList()
+        ? meshGrid(mesh, extent[0], extent[1], extent[2], extent[3], cols, rows)
+        : meshGridCells(mesh, cols, rows);
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }

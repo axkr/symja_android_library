@@ -414,4 +414,49 @@ public class BoxesTest extends ExprEvaluatorTestCase {
             + "GridBoxDividers->{\"Columns\"->{{False}},\"ColumnsIndexed\"->{-2->True},\"Rows\"->{{False}},\"RowsIndexed\"->{-2->True}},"
             + "GridBoxItemSize->{\"Columns\"->{{Automatic}},\"Rows\"->{{Automatic}}}),#1&),\")\"}),\"]\"})");
   }
+
+  @Test
+  public void testSpacerBoxes() {
+    check("ToBoxes(Spacer(7)) // InputForm", //
+        "TemplateBox({7},\"Spacer1\")");
+    check("ToBoxes(Spacer({4, 9})) // InputForm", //
+        "TemplateBox({4,9},\"Spacer2\")");
+    check("ToBoxes(Row({u, Spacer(1.5), v})) // InputForm", //
+        "TemplateBox({\"u\",TemplateBox({1.5`},\"Spacer1\"),\"v\"},\"RowDefault\")");
+    // a size which isn't a number stays the plain call
+    check("ToBoxes(Spacer({p, 2}))", //
+        "RowBox({Spacer,[,RowBox({{,RowBox({p,,,2}),}}),]})");
+    // the box string reads back as the spacer
+    check("ToExpression(ToString(Spacer({4, 9}), StandardForm))", //
+        "Spacer({4,9})");
+  }
+
+  @Test
+  public void testToStringFormatType() {
+    check("ToString(Superscript(w, 4), FormatType -> StandardForm) // InputForm", //
+        "\"\\!\\(\\*SuperscriptBox[\\\"w\\\", \\\"4\\\"]\\)\"");
+    check("ToString(Superscript(w, 4), FormatType -> StandardForm) === ToString(Superscript(w, 4), StandardForm)", //
+        "True");
+  }
+
+  @Test
+  public void testToStringTraditionalFormText() {
+    // boxes which are only text are written as text, with the displayed digits
+    check("ToString(TraditionalForm({2.718281828459045, y})) // InputForm", //
+        "\"{2.71828,y}\"");
+    check("ToString(TraditionalForm(a - b)) // InputForm", //
+        "\"a-b\"");
+    // the text of the boxes, not of the output form
+    check("ToString(TraditionalForm(Cos(t))) // InputForm", //
+        "\"cos(t)\"");
+    check("ToString(TraditionalForm(u*v)) // InputForm", //
+        "\"u v\"");
+    check("ToString(TraditionalForm(-1.75*w)) // InputForm", //
+        "\"-1.75 w\"");
+    check("ToString(NumberForm(3.14159265, 7), TraditionalForm) // InputForm", //
+        "\"3.141593\"");
+    // typeset boxes stay a box escape
+    check("ToString(TraditionalForm(z^5)) // InputForm", //
+        "\"\\!\\(\\*FormBox[SuperscriptBox[\\\"z\\\", \\\"5\\\"], TraditionalForm]\\)\"");
+  }
 }

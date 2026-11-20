@@ -1761,6 +1761,31 @@ public class RootsFunctions {
   }
 
   /**
+   * The roots of <code>c0 + c1*x + c2*x^2</code> with <code>c0 != 0</code> and <code>c2 != 0</code>.
+   * A discriminant within the rounding error of <code>c1^2</code> and <code>4*c0*c2</code> is a
+   * double root; an iteration would split it by about the square root of the machine epsilon. The
+   * root of the larger size is taken without cancellation, the other one as the quotient by it.
+   */
+  private static org.hipparchus.complex.Complex[] quadraticRoots(double c0, double c1, double c2) {
+    final double scale = c1 * c1 + Math.abs(4.0 * c0 * c2);
+    double discriminant = c1 * c1 - 4.0 * c0 * c2;
+    if (QuarticSolver.isRoundingNoise(discriminant, scale)) {
+      double root = -c1 / (2.0 * c2);
+      return new org.hipparchus.complex.Complex[] {new org.hipparchus.complex.Complex(root),
+          new org.hipparchus.complex.Complex(root)};
+    }
+    if (discriminant > 0.0) {
+      double q = -0.5 * (c1 + Math.copySign(Math.sqrt(discriminant), c1));
+      return new org.hipparchus.complex.Complex[] {new org.hipparchus.complex.Complex(q / c2),
+          new org.hipparchus.complex.Complex(c0 / q)};
+    }
+    double re = -c1 / (2.0 * c2);
+    double im = Math.sqrt(-discriminant) / (2.0 * Math.abs(c2));
+    return new org.hipparchus.complex.Complex[] {new org.hipparchus.complex.Complex(re, -im),
+        new org.hipparchus.complex.Complex(re, im)};
+  }
+
+  /**
    * Determine all complex roots of the univariate polynomial <code>polynomial</code> numerically.
    *
    * <p>
@@ -1819,7 +1844,8 @@ public class RootsFunctions {
     if (degree - zeroMultiplicity > 0) {
       double[] deflated = new double[degree - zeroMultiplicity + 1];
       System.arraycopy(coefficients, zeroMultiplicity, deflated, 0, deflated.length);
-      roots = allComplexRootsLaguerre(deflated);
+      roots = deflated.length == 3 ? quadraticRoots(deflated[0], deflated[1], deflated[2])
+          : allComplexRootsLaguerre(deflated);
       if (roots == null) {
         return F.NIL;
       }

@@ -907,7 +907,10 @@ public final class NumberTheory {
         BigInteger d = BigInteger.ZERO;
         if (ast.isAST3()) {
           if (!ast.arg3().isInteger()) {
-            return F.NIL;
+            // Integer expected at position `2` in `1`.
+            return ast.arg3().isNumber()
+                ? Errors.printMessage(S.ChineseRemainder, "int", F.list(ast, F.C3), engine)
+                : F.NIL;
           }
           d = ((IInteger) ast.arg3()).toBigNumerator();
         }
@@ -919,8 +922,14 @@ public final class NumberTheory {
         if (n == null) {
           return F.NIL;
         }
-        if (a.length != n.length || a.length == 0) {
+        if (n.length == 0) {
           return F.NIL;
+        }
+        if (a.length != n.length) {
+          // The arguments to `1` must be two lists of integers of identical length, with the
+          // second list only containing positive integers.
+          return Errors.printMessage(S.ChineseRemainder, "pilist", F.list(S.ChineseRemainder),
+              engine);
         }
         for (BigInteger ni : n) {
           if (ni.signum() <= 0) {

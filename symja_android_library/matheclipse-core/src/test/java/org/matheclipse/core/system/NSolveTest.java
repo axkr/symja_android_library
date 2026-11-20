@@ -41,6 +41,20 @@ public class NSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNSolveQuadraticDoubleRoot() {
+    // the discriminant is rounding noise: the double root isn't split
+    check("NSolve(4.0*x^2 + 2.4*x + 0.36 == 0, x) // InputForm", //
+        "{{x->-0.3`},{x->-0.3`}}");
+    check("NSolve(x^2 - 1.414213562373095*x + 0.5 == 0, x) // InputForm", //
+        "{{x->0.7071067811865475`},{x->0.7071067811865475`}}");
+    check("Roots(3.0*x^2 - 0.738*x + 0.045387 == 0, x)", //
+        "x==0.123");
+    // two close roots stay apart
+    check("NSolve(x^2 - 2.5*x + 1.5624 == 0, x) // InputForm", //
+        "{{x->1.2400000000000007`},{x->1.2599999999999993`}}");
+  }
+
+  @Test
   public void testNSolveQuadraticComplexRoots() {
     check("NSolve(x^2+1==0,x)", //
         "{{x->I*(-1.0)},{x->I*1.0}}");

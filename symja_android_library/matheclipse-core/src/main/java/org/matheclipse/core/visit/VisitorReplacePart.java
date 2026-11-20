@@ -11,7 +11,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /** Visitor for the <code>ReplacePart()</code> function */
@@ -37,10 +36,40 @@ public class VisitorReplacePart extends AbstractVisitor {
    */
   private boolean[] negativePosition;
 
+  /**
+   * Bit <code>k</code> of <code>negativeMask[j]</code> is set if the index <code>k</code> of the
+   * position of matcher <code>patternMatcherList[j]</code> is a negative integer; that index is
+   * matched in its negative form.
+   */
+  private int[] negativeMask;
+
+  /**
+   * <code>lhsLength[j]</code> is the number of indices of the position of matcher
+   * <code>patternMatcherList[j]</code>, or <code>-1</code> if it isn't fixed.
+   */
+  private int[] lhsLength;
+
+  /**
+   * <code>true</code> at index <code>j</code> if the position pattern of matcher
+   * <code>patternMatcherList[j]</code> has a negative integer which {@link #negativeMask} can't
+   * place, like <code>{__, -1}</code> or <code>{1 | -1, 2}</code>: every combination of the
+   * positive and the negative form of the indices is tried.
+   */
+  private boolean[] negativePattern;
+
   /** <code>true</code> if one of the {@link #negativePosition} entries is set. */
   private boolean negativeHead;
 
+  /** <code>true</code> if a matcher is matched against a position list, so parts are visited. */
+  private boolean nestedPositions;
+
   private int listLength;
+
+  /**
+   * <code>levelSizes[k]</code> is the <code>size()</code> of the expression visited at depth
+   * <code>k</code>, so that a positive index of the position can be turned into the negative one.
+   */
+  private int[] levelSizes = new int[8];
   /**
    * <code>0</code> or <code>1</code>, depending if option <code>Heads->True</code> is set or the
    * <code>0</code> index position is used in the left-hand-side of a rule.
@@ -70,6 +99,9 @@ public class VisitorReplacePart extends AbstractVisitor {
       this.patternMatcherList = new IPatternMatcher[list.argSize()];
       this.positionListPattern = new boolean[list.argSize()];
       this.negativePosition = new boolean[list.argSize()];
+      this.negativeMask = new int[list.argSize()];
+      this.lhsLength = new int[list.argSize()];
+      this.negativePattern = new boolean[list.argSize()];
 
       for (int i = 1; i < list.size(); i++) {
         rule = (IAST) list.get(i);
@@ -79,6 +111,15 @@ public class VisitorReplacePart extends AbstractVisitor {
         // if set explicitly to FALSE, then startOffset is always 1, otherwise startOffset may be
         // changed in initPatternMatcher(); a literal negative position still reaches the head
         startOffset = 1;
+      }
+    }
+    setNestedPositions();
+  }
+
+  private void setNestedPositions() {
+    for (int j = 0; j < listLength; j++) {
+      if (positionListPattern[j] || patternMatcherList[j].getLHS().isSequence()) {
+        nestedPositions = true;
       }
     }
   }
@@ -93,12 +134,16 @@ public class VisitorReplacePart extends AbstractVisitor {
     }
     this.positionListPattern = new boolean[patternMatcherList.length];
     this.negativePosition = new boolean[patternMatcherList.length];
+    this.negativeMask = new int[patternMatcherList.length];
+    this.lhsLength = new int[patternMatcherList.length];
+    this.negativePattern = new boolean[patternMatcherList.length];
     startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     initPatternMatcher(lhs, rhs, heads);
     if (heads == COMPARE_TERNARY.FALSE) {
       // a literal negative position still reaches the head
       startOffset = 1;
     }
+    setNestedPositions();
   }
 
   /**
@@ -167,6 +212,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     } catch (ReturnException rex) {
       if (fromPositions.isList()) {
         IAST list = ((IAST) fromPositions).apply(S.Sequence, 1);
+        setNegativeMask((IAST) fromPositions);
         IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(list, rhs);
         this.patternMatcherList[listLength++] = evalPatternMatcher;
       } else {
@@ -178,13 +224,42 @@ public class VisitorReplacePart extends AbstractVisitor {
 
   /** Add the matcher for the literal position <code>positions</code>. */
   private void addPositions(int[] positions, IExpr rhs) {
-    for (int position : positions) {
-      if (position < 0) {
+    lhsLength[listLength] = positions.length;
+    for (int k = 0; k < positions.length && k < 31; k++) {
+      if (positions[k] < 0) {
+        negativeMask[listLength] |= 1 << k;
         negativePosition[listLength] = true;
         negativeHead = true;
       }
     }
     this.patternMatcherList[listLength++] = engine.evalPatternMatcher(F.Sequence(positions), rhs);
+  }
+
+  /**
+   * Mark the negative integer indices of the position pattern <code>{i1, i2, ...}</code>: in
+   * {@link #negativeMask} if its length is fixed and the negative integers are indices, else in
+   * {@link #negativePattern}.
+   */
+  private void setNegativeMask(IAST position) {
+    if (!position.has(x -> x.isInteger() && x.isNegative(), false)) {
+      return;
+    }
+    negativePosition[listLength] = true;
+    negativeHead = true;
+    int mask = 0;
+    for (int k = 0; k < position.argSize(); k++) {
+      IExpr index = position.get(k + 1);
+      if (index.isInteger() && index.isNegative() && k < 31) {
+        mask |= 1 << k;
+      } else if (k >= 31 || index.isPatternSequence(false) || index.isPatternSequence(true)
+          || index.isAST(S.Repeated) || index.isAST(S.RepeatedNull)
+          || index.has(x -> x.isInteger() && x.isNegative(), false)) {
+        negativePattern[listLength] = true;
+        return;
+      }
+    }
+    lhsLength[listLength] = position.argSize();
+    negativeMask[listLength] = mask;
   }
 
   /**
@@ -202,144 +277,191 @@ public class VisitorReplacePart extends AbstractVisitor {
     return false;
   }
 
+  /**
+   * Visit the parts of <code>ast</code> at the position <code>positions</code>: the first rule
+   * which matches a part replaces it, else the rules for longer positions are tried inside it.
+   */
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable positions) {
     IASTAppendable result = F.NIL;
+    final int depth = positions.argSize();
+    if (depth >= levelSizes.length) {
+      levelSizes = java.util.Arrays.copyOf(levelSizes, 2 * depth + 2);
+    }
+    levelSizes[depth] = ast.size();
     for (int i = negativeHead ? 0 : startOffset; i < ast.size(); i++) {
-      final IInteger position = F.ZZ(i);
-      for (int j = 0; j < listLength; j++) {
-        IPatternMatcher matcher = patternMatcherList[j];
-        if (matcher == null) {
-          continue;
-        }
-        if (i < startOffset && !negativePosition[j]) {
+      // the integer position, and for associations the Key(...) wrapped and the bare key
+      IASTAppendable[] paths = positionPaths(ast, positions, i);
+      IExpr replacement = F.NIL;
+      for (int j = 0; j < listLength && replacement.isNIL(); j++) {
+        if (patternMatcherList[j] == null || (i < startOffset && !negativePosition[j])) {
           // only a literal negative position reaches the head here
           continue;
         }
-
-        // 1. try to match the (positive) integer position
-        IASTAppendable positionsToMatch = positions.copyAppendable();
-        positionsToMatch.append(position);
-        IASTAppendable temp = patternIndexRecursive(matcher, positionListPattern[j], ast,
-            positionsToMatch, i, result);
-        if (temp.isPresent()) {
-          result = temp;
-          break;
-        }
-
-        // 2. try to match the negative integer position; a pattern for the position list only
-        // sees the positive positions
-        if (!positionListPattern[j]) {
-          IInteger negativePart = F.ZZUniqueReference(i - ast.size());
-          positionsToMatch = positions.copyAppendable();
-          positionsToMatch.append(negativePart);
-          temp = patternIndexRecursive(matcher, false, ast, positionsToMatch, i, result);
-          if (temp.isPresent()) {
-            IExpr ex = temp.replaceAll(x -> {
-              if (x == negativePart) {
-                // compare unique reference from F.ZZUniqueReference(); don't use equals() method!
-                return position;
-              }
-              return F.NIL;
-            });
-            if (ex.isPresent() && (ex instanceof IASTAppendable)) {
-              result = (IASTAppendable) ex;
-            } else {
-              result = temp;
-            }
+        for (IASTAppendable path : paths) {
+          replacement = matchPosition(j, path);
+          if (replacement.isPresent()) {
             break;
           }
         }
-
-        if (ast.isAssociation() && i > 0) {
-          // for associations the key can also be used as position specification. Try both the
-          // `Key(...)` wrapped form (e.g. from Position(...)) and the bare key. This must be
-          // attempted at every nesting level to support nested key positions.
-          IExpr key = ast.getRule(i).first();
-
-          // 3a. try to match the `Key(...)` wrapped key
-          positionsToMatch = positions.copyAppendable();
-          positionsToMatch.append(F.Key(key));
-          temp = patternIndexRecursive(matcher, positionListPattern[j], ast, positionsToMatch, i,
-              result);
-          if (temp.isPresent()) {
-            result = temp;
-            break;
-          }
-
-          // 3b. try to match the bare key
-          positionsToMatch = positions.copyAppendable();
-          positionsToMatch.append(key);
-          temp = patternIndexRecursive(matcher, positionListPattern[j], ast, positionsToMatch, i,
-              result);
-          if (temp.isPresent()) {
-            result = temp;
-            break;
-          }
-        }
-
       }
-
+      if (replacement.isPresent()) {
+        result = setPart(result, ast, i, replacement);
+      } else if (nestedPositions && ast.get(i).isASTOrAssociation()
+          && (i >= startOffset || reachesInsideHead(depth))) {
+        for (IASTAppendable path : paths) {
+          IExpr temp = visitPatternIndexList((IAST) ast.get(i), path);
+          if (temp.isPresent()) {
+            result = setPart(result, ast, i, temp);
+            break;
+          }
+        }
+      }
     }
     return result;
   }
 
-  /**
-   * @param matcher
-   * @param positionList if <code>true</code> the matcher is matched against the list
-   *        <code>{i1, i2, ...}</code> of the positions
-   * @param ast
-   * @param positionsToMatch the list of positions which should be matched
-   * @param position
-   * @param result
-   * @return {@link F#NIL} if no match was found
-   */
-  private IASTAppendable patternIndexRecursive(IPatternMatcher matcher, boolean positionList,
-      IAST ast, IASTAppendable positionsToMatch, int position, IASTAppendable result) {
-    if (positionList || matcher.getLHS().isSequence()) {
-      IExpr temp = positionList ? matcher.eval(positionsToMatch.setAtCopy(0, S.List), engine)
-          : matcher.eval(positionsToMatch, engine);
-      if (temp.isPresent()) {
-        if (position == 0 && ast.isAssociation()) {
-          result = ((IAssociation) ast).copyAST();
-        } else if (result.isNIL()) {
-          result = ast.copyAppendable();
-        }
-        result.setValue(position, temp);
-        return result;
-      } else {
-        if (ast.get(position).isASTOrAssociation()) {
-          temp = visitPatternIndexList((IAST) ast.get(position), positionsToMatch);
-          if (temp.isPresent()) {
-            if (position == 0 && ast.isAssociation()) {
-              result = ((IAssociation) ast).copyAST();
-            } else if (result.isNIL()) {
-              result = ast.copyAppendable();
-            }
+  private static IASTAppendable[] positionPaths(IAST ast, IASTAppendable positions, int i) {
+    IASTAppendable path = positions.copyAppendable();
+    path.append(F.ZZ(i));
+    if (!ast.isAssociation() || i == 0) {
+      return new IASTAppendable[] {path};
+    }
+    IExpr key = ast.getRule(i).first();
+    IASTAppendable keyPath = positions.copyAppendable();
+    keyPath.append(F.Key(key));
+    IASTAppendable barePath = positions.copyAppendable();
+    barePath.append(key);
+    return new IASTAppendable[] {path, keyPath, barePath};
+  }
 
-            result.setValue(position, temp);
-            return result;
-          }
-        }
-      }
-    } else {
-      IExpr temp = matcher.eval(F.ZZ(position), engine);
-      if (temp.isNIL() && ast.isAssociation() && position > 0) {
-        // for associations the key can also be used as position specification
-        IExpr key = ast.getRule(position).first();
-        temp = matcher.eval(F.Key(key), engine);
-        if (temp.isNIL()) {
-          temp = matcher.eval(key, engine);
-        }
-      }
-      if (temp.isPresent()) {
-        if (result.isNIL()) {
-          result = ast.copyAppendable();
-        }
-        result.setValue(position, temp);
-        return result;
+  private static IASTAppendable setPart(IASTAppendable result, IAST ast, int position,
+      IExpr value) {
+    if (position == 0 && ast.isAssociation()) {
+      result = ((IAssociation) ast).copyAST();
+    } else if (result.isNIL()) {
+      result = ast.copyAppendable();
+    }
+    result.setValue(position, value);
+    return result;
+  }
+
+  /**
+   * Match the rule <code>patternMatcherList[j]</code> against the position <code>path</code>.
+   *
+   * @return {@link F#NIL} if the rule doesn't match
+   */
+  private IExpr matchPosition(int j, IASTAppendable path) {
+    IPatternMatcher matcher = patternMatcherList[j];
+    if (negativePattern[j]) {
+      return evalSignCombinations(j, path);
+    }
+    if (startOffset > 0 && !reachesHeads(j, path)) {
+      return F.NIL;
+    }
+    if (positionListPattern[j]) {
+      return matcher.eval(path.setAtCopy(0, S.List), engine);
+    }
+    if (matcher.getLHS().isSequence()) {
+      return evalWithNegativeIndices(j, path);
+    }
+    // a pattern for one index matches the first level only
+    return path.argSize() == 1 ? matcher.eval(path.arg1(), engine) : F.NIL;
+  }
+
+  /**
+   * <code>true</code> if a rule names a part inside the head at depth <code>depth</code>, by a
+   * negative index there.
+   */
+  private boolean reachesInsideHead(int depth) {
+    for (int j = 0; j < listLength; j++) {
+      if (negativePattern[j] || (depth < 31 && (negativeMask[j] & (1 << depth)) != 0
+          && lhsLength[j] > depth + 1)) {
+        return true;
       }
     }
-    return F.NIL;
+    return false;
+  }
+
+  /**
+   * Match the position pattern of rule <code>patternMatcherList[j]</code> against every
+   * combination of the positive and the negative form of the integer indices of
+   * <code>path</code>; a head, an index <code>0</code>, is only reached in its negative form unless
+   * heads are visited.
+   */
+  private IExpr evalSignCombinations(int j, IASTAppendable path) {
+    IPatternMatcher matcher = patternMatcherList[j];
+    final int depth = path.argSize();
+    if (depth > 16) {
+      return startOffset > 0 && !reachesHeads(j, path) ? F.NIL : matcher.eval(path, engine);
+    }
+    int flippable = 0;
+    int required = 0;
+    for (int k = 0; k < depth; k++) {
+      int i = path.get(k + 1).toIntDefault();
+      if (i >= 0 && F.isPresent(i)) {
+        flippable |= 1 << k;
+        if (i == 0 && startOffset > 0) {
+          required |= 1 << k;
+        }
+      }
+    }
+    // the subsets of the flippable indices which contain the required ones
+    final int free = flippable & ~required;
+    for (int mask = required;; mask = (((mask | ~free) + 1) & free) | required) {
+      IASTAppendable signed = path.copyAppendable();
+      for (int k = 0; k < depth; k++) {
+        if ((mask & (1 << k)) != 0) {
+          signed.set(k + 1, F.ZZ(path.get(k + 1).toIntDefault() - levelSizes[k]));
+        }
+      }
+      IExpr temp = matcher.eval(signed, engine);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      if (mask == flippable) {
+        return F.NIL;
+      }
+    }
+  }
+
+  /**
+   * <code>true</code> if every head on the position <code>path</code>, an index <code>0</code>, is
+   * named by a negative index of rule <code>patternMatcherList[j]</code>.
+   */
+  private boolean reachesHeads(int j, IASTAppendable path) {
+    final int depth = path.argSize();
+    for (int k = 0; k < depth; k++) {
+      if (path.get(k + 1).isZero()
+          && (lhsLength[j] != depth || (negativeMask[j] & (1 << k)) == 0)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Match the position of rule <code>patternMatcherList[j]</code> against <code>path</code>; the
+   * indices which are negative integers in the rule are matched in their negative form.
+   */
+  private IExpr evalWithNegativeIndices(int j, IASTAppendable path) {
+    IPatternMatcher matcher = patternMatcherList[j];
+    final int mask = negativeMask[j];
+    final int depth = path.argSize();
+    if (mask == 0 || lhsLength[j] != depth) {
+      return matcher.eval(path, engine);
+    }
+    IASTAppendable signed = path.copyAppendable();
+    for (int k = 0; k < depth; k++) {
+      if ((mask & (1 << k)) != 0) {
+        int i = path.get(k + 1).toIntDefault();
+        if (i < 0 || F.isNotPresent(i)) {
+          return F.NIL;
+        }
+        // -(n+1) is the head of an expression with n arguments
+        signed.set(k + 1, F.ZZ(i - levelSizes[k]));
+      }
+    }
+    return matcher.eval(signed, engine);
   }
 
   @Override

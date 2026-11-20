@@ -1167,6 +1167,17 @@ public class BoxesFunctions {
         return F.ternaryAST3(S.TemplateBox, F.list(base, subscript, superscript),
             F.$str("Subsuperscript"), F.Rule(S.SyntaxForm, S.SubsuperscriptBox));
       }
+      if (ast.isAST(S.Spacer, 2)) {
+        // Spacer(w) and Spacer({w, h}): the templates of an empty space
+        IExpr size = ast.arg1();
+        if (size.isList2() && size.first().isReal() && size.second().isReal()) {
+          return F.binaryAST2(S.TemplateBox, F.list(size.first(), size.second()),
+              F.$str("Spacer2"));
+        }
+        if (size.isReal()) {
+          return F.binaryAST2(S.TemplateBox, F.list(size), F.$str("Spacer1"));
+        }
+      }
       if (ast.isAST(S.Row, 2) && ast.arg1().isList()) {
         // Row({e1, e2, ...}): the boxes of the elements side by side
         IAST elements = (IAST) ast.arg1();

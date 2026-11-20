@@ -702,6 +702,34 @@ public class QuarticSolver {
   }
 
   /**
+   * <code>true</code> if the discriminant <code>b^2-4*a*c</code> of a quadratic with machine
+   * coefficients is not larger than the rounding error of <code>b^2</code> and <code>4*a*c</code>:
+   * the quadratic has a double root.
+   *
+   * @param discriminant the size of the computed discriminant
+   * @param scale <code>|b^2| + |4*a*c|</code>
+   */
+  public static boolean isRoundingNoise(double discriminant, double scale) {
+    return Math.abs(discriminant) <= 8.0 * Math.ulp(1.0) * scale;
+  }
+
+  /**
+   * <code>true</code> if the machine number <code>discriminant</code> of <code>a*x^2+b*x+c</code>
+   * is not larger than the rounding error of <code>b^2</code> and <code>4*a*c</code>.
+   */
+  private static boolean isRoundingNoise(IExpr discriminant, IExpr a, IExpr b, IExpr c) {
+    if (!discriminant.isMachineNumber()) {
+      return false;
+    }
+    try {
+      double scale = F.eval(F.Plus(F.Abs(F.Sqr(b)), F.Abs(F.Times(F.C4, a, c)))).evalf();
+      return isRoundingNoise(F.eval(F.Abs(discriminant)).evalf(), scale);
+    } catch (RuntimeException rex) {
+      return false;
+    }
+  }
+
+  /**
    * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
    * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a>
    *
@@ -813,7 +841,16 @@ public class QuarticSolver {
         } else if (isInexactCoefficients(a, b, c)) {
           // -b+Sqrt(b^2-4*a*c) cancels where b^2 is much larger than 4*a*c: the root of the
           // larger size is q/a with q = -(b+Sign(b)*Sqrt(b^2-4*a*c))/2, the other one c/q
-          final IExpr root = F.eval(F.Sqrt(quadraticDiscriminant(a, b, c)));
+          final IExpr discriminant = F.eval(quadraticDiscriminant(a, b, c));
+          if (isRoundingNoise(discriminant, a, b, c)) {
+            // a double root: the rounding of b^2-4*a*c would split it by about the square root
+            // of the machine epsilon
+            final IExpr root = F.eval(F.Divide(F.Negate(b), F.Times(F.C2, a)));
+            result.append(root);
+            result.append(root);
+            return createSet ? createSet(result) : evalAndSort(result, sort);
+          }
+          final IExpr root = F.eval(F.Sqrt(discriminant));
           final boolean plus = !F.eval(F.Re(F.Times(F.Conjugate(b), root))).isNegative();
           final IExpr q = F.eval(F.Times(F.CN1D2, F.Plus(b, plus ? root : F.Negate(root))));
           result.append(F.eval(F.Divide(q, a)));

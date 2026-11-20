@@ -159,10 +159,16 @@ public class SetPrecision extends AbstractFunctionEvaluator {
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
       IASTMutable result = F.NIL;
+      // the arguments which NHoldFirst, NHoldRest or NHoldAll keep from N stay as they are
+      final int attributes =
+          ast.head().isSymbol() ? ((ISymbol) ast.head()).getAttributes() : ISymbol.NOATTRIBUTE;
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (i == 2 && ast.isPower() && arg.isRational()) {
           // an exact exponent stays exact
+          continue;
+        }
+        if ((attributes & (i == 1 ? ISymbol.NHOLDFIRST : ISymbol.NHOLDREST)) != 0) {
           continue;
         }
         IExpr temp = setNumbers(arg, digits, accuracy, engine);

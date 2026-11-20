@@ -7334,6 +7334,10 @@ public final class ListFunctions {
             return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
           }
         }
+        IExpr literal = replaceLiteralParts(result, F.list(F.Rule(lhs, rhs)));
+        if (literal.isPresent()) {
+          return literal;
+        }
         // Note: Rubi uses this kind of rule:
         return result.replacePart(lhs, rhs, heads).orElse(result);
       }
@@ -7341,12 +7345,20 @@ public final class ListFunctions {
       final IExpr arg2 = ast.arg2();
       if (arg2.isRuleAST()) {
         IAST ruleAST = (IAST) arg2;
+        IExpr literal = replaceLiteralParts(ast.arg1(), F.list(ruleAST));
+        if (literal.isPresent()) {
+          return literal;
+        }
         return ast.arg1().replacePart(ruleAST.arg1(), ruleAST.arg2(), heads).orElse(ast.arg1());
       }
 
       if (arg2.isList()) {
         IAST listAST = (IAST) arg2;
         if (ast.arg2().isListOfRules()) {
+          IExpr literal = replaceLiteralParts(result, listAST);
+          if (literal.isPresent()) {
+            return literal;
+          }
           IExpr expr = result.replacePart(listAST, heads);
           if (expr.isPresent()) {
             result = expr;
@@ -7364,6 +7376,102 @@ public final class ListFunctions {
       // The expression `1` cannot be used as a part specification
       Errors.printMessage(S.ReplacePart, "pkspec1", F.List(arg2), engine);
       return result;
+    }
+
+    /**
+     * Replace the parts of <code>expr</code> at the literal positions of the rules
+     * <code>{pos1 -> new1, pos2 -> new2, ...}</code> directly, copying only the expressions on the
+     * way to each part. A position is a non-zero integer or a list of them, a negative index
+     * counting from the end; positions which don't exist are skipped.
+     *
+     * A rule for a part inside a part which another rule replaces is dropped.
+     *
+     * @return {@link F#NIL} if a rule is no <code>Rule</code> with a literal position or if a part
+     *         lies inside an association; then the general matcher decides
+     */
+    private static @AllowNIL IExpr replaceLiteralParts(IExpr expr, IAST rules) {
+      if (!expr.isAST() || expr.isAssociation()) {
+        return F.NIL;
+      }
+      final int n = rules.argSize();
+      if (n == 0 || n > 64) {
+        return F.NIL;
+      }
+      int[][] positions = new int[n][];
+      for (int r = 0; r < n; r++) {
+        IExpr rule = rules.get(r + 1);
+        if (!rule.isAST(S.Rule, 3)) {
+          return F.NIL;
+        }
+        IExpr lhs = rule.first();
+        int[] position;
+        if (lhs.isInteger()) {
+          position = new int[] {lhs.toIntDefault()};
+        } else if (lhs.isList() && lhs.argSize() > 0 && ((IAST) lhs).forAll(x -> x.isInteger())) {
+          position = new int[lhs.argSize()];
+          for (int k = 0; k < position.length; k++) {
+            position[k] = lhs.getAt(k + 1).toIntDefault();
+          }
+        } else {
+          return F.NIL;
+        }
+        // resolve the negative indices against the expression
+        IExpr part = expr;
+        for (int k = 0; k < position.length && position != null; k++) {
+          int index = position[k];
+          if (index == 0 || F.isNotPresent(index)) {
+            return F.NIL;
+          }
+          if (!part.isAST() || part.isAssociation()) {
+            if (part.isAssociation()) {
+              return F.NIL;
+            }
+            position = null;
+            break;
+          }
+          int size = part.size();
+          if (index < 0) {
+            index += size;
+            if (index == 0) {
+              // the head: left to the general matcher
+              return F.NIL;
+            }
+          }
+          if (index <= 0 || index >= size) {
+            position = null;
+            break;
+          }
+          position[k] = index;
+          part = ((IAST) part).get(index);
+        }
+        positions[r] = position;
+      }
+      // a part which is replaced isn't visited, so a rule for a position inside it is dropped
+      for (int r = 0; r < n; r++) {
+        for (int q = 0; q < n; q++) {
+          if (r != q && positions[r] != null && positions[q] != null
+              && positions[r].length < positions[q].length
+              && java.util.Arrays.equals(positions[r], 0, positions[r].length, positions[q], 0,
+                  positions[r].length)) {
+            positions[q] = null;
+          }
+        }
+      }
+      IExpr result = expr;
+      // the first rule for a position wins, so the rules are applied from the last one
+      for (int r = n - 1; r >= 0; r--) {
+        if (positions[r] != null) {
+          result = setLiteralPart((IAST) result, positions[r], 0, rules.get(r + 1).second());
+        }
+      }
+      return result;
+    }
+
+    private static IAST setLiteralPart(IAST ast, int[] position, int k, IExpr value) {
+      final int index = position[k];
+      IExpr newPart = k == position.length - 1 ? value
+          : setLiteralPart((IAST) ast.get(index), position, k + 1, value);
+      return ast.setAtCopy(index, newPart);
     }
 
     /** Test if the integer <code>position</code> (a negative index counts from the end) exists. */
