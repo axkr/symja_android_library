@@ -1097,7 +1097,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->u1,v2->u2}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
-        "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
+        "{{v1->(m1*u1-m2*u1+2*m2*u2)/(m1+m2),v2->(2*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     // github #201 end
 
     // github #200 begin
@@ -1517,7 +1517,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->u1,v2->u2}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
-        "{{v1->(m1*u1+m2*u2+m2*(-u1+u2))/(m1+m2),v2->(m1*u1+m1*(u1-u2)+m2*u2)/(m1+m2)}}");
+        "{{v1->(m1*u1-m2*u1+2.0*m2*u2)/(m1+m2),v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     // github #201 end
 
     // github #200 begin
