@@ -619,6 +619,7 @@ public final class FunctionDefinitions {
     Combinatoric.initialize();
     PermutationGroupFunctions.initialize();
     IntegerFunctions.initialize();
+    IntegerSequenceFunctions.initialize();
     BesselFunctions.initialize();
     DirichletFunctions.initialize();
     SpecialFunctions.initialize();

@@ -857,141 +857,40 @@ public final class NumberTheory {
    * </pre>
    */
   private static class ChineseRemainder extends AbstractFunctionEvaluator {
-    private static long bezout0(long a, long b) {
-      long s = 0, old_s = 1;
-      long r = b, old_r = a;
-
-      long q;
-      long tmp;
-      while (r != 0) {
-        q = old_r / r;
-
-        tmp = old_r;
-        old_r = r;
-        r = subtractExact(tmp, multiplyExact(q, r));
-
-        tmp = old_s;
-        old_s = s;
-        s = subtractExact(tmp, multiplyExact(q, s));
-      }
-      if (old_r != 1) {
-        throw new ArithmeticException();
-      }
-      // assert old_r == 1 : "a = " + a + " b = " + b;
-      return old_s;
-    }
-
-    private static BigInteger bezout0(BigInteger a, BigInteger b) {
-      BigInteger s = BigInteger.ZERO, old_s = BigInteger.ONE;
-      BigInteger r = b, old_r = a;
-
-      BigInteger q;
-      BigInteger tmp;
-      while (r.signum() != 0) {
-        q = old_r.divide(r);
-
-        tmp = old_r;
-        old_r = r;
-        r = tmp.subtract(q.multiply(r));
-
-        tmp = old_s;
-        old_s = s;
-        s = tmp.subtract(q.multiply(s));
-      }
-      if (!old_r.equals(BigInteger.ONE)) {
-        throw new ArithmeticException();
-      }
-      // assert old_r.isOne();
-      return old_s;
-    }
 
     /**
-     * Runs Chinese Remainders algorithm
+     * Merge the congruences <code>x == a[i] (mod n[i])</code>; the moduli need not be coprime.
      *
-     * @param primes list of coprime numbers
-     * @param remainders remainder
-     * @return the result
+     * @return <code>{r, lcm}</code> with <code>0 &lt;= r &lt; lcm</code>, or <code>null</code> if
+     *         the congruences are inconsistent
      */
-    private static long chineseRemaindersInt(final int[] primes, final int[] remainders) {
-      if (primes.length != remainders.length) {
-        // The arguments to `1` must be two lists of integers of identical length, with the second
-        // list only
-        // containing positive integers.
-        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-        throw new ArgumentTypeException(message);
-      }
-      long modulus = primes[0];
-      for (int i = 1; i < primes.length; ++i) {
-        if (primes[i] <= 0) {
-          // The arguments to `1` must be two lists of integers of identical length, with the second
-          // list only containing positive integers.
-          String message =
-              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-          throw new ArgumentTypeException(message);
+    private static BigInteger[] chineseRemainders(final BigInteger[] n, final BigInteger[] a) {
+      BigInteger r = a[0].mod(n[0]);
+      BigInteger m = n[0];
+      for (int i = 1; i < n.length; i++) {
+        BigInteger ni = n[i];
+        BigInteger ai = a[i].mod(ni);
+        BigInteger g = m.gcd(ni);
+        BigInteger difference = ai.subtract(r);
+        if (difference.mod(g).signum() != 0) {
+          return null;
         }
-        modulus = Math.multiplyExact(primes[i], modulus);
+        BigInteger niReduced = ni.divide(g);
+        // r + m*t == ai (mod ni) <=> (m/g)*t == (ai-r)/g (mod ni/g)
+        BigInteger t = BigInteger.ZERO;
+        if (!niReduced.equals(BigInteger.ONE)) {
+          t = difference.divide(g).multiply(m.divide(g).modInverse(niReduced)).mod(niReduced);
+        }
+        r = r.add(m.multiply(t));
+        m = m.multiply(niReduced);
+        r = r.mod(m);
       }
-
-      long result = 0;
-      for (int i = 0; i < primes.length; ++i) {
-        long iModulus = modulus / primes[i];
-        long bezout = bezout0(iModulus, primes[i]);
-        result =
-            floorMod(
-                addExact(result,
-                    floorMod(multiplyExact(iModulus,
-                        floorMod(multiplyExact(bezout, remainders[i]), primes[i])), modulus)),
-                modulus);
-      }
-      return result;
+      return new BigInteger[] {r, m};
     }
 
     /**
-     * Runs Chinese Remainders algorithm
-     *
-     * @param primes list of coprime numbers
-     * @param remainders remainder
-     * @return the result
-     */
-    private static BigInteger chineseRemainders(final BigInteger[] primes,
-        final BigInteger[] remainders) {
-      if (primes.length != remainders.length) {
-        // The arguments to `1` must be two lists of integers of identical length, with the second
-        // list only
-        // containing positive integers.
-        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-        throw new ArgumentTypeException(message);
-      }
-      BigInteger m = primes[0];
-      for (int i = 1; i < primes.length; i++) {
-        if (primes[i].signum() <= 0) {
-          // The arguments to `1` must be two lists of integers of identical length, with the second
-          // list only
-          // containing positive integers.
-          String message =
-              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
-          throw new ArgumentTypeException(message);
-        }
-        m = primes[i].multiply(m);
-      }
-
-      BigInteger result = BigInteger.ZERO;
-      for (int i = 0; i < primes.length; i++) {
-        BigInteger mi = m.divide(primes[i]);
-        BigInteger eea = bezout0(mi, primes[i]);
-        result = result.add(mi.multiply(eea.multiply(remainders[i]).mod(primes[i]))).mod(m);
-      }
-      return result;
-    }
-
-    /**
-     * Calculate the chinese remainder of 2 integer lists.
-     *
-     * <p>
-     * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese
-     * remainder theorem</a><br>
-     * <a href=
-     * "https://github.com/PoslavskySV/rings/blob/master/rings/src/main/java/cc/redberry/rings/bigint/ChineseRemainders.java">cc/redberry/rings/bigint/ChineseRemainders.java</a>
+     * Calculate the chinese remainder of 2 integer lists. <code>ChineseRemainder(list1, list2,
+     * d)</code> gives the smallest solution which is at least <code>d</code>.
      */
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1005,55 +904,41 @@ public final class NumberTheory {
                 engine);
           }
         }
-        try {
-          int[] a = Validate.checkListOfInts(ast, ast.arg1(), false, true, engine);
-          if (a == null) {
-            return chineseRemainderBigInteger(ast, engine);
-          }
-          int[] n = Validate.checkListOfInts(ast, ast.arg2(), false, true, engine);
-          if (n == null) {
-            return chineseRemainderBigInteger(ast, engine);
-          }
-          if (a.length != n.length) {
+        BigInteger d = BigInteger.ZERO;
+        if (ast.isAST3()) {
+          if (!ast.arg3().isInteger()) {
             return F.NIL;
           }
-          if (a.length == 0) {
-            return F.NIL;
-          }
-          try {
-            return F.ZZ(chineseRemaindersInt(n, a));
-          } catch (ArithmeticException aex) {
-            // from Math.multiplyExact()
-            return chineseRemainderBigInteger(ast, engine);
-          }
-        } catch (ArithmeticException ae) {
-          Errors.printMessage(S.ChineseRemainder, ae, engine);
+          d = ((IInteger) ast.arg3()).toBigNumerator();
         }
+        BigInteger[] a = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
+        if (a == null) {
+          return F.NIL;
+        }
+        BigInteger[] n = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
+        if (n == null) {
+          return F.NIL;
+        }
+        if (a.length != n.length || a.length == 0) {
+          return F.NIL;
+        }
+        for (BigInteger ni : n) {
+          if (ni.signum() <= 0) {
+            // The arguments to `1` must be two lists of integers of identical length, with the
+            // second list only containing positive integers.
+            return Errors.printMessage(S.ChineseRemainder, "pilist", F.list(S.ChineseRemainder),
+                engine);
+          }
+        }
+        BigInteger[] rm = chineseRemainders(n, a);
+        if (rm == null) {
+          return F.NIL;
+        }
+        // the smallest solution r + k*lcm which is at least d
+        return F.ZZ(d.add(rm[0].subtract(d).mod(rm[1])));
       }
       return F.NIL;
     }
-
-    private static @AllowNIL IExpr chineseRemainderBigInteger(final IAST ast, EvalEngine engine) {
-      // try with BigIntegers
-      BigInteger[] aBig = Validate.checkListOfBigIntegers(ast, ast.arg1(), false, engine);
-      if (aBig == null) {
-        return F.NIL;
-      }
-      BigInteger[] nBig = Validate.checkListOfBigIntegers(ast, ast.arg2(), false, engine);
-      if (nBig == null) {
-        return F.NIL;
-      }
-      if (aBig.length != nBig.length) {
-        return F.NIL;
-      }
-      try {
-        return F.ZZ(chineseRemainders(nBig, aBig));
-      } catch (ArithmeticException ae) {
-        Errors.printMessage(S.ChineseRemainder, ae, engine);
-      }
-      return F.NIL;
-    }
-
 
     @Override
     public int status() {
@@ -1062,7 +947,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -1101,8 +986,83 @@ public final class NumberTheory {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
+      int n = -1;
+      if (ast.isAST2()) {
+        n = ast.arg2().toIntDefault();
+        if (n < 0) {
+          return F.NIL;
+        }
+      }
+      IExpr arg1 = ast.arg1();
+      IAST list;
+      if (arg1.isList()) {
+        list = (IAST) arg1;
+      } else if (arg1.isNumericFunction(true)) {
+        IExpr cf = engine.evaluate(n >= 0 ? F.binaryAST2(S.ContinuedFraction, arg1, F.ZZ(n))
+            : F.unaryAST1(S.ContinuedFraction, arg1));
+        if (!cf.isList()) {
+          return F.NIL;
+        }
+        list = (IAST) cf;
+      } else {
+        return F.NIL;
+      }
+      if (list.argSize() > 0 && list.last().isList()) {
+        // a periodic continued fraction {a0, a1, ..., {b1, b2, ...}}
+        if (n < 0) {
+          if (arg1.isList()) {
+            return F.NIL;
+          }
+          // a quadratic irrational: the convergents through the first period without its last
+          // term, then the number itself
+          IAST period = (IAST) list.last();
+          IAST terms = expandPeriodic(list, list.argSize() - 1 + period.argSize() - 1);
+          if (terms == null) {
+            return F.NIL;
+          }
+          IExpr result = terms.isEmpty() ? F.CEmptyList : convergents(terms, engine);
+          if (!result.isList()) {
+            return F.NIL;
+          }
+          return ((IAST) result).appendClone(arg1);
+        }
+        list = expandPeriodic(list, n);
+        if (list == null) {
+          return F.NIL;
+        }
+      }
+      if (n >= 0 && list.argSize() > n) {
+        list = list.subList(1, n + 1);
+      }
+      if (n >= 0 && list.isEmpty()) {
+        return F.CEmptyList;
+      }
+      return convergents(list, engine);
+    }
+
+    /** The first <code>n</code> terms of the periodic continued fraction <code>list</code>. */
+    private static IAST expandPeriodic(IAST list, int n) {
+      IAST period = (IAST) list.last();
+      if (period.isEmpty() || period.exists(x -> x.isList())) {
+        return null;
+      }
+      IASTAppendable result = F.ListAlloc(n);
+      for (int i = 1; i < list.argSize() && result.argSize() < n; i++) {
+        if (list.get(i).isList()) {
+          return null;
+        }
+        result.append(list.get(i));
+      }
+      int j = 1;
+      while (result.argSize() < n) {
+        result.append(period.get(j));
+        j = j == period.argSize() ? 1 : j + 1;
+      }
+      return result;
+    }
+
+    private static @AllowNIL IExpr convergents(IAST list, EvalEngine engine) {
+      {
         if (list.exists(x -> x.isList())) {
           return F.NIL;
         }
@@ -1157,7 +1117,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
 
@@ -4162,11 +4122,28 @@ public final class NumberTheory {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST1()) {
-        if (arg1.isList()) {
-          ISeqBase seq = Sequences.sequence(arg1);
-          return seq.find_linear_recurrence(arg1.argSize());
+      if (arg1.isList()) {
+        // a recurrence of order l is fitted to 2*l terms, which every list allows; at least one
+        // more term must confirm it
+        int n = arg1.argSize();
+        int order = (n - 1) / 2;
+        if (ast.isAST2()) {
+          // FindLinearRecurrence(list, maximumOrder)
+          int maximumOrder = ast.arg2().toIntDefault();
+          if (maximumOrder < 1) {
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
+          }
+          order = Math.min(order, maximumOrder);
         }
+        if (order < 1) {
+          return F.NIL;
+        }
+        ISeqBase seq = Sequences.sequence(arg1);
+        IAST result = seq.find_linear_recurrence(n, F.ZZ(order), F.NIL);
+        if (result.isPresent() && result.isEmpty()) {
+          return F.NIL;
+        }
+        return result;
       }
       return F.NIL;
     }

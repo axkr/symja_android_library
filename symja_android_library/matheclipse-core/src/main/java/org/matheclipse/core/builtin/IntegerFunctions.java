@@ -946,6 +946,9 @@ public class IntegerFunctions {
     public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       int base = 10;
       int padLeftZeros = 0;
+      if (ast.argSize() >= 2 && ast.arg2().isAST(S.MixedRadix, 2)) {
+        return mixedRadixDigits(ast, engine);
+      }
       if (ast.argSize() >= 2) {
         base = ast.arg2().toMachineInt();
         if (base < 2) {
@@ -998,6 +1001,60 @@ public class IntegerFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>IntegerDigits(n, MixedRadix({b1, ..., bk}), len)</code> - the digits
+     * <code>{d0, d1, ..., dk}</code> of <code>Abs(n) = (((d0*b1 + d1)*b2 + d2)...)*bk + dk</code>
+     * without leading zeros, padded on the left to <code>len</code> if it is given.
+     */
+    private static @AllowNIL IExpr mixedRadixDigits(IAST ast, EvalEngine engine) {
+      IExpr radixList = ast.arg2().first();
+      if (!ast.arg1().isInteger() || !radixList.isList()) {
+        return F.NIL;
+      }
+      IAST radices = (IAST) radixList;
+      java.math.BigInteger[] bases = new java.math.BigInteger[radices.argSize()];
+      for (int i = 1; i < radices.size(); i++) {
+        IExpr radix = radices.get(i);
+        if (!radix.isInteger() || ((IInteger) radix).toBigNumerator().compareTo(
+            java.math.BigInteger.ONE) <= 0) {
+          // Base `1` is not an integer greater than `2`.
+          return Errors.printMessage(S.IntegerDigits, "ibase", F.List(radix, F.C1), engine);
+        }
+        bases[i - 1] = ((IInteger) radix).toBigNumerator();
+      }
+      int length = -1;
+      if (ast.isAST3()) {
+        length = ast.arg3().toIntDefault();
+        if (length < 0) {
+          return F.NIL;
+        }
+      }
+      java.math.BigInteger value = ((IInteger) ast.arg1()).toBigNumerator().abs();
+      java.util.ArrayList<java.math.BigInteger> digits = new java.util.ArrayList<>();
+      // least significant digit first
+      for (int i = bases.length - 1; i >= 0; i--) {
+        java.math.BigInteger[] qr = value.divideAndRemainder(bases[i]);
+        digits.add(qr[1]);
+        value = qr[0];
+      }
+      digits.add(value);
+      int size = digits.size();
+      while (size > 1 && digits.get(size - 1).signum() == 0) {
+        size--;
+      }
+      if (length >= 0) {
+        while (digits.size() < length) {
+          digits.add(java.math.BigInteger.ZERO);
+        }
+        size = length;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      for (int i = size - 1; i >= 0; i--) {
+        result.append(F.ZZ(digits.get(i)));
+      }
+      return result;
     }
 
     /** The digits of a non-negative integer in any base, most significant first. */
@@ -1438,6 +1495,9 @@ public class IntegerFunctions {
         base = ast.arg2();
       }
       IExpr arg1 = ast.arg1();
+      if (base.isAST(S.MixedRadix, 2)) {
+        return fromMixedRadix(arg1, base.first(), engine);
+      }
       if (arg1.isString()) {
         String str = arg1.toString();
         if (base.isString("Roman")) {
@@ -1470,6 +1530,32 @@ public class IntegerFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    /**
+     * <code>FromDigits({d0, d1, ..., dm}, MixedRadix({b1, ..., bk}))</code> - the digits are aligned
+     * on the right with the radices, the last digit counts units.
+     */
+    private static @AllowNIL IExpr fromMixedRadix(IExpr digitList, IExpr radixList,
+        EvalEngine engine) {
+      if (!digitList.isList() || !radixList.isList()) {
+        return F.NIL;
+      }
+      IAST digits = (IAST) digitList;
+      IAST radices = (IAST) radixList;
+      if (digits.argSize() > radices.argSize() + 1) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(digits.argSize());
+      IExpr weight = F.C1;
+      int r = radices.argSize();
+      for (int i = digits.argSize(); i >= 1; i--) {
+        sum.append(F.Times(digits.get(i), weight));
+        if (r >= 1) {
+          weight = F.Times(weight, radices.get(r--));
+        }
+      }
+      return engine.evaluate(sum.oneIdentity0());
     }
 
     /**

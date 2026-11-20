@@ -10159,6 +10159,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3,4,30,140,661,3128,14805,70066}");
     check("FindLinearRecurrence(data)", //
         "{4,3,2,1}");
+    // an order 4 recurrence fitted to all 8 terms is not confirmed by any further term
+    check("FindLinearRecurrence({1, 2, 4, 8, 17, 35, 72, 149})", //
+        "FindLinearRecurrence({1,2,4,8,17,35,72,149})");
+    check("FindLinearRecurrence({1, 1, 2, 3, 5, 8, 14, 22})", //
+        "FindLinearRecurrence({1,1,2,3,5,8,14,22})");
 
   }
 
@@ -10708,12 +10713,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindGeneratingFunction() {
-    // TODO unequals WMA
+    // TODO the generating function has a logarithm; an order 4 recurrence fitted to all 8 terms
+    // is not a confirmed answer
     check("FindGeneratingFunction({1, 3/2, 9/5, 2, 15/7, 9/4, 7/3, 12/5}, x)", //
-        "(1-111/110*x+12/55*x^2-x^3/825)/(1-138/55*x+24/11*x^2-25/33*x^3+13/154*x^4)");
-    // TODO unequals WMA
+        "FindGeneratingFunction({1,3/2,9/5,2,15/7,9/4,7/3,12/5},x)");
+    // TODO 1/((1-x)*(1-x^2)*(1-x^5)*(1-x^10)) needs more terms than given for its recurrence
     check("FindGeneratingFunction({1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 11, 12}, x)", //
-        "(1+2*x-2*x^2+4*x^3+5*x^5)/(1+x-5*x^2+5*x^3-2*x^5-2*x^6)");
+        "FindGeneratingFunction({1,1,2,2,3,4,5,6,7,8,11,12},x)");
 
     check("FindGeneratingFunction({0, 1, 2, 0, 1, 2, 0}, x)", //
         "(x+2*x^2)/(1-x^3)");
@@ -10722,8 +10728,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("FindGeneratingFunction({3, 7, 13, 21, 31, 43, 57}, x) // Factor", //
         "-(3-2*x+x^2)/(-1+x)^3");
+    // a polynomial sequence needs one confirming term beyond the degree+1 fitted ones
     check("FindGeneratingFunction({1, 2, 3, 4}, x)", //
-        "1/(1-2*x+x^2)");
+        "1/(1-x)^2");
+    check("FindGeneratingFunction({1, 2, 4, 8, 17, 35, 72, 149}, x)", //
+        "FindGeneratingFunction({1,2,4,8,17,35,72,149},x)");
 
   }
 
@@ -10838,13 +10847,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindSequenceFunction({7,9,11,13,15})", //
         "5+2*#1&");
 
-    // Polynomial interpolation: the first ten Motzkin numbers have constant
-    // 8th differences {14,14}, so the degree-8 interpolating polynomial reproduces all ten terms
-    // and
-    // is returned as the simplest closed form.
+    // the first ten Motzkin numbers have constant 8th differences {14,14}: the polynomial fit
+    // confirmed by one term comes before the recurrence guessers
     check("FindSequenceFunction({1, 1, 2, 4, 9, 21, 51, 127, 323, 835}, n)", //
-        "1/2880*(66240-161184*n+160444*n^2-84384*n^3+26189*n^4-4956*n^5+566*n^6-36*n^7+n^\n" //
+        "1/2880*(66240-161184*n+160444*n^2-84384*n^3+26189*n^4-4956*n^5+566*n^6-36*n^7+n^\n"
             + "8)");
+    // the Motzkin numbers from M(1) on fit no polynomial; an order 2 recurrence with linear
+    // coefficients
+    check("FindSequenceFunction({1, 2, 4, 9, 21, 51, 127, 323, 835, 2188, 5798, 15511}, n)", //
+        "DifferenceRoot[Function({y,n},{(-3-3*n)*y(n)+(-5-2*n)*y(1+n)+(4+n)*y(2+n)==0,y(1)==1,y(2)==2})][n]");
+    check("FindSequenceFunction({1, 32, 243, 1024, 3125, 7776, 16807}, n)", //
+        "n^5");
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440}, n)", //
+        "FindSequenceFunction({1,3,20,210,3024,55440},n)");
+    // hypergeometric terms with a ratio of degree 2: (2*n-1)!/n! and Binomial(2*n,n)^2
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440, 1235520, 32432400}, n)", //
+        "Pochhammer(3/2,-1+n)/(4^(1-n)*n)");
+    check("FindSequenceFunction({1, 3, 20, 210, 3024, 55440, 1235520, 32432400}, n) /. n->9", //
+        "980179200");
+    check("FindSequenceFunction(Table(Binomial(2*k,k)^2, {k, 1, 9}), n)", //
+        "Pochhammer(3/2,-1+n)^2/(2^(2-4*n)*Pochhammer(2,-1+n)^2)");
+    // a P-recursive result closed by RSolveValue
+    check("FindSequenceFunction(Table(k*2^k + 3^k, {k, 1, 10}), n)", //
+        "3^n+2^n*n");
+    // {n, a(n)} pairs: consecutive indices shift the sequence, indices with gaps aren't fitted
+    check("FindSequenceFunction({{3, 10}, {4, 17}, {5, 26}, {6, 37}, {7, 50}}, n)", //
+        "1+n^2");
+    check("FindSequenceFunction({{2, 5}, {5, 26}, {9, 82}, {11, 122}}, n)", //
+        "FindSequenceFunction({{2,5},{5,26},{9,82},{11,122}},n)");
+    check("FindSequenceFunction({{0, 1}, {1, 1}, {2, 2}, {3, 6}, {4, 24}, {5, 120}}, n)", //
+        "n!");
     // M4: general holonomic / P-recursive guesser -> DifferenceRoot. 2^n+n is an order-3 C-finite
     // sequence whose finite differences never stabilize (so no interpolating polynomial is found)
     // and which RSolveValue cannot close, so it falls through to the holonomic DifferenceRoot; the

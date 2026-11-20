@@ -642,6 +642,7 @@ public class Errors {
       "Position specification `1` in `2` is not a machine sized integer or a list of machine-sized integers.", //
       "psl1", "Position specification `1` in `2` is not applicable.", //
       "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
+      "psv", "`1` is not a list of nonincreasing positive numbers.", //
       "pts", "`1` should be a non-empty list of points.", //
       "mcell", "`1` is not a valid mesh cell specification.", //
       "ptype",
@@ -776,6 +777,7 @@ public class Errors {
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsdst", "The first argument `1` is not a valid distribution.", //
       "unsupported", "`1` currently not supported in `2`.", //
+      "ulen", "List `1` of coefficients cannot be longer than list `2` of units.", //
       "usraw", "Cannot unset object `1`.", //
       "vctnln",
       "The argument `1` at position `2` should be a vector of real numbers with length greater than `3`.", //
