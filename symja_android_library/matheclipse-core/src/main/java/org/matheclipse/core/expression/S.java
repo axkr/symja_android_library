@@ -9163,6 +9163,16 @@ public class S {
   public final static IBuiltInSymbol EvenQ = S.initFinalSymbol("EvenQ", ID.EvenQ);
 
   /**
+   * EventHandler(x) - TODO describe `EventHandler`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EventHandler.md">EventHandler
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EventHandler =
+      S.initFinalSymbol("EventHandler", ID.EventHandler);
+
+  /**
    * EventSeries(x) - TODO describe `EventSeries`.
    * 
    * @see <a href=
@@ -17156,6 +17166,15 @@ public class S {
       S.initFinalSymbol("Magnification", ID.Magnification);
 
   /**
+   * Magnify(x) - TODO describe `Magnify`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Magnify.md">Magnify
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Magnify = S.initFinalSymbol("Magnify", ID.Magnify);
+
+  /**
    * Majority(x) - TODO describe `Majority`.
    * 
    * @see <a href=
@@ -18657,6 +18676,16 @@ public class S {
   public final static IBuiltInSymbol Most = S.initFinalSymbol("Most", ID.Most);
 
   public final static IBuiltInSymbol Mouseover = S.initFinalSymbol("Mouseover", ID.Mouseover);
+
+  /**
+   * MousePosition(x) - TODO describe `MousePosition`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MousePosition.md">MousePosition
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MousePosition =
+      S.initFinalSymbol("MousePosition", ID.MousePosition);
 
   public final static IBuiltInSymbol MovingAverage =
       S.initFinalSymbol("MovingAverage", ID.MovingAverage);
