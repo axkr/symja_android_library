@@ -42,7 +42,7 @@ public final class IntegerSequenceFunctions {
    * Message <code>nnintprm</code> for a number argument which is not an integer; a symbolic
    * argument stays unevaluated silently.
    */
-  private static IExpr nonNegativeIntegerExpected(final IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr nonNegativeIntegerExpected(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isNumber()) {
       // Parameter `1` at position `2` in `3` is expected to be a non-negative integer.
@@ -763,7 +763,7 @@ public final class IntegerSequenceFunctions {
      * Symbolic <code>m</code>: <code>c*n^k</code> convolved with a constant <code>d</code> is
      * <code>c*d*DivisorSigma(k, m)</code>.
      */
-    private static IExpr divisorSigmaForm(IExpr f, IExpr g, IExpr n, IExpr m) {
+    private static @AllowNIL IExpr divisorSigmaForm(IExpr f, IExpr g, IExpr n, IExpr m) {
       if (g.isFree(n)) {
         IExpr k = powerOfVariable(f, n);
         if (k.isPresent()) {
@@ -780,7 +780,7 @@ public final class IntegerSequenceFunctions {
     }
 
     /** <code>k</code> if <code>expr</code> is free of <code>n</code> (k=0), <code>n</code> or <code>n^k</code>. */
-    private static IExpr powerOfVariable(IExpr expr, IExpr n) {
+    private static @AllowNIL IExpr powerOfVariable(IExpr expr, IExpr n) {
       if (expr.isFree(n)) {
         return F.C0;
       }
