@@ -3183,6 +3183,7 @@ public class StatisticsContinousDistribution {
       S.UniformDistribution.setEvaluator(new UniformDistribution());
       S.VonMisesDistribution.setEvaluator(new VonMisesDistribution());
       S.WeibullDistribution.setEvaluator(new WeibullDistribution());
+      S.KDistribution.setEvaluator(new KDistribution());
       S.LaplaceDistribution.setEvaluator(new LaplaceDistribution());
       S.LogisticDistribution.setEvaluator(new LogisticDistribution());
       S.LogLogisticDistribution.setEvaluator(new LogLogisticDistribution());
@@ -6421,6 +6422,257 @@ public class StatisticsContinousDistribution {
 
   public static void initialize() {
     Initializer.init();
+  }
+
+
+  /**
+   * <code>KDistribution(nu, w)</code> - the K distribution with the shape <code>nu</code> and the
+   * mean square <code>w</code>: the distribution of <code>Sqrt(s*u)</code> for <code>s</code>
+   * distributed as <code>GammaDistribution(nu, w/nu)</code> and <code>u</code> distributed as
+   * <code>ExponentialDistribution(1)</code>.
+   *
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/K-distribution">Wikipedia - K-distribution</a>
+   */
+  private static final class KDistribution extends AbstractEvaluator implements ICDF,
+      ICentralMoment, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
+
+    /**
+     * The mean of <code>KDistribution(nu, 1)</code>:
+     * <code>(Sqrt(Pi)*Pochhammer(nu, 1/2))/(2*Sqrt(nu))</code>.
+     */
+    private static IExpr standardMean(IExpr nu) {
+      return F.Times(F.C1D2, F.CSqrtPi, F.Pochhammer(nu, F.C1D2), F.Power(nu, F.CN1D2));
+    }
+
+    /**
+     * The third central moment of <code>KDistribution(nu, 1)</code> with the standard mean
+     * <code>a</code>: <code>a*(2*a^2 + 3/(4*nu) - 3/2)</code>.
+     */
+    private static IExpr standardCentralMoment3(IExpr nu) {
+      IExpr a = standardMean(nu);
+      return F.Times(a,
+          F.Plus(F.Times(F.C2, F.Sqr(a)), F.Times(F.QQ(3, 4), F.Power(nu, F.CN1)), F.CN3D2));
+    }
+
+    /**
+     * The fourth central moment of <code>KDistribution(nu, 1)</code> with the standard mean
+     * <code>a</code>: <code>2 + 2/nu - (3*a^2)/nu - 3*a^4</code>.
+     */
+    private static IExpr standardCentralMoment4(IExpr nu) {
+      IExpr aSquare = F.Sqr(standardMean(nu));
+      IExpr inverseNu = F.Power(nu, F.CN1);
+      return F.Plus(F.C2, F.Times(F.C2, inverseNu), F.Times(F.CN3, aSquare, inverseNu),
+          F.Times(F.CN3, F.Sqr(aSquare)));
+    }
+
+    /** The variance of <code>KDistribution(nu, 1)</code>: <code>1 - a^2</code>. */
+    private static IExpr standardVariance(IExpr nu) {
+      return F.Subtract(F.C1, F.Sqr(standardMean(nu)));
+    }
+
+    /** <code>2*x*Sqrt(nu/w)</code> */
+    private static IExpr besselArgument(IExpr nu, IExpr w, IExpr x) {
+      return F.Times(F.C2, x, F.Sqrt(F.Divide(nu, w)));
+    }
+
+    /**
+     * The survival function
+     * <code>(2*(x*Sqrt(nu/w))^nu*BesselK(nu, 2*x*Sqrt(nu/w)))/Gamma(nu)</code> for
+     * <code>x &gt; 0</code>.
+     */
+    private static IExpr survival(IExpr nu, IExpr w, IExpr x) {
+      return F.Times(F.C2, F.Power(F.Times(x, F.Sqrt(F.Divide(nu, w))), nu),
+          F.BesselK(nu, besselArgument(nu, w, x)), F.Power(F.Gamma(nu), F.CN1));
+    }
+
+    @Override
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr nu = dist.arg1();
+        IExpr w = dist.arg2();
+        // Piecewise({{1 - (2*(#*Sqrt(nu/w))^nu*BesselK(nu, 2*#*Sqrt(nu/w)))/Gamma(nu), # > 0}},
+        // 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(
+            F.list(F.Subtract(F.C1, survival(nu, w, F.Slot1)), F.Greater(F.Slot1, F.C0))),
+            F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr order, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr nu = dist.arg1();
+        IExpr w = dist.arg2();
+        // the central moment of order k is w^(k/2) times the one of KDistribution(nu, 1)
+        switch (order.toIntDefault()) {
+          case 0:
+            return F.C1;
+          case 1:
+            return F.C0;
+          case 2:
+            return F.Times(w, standardVariance(nu));
+          case 3:
+            return F.Times(F.Power(w, F.C3D2), standardCentralMoment3(nu));
+          case 4:
+            return F.Times(F.Sqr(w), standardCentralMoment4(nu));
+          default:
+            break;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IAST checkParameters(IAST dist) {
+      if (dist.isAST2()) {
+        for (int i = 1; i <= 2; i++) {
+          IExpr parameter = dist.get(i);
+          if (parameter.isReal() && !parameter.isPositive()) {
+            // Parameter `1` at position `2` in `3` is expected to be positive.
+            Errors.printMessage(S.KDistribution, "posprm", F.list(parameter, F.ZZ(i), dist),
+                EvalEngine.get());
+            return F.NIL;
+          }
+        }
+        return dist;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      // no closed form
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr nu = dist.arg1();
+        // the fourth standardized moment doesn't depend on w
+        return F.Times(standardCentralMoment4(nu), F.Power(standardVariance(nu), F.CN2));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr mean(IAST dist) {
+      if (dist.isAST2()) {
+        // (Sqrt(Pi)*Sqrt(w)*Pochhammer(nu, 1/2))/(2*Sqrt(nu))
+        return F.Times(F.Sqrt(dist.arg2()), standardMean(dist.arg1()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr median(IAST dist) {
+      // no closed form
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
+      if (dist.isAST2() && n.isInteger() && !n.isNegative()) {
+        IExpr nu = dist.arg1();
+        IExpr w = dist.arg2();
+        // E[X^n] == E[s^(n/2)]*E[u^(n/2)]:
+        // (w/nu)^(n/2)*Pochhammer(nu, n/2)*Gamma(1 + n/2)
+        IExpr halfOrder = F.Times(F.C1D2, n);
+        return F.Times(F.Power(F.Divide(w, nu), halfOrder), F.Pochhammer(nu, halfOrder),
+            F.Gamma(F.Plus(F.C1, halfOrder)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    // CPD-OFF generated distribution formulas with matching boilerplate
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
+      if (dist.isAST2()) {
+        return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
+      }
+      return F.NIL;
+    }
+    // CPD-ON
+
+    @Override
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr nu = dist.arg1();
+        IExpr w = dist.arg2();
+        // Piecewise({{(4*#^nu*(nu/w)^((1 + nu)/2)*BesselK(nu - 1, 2*#*Sqrt(nu/w)))/Gamma(nu),
+        // # > 0}}, 0) &
+        IExpr density = F.Times(F.C4, F.Power(F.Slot1, nu),
+            F.Power(F.Divide(nu, w), F.Times(F.C1D2, F.Plus(F.C1, nu))),
+            F.BesselK(F.Plus(F.CN1, nu), besselArgument(nu, w, F.Slot1)),
+            F.Power(F.Gamma(nu), F.CN1));
+        return callFunction(
+            F.Function(F.Piecewise(F.list(F.list(density, F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        // see exception handling in RandomVariate() function
+        double nu = dist.arg1().evalfNaN();
+        double w = dist.arg2().evalfNaN();
+        // Sqrt(s*u) for s from GammaDistribution(nu, w/nu) and u from ExponentialDistribution(1)
+        double[] vector = gammaVariates(random, nu, w / nu, size);
+        if (vector != null) {
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
+          for (int i = 0; i < size; i++) {
+            vector[i] = Math.sqrt(vector[i] * rdg.nextExponential(1.0));
+          }
+          return new ASTRealVector(vector, false);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public @AllowNIL IExpr skewness(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr nu = dist.arg1();
+        // the third standardized moment doesn't depend on w
+        return F.Times(standardCentralMoment3(nu), F.Power(standardVariance(nu), F.QQ(-3, 2)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        // Piecewise({{(2*(#*Sqrt(nu/w))^nu*BesselK(nu, 2*#*Sqrt(nu/w)))/Gamma(nu), # > 0}}, 1) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(
+            survival(dist.arg1(), dist.arg2(), F.Slot1), F.Greater(F.Slot1, F.C0))), F.C1)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr variance(IAST dist) {
+      if (dist.isAST2()) {
+        // w*(1 - a^2) with the standard mean a
+        return F.Times(dist.arg2(), standardVariance(dist.arg1()));
+      }
+      return F.NIL;
+    }
   }
 
 
