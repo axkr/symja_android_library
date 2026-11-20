@@ -23,6 +23,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1304,16 +1305,10 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           ? sampleValues(function, xSymbol, minDouble, maxDouble, engine)
           : new IExpr[0];
       if (argSize <= 2 && isComplexValued(samples)) {
-        // the quadrature rules sample real values: integrate the real and imaginary parts.
-        // Newton-Leibniz on a complex antiderivative may jump across a branch cut
-        // a part which vanishes at every sample point isn't integrated: a relative error goal
-        // can't be met for a zero integral
-        IExpr re = isZeroAtSamples(F.Re(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
-            : engine.evaluate(ast.setAtCopy(1, F.Re(function)));
-        IExpr im = isZeroAtSamples(F.Im(function), xSymbol, minDouble, maxDouble, engine) ? F.CD0
-            : engine.evaluate(ast.setAtCopy(1, F.Im(function)));
-        if (re.isReal() && im.isReal()) {
-          return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+        IExpr parts =
+            integrateComplexParts(ast, function, xSymbol, minDouble, maxDouble, samples, engine);
+        if (parts.isPresent()) {
+          return parts;
         }
         // a part which isn't integrated numerically: the integral of the whole integrand below
       }
@@ -1372,6 +1367,16 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           return Num.valueOf(sign * roundToGoal(result.estimate, roundingDigits));
         }
         failed = result;
+      }
+
+      if (argSize <= 2 && mayBeComplexValued(function)) {
+        // the sample points of the test above found real values only, but the quadrature met a
+        // complex one: integrate the real and imaginary parts before trying it symbolically
+        IExpr parts = integrateComplexParts(ast, function, xSymbol, minDouble, maxDouble,
+            sampleValues(function, xSymbol, minDouble, maxDouble, engine), engine);
+        if (parts.isPresent()) {
+          return parts;
+        }
       }
 
       // CAS "SymbolicProcessing" fallback for oscillatory/infinite integrals: solve
@@ -1470,6 +1475,69 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       values[i] = engine.evalQuiet(F.N(F.subst(function, x, F.num(points[i]))));
     }
     return values;
+  }
+
+  /**
+   * Integrate the real and the imaginary part of <code>function</code> separately, since the
+   * quadrature rules sample real values; Newton-Leibniz on a complex antiderivative may jump across
+   * a branch cut. A part which vanishes at every sample point, or is only rounding noise there
+   * compared to the size of the integrand, isn't integrated: a relative error goal can't be met
+   * for a zero integral. A part which evaluates back to the integrand isn't integrated either: it
+   * would come back here.
+   *
+   * @param ast the <code>NIntegrate(function, {x, a, b})</code> call
+   * @param samples the values of <code>function</code> at the sample points
+   * @return {@link F#NIL} if a part isn't integrated numerically
+   */
+  private static @AllowNIL IExpr integrateComplexParts(IAST ast, IExpr function, ISymbol x,
+      double min, double max, IExpr[] samples, EvalEngine engine) {
+    // the largest size of the real and of the imaginary part at the sample points
+    double reMax = 0.0;
+    double imMax = 0.0;
+    for (IExpr value : samples) {
+      if (value.isNumber()) {
+        reMax = Math.max(reMax, Math.abs(((INumber) value).reDoubleValue()));
+        imMax = Math.max(imMax, Math.abs(((INumber) value).imDoubleValue()));
+      } else {
+        reMax = imMax = Double.NaN;
+        break;
+      }
+    }
+    final double noise = 64.0 * Math.ulp(1.0) * Math.max(reMax, imMax);
+    IExpr re = integratePart(ast, function, F.Re(function), reMax <= noise, x, min, max, engine);
+    IExpr im = integratePart(ast, function, F.Im(function), imMax <= noise, x, min, max, engine);
+    if (re.isReal() && im.isReal()) {
+      return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The integral of the real or imaginary <code>part</code> of <code>function</code>: 0 if it is
+   * <code>noise</code> or vanishes at the sample points, {@link F#NIL} if it evaluates back to
+   * <code>function</code>.
+   */
+  private static @AllowNIL IExpr integratePart(IAST ast, IExpr function, IExpr part,
+      boolean noise, ISymbol x, double min, double max, EvalEngine engine) {
+    if (noise || isZeroAtSamples(part, x, min, max, engine)) {
+      return F.CD0;
+    }
+    IExpr evaluated = engine.evaluate(part);
+    if (evaluated.equals(function)) {
+      return F.NIL;
+    }
+    return engine.evaluate(ast.setAtCopy(1, evaluated));
+  }
+
+  /**
+   * <code>true</code> if <code>function</code> has a complex number or a <code>Conjugate</code>,
+   * so that it may have complex values, and isn't already the real or imaginary part of one.
+   */
+  private static boolean mayBeComplexValued(IExpr function) {
+    if (function.isAST(S.Re, 2) || function.isAST(S.Im, 2)) {
+      return false;
+    }
+    return function.has(e -> e.isComplex() || e.isComplexNumeric() || e == S.Conjugate, true);
   }
 
   /** Test if one of the sample values is a number which isn't real. */

@@ -3197,6 +3197,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRowReduceSymbolicZeroEntries() {
+    // an entry which is zero but not written as 0 is no pivot and becomes 0
+    check("RowReduce({{b/(2 - b) + b/(b - 2), 3}, {2, 5}})", //
+        "{{1,0},\n" //
+            + " {0,1}}");
+    check("RowReduce({{1, b}, {0, b/(2 - b) + b/(b - 2)}})", //
+        "{{1,b},\n" //
+            + " {0,0}}");
+    check("RowReduce({{1, b, 1}, {2, 2*b, c/(1 + c) - 1 + 1/(1 + c)}})", //
+        "{{1,b,0},\n" //
+            + " {0,0,1}}");
+  }
+
+  @Test
   public void testRowReduce001() {
     check("RowReduce({{1.0, 2.0}, {2.0, 4.0}})", //
         "{{1.0,2.0},\n" //

@@ -2061,7 +2061,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           for (int i = 1; i < solutions.size(); i++) {
             if (solutions.get(i).isList()) {
               solutions.set(i, ((IAST) solutions.get(i)).map(
-                  rule -> rule.isRuleAST() ? F.Rule(rule.first(), negativeDenominator(rule.second()))
+                  rule -> rule.isRuleAST()
+                      ? F.Rule(rule.first(), negativeDenominator(expandedNumerator(rule.second())))
                       : rule));
             }
           }
@@ -2213,6 +2214,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return inequalities != null && inequalities.isPresent()
           && inequalities.exists(x -> isOrdering(x) && !x.isFree(variable, true) && ((IAST) x)
               .forAll(side -> side.isBuiltInSymbol() || isAlgebraicOccurrence(side, variable)));
+    }
+
+    /**
+     * A quotient by a sum, combined over the common denominator with the common factors cancelled
+     * and the numerator expanded: <code>(-1+a+(-1+a)*(2+2*a))/(-1-a+a^2)</code> is
+     * <code>(-3+a+2*a^2)/(-1-a+a^2)</code>, <code>(6+2*b)/(3+b)</code> is <code>2</code>.
+     */
+    private static IExpr expandedNumerator(IExpr value) {
+      if (!value.isTimes() || !((IAST) value).exists(x -> x.isPower() && x.exponent().isMinusOne()
+          && x.base().isPlus())) {
+        return value;
+      }
+      return EvalEngine.get().evaluate(F.Together(value));
     }
 
     /**

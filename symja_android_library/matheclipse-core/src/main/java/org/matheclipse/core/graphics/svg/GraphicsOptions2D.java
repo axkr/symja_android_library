@@ -119,6 +119,12 @@ public final class GraphicsOptions2D {
   /** Whether {@code LabelStyle} asked for a font size, as opposed to only a colour or weight. */
   public boolean labelFontSizeSet = false;
 
+  /** The font size {@code AxesStyle} gives the tick labels and axes labels, NaN if none. */
+  public double axesFontSize = Double.NaN;
+
+  /** The font size {@code FrameStyle} gives the frame tick labels and frame labels, NaN if none. */
+  public double frameFontSize = Double.NaN;
+
   /**
    * {@code ClippingStyle}: how the parts of a curve that leave the plot range are drawn. Null
    * leaves them out altogether, which is the default.
@@ -244,6 +250,7 @@ public final class GraphicsOptions2D {
         break;
       case ID.AxesStyle:
         applyStyle(value, axesStyle, collector);
+        axesFontSize = fontSizeOf(value, collector);
         break;
       case ID.AxesLabel:
         axesLabel = value;
@@ -253,6 +260,7 @@ public final class GraphicsOptions2D {
         break;
       case ID.FrameStyle:
         applyStyle(value, frameStyle, collector);
+        frameFontSize = fontSizeOf(value, collector);
         break;
       case ID.LabelStyle:
         applyLabelStyle(value, collector);
@@ -404,6 +412,33 @@ public final class GraphicsOptions2D {
         // options that do not affect the drawing are accepted and ignored
         break;
     }
+  }
+
+  /**
+   * The font size in a style like <code>Directive(Thick, 14)</code>, <code>22</code>,
+   * <code>FontSize -> 16</code>, <code>Large</code> or a list of styles per direction: the first
+   * entry which sets one. A bare number counts, as in {@code LabelStyle}.
+   *
+   * @return NaN if the style names no font size
+   */
+  private double fontSizeOf(IExpr value, PrimitiveCollector collector) {
+    if (value.isReal()) {
+      double size = value.evalfNaN();
+      return size > 0.0 ? size : Double.NaN;
+    }
+    if (value.isList() || value.isAST(S.Directive)) {
+      for (IExpr entry : (IAST) value) {
+        double size = fontSizeOf(entry, collector);
+        if (!Double.isNaN(size)) {
+          return size;
+        }
+      }
+      return Double.NaN;
+    }
+    Style2D probe = new Style2D();
+    double before = probe.fontSize;
+    applyStyle(value, probe, collector);
+    return probe.fontSize != before ? probe.fontSize : Double.NaN;
   }
 
   private void applyStyle(IExpr value, Style2D target, PrimitiveCollector collector) {

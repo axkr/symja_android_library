@@ -471,4 +471,23 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
         "{{{2.0,2.0},{1.0,3.0}},{{3.0,3.0},{1.0,3.0}},{{1.0,4.0},{1.667,1.667}},"
             + "{{1.0,4.0},{2.333,2.333}}}");
   }
+
+  @Test
+  public void testAxesStyleFontSize() {
+    // a font size of AxesStyle or FrameStyle sizes the tick labels and the axes or frame labels
+    check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, AxesStyle -> Directive(Blue, 17), "
+        + "AxesLabel -> {\"x\", \"y\"}), \"SVG\"), RegularExpression(\"font-size[=:]\\\"?[0-9.]+\")))", //
+        "{font-size=\"17,font-size:17}");
+    check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, Frame -> True, FrameStyle -> 15, "
+        + "FrameLabel -> {\"p\", \"q\"}), \"SVG\"), RegularExpression(\"font-size[=:]\\\"?[0-9.]+\")))", //
+        "{font-size=\"15,font-size:15}");
+    check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, AxesStyle -> Directive(Blue, "
+        + "FontSize -> 13), AxesLabel -> {\"x\", \"y\"}), \"SVG\"), "
+        + "RegularExpression(\"font-size[=:]\\\"?[0-9.]+\")))", //
+        "{font-size=\"13,font-size:13}");
+    // LabelStyle names the size of every label
+    check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, AxesStyle -> 17, LabelStyle -> 9, "
+        + "AxesLabel -> {\"x\", \"y\"}), \"SVG\"), RegularExpression(\"font-size[=:]\\\"?[0-9.]+\")))", //
+        "{font-size=\"9,font-size:9}");
+  }
 }

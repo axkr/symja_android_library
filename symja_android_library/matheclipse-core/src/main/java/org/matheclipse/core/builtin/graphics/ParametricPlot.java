@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -79,8 +80,9 @@ public class ParametricPlot extends Plot {
 
       } else {
         // Standard Parametric Curve (1 parameter)
+        final List<double[]> drawnPoints = new ArrayList<double[]>();
         IAST listOfLines = parametricPlotToListPoints(function, rangeList1, ast, graphicsOptions,
-            engine,
+            drawnPoints, engine,
             GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
             GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1),
             GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic),
@@ -105,7 +107,9 @@ public class ParametricPlot extends Plot {
         IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
         if (graphicsPrimitives.isPresent()) {
-          return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
+          return withAutomaticRange(
+              createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast), originalAST,
+              drawnPoints);
         }
       }
 
@@ -372,8 +376,82 @@ public class ParametricPlot extends Plot {
     return F.NIL;
   }
 
+  /**
+   * The curve plot with an automatic <code>PlotRange</code> narrowed to the body of its points,
+   * axis by axis (see {@link org.matheclipse.core.graphics.AutomaticPlotRange}) on the scale of the
+   * axis, where a coordinate runs off towards a pole; otherwise the plot as it is.
+   *
+   * @param graphics the plot
+   * @param originalAST the plot call with its options
+   * @param drawnPoints <code>{x, y, w}</code> for every drawn point, <code>w</code> the stretch of
+   *        the parameter it stands for
+   */
+  private static IExpr withAutomaticRange(IExpr graphics, IAST originalAST,
+      List<double[]> drawnPoints) {
+    if (!GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic).isAutomatic()) {
+      return graphics;
+    }
+    // the scaling functions of the axes: a list for both, a single one for the y axis
+    IExpr scaling = GraphicsOptions.optionValue(originalAST, S.ScalingFunctions, S.None);
+    String[] scales = {null, null};
+    if (scaling.isList()) {
+      for (int axis = 0; axis < 2 && axis < scaling.argSize(); axis++) {
+        IExpr scale = ((IAST) scaling).get(axis + 1);
+        scales[axis] = scale.isString() ? scale.toString() : null;
+      }
+    } else if (scaling.isString()) {
+      scales[1] = scaling.toString();
+    }
+    double[][] ranges = new double[2][];
+    boolean narrowed = false;
+    for (int axis = 0; axis < 2; axis++) {
+      java.util.function.DoubleUnaryOperator f = GraphicsOptions.getScalingFunction(scales[axis]);
+      java.util.function.DoubleUnaryOperator g =
+          GraphicsOptions.getInverseScalingFunction(scales[axis]);
+      double[] values = new double[drawnPoints.size()];
+      double[] weights = new double[values.length];
+      int n = 0;
+      double min = Double.POSITIVE_INFINITY;
+      double max = Double.NEGATIVE_INFINITY;
+      double rawMin = Double.POSITIVE_INFINITY;
+      double rawMax = Double.NEGATIVE_INFINITY;
+      for (double[] point : drawnPoints) {
+        rawMin = Math.min(rawMin, point[axis]);
+        rawMax = Math.max(rawMax, point[axis]);
+        double value = f.applyAsDouble(point[axis]);
+        if (Double.isFinite(value)) {
+          values[n] = value;
+          weights[n++] = point[2];
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      }
+      ranges[axis] = new double[] {rawMin, rawMax};
+      double[] range = org.matheclipse.core.graphics.AutomaticPlotRange
+          .narrow(Arrays.copyOf(values, n), Arrays.copyOf(weights, n), min, max);
+      if (range != null) {
+        // an end is mapped back only where it moved: the round trip could shift it by an ulp
+        if (range[0] > min) {
+          ranges[axis][0] = Math.max(rawMin, g.applyAsDouble(range[0]));
+          narrowed = true;
+        }
+        if (range[1] < max) {
+          ranges[axis][1] = Math.min(rawMax, g.applyAsDouble(range[1]));
+          narrowed = true;
+        }
+      }
+    }
+    if (!narrowed) {
+      return graphics;
+    }
+    return withPlotRange(graphics, originalAST,
+        F.list(F.num(ranges[0][0]), F.num(ranges[0][1])), true,
+        F.list(F.num(ranges[1][0]), F.num(ranges[1][1])), true);
+  }
+
   private static IAST parametricPlotToListPoints(IExpr functionOrListOfFunctions,
-      final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine,
+      final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions,
+      List<double[]> drawnPoints, EvalEngine engine,
       int plotPoints, int maxRecursion, IExpr regionFunction, IExpr exclusions) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
@@ -452,15 +530,24 @@ public class ParametricPlot extends Plot {
         // region or a pole keeps a single colour instead of being read as several curves
         IASTAppendable segments = F.ListAlloc(4);
         IASTAppendable linePoints = F.ListAlloc(steps);
+        // the drawn points of the current polyline as {x, y, t}, weighted when it ends
+        final List<double[]> run = new ArrayList<double[]>();
         // the sample before this one: its parameter, whether the curve has a point there and
         // whether the region takes it
         double previousT = Double.NaN;
         boolean previousFinite = false;
         boolean previousDrawn = false;
+        double previousX = Double.NaN;
+        double previousY = Double.NaN;
+        // with the automatic exclusions a curve is broken where a coordinate has a pole
+        final boolean breakAtPoles = exclusions == null || exclusions.isAutomatic();
 
         // the parameters to sample at: the even sweep, refined where the curve turns sharply
         final List<double[]> samples = refinedSamples(fx, fy, tSym, tMinD, step, steps,
             maxRecursion < 0 ? DEFAULT_REFINEMENT_LEVELS : maxRecursion, aspectRatio, engine);
+        // the typical sizes of the coordinates, against which a value counts as a zero
+        final double xScale = breakAtPoles ? medianSize(samples, 1) : Double.NaN;
+        final double yScale = breakAtPoles ? medianSize(samples, 2) : Double.NaN;
         for (int i = 0; i < samples.size(); i++) {
           final double[] sample = samples.get(i);
           double t = sample[0];
@@ -470,10 +557,23 @@ public class ParametricPlot extends Plot {
             if (linePoints.argSize() > 1) {
               segments.append(linePoints);
             }
+            addWeighted(run, drawnPoints);
             linePoints = F.ListAlloc(steps);
             previousFinite = false;
           }
           double[] point = Double.isNaN(sample[1]) ? null : new double[] {sample[1], sample[2]};
+          if (breakAtPoles && point != null && previousFinite
+              && (hasPoleBetween(fx, tSym, previousT, previousX, t, point[0], xScale, engine)
+                  || hasPoleBetween(fy, tSym, previousT, previousY, t, point[1], yScale,
+                      engine))) {
+            // the coordinate runs off to infinity and comes back from the other side
+            if (linePoints.argSize() > 1) {
+              segments.append(linePoints);
+            }
+            addWeighted(run, drawnPoints);
+            linePoints = F.ListAlloc(steps);
+            previousFinite = false;
+          }
           boolean drawn =
               point != null && (region == null || region.accepts(point[0], point[1], t));
           if (region != null && point != null && previousFinite && drawn != previousDrawn) {
@@ -482,25 +582,33 @@ public class ParametricPlot extends Plot {
                 : regionEdge(fx, fy, tSym, previousT, t, region, engine);
             if (edge != null) {
               linePoints.append(graphicsOptions.parametricPoint(edge[0], edge[1], edge[2]));
+              run.add(edge);
             }
           }
           if (drawn) {
             linePoints.append(graphicsOptions.parametricPoint(point[0], point[1], t));
+            run.add(new double[] {point[0], point[1], t});
           } else {
             // the curve is broken where it has no value, or where the region ends, rather than
             // jumped across
             if (linePoints.argSize() > 1) {
               segments.append(linePoints);
             }
+            addWeighted(run, drawnPoints);
             linePoints = F.ListAlloc(steps);
           }
           previousT = t;
           previousFinite = point != null;
           previousDrawn = drawn;
+          if (point != null) {
+            previousX = point[0];
+            previousY = point[1];
+          }
         }
         if (linePoints.argSize() > 1) {
           segments.append(linePoints);
         }
+        addWeighted(run, drawnPoints);
         if (segments.argSize() > 0) {
           listOfLines.append(curveTooltip.isPresent()
               ? F.binaryAST2(S.Tooltip, segments, curveTooltip)
@@ -510,6 +618,81 @@ public class ParametricPlot extends Plot {
     }
 
     return listOfLines;
+  }
+
+  /**
+   * <code>true</code> if the coordinate <code>f</code>, which changes its sign from
+   * <code>f1</code> at <code>t1</code> to <code>f2</code> at <code>t2</code>, has a pole between
+   * them rather than a zero: halving the interval towards the change of sign, the size of the
+   * value stays above the smaller end instead of shrinking to 0. An end which is negligible against
+   * the typical size <code>scale</code> of the coordinate is a zero.
+   */
+  private static boolean hasPoleBetween(IExpr f, ISymbol tSym, double t1, double f1, double t2,
+      double f2, double scale, EvalEngine engine) {
+    if (!(f1 * f2 < 0.0)) {
+      return false;
+    }
+    // at a zero the size shrinks below the smaller end, at a pole it stays above it
+    final double ends = Math.min(Math.abs(f1), Math.abs(f2));
+    if (!(ends > 1.0e-9 * scale)) {
+      return false;
+    }
+    double a = t1;
+    double fa = f1;
+    double b = t2;
+    double fm = 0.0;
+    for (int n = 0; n < 40; n++) {
+      double mid = 0.5 * (a + b);
+      if (mid == a || mid == b) {
+        break;
+      }
+      try {
+        fm = engine.evalDouble(F.subst(f, F.Rule(tSym, F.num(mid))));
+      } catch (RuntimeException rex) {
+        return true;
+      }
+      if (!Double.isFinite(fm)) {
+        return true;
+      }
+      if (fm == 0.0 || Math.abs(fm) < 1.0e-3 * ends) {
+        // shrinking towards a zero
+        return false;
+      }
+      if (Math.abs(fm) > 1.0e3 * Math.max(Math.abs(f1), Math.abs(f2))) {
+        // growing towards a pole
+        return true;
+      }
+      if (fa * fm < 0.0) {
+        b = mid;
+      } else {
+        a = mid;
+        fa = fm;
+      }
+    }
+    return Math.abs(fm) > ends;
+  }
+
+  /**
+   * Move the points <code>{x, y, t}</code> of one polyline to <code>drawnPoints</code> as
+   * <code>{x, y, w}</code>, <code>w</code> half the parameter distance between the neighbours of
+   * the point on the polyline: a point next to a break stands for the stretch on its own side only.
+   */
+  private static void addWeighted(List<double[]> run, List<double[]> drawnPoints) {
+    int size = run.size();
+    for (int i = 0; i < size; i++) {
+      double[] point = run.get(i);
+      double before = i > 0 ? run.get(i - 1)[2] : point[2];
+      double after = i < size - 1 ? run.get(i + 1)[2] : point[2];
+      drawnPoints.add(new double[] {point[0], point[1], 0.5 * Math.abs(after - before)});
+    }
+    run.clear();
+  }
+
+  /** The median size of the finite values of coordinate <code>index</code> of the samples. */
+  private static double medianSize(List<double[]> samples, int index) {
+    double[] sizes = samples.stream().mapToDouble(sample -> Math.abs(sample[index]))
+        .filter(Double::isFinite).sorted().toArray();
+    return sizes.length == 0 ? Double.NaN : sizes[sizes.length / 2];
   }
 
   /** How many times an interval of the even sweep is halved at most where the curve turns. */

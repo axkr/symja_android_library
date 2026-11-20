@@ -4116,4 +4116,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(Sqrt(z + 5) + Sqrt(z - 7) == 6, z)", //
         "{{z->11}}");
   }
+
+  @Test
+  public void testSolveLinearParametricForms() {
+    // the solutions over a common denominator, with the numerator expanded and common factors
+    // cancelled
+    check("Solve({b/(2 - b)*x + y == 3, x - y/(b + 2) == 1}, {x, y})", //
+        "{{x->(-10+3*b+b^2)/(-4-b+b^2),y->(2*(-6+b+2*b^2))/(-4-b+b^2)}}");
+    check("Solve({x/(2 + b) + y == 3, x - y == b}, {x, y})", //
+        "{{x->2+b,y->2}}");
+  }
 }

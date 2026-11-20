@@ -7950,13 +7950,24 @@ public final class LinearAlgebra {
             }
 
             // Path 3: Standard ("OneStepRowReduction" / Default)
+            final boolean numeric = ast.arg1().isNumericMode();
+            // with the default zero test a symbolic entry which is zero, like a/(1-a)+a/(a-1), is
+            // never a pivot: it must be 0, else it stays in a column the elimination skips. An
+            // explicit ZeroTest only decides the pivots.
+            final boolean zeroEntries = !numeric && (zeroTest.isNIL() || zeroTest == S.Automatic);
+            if (zeroEntries) {
+              zeroSymbolicEntries(matrix, zeroChecker);
+            }
             FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
             FieldMatrix<IExpr> result = fmw.getRowReducedMatrix();
+            if (zeroEntries) {
+              zeroSymbolicEntries(result, zeroChecker);
+            }
 
             // FieldReducedRowEchelonForm only uses the zero-checker for pivot detection.
             // Floating-point arithmetic leaves residuals (e.g. 5.40786e-16) in entries
             // that should be exactly 0. Apply the checker to every output entry.
-            if (ast.arg1().isNumericMode() && !fmw.isScaled()) {
+            if (numeric && !fmw.isScaled()) {
               final int rows = result.getRowDimension();
               final int cols = result.getColumnDimension();
               for (int i = 0; i < rows; i++) {
@@ -7977,6 +7988,21 @@ public final class LinearAlgebra {
         engine.setTogetherMode(togetherMode);
       }
       return F.NIL;
+    }
+
+    /** Set the entries which aren't numbers but which <code>zeroChecker</code> finds zero to 0. */
+    private static void zeroSymbolicEntries(FieldMatrix<IExpr> matrix,
+        Predicate<IExpr> zeroChecker) {
+      final int rows = matrix.getRowDimension();
+      final int cols = matrix.getColumnDimension();
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          IExpr entry = matrix.getEntry(i, j);
+          if (!entry.isNumber() && zeroChecker.test(entry)) {
+            matrix.setEntry(i, j, F.C0);
+          }
+        }
+      }
     }
 
     /**
