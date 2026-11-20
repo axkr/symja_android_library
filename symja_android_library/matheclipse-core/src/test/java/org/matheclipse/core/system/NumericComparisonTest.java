@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -538,6 +539,49 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
+  public void testBoundVariableInMultipleIntegral() {
+    // the variable of a sum which stays symbolic is bound, not free: the integrand has values
+    check("NIntegrate(Sum(Sin(j*x*y)/j^3, {j, 1, Infinity}), {x, 0, 1}, {y, 0, 1})", //
+        "0.329175");
+  }
+
+  @Test
+  public void testNonNumericMultipleIntegral() {
+    // a free variable in the integrand of a box: one message for the whole region
+    assertEquals(
+        "NIntegrate: The integrand a+x*y has evaluated to non-numerical values for all sampling "
+            + "points in the region with boundaries {{0,2},{-1,1}}.\n", //
+        messagesOf("NIntegrate(x*y + a, {x, 0, 2}, {y, -1, 1})"));
+    check("NIntegrate(x*y + a, {x, 0, 2}, {y, -1, 1})", //
+        "NIntegrate(x*y+a,{x,0,2},{y,-1,1})");
+    check("NIntegrate(x*y + Pi, {x, 0, 2}, {y, -1, 1})", //
+        "12.56637");
+  }
+
+  @Test
+  public void testMultipleOfExactStep() {
+    // an exact step gives an exact multiple of the step, decided exactly at a boundary
+    check("{Floor(7*Pi/4, Pi/3), Ceiling(Sqrt(11), Sqrt(3)), Floor(-E, Pi/3), Ceiling(E, Pi/5), "
+        + "Floor(2*Pi, Pi/4), Ceiling(-3*Pi, Pi/2)}", //
+        "{5/3*Pi,2*Sqrt(3),-Pi,Pi,2*Pi,-3*Pi}");
+    // a machine number with an exact step: the multiple is still exact
+    check("{Floor(3.7, Pi), Floor(1.9, Pi/2), Ceiling(1.9, 2), Floor(1.7, 1/4)}", //
+        "{Pi,Pi/2,2,3/2}");
+    // a machine step gives a machine number
+    check("{Floor(E, 0.25), Ceiling(Pi, 0.5)}", //
+        "{2.5,3.5}");
+    // a symbolic argument leaves the call alone, with the step evaluated
+    check("{Floor(y, E), Ceiling(y, Sqrt(3)), Floor(y + 3, 1)}", //
+        "{Floor(y,E),Ceiling(y,Sqrt(3)),Floor(3+y,1)}");
+    check("w = Pi/6; Floor(z, w)", //
+        "Floor(z,Pi/6)");
+    // an integer function of x itself is no leftover of the call
+    check("{Floor(Ceiling(u) - 5, 1), Ceiling(Floor(u) + 7, 1)}", //
+        "{-5+Ceiling(u),7+Floor(u)}");
+  }
+
+  @Test
   public void testSecondReview() {
     // a machine number and an arbitrary precision number are two elements, although SameQ takes
     // them for the same
@@ -553,7 +597,7 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     check("Block({z=1.5}, {z*10^400==15*10^399, z+10^400==10^400, z-10^400==-10^400, 10^400/7-z>10^399, 2+z, 1/2*z})", //
         "{True,True,True,True,3.5,0.75}");
     check("{Floor(5,0), Floor(x,2), Ceiling(a,b), Round(x,2)}", //
-        "{Indeterminate,2*Floor(x/2),b*Ceiling(a/b),Round(x,2)}");
+        "{Indeterminate,Floor(x,2),Ceiling(a,b),Round(x,2)}");
     // complex values are ordered by their value, numbers and numeric expressions alike
     check("NumericalSort({I, Sqrt(-2), 1, -I, 2*I, Sqrt(-3), 1+I, 0.5, Sqrt(-5)+1, 3*I, -2})", //
         "{-2,-I,I,I*Sqrt(2),I*Sqrt(3),I*2,I*3,0.5,1,1+I,1+I*Sqrt(5)}");

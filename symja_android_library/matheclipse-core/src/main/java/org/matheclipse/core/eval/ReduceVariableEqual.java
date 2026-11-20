@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -20,7 +21,7 @@ public class ReduceVariableEqual {
    * @param multipleValues if <code>false</code> return only the first found value in the list
    * @return
    */
-  protected static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
+  protected static @AllowNIL IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
       boolean multipleValues) {
     if (multipleValues) {
       IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
@@ -251,7 +252,7 @@ public class ReduceVariableEqual {
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return {@link F#NIL} if we can't find an equation for the given <code>variable</code>.
    */
-  private IExpr extractVariable(IExpr expr, IExpr variable, boolean multipleValues) {
+  private @AllowNIL IExpr extractVariable(IExpr expr, IExpr variable, boolean multipleValues) {
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
@@ -270,7 +271,7 @@ public class ReduceVariableEqual {
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
    * @return {@link F#NIL} if we can't find an equation for the given variable <code>x</code>.
    */
-  private IExpr extractVariableRecursive(IExpr exprWithVariable, IExpr exprWithoutVariable,
+  private @AllowNIL IExpr extractVariableRecursive(IExpr exprWithVariable, IExpr exprWithoutVariable,
       Predicate<IExpr> predicate, IExpr variable, boolean multipleValues) {
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;

@@ -330,7 +330,7 @@ public class NumberFormatter {
     boolean negative = value.startsWith("-");
     String digits = negative ? value.substring(1) : value;
     String grouped = group(digits, digitBlockLeft, separatorLeft, true);
-    String assembled = fillField(applySignsAndPadding(grouped, digits.length(), negative));
+    String assembled = applySignsAndPadding(grouped, digits.length(), 0, negative, 0);
     return new FormattedNumber(assembled, 0, false, applyNumberFormat(assembled, null),
         multiplier);
   }
@@ -363,8 +363,10 @@ public class NumberFormatter {
       }
       // a decimal tie goes to the even digit: NumberForm(98765.25, {Infinity, 1}) is 98765.2
       mantissa = mantissa.setScale(places, RoundingMode.HALF_EVEN).setScale(fractionDigits);
-      if (kind == FormKind.ACCOUNTING) {
-        // an accounting column shows no trailing zeros - it fills the field behind the number
+      if (kind == FormKind.ACCOUNTING || !paddingRight.equals("0")) {
+        // an accounting column shows no trailing zeros - it fills the field behind the number;
+        // a right padding other than zeros, or none as for ScientificForm(2500., {4, 2}), takes
+        // the place of the zeros the rounding added
         mantissa = stripTrailingZeros(mantissa);
       }
     } else if (fractionDigits < 0 && significantFigures > 0) {
@@ -394,8 +396,12 @@ public class NumberFormatter {
       digits.append(numberPoint);
     }
 
-    String assembled = applySignsAndPadding(digits.toString(), integerPart.length(), negative);
-    assembled = fillField(assembled);
+    // an accounting column fills the missing fraction digits with the right padding as well
+    int fractionPadding = kind == FormKind.ACCOUNTING && fractionDigits >= 0 && approximate
+        ? Math.max(0, fractionDigits - fractionPart.length())
+        : 0;
+    String assembled = applySignsAndPadding(digits.toString(), integerPart.length(),
+        fractionPart.length(), negative, fractionPadding);
     IExpr custom = applyNumberFormat(assembled, exponent);
     return new FormattedNumber(assembled, shift, exponent != null, custom, multiplier);
   }
@@ -486,34 +492,53 @@ public class NumberFormatter {
   }
 
   /**
-   * Apply <code>NumberSigns</code> and the left <code>NumberPadding</code>.
+   * Apply <code>NumberSigns</code> and the <code>NumberPadding</code> around the digits.
    *
    * <p>
-   * The sign occupies one of the padded positions, so that a column of padded numbers lines up
-   * whether or not an individual entry is negative. <code>SignPadding</code> decides which side of
-   * the padding the sign ends up on: <code>False</code> (the default) pads first and writes the
-   * sign directly in front of the digits, <code>True</code> writes the sign first and pads behind
-   * it.
+   * The signs have a column of their own, as wide as the longest sign, so that a column of padded
+   * numbers lines up whether or not an individual entry is negative: the left padding fills the
+   * missing integer digits and the part of the sign column the sign of this entry leaves free, the
+   * right padding the missing fraction digits and the part of the closing sign's column.
+   * <code>SignPadding</code> decides which side of the padding the signs end up on:
+   * <code>False</code> (the default) writes the signs directly around the digits and the padding
+   * outside, <code>True</code> writes the signs outside and the padding between them and the
+   * digits.
    *
    * @param digits the grouped digits, decimal point included
    * @param integerLength the number of integer digits before grouping, used to size the padding
+   * @param fractionLength the number of fraction digits shown
+   * @param fractionPadding the number of fraction digits still missing
    */
-  private String applySignsAndPadding(String digits, int integerLength, boolean negative) {
+  private String applySignsAndPadding(String digits, int integerLength, int fractionLength,
+      boolean negative, int fractionPadding) {
     String sign = negative ? signNegative : signPositive;
     String close = negative ? signNegativeClose : "";
 
-    StringBuilder padding = new StringBuilder();
-    if (totalDigits > 0 && !paddingLeft.isEmpty() && kind != FormKind.ACCOUNTING) {
-      // one position of the field belongs to the sign, whether or not this entry has one
-      int target = (fractionDigits >= 0 ? totalDigits - fractionDigits : totalDigits) + 1;
-      for (int i = integerLength + sign.length(); i < target; i++) {
-        padding.append(paddingLeft);
+    StringBuilder left = new StringBuilder();
+    StringBuilder right = new StringBuilder();
+    if (totalDigits > 0) {
+      if (!paddingLeft.isEmpty()) {
+        int signWidth = Math.max(signNegative.length(), signPositive.length());
+        // without a number of fraction digits the field holds the digits shown: PaddedForm(1.5, 5)
+        // pads three digits
+        int integerWidth = fractionDigits >= 0 ? totalDigits - fractionDigits
+            : totalDigits - fractionLength;
+        // the padded digits have their digit block separators too
+        int count = Math.max(0, groupedWidth(integerWidth) - groupedWidth(integerLength))
+            + signWidth - sign.length();
+        for (int i = 0; i < count; i++) {
+          left.append(paddingLeft);
+        }
+      }
+      if (!paddingRight.isEmpty()) {
+        int count = fractionPadding + signNegativeClose.length() - close.length();
+        for (int i = 0; i < count; i++) {
+          right.append(paddingRight);
+        }
       }
     }
-    if (padding.length() == 0) {
-      return sign + digits + close;
-    }
-    return signPadding ? sign + padding + digits + close : padding + sign + digits + close;
+    return signPadding ? sign + left + digits + right + close
+        : left + sign + digits + close + right;
   }
 
   /**
@@ -534,22 +559,13 @@ public class NumberFormatter {
     return sb.toString();
   }
 
-  /**
-   * Fill the field of an <code>AccountingForm</code> entry on the right. The closing sign of a
-   * negative entry stays next to the digits - <code>AccountingForm(-12.3, {6, 2},
-   * NumberPadding -&gt; {" ", "0"})</code> is <code>(12.3)0</code> - so that a column of entries
-   * ends at the same position whether or not an individual entry is negative.
-   */
-  private String fillField(String assembled) {
-    if (kind != FormKind.ACCOUNTING || totalDigits <= 0 || paddingRight.isEmpty()) {
-      return assembled;
+  /** The width of <code>n</code> integer digits with their digit block separators. */
+  private int groupedWidth(int n) {
+    if (digitBlockLeft == NO_DIGIT_BLOCK || digitBlockLeft <= 0 || separatorLeft.isEmpty()
+        || n <= digitBlockLeft) {
+      return n;
     }
-    StringBuilder sb = new StringBuilder(assembled);
-    // the field holds `totalDigits` digits and the number point
-    while (sb.length() < totalDigits + 1) {
-      sb.append(paddingRight);
-    }
-    return sb.toString();
+    return n + (n - 1) / digitBlockLeft * separatorLeft.length();
   }
 
   /** Insert <code>NumberSeparator</code> strings every <code>blockSize</code> digits. */

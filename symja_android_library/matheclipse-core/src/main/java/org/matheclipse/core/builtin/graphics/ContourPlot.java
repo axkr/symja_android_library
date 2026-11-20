@@ -89,7 +89,7 @@ public class ContourPlot extends ListPlot {
     IExpr contourLabelsOption = GraphicsOptions.optionValue(originalAST, S.ContourLabels, S.None);
     boolean contourLabels = contourLabelsOption.isTrue() || contourLabelsOption.isAutomatic();
 
-    int plotPoints = 25;
+    IExpr plotPointsOption = S.Automatic;
     int maxRecursion = -1;
     // -1: Automatic, levels at round values
     int numberOfContours = -1;
@@ -125,7 +125,7 @@ public class ContourPlot extends ListPlot {
               contourShading = val;
               break;
             case ID.PlotPoints:
-              plotPoints = val.toIntDefault(25);
+              plotPointsOption = val;
               break;
             case ID.MaxRecursion:
               maxRecursion = val.toIntDefault(-1);
@@ -135,12 +135,7 @@ public class ContourPlot extends ListPlot {
       }
     }
 
-    // The contours are traced on a fixed grid rather than refined adaptively, so MaxRecursion is
-    // honoured as what it is for: each level doubles the sampling resolution, which is what makes
-    // the traced contours smoother.
-    if (maxRecursion >= 0) {
-      plotPoints = Math.min(400, plotPoints * (1 << Math.min(maxRecursion, 4)));
-    }
+    int[] cells = gridCells(plotPointsOption, maxRecursion);
 
     IExpr functionArg = ast.arg1();
     IExpr xIter = ast.arg2();
@@ -170,15 +165,21 @@ public class ContourPlot extends ListPlot {
         GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
 
-    // f(x, y) with a value of {u v, u + v} is two functions, which only its value can say
-    List<IExpr> written =
-        functionArg.isList() ? ((IAST) functionArg).asArgsList() : List.of(functionArg);
-    List<IExpr> split = PlotShapeProbe.split(written,
-        PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
-            new double[] {xRange[0], yRange[0]}, new double[] {xRange[1], yRange[1]}),
-        PlotShapeProbe.SCALAR, false, engine);
-    if (split.size() != written.size()) {
-      functionArg = F.List(split.toArray(new IExpr[0]));
+    // f(x, y) with a value of {u v, u + v} is two functions, which only its value can say. A single
+    // function is first read at the sample nearest the middle of the grid, and a number there is
+    // kept as that sample, so that the function is not evaluated more often than the grid has
+    // points.
+    KnownSample middle = KnownSample.of(functionArg, xVar, yVar, xRange, yRange, cells, engine);
+    if (middle == null) {
+      List<IExpr> written =
+          functionArg.isList() ? ((IAST) functionArg).asArgsList() : List.of(functionArg);
+      List<IExpr> split = PlotShapeProbe.split(written,
+          PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
+              new double[] {xRange[0], yRange[0]}, new double[] {xRange[1], yRange[1]}),
+          PlotShapeProbe.SCALAR, false, engine);
+      if (split.size() != written.size()) {
+        functionArg = F.List(split.toArray(new IExpr[0]));
+      }
     }
 
     boolean shaded = false;
@@ -199,7 +200,8 @@ public class ContourPlot extends ListPlot {
           style = GraphicsOptions.plotStyleColorExpr(count, F.NIL);
         }
 
-        generateContours(primitives, func, xRange, yRange, xVar, yVar, plotPoints, numberOfContours,
+        generateContours(primitives, func, xRange, yRange, xVar, yVar, cells, null,
+            numberOfContours,
             style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
             contourLines, contourLabels, region, boundaryStyle);
         count++;
@@ -207,7 +209,7 @@ public class ContourPlot extends ListPlot {
     } else {
       // Single function/equation
       shaded = isShaded(functionArg, contourShading);
-      generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, plotPoints,
+      generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, cells, middle,
           numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
           engine, false, contourLines, contourLabels, region, boundaryStyle);
     }
@@ -215,7 +217,7 @@ public class ContourPlot extends ListPlot {
     // the contours share one table of points; the mesh, which is not traced from the data, is
     // drawn next to them
     IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], xRange[1], yRange[1],
-        plotPoints, plotPoints);
+        cells[0], cells[1]);
     IAST content = F.List(graphicsComplex(primitives, xRange, yRange),
         meshLines.isPresent() ? meshLines : F.CEmptyList);
 
@@ -227,7 +229,114 @@ public class ContourPlot extends ListPlot {
       graphics = withPlotRange(graphics, originalAST, F.List(F.num(xRange[0]), F.num(xRange[1])),
           true, F.List(F.num(yRange[0]), F.num(yRange[1])), true);
     }
-    return graphics;
+    return withAutomaticFrameLabel(graphics, originalAST, xVar, yVar);
+  }
+
+  /**
+   * The plot with <code>FrameLabel -> Automatic</code> resolved: the bottom and left edges of the
+   * frame are labelled with the variables of the two ranges, written edge by edge as
+   * <code>{{left, right}, {bottom, top}}</code>.
+   */
+  static IExpr withAutomaticFrameLabel(IExpr graphics, IAST originalAST, ISymbol xVar,
+      ISymbol yVar) {
+    if (originalAST == null) {
+      return graphics;
+    }
+    IExpr frameLabel = GraphicsOptions.optionValue(originalAST, S.FrameLabel, F.NIL);
+    if (frameLabel.isNIL()) {
+      // the default of the plot function, which SetOptions may have changed
+      IExpr defaults = EvalEngine.get().evaluate(F.Options(originalAST.topHead()));
+      frameLabel = defaults.isList()
+          ? GraphicsOptions.optionValue((IAST) defaults, S.FrameLabel, S.None)
+          : S.None;
+    }
+    if (!frameLabel.isAutomatic()) {
+      return graphics;
+    }
+    IAST inner = innerGraphics(graphics);
+    if (inner.isNIL()) {
+      return graphics;
+    }
+    IAST labelled = withOption(inner, S.FrameLabel,
+        F.List(F.List(yVar, S.None), F.List(xVar, S.None)));
+    return graphics.isAST(S.Legended, 3) ? ((IAST) graphics).setAtCopy(1, labelled) : labelled;
+  }
+
+  /**
+   * The number of grid cells along x and y.
+   *
+   * <p>
+   * The contours are traced on a fixed grid rather than refined adaptively. Without a
+   * <code>MaxRecursion</code> setting <code>PlotPoints -> n</code> is the number of cells, 25 by
+   * default. With <code>MaxRecursion -> r</code> the grid is the one an adaptive refinement starts
+   * from, <code>n</code> samples per axis (15 by default), with every cell split in two along each
+   * axis for each of the <code>r</code> levels; <code>MaxRecursion -> 0</code> samples exactly the
+   * <code>n</code> by <code>n</code> points.
+   *
+   * @param option the value of <code>PlotPoints</code>: a number, a list of two numbers or
+   *        <code>Automatic</code>
+   * @param maxRecursion the value of <code>MaxRecursion</code>, negative if not given
+   */
+  static int[] gridCells(IExpr option, int maxRecursion) {
+    boolean refined = maxRecursion >= 0;
+    int defaultPoints = refined ? 15 : 25;
+    int[] cells = new int[2];
+    for (int c = 0; c < 2; c++) {
+      IExpr entry = option.isList2() ? option.getAt(c + 1) : option;
+      int points = entry.toIntDefault(defaultPoints);
+      if (points < 2) {
+        points = defaultPoints;
+      }
+      if (refined) {
+        cells[c] = Math.min(400, (points - 1) * (1 << Math.min(maxRecursion, 4)));
+      } else {
+        cells[c] = Math.min(400, points);
+      }
+    }
+    return cells;
+  }
+
+  /** A sample of the grid which was evaluated before the grid was sampled. */
+  private static final class KnownSample {
+    final IExpr function;
+    final int column;
+    final int row;
+    final IExpr value;
+
+    private KnownSample(IExpr function, int column, int row, IExpr value) {
+      this.function = function;
+      this.column = column;
+      this.row = row;
+      this.value = value;
+    }
+
+    /**
+     * The value of a single function at the sample nearest the middle of the grid, if it is a
+     * number; <code>null</code> otherwise.
+     */
+    static KnownSample of(IExpr function, ISymbol xVar, ISymbol yVar, double[] xRange,
+        double[] yRange, int[] cells, EvalEngine engine) {
+      if (function.isList() || function.isAST(S.Equal, 3) || PlotWrapper.isWrapper(function)) {
+        return null;
+      }
+      int column = cells[0] / 2;
+      int row = cells[1] / 2;
+      // the same coordinates as the grid computes them
+      double x = xRange[0] + column * ((xRange[1] - xRange[0]) / cells[0]);
+      double y = yRange[0] + row * ((yRange[1] - yRange[0]) / cells[1]);
+      IExpr value;
+      try {
+        value = engine.evaluate(
+            function.replaceAll(F.List(F.Rule(xVar, F.num(x)), F.Rule(yVar, F.num(y)))));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return null;
+      }
+      if (value.isList() || !Double.isFinite(value.evalfNaN())) {
+        return null;
+      }
+      return new KnownSample(function, column, row, value);
+    }
   }
 
   /**
@@ -342,7 +451,8 @@ public class ContourPlot extends ListPlot {
   }
 
   private void generateContours(IASTAppendable primitives, IExpr function, double[] xRange,
-      double[] yRange, ISymbol xVar, ISymbol yVar, int plotPoints, int numberOfContours,
+      double[] yRange, ISymbol xVar, ISymbol yVar, int[] cells, KnownSample known,
+      int numberOfContours,
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
       boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle) {
@@ -355,8 +465,8 @@ public class ContourPlot extends ListPlot {
     }
 
     // CPD-OFF contour and density plots sample their own grids
-    int gridX = plotPoints;
-    int gridY = plotPoints;
+    int gridX = cells[0];
+    int gridY = cells[1];
     double[][] zGrid = new double[gridX + 1][gridY + 1];
     double stepX = (xRange[1] - xRange[0]) / gridX;
     double stepY = (yRange[1] - yRange[0]) / gridY;
@@ -373,12 +483,18 @@ public class ContourPlot extends ListPlot {
       double xVal = xRange[0] + i * stepX;
       for (int j = 0; j <= gridY; j++) {
         double yVal = yRange[0] + j * stepY;
-        IExpr valExpr =
-            function.replaceAll(F.List(F.Rule(xVar, F.num(xVal)), F.Rule(yVar, F.num(yVal))));
-
         double z = Double.NaN;
         try {
-          IExpr result = engine.evaluate(valExpr);
+          IExpr result;
+          if (known != null && known.function == function && i == known.column
+              && j == known.row) {
+            // the sample the shape of the function was read from is not evaluated again
+            result = known.value;
+          } else {
+            IExpr valExpr = function
+                .replaceAll(F.List(F.Rule(xVar, F.num(xVal)), F.Rule(yVar, F.num(yVal))));
+            result = engine.evaluate(valExpr);
+          }
           z = result.evalf();
         } catch (Exception e) {
           z = Double.NaN;
@@ -1041,6 +1157,20 @@ public class ContourPlot extends ListPlot {
   @Override
   protected int dependentRangeOffset() {
     return 0;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is evaluated at the sample points: a function which iterates until its values
+    // agree never stops on symbolic coordinates
+    // only the plot of a function; a plot of data or of a predicate reads its argument evaluated
+    return getClass() == ContourPlot.class;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // D(f, x) or an expansion is still done once with symbolic coordinates, if it finishes
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override

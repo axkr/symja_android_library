@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Arrays;
 import java.util.Random;
 import org.hipparchus.special.Erf;
@@ -34,7 +35,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   private static final int QUANTILE_STEPS = 200;
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (!ast.arg1().isList() || ast.arg1().argSize() < 2) {
       return F.NIL;
     }
@@ -73,7 +74,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   }
 
   /** The bandwidth of the sorted data, {@link F#NIL} if the statistics aren't numbers. */
-  private static IExpr automaticBandwidth(IAST sorted, EvalEngine engine) {
+  private static @AllowNIL IExpr automaticBandwidth(IAST sorted, EvalEngine engine) {
     final int n = sorted.argSize();
     IExpr iqr = engine.evaluate(F.Subtract(quartile(sorted, 3), quartile(sorted, 1)));
     IExpr variance = engine.evaluate(F.Variance(sorted));
@@ -155,7 +156,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   }
 
   /** The density <code>w/h Sum(c(i) Exp(-(x - v(i))^2/(2 h^2))/Sqrt(2 Pi))</code>. */
-  static IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+  static @AllowNIL IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
     if (x.isNIL()) {
       return F.NIL;
     }
@@ -166,7 +167,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   }
 
   /** The cumulative distribution <code>w Sum(c(i) Erfc(-(x - v(i))/(Sqrt(2) h))/2)</code>. */
-  static IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+  static @AllowNIL IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
     if (x.isNIL()) {
       return F.NIL;
     }
@@ -206,7 +207,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   }
 
   /** The point where the increasing cumulative distribution reaches <code>q</code>. */
-  static IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
+  static @AllowNIL IExpr quantile(IAST dist, IExpr q, EvalEngine engine) {
     double p = q.evalfNaN();
     double h = bandwidth(dist).evalfNaN();
     if (Double.isNaN(p) || Double.isNaN(h)) {
@@ -247,7 +248,7 @@ public final class KernelMixtureDistribution extends AbstractFunctionEvaluator {
   }
 
   /** A random data value plus a normal deviate of the width of the bandwidth. */
-  static IExpr randomVariate(Random random, IAST dist, int size) {
+  static @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
     double[] values = values(dist);
     double h = bandwidth(dist).evalfNaN();
     if (Double.isNaN(h)) {

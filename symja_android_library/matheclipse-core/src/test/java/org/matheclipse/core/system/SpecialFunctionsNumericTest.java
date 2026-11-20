@@ -948,7 +948,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("{Hypergeometric2F1(1/3,2/3,1,1),Hypergeometric2F1(1/3,2/3,1,1.0),Hypergeometric2F1(1/3,2/3,2,1)}", //
         "{Infinity,ComplexInfinity,1/(Gamma(4/3)*Gamma(5/3))}");
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,3/2},1),30)", //
-        "HypergeometricPFQ({1/3,1,5/2},{3/2,7/3},1)");
+        "HypergeometricPFQ({0.333333333333333333333333333333,1,2.5},{1.5,2.33333333333333333333333333333},1)");
   }
 
   @Test

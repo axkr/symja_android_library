@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.annotation.EnsuresPresent;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -4361,6 +4362,7 @@ public interface IExpr
    * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
    * @see java.util.Optional#isPresent()
    */
+  @EnsuresPresent(false)
   default boolean isNIL() {
     return false;
   }
@@ -4805,6 +4807,14 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is <code>Overflow()</code> or <code>Underflow()</code>: an approximate
+   * number whose magnitude is beyond the range of numbers.
+   */
+  default boolean isOutOfRange() {
+    return isOverflow() || isUnderflow();
+  }
+
+  /**
    * Test if this expression is a <code>Pattern[symbol]</code> object
    * 
    */
@@ -5082,6 +5092,7 @@ public interface IExpr
    * @return {@code true} if the expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * @see java.util.Optional#isPresent()
    */
+  @EnsuresPresent(true)
   default boolean isPresent() {
     return true;
   }

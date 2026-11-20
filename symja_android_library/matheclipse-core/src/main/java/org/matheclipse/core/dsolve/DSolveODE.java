@@ -1,9 +1,12 @@
 package org.matheclipse.core.dsolve;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.VariablesSet;
@@ -16,6 +19,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.reflection.system.DSolve;
 import org.matheclipse.core.reflection.system.Eliminate;
@@ -1620,6 +1624,71 @@ final class DSolveODE {
       return null;
     }
     return new IExpr[] {point, value};
+  }
+
+  /**
+   * The solution of <code>y' == F(x, y)</code>, <code>y(x0) == y0</code> which is the tangent line
+   * <code>y0 + F(x0, y0)*(x - x0)</code>, if that line solves the equation. With <code>F</code>
+   * built from analytic functions and <code>F</code>, <code>F_y</code> finite at the point,
+   * <code>F</code> is Lipschitz in <code>y</code> near the point and the solution through it is
+   * unique, so the line is the answer even where no member of the general solution reaches the
+   * point: the point lies on a solution the general solution divided out.
+   * <code>y' == Sqrt(x - y)</code>, <code>y(2) == 1</code> is solved by <code>x - 1</code>.
+   *
+   * @param point <code>{x0, y0}</code> of the condition
+   * @return the accepted solutions, an empty list if the line isn't one
+   */
+  private static IASTAppendable tangentLineSolution(IAST listOfEquations, IExpr arg2,
+      IExpr xVar, IAST uFunction1Arg, IExpr c_n, IAST boundaryConditions, IExpr[] point,
+      EvalEngine engine) {
+    IExpr equation = listOfEquations.arg1();
+    IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
+    IExpr[] parts = firstOrderParts(engine.evaluate(lhs), xVar, uFunction1Arg, engine);
+    if (parts == null) {
+      return F.ListAlloc();
+    }
+    ISymbol y = F.Dummy("y");
+    IExpr slope = engine.evaluate(F.ReplaceAll(F.Divide(F.Negate(parts[1]), parts[0]),
+        F.Rule(uFunction1Arg, y)));
+    if (!slope.isFree(uFunction1Arg.head(), true)
+        || !slope.isFree(x -> x.isAST() && NON_SMOOTH_HEADS.contains(x.head()), true)) {
+      // y' == 1+Sign(y-x), y(0) == 0 is solved by x, and by x+Max(0,x-c) for every c >= 0
+      return F.ListAlloc();
+    }
+    IAST atPoint = F.list(F.Rule(xVar, point[0]), F.Rule(y, point[1]));
+    IExpr slope0 = engine.evalQuiet(F.ReplaceAll(slope, atPoint));
+    IExpr slopeY0 = engine.evalQuiet(F.ReplaceAll(F.D(slope, y), atPoint));
+    if (!isFiniteValue(slope0) || !isFiniteValue(slopeY0)) {
+      return F.ListAlloc();
+    }
+    IExpr line =
+        engine.evaluate(F.Plus(point[1], F.Times(slope0, F.Subtract(xVar, point[0]))));
+    // the back substitution of acceptBranches() lets an undecided residual pass, so the line has to
+    // be proven a solution here: with unknown functions in F, y' == u(x)*y + v(x), it isn't one
+    IExpr residual = engine.evaluate(
+        F.Subtract(F.ReplaceAll(slope, F.Rule(y, line)), F.D(line, xVar)));
+    if (!residual.isFree(x -> x.isAST() && !x.head().isBuiltInSymbol(), true)
+        || !(residual.isZero() || engine.evalQuiet(F.PossibleZeroQ(residual)).isTrue())) {
+      return F.ListAlloc();
+    }
+    return acceptBranches(F.list(line), listOfEquations, uFunction1Arg, arg2, xVar,
+        boundaryConditions, c_n, true, new boolean[1], engine);
+  }
+
+  /**
+   * Functions which are not analytic where they are defined: with one of them in <code>F</code> a
+   * finite <code>F_y</code> at a point says nothing about <code>F</code> next to it.
+   */
+  private static final Set<IExpr> NON_SMOOTH_HEADS = new HashSet<IExpr>(Arrays.asList(S.Abs,
+      S.RealAbs, S.Sign, S.RealSign, S.UnitStep, S.HeavisideTheta, S.Max, S.Min, S.Floor,
+      S.Ceiling, S.Round, S.IntegerPart, S.FractionalPart, S.Piecewise, S.Clip, S.Boole, S.If,
+      S.Mod, S.Quotient, S.Ramp, S.UnitBox, S.UnitTriangle, S.Re, S.Im, S.Arg, S.Conjugate,
+      S.KroneckerDelta, S.DiracDelta));
+
+  /** A value which is finite and evaluated: no infinity and no unevaluated derivative. */
+  private static boolean isFiniteValue(IExpr value) {
+    return value.isPresent() && value.isFree(x -> x.isIndeterminate() || x.isDirectedInfinity()
+        || x == S.ComplexInfinity || x == S.Derivative, true);
   }
 
   /**
@@ -4043,6 +4112,18 @@ final class DSolveODE {
           if (temp.isNIL()) {
             temp = solveRiccatiByLinearization(equation, xVar, uFunction1Arg, c_n, ctx);
           }
+          if (temp.isNIL() && boundaryConditions.argSize() > 0) {
+            // no general solution, but the one through the point may be a line:
+            // y' == x*Log(y), y(1) == 1 is solved by y == 1
+            IExpr[] point = valuePoint(boundaryConditions, uFunction1Arg.head(), xVar, engine);
+            if (point != null) {
+              IASTAppendable line = tangentLineSolution(listOfEquations, arg2, xVar,
+                  uFunction1Arg, c_n, boundaryConditions, point, engine);
+              if (line.argSize() > 0) {
+                return line;
+              }
+            }
+          }
           if (temp.isNIL() && boundaryConditions.argSize() == 0) {
             // Nothing answers the equation with closed forms: an answer with an integral which has
             // none, inert.
@@ -4152,6 +4233,12 @@ final class DSolveODE {
               // returning it alone would pass that member off as the answer.
               resultList = acceptBranches(F.list(point[1]), listOfEquations, uFunction1Arg, arg2,
                   xVar, boundaryConditions, c_n, true, new boolean[1], engine);
+              if (resultList.argSize() > 0) {
+                return resultList;
+              }
+              // y' == 1+(y-x)^2, y(0) == 0: the family x+1/(C(1)-x) misses the line y == x
+              resultList = tangentLineSolution(listOfEquations, arg2, xVar, uFunction1Arg, c_n,
+                  boundaryConditions, point, engine);
               if (resultList.argSize() > 0) {
                 return resultList;
               }

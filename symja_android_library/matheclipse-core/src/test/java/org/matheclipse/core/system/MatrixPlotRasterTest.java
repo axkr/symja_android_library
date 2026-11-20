@@ -53,11 +53,11 @@ public class MatrixPlotRasterTest extends ExprEvaluatorTestCase {
   public void testArrayPlotGreyLevels() {
     // the largest magnitude less the magnitude of each cell, over the range {0, largest}
     check("Cases(ArrayPlot({{3, -6}, {1/2, 0}}), _Raster, Infinity)", //
-        "{Raster({{11/2,6},{3,0}},{{0.0,0.0},{2.0,2.0}},{0,6})}");
+        "{Raster({{11/2,6},{3,0}},{{0,0},{2,2}},{0,6})}");
     check("Cases(ArrayPlot({{1.5, -0.5}}), _Raster, Infinity)", //
-        "{Raster({{0.0,1.0}},{{0.0,0.0},{2.0,1.0}},{0,1.5})}");
+        "{Raster({{0.0,1.0}},{{0,0},{2,1}},{0,1.5})}");
     check("Cases(ArrayPlot({{0, 0}}), _Raster, Infinity)", //
-        "{Raster({{1,1}},{{0.0,0.0},{2.0,1.0}},{0,1})}");
+        "{Raster({{1,1}},{{0,0},{2,1}},{0,1})}");
     // a colour among the cells keeps the colours
     check("Cases(ArrayPlot({{1, Red}}), Raster(r_, ___) :> r, Infinity)", //
         "{{{{0.0,0.0,0.0},{1.0,0.0,0.0}}}}");
@@ -76,5 +76,42 @@ public class MatrixPlotRasterTest extends ExprEvaluatorTestCase {
         + "FrameTicks -> {{{{2, \"b\"}, {3, 7/2}}, None}, {None, None}})), "
         + "{_Real, lbl_} :> Head(lbl), Infinity))", //
         "{Rational,String}");
+  }
+
+  @Test
+  public void testMeshPerDirection() {
+    // {rows, columns}: the boundary below the second of three rows only
+    check("Cases(ArrayPlot({{1, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 0, 0}}, Mesh -> {{2}, None}), _Line, Infinity)", //
+        "{Line({{{0,1},{4,1}}})}");
+    // the boundaries right of the first and the fourth of four columns
+    check("Cases(ArrayPlot({{1, 0, 1, 0}, {0, 1, 1, 0}}, Mesh -> {False, {1, 4}}), _Line, Infinity)", //
+        "{Line({{{1,0},{1,2}},{{4,0},{4,2}}})}");
+    // a boundary outside of the array is skipped
+    check("Cases(MatrixPlot({{1, 2, 3}}, Mesh -> {{1, 7}, None}), _Line, Infinity)", //
+        "{Line({{{0,0},{3,0}}})}");
+    // every boundary, the edges included: the horizontal lines from the top, then the vertical ones
+    check("Cases(ArrayPlot({{1, 2}}, Mesh -> True), Line(p_) :> p[[All, 1]], Infinity)", //
+        "{{{0,1},{0,0}},{{0,0},{1,0},{2,0}}}");
+    check("Cases(ArrayPlot({{1, 2}}, Mesh -> True), _GrayLevel, Infinity)", //
+        "{GrayLevel(0.5,0.4)}");
+  }
+
+  @Test
+  public void testMeshCount() {
+    // n lines divide the extent into n+1 equal parts, without the edges
+    check("Cases(ArrayPlot({{1, 2, 3, 4}, {5, 6, 7, 8}}, Mesh -> 1), _Line, Infinity)", //
+        "{Line({{{0,1},{4,1}}}),Line({{{2,0},{2,2}}})}");
+    check("Cases(ArrayPlot({{1, 2, 3, 4}, {5, 6, 7, 8}}, Mesh -> {0, 3}), _Line, Infinity)", //
+        "{Line({}),Line({{{1,0},{1,2}},{{2,0},{2,2}},{{3,0},{3,2}}})}");
+    check("Cases(ArrayPlot({{1, 2, 3}, {4, 5, 6}}, Mesh -> {2, 1}), _Line, Infinity)", //
+        "{Line({{{0,4/3},{3,4/3}},{{0,2/3},{3,2/3}}}),Line({{{3/2,0},{3/2,2}}})}");
+    check("Length(Cases(DensityPlot(x*y, {x, 0, 1}, {y, 0, 1}, Mesh -> 3), _Line, Infinity))", //
+        "6");
+    // a pair of counts: rows, then columns
+    check("Length(Cases(DensityPlot(x*y, {x, 0, 1}, {y, 0, 1}, Mesh -> {1, 2}), _Line, Infinity))", //
+        "3");
+    // the empty line of a count of 0 is drawn as nothing
+    check("StringContainsQ(ExportString(ArrayPlot({{1, 2}, {3, 4}}, Mesh -> {0, 1}), \"SVG\"), \"<svg\")", //
+        "True");
   }
 }

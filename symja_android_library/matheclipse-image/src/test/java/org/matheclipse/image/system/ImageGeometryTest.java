@@ -27,6 +27,82 @@ public class ImageGeometryTest extends AbstractTestCase {
     check("ImageData(ImageResize(Image({{0.0,1.0}}),{1,1}),\"Byte\")", "{{128}}");
   }
 
+  /**
+   * Enlarging by a factor which is no whole number interpolates linearly between the pixel
+   * centres; shrinking takes the mean of what each new pixel covers, so a constant image stays
+   * constant at any size.
+   */
+  @Test
+  public void resizeInterpolatesAndAverages() {
+    check("ImageData(ImageResize(Image({{0.2,0.8,0.4}}),{5,1}))", //
+        "{{0.2,0.44,0.8,0.56,0.4}}");
+    // a whole factor repeats the pixels
+    check("ImageData(ImageResize(Image({{0.2,0.8,0.4}}),{6,1}))", //
+        "{{0.2,0.2,0.8,0.8,0.4,0.4}}");
+    // the nearest pixel when asked for
+    check("ImageData(ImageResize(Image({{0.2,0.8,0.4}}),{6,1},Resampling->\"Nearest\"))", //
+        "{{0.2,0.2,0.8,0.8,0.4,0.4}}");
+    // a single bright pixel of a 5 by 5 image shrunk to one pixel is a 25th
+    check("ImageData(ImageResize(Image(ReplacePart(ConstantArray(0.0,{5,5}),{3,3}->1.0)),1))", //
+        "{{0.04}}");
+    // a shrink by a factor that is no whole number weighs the pixels it covers partly
+    check("ImageData(ImageResize(Image({{0.0,1.0,0.5,0.25}}),{3,1}))", //
+        "{{0.25,0.75,0.3125}}");
+    check("Union(Flatten(ImageData(ImageResize(Image(ConstantArray(0.375,{6,9})),{4,13}))))", //
+        "{0.375}");
+    check("Union(Flatten(ImageData(ImageResize(Image(ConstantArray(0.375,{6,9})),{17,2}))))", //
+        "{0.375}");
+    // the edge of a shrunk disk is grey
+    check("Length(Select(Flatten(ImageData(ImageResize(Image(N(DiskMatrix(7))),5))), "
+        + "0 < # < 1 &)) > 0", //
+        "True");
+  }
+
+  /**
+   * Each direction which grows by a whole factor repeats its pixels, whatever the other direction
+   * does; a factor which is no whole number interpolates.
+   */
+  @Test
+  public void wholeFactorsRepeatPixelsPerDirection() {
+    check("ImageData(ImageResize(Image({{0.25,0.75}}),{8,1}))", //
+        "{{0.25,0.25,0.25,0.25,0.75,0.75,0.75,0.75}}");
+    // three times across, unchanged down
+    check("ImageData(ImageResize(Image({{0.5,0.0},{0.25,1.0}}),{6,2}))", //
+        "{{0.5,0.5,0.5,0.0,0.0,0.0},\n {0.25,0.25,0.25,1.0,1.0,1.0}}");
+    // twice across, one and a half times down
+    check("ImageData(ImageResize(Image({{0.5,0.0},{0.25,1.0}}),{4,3}))", //
+        "{{0.5,0.5,0.0,0.0},\n {0.375,0.375,0.5,0.5},\n {0.25,0.25,1.0,1.0}}");
+    // a resampling which is asked for interpolates at a whole factor too
+    check("ImageData(ImageResize(Image({{0.25,0.75}}),{4,1},Resampling->\"Linear\"))", //
+        "{{0.25,0.375,0.625,0.75}}");
+  }
+
+  /** An image of bytes is resized by the same rules, and stays an image of bytes. */
+  @Test
+  public void byteImagesResizeByTheSameRules() {
+    check("ImageData(ImageResize(Image({{10,200}},\"Byte\"),{6,1}),\"Byte\")", //
+        "{{10,10,10,200,200,200}}");
+    check("ImageData(ImageResize(Image({{10,200,40}},\"Byte\"),{5,1}),\"Byte\")", //
+        "{{10,86,200,104,40}}");
+    check("ImageData(ImageResize(Image({{10,200,40,90}},\"Byte\"),{2,1}),\"Byte\")", //
+        "{{105,65}}");
+    check("ImageType(ImageResize(Image({{10,200}},\"Byte\"),{6,1}))", //
+        "Byte");
+  }
+
+  /**
+   * <code>"Cubic"</code> interpolates with the cubic spline through the samples, mirrored at the
+   * ends, which may overshoot the samples.
+   */
+  @Test
+  public void cubicResampling() {
+    check("ImageData(ImageResize(Image({{0.5,0.0}}),{4,1},Resampling->\"Cubic\"))", //
+        "{{0.570312,0.386719,0.113281,-0.0703125}}");
+    // a constant line stays constant
+    check("ImageData(ImageResize(Image({{0.4,0.4,0.4}}),{7,1},Resampling->\"Cubic\"))", //
+        "{{0.4,0.4,0.4,0.4,0.4,0.4,0.4}}");
+  }
+
   /** Without an angle the image turns a quarter turn counterclockwise. */
   @Test
   public void rotateDefaultsToAQuarterTurn() {

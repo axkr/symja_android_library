@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Two threads which start Symja at the same time must not wait for each other. The static
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 public class ClassInitRaceTest {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTwoThreadsStartSymjaAtTheSameTime() throws Exception {
     String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
     String classPath = System.getProperty("java.class.path");

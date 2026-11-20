@@ -40,6 +40,7 @@ public class ApcomplexStruveMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testStruveH()
     {
         // an order below the argument: the asymptotic expansion

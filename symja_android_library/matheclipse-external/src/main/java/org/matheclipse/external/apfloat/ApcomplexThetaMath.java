@@ -237,7 +237,8 @@ public class ApcomplexThetaMath
                 // dn(u + 2 i K') = -dn(u), with the sign which the inverse hyperbolic secant has: that is the function for m = 1.
                 // As that function, this one is continuous from below on the negative real axis: below -1 that is the value at -x from above
                 boolean above = (real && x.real().negate().compareTo(one) > 0);
-                Apcomplex positive = (above ? mirror(p, q, x.negate(), m, h, one) : inverseJacobi(p, q, x.negate(), m, h, one)),
+                // the value at -x is the integral, the limit from below on (0, Sqrt(1 - m)), not the upper value which dn takes there
+                Apcomplex positive = (above ? mirror(p, q, x.negate(), m, h, one) : real ? integral(p, q, x.negate(), m, h, one) : inverseJacobi(p, q, x.negate(), m, h, one)),
                           shift = h.multiply(new Apcomplex(Apfloat.ZERO, two), h.ellipticK(h.subtract(one, m)));
                 return (x.imag().signum() > 0 ? h.subtract(positive, shift) : h.add(positive, shift));
             }
@@ -250,7 +251,17 @@ public class ApcomplexThetaMath
             // x^2 is on the cut of the integral, where its value is the limit from the right half plane for the upper imaginary axis only: with the mirror image it is that limit here too
             return inverseJacobi(p, q, x.conj(), m.conj(), h, one).conj();
         }
-        return (real && x.real().compareTo(one) > 0 ? mirror(p, q, x, m, h, one) : integral(p, q, x, m, h, one));
+        if (real && x.real().compareTo(one) > 0)
+        {
+            return mirror(p, q, x, m, h, one);
+        }
+        Apcomplex value = integral(p, q, x, m, h, one);
+        if (p == 'd' && real && m.imag().signum() == 0 && m.real().signum() > 0 && m.real().compareTo(one) < 0 && value.imag().signum() < 0)
+        {
+            // dn between 0 and Sqrt(1 - m): both K(m) +- i y are inverses, the value is the one in the upper half plane
+            return value.conj();
+        }
+        return value;
     }
 
     // The integral gives the limit from below on the real axis above 1: its mirror image is the limit from above

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +37,7 @@ public class WXFFunctions {
   private static class BinarySerialize extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         byte[] bArray = WL.serialize(arg1);
@@ -59,7 +60,7 @@ public class WXFFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // try {
         IExpr arg1 = ast.arg1();
@@ -140,7 +141,7 @@ public class WXFFunctions {
    */
   private static class RawCompress extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       byte[] bytes = bytesOf(ast.arg1());
       if (bytes == null) {
         return F.NIL;
@@ -157,7 +158,7 @@ public class WXFFunctions {
   /** <code>Developer`RawUncompress[bytes]</code> - undoes <code>Developer`RawCompress</code>. */
   private static class RawUncompress extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       byte[] bytes = bytesOf(ast.arg1());
       if (bytes == null) {
         return F.NIL;
@@ -180,7 +181,7 @@ public class WXFFunctions {
   private static class BinaryDeserialize extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (isByteArray(arg1)) {

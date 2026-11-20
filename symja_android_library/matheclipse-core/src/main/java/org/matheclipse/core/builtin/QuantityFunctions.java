@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -79,7 +80,7 @@ public class QuantityFunctions {
   private static final class QuantityVariable extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -98,7 +99,7 @@ public class QuantityFunctions {
   private static final class QuantityVariableCanonicalUnit extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr unit = Units.quantityVariableUnit(ast.arg1());
       if (unit.isNIL()) {
         return F.NIL;
@@ -122,7 +123,7 @@ public class QuantityFunctions {
    *
    * @return {@link F#NIL} for {@link F#NIL} or a unit without known dimensions
    */
-  private static IExpr unitDimensionsList(IExpr unit) {
+  private static @AllowNIL IExpr unitDimensionsList(IExpr unit) {
     if (unit.isNIL()) {
       return F.NIL;
     }
@@ -156,7 +157,7 @@ public class QuantityFunctions {
   private static final class QuantityVariablePhysicalQuantity extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr spec;
       if (arg1.isAST(S.QuantityVariable, 2)) {
@@ -195,7 +196,7 @@ public class QuantityFunctions {
   private static final class QuantityVariableIdentifier extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.QuantityVariable, 3)) {
         return arg1.first();
@@ -227,7 +228,7 @@ public class QuantityFunctions {
   private static final class QuantityArray extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr magnitudes = ast.arg1();
         if (!magnitudes.isList()) {
@@ -289,7 +290,7 @@ public class QuantityFunctions {
      * @return {@link F#NIL} if the argument is not of this form, its values do not have the stated
      *         dimensions or the unit spec is not a single unit for every level
      */
-    private static IExpr fromStructuredData(IExpr arg) {
+    private static @AllowNIL IExpr fromStructuredData(IExpr arg) {
       if (!arg.isAST() || arg.argSize() != 2 || !arg.head().isSymbol()) {
         return F.NIL;
       }
@@ -341,7 +342,7 @@ public class QuantityFunctions {
     }
 
     /** Expands a QuantityArray into a plain array of Quantity objects (used by Normal). */
-    public static IExpr normal(IAST quantityArray) {
+    public static @AllowNIL IExpr normal(IAST quantityArray) {
       IExpr magnitudes = quantityArray.arg1();
       IExpr spec = quantityArray.arg2();
       if (!magnitudes.isList()) {
@@ -350,7 +351,7 @@ public class QuantityFunctions {
       return expand((IAST) magnitudes, spec);
     }
 
-    private static IExpr expand(IAST magnitudes, IExpr spec) {
+    private static @AllowNIL IExpr expand(IAST magnitudes, IExpr spec) {
       org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(magnitudes.argSize());
       for (int i = 1; i < magnitudes.size(); i++) {
         IExpr element = magnitudes.get(i);
@@ -433,7 +434,7 @@ public class QuantityFunctions {
    * @return the data with magnitudes substituted, or <code>data</code> unchanged - including when
    *         a unit is incompatible, so that nothing is silently mixed
    */
-  public static IExpr quantityPlotMagnitudes(IExpr data, IExpr targetUnits, EvalEngine engine) {
+  public static @AllowNIL IExpr quantityPlotMagnitudes(IExpr data, IExpr targetUnits, EvalEngine engine) {
     IExpr normalized = normalizeQuantityArray(data);
     if (!normalized.isList() || normalized.argSize() == 0) {
       return data;
@@ -566,7 +567,7 @@ public class QuantityFunctions {
    * @param width the number of columns, or <code>0</code> for a flat list
    * @return the unit that column should be converted to, or {@link F#NIL} to keep the data's own
    */
-  private static IExpr targetUnitFor(IExpr targetUnits, int column, int width) {
+  private static @AllowNIL IExpr targetUnitFor(IExpr targetUnits, int column, int width) {
     if (targetUnits.isNIL() || targetUnits == S.Automatic) {
       return F.NIL;
     }
@@ -586,7 +587,7 @@ public class QuantityFunctions {
    * A {@code Quantity(1, unit)} to convert against, or {@link F#NIL} if the unit is not known.
    * Evaluating it is what resolves an alias or a prefix to its canonical name.
    */
-  private static IExpr referenceQuantity(IExpr unit, EvalEngine engine) {
+  private static @AllowNIL IExpr referenceQuantity(IExpr unit, EvalEngine engine) {
     IExpr reference = engine.evaluate(F.Quantity(F.C1, unit));
     return reference.isQuantity() ? reference : F.NIL;
   }
@@ -597,7 +598,7 @@ public class QuantityFunctions {
    *
    * @return {@link F#NIL} if any element is in an incompatible unit
    */
-  private static IExpr magnitudesInUnit(IAST quantities, IExpr targetUnit, EvalEngine engine) {
+  private static @AllowNIL IExpr magnitudesInUnit(IAST quantities, IExpr targetUnit, EvalEngine engine) {
     IExpr reference =
         targetUnit.isPresent() ? referenceQuantity(targetUnit, engine) : quantities.arg1();
     if (reference.isNIL()) {
@@ -623,7 +624,7 @@ public class QuantityFunctions {
    *
    * @return {@link F#NIL} if no argument is a <code>QuantityArray</code> which can be expanded
    */
-  public static IExpr quantityArrayArithmetic(IAST ast, EvalEngine engine) {
+  public static @AllowNIL IExpr quantityArrayArithmetic(IAST ast, EvalEngine engine) {
     IASTMutable expanded = F.NIL;
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -655,7 +656,7 @@ public class QuantityFunctions {
    * @param part the evaluated <code>Part</code> call
    * @return {@link F#NIL} if a part specification is <code>0</code> or the part does not exist
    */
-  public static IExpr quantityArrayPart(IAST quantityArray, IAST part, EvalEngine engine) {
+  public static @AllowNIL IExpr quantityArrayPart(IAST quantityArray, IAST part, EvalEngine engine) {
     if (part.exists(x -> x.isZero(), 2)) {
       return F.NIL;
     }
@@ -688,7 +689,7 @@ public class QuantityFunctions {
    *
    * @return {@link F#NIL} if the expression is no such array
    */
-  public static IExpr compactQuantities(IExpr array) {
+  public static @AllowNIL IExpr compactQuantities(IExpr array) {
     if (!array.isList() || array.argSize() == 0) {
       return F.NIL;
     }
@@ -721,7 +722,7 @@ public class QuantityFunctions {
   }
 
   /** The magnitudes of a rectangular array whose deepest lists have the given units. */
-  private static IExpr magnitudesOf(IExpr array, IAST units) {
+  private static @AllowNIL IExpr magnitudesOf(IExpr array, IAST units) {
     if (!array.isList() || array.argSize() == 0) {
       return F.NIL;
     }
@@ -777,7 +778,7 @@ public class QuantityFunctions {
   }
 
   /** Converts a single-unit QuantityArray to a target unit, element-wise (affine-safe). */
-  private static IExpr convertQuantityArray(IAST quantityArray, IExpr target, EvalEngine engine) {
+  private static @AllowNIL IExpr convertQuantityArray(IAST quantityArray, IExpr target, EvalEngine engine) {
     IExpr spec = quantityArray.arg2();
     if (spec.isList()) {
       return convertPerPositionArray(quantityArray, (IAST) spec, target, engine);
@@ -798,7 +799,7 @@ public class QuantityFunctions {
    * Converts a QuantityArray with per-position units: a single target unit converts every position
    * that is compatible with it; a list target converts position-wise.
    */
-  private static IExpr convertPerPositionArray(IAST quantityArray, IAST units, IExpr target,
+  private static @AllowNIL IExpr convertPerPositionArray(IAST quantityArray, IAST units, IExpr target,
       EvalEngine engine) {
     if (target.isQuantity()) {
       target = ((IAST) target).arg2();
@@ -835,7 +836,7 @@ public class QuantityFunctions {
     return F.binaryAST2(S.QuantityArray, magnitudes, targets);
   }
 
-  private static IExpr mapPerPositionMagnitudes(IExpr magnitudes, IAST units, IAST targets,
+  private static @AllowNIL IExpr mapPerPositionMagnitudes(IExpr magnitudes, IAST units, IAST targets,
       EvalEngine engine) {
     if (!magnitudes.isList()) {
       return F.NIL;
@@ -864,7 +865,7 @@ public class QuantityFunctions {
     return result;
   }
 
-  private static IExpr mapMagnitudes(IExpr magnitudes, IExpr fromUnit, IExpr toUnit,
+  private static @AllowNIL IExpr mapMagnitudes(IExpr magnitudes, IExpr fromUnit, IExpr toUnit,
       EvalEngine engine) {
     if (magnitudes.isList()) {
       IAST list = (IAST) magnitudes;
@@ -932,7 +933,7 @@ public class QuantityFunctions {
   private static final class CompatibleUnitQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST args = ast;
       if (ast.isAST1() && ast.arg1().isList()) {
         args = (IAST) ast.arg1();
@@ -984,7 +985,7 @@ public class QuantityFunctions {
   private static final class Quantity extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
           IExpr norm = Units.normalize(ast.arg1());
@@ -1084,7 +1085,7 @@ public class QuantityFunctions {
   private static final class QuantityMagnitude extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (ast.isAST1()) {
@@ -1140,7 +1141,7 @@ public class QuantityFunctions {
   private static final class QuantityUnit extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(F.QuantityUnit(F.Slot1), 1);
@@ -1196,7 +1197,7 @@ public class QuantityFunctions {
   private static final class UnitConvert extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
@@ -1346,7 +1347,7 @@ public class QuantityFunctions {
   private static final class UnitSimplify extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(F.UnitSimplify(F.Slot1), 1);
@@ -1426,7 +1427,7 @@ public class QuantityFunctions {
   private static final class CommonUnits extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -1482,7 +1483,7 @@ public class QuantityFunctions {
   private static final class DimensionalCombinations extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList()) {
         return F.NIL;
       }
@@ -1582,7 +1583,7 @@ public class QuantityFunctions {
      * Builds {@code PROD base_i^exponent_i}, scaled to integer exponents and normalized so that the
      * first non-zero exponent is positive.
      */
-    private static IExpr monomial(IAST bases, IExpr exponents, EvalEngine engine) {
+    private static @AllowNIL IExpr monomial(IAST bases, IExpr exponents, EvalEngine engine) {
       if (!exponents.isList() || ((IAST) exponents).argSize() != bases.argSize()) {
         return F.NIL;
       }
@@ -1647,7 +1648,7 @@ public class QuantityFunctions {
   private static final class NondimensionalizationTransform extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg2().isList() || !ast.arg3().isList()) {
         return F.NIL;
       }
@@ -1733,7 +1734,7 @@ public class QuantityFunctions {
       implements IContinuousDistribution, IStatistics, ICDF, IPDF, IRandomVariate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr norm = Units.normalize(ast.arg2());
       if (norm.isNIL()) {
         return Errors.printMessage(S.QuantityDistribution, "unkunit", F.list(ast.arg2()), engine);
@@ -1759,7 +1760,7 @@ public class QuantityFunctions {
     }
 
     /** Wraps a magnitude-level result in the distribution's unit (raised to {@code power}). */
-    private static IExpr withUnit(IExpr magnitude, IAST qd, int power) {
+    private static @AllowNIL IExpr withUnit(IExpr magnitude, IAST qd, int power) {
       if (magnitude.isNIL()) {
         return F.NIL;
       }
@@ -1781,7 +1782,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr mean(IAST qd) {
+    public @AllowNIL IExpr mean(IAST qd) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1789,7 +1790,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr median(IAST qd) {
+    public @AllowNIL IExpr median(IAST qd) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1797,7 +1798,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr variance(IAST qd) {
+    public @AllowNIL IExpr variance(IAST qd) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1805,7 +1806,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr standardDeviation(IAST qd) {
+    public @AllowNIL IExpr standardDeviation(IAST qd) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1813,7 +1814,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr skewness(IAST qd) {
+    public @AllowNIL IExpr skewness(IAST qd) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1822,7 +1823,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr moment(IAST qd, IExpr n) {
+    public @AllowNIL IExpr moment(IAST qd, IExpr n) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1834,7 +1835,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr cdf(IAST qd, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST qd, IExpr x, EvalEngine engine) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1843,7 +1844,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr survivalFunction(IAST qd, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST qd, IExpr x, EvalEngine engine) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1853,7 +1854,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST qd, IExpr p, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST qd, IExpr p, EvalEngine engine) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1861,7 +1862,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr pdf(IAST qd, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST qd, IExpr x, EvalEngine engine) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1878,7 +1879,7 @@ public class QuantityFunctions {
     }
 
     @Override
-    public IExpr randomVariate(java.util.Random random, IAST qd, int size) {
+    public @AllowNIL IExpr randomVariate(java.util.Random random, IAST qd, int size) {
       if (!qd.isAST2()) {
         return F.NIL;
       }
@@ -1916,7 +1917,7 @@ public class QuantityFunctions {
    * Converts a {@code QuantityDistribution} to another unit: the variate is rescaled by the
    * conversion factor, so the converted distribution is a {@code TransformedDistribution}.
    */
-  private static IExpr convertQuantityDistribution(IAST distribution, IExpr target,
+  private static @AllowNIL IExpr convertQuantityDistribution(IAST distribution, IExpr target,
       EvalEngine engine) {
     IExpr normalized = normalizedTargetUnit(target, engine);
     if (normalized.isNIL()) {
@@ -1945,7 +1946,7 @@ public class QuantityFunctions {
   private static final class QuantityForm extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       String form = "Abbreviation";
       if (ast.isAST2()) {
         IExpr spec = ast.arg2();

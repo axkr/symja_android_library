@@ -1073,7 +1073,77 @@ public final class PrimitiveCollector {
     if (segments.isEmpty()) {
       return;
     }
+    List<Color> colors = lineVertexColors(ast);
+    if (colors != null && segments.size() == 1 && segments.get(0).size() == colors.size()) {
+      addColoredLine(segments.get(0), colors, style);
+      return;
+    }
     primitives.add(new Prim2D.LinePrim(segments, false, style.clone()));
+  }
+
+  /**
+   * The colours of <code>Line(points, VertexColors -&gt; {c1, c2, ...})</code>, one for each point,
+   * or <code>null</code> if the line has none or one of them is no colour.
+   */
+  private static List<Color> lineVertexColors(IAST line) {
+    for (int i = 2; i <= line.argSize(); i++) {
+      IExpr option = line.get(i);
+      if (option.isRuleAST() && option.first() == S.VertexColors && option.second().isList()) {
+        IAST list = (IAST) option.second();
+        List<Color> colors = new ArrayList<>(list.argSize());
+        for (IExpr color : list) {
+          Color c = ColorUtil.parse(color);
+          if (c == null) {
+            return null;
+          }
+          colors.add(c);
+        }
+        return colors;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * A line whose points have colours of their own: each point colours the half of the steps on
+   * either side of it, the pieces of one colour joined into one polyline.
+   */
+  private void addColoredLine(List<double[]> points, List<Color> colors, Style2D style) {
+    List<double[]> run = new ArrayList<>();
+    run.add(points.get(0));
+    Color runColor = colors.get(0);
+    for (int i = 0; i + 1 < points.size(); i++) {
+      double[] next = points.get(i + 1);
+      Color nextColor = colors.get(i + 1);
+      if (!nextColor.equals(runColor)) {
+        // the colour changes in the middle of the step
+        double[] from = points.get(i);
+        double[] middle = from.clone();
+        middle[0] = (from[0] + next[0]) / 2.0;
+        middle[1] = (from[1] + next[1]) / 2.0;
+        run.add(middle);
+        addRun(run, runColor, style);
+        run = new ArrayList<>();
+        run.add(middle);
+        runColor = nextColor;
+      }
+      run.add(next);
+    }
+    addRun(run, runColor, style);
+  }
+
+  /** One polyline of a line with colours at its points, in <code>color</code>. */
+  private void addRun(List<double[]> run, Color color, Style2D style) {
+    if (run.size() < 2) {
+      return;
+    }
+    Style2D piece = style.clone();
+    // the transparency of the colour is an opacity, as of a colour directive
+    piece.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue()));
+    piece.opacity *= color.getAlpha() / 255.0;
+    List<List<double[]>> segments = new ArrayList<>(1);
+    segments.add(run);
+    primitives.add(new Prim2D.LinePrim(segments, false, piece));
   }
 
   // ------------------------------------------------------- interval markers

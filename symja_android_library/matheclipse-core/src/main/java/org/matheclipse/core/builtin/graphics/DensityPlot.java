@@ -253,7 +253,7 @@ public class DensityPlot extends ListPlot {
       result = withPlotRange(result, F.List(F.List(F.num(xRange[0]), F.num(xRange[1])),
           F.List(F.num(yRange[0]), F.num(yRange[1]))));
     }
-    return result;
+    return ContourPlot.withAutomaticFrameLabel(result, originalAST, xVar, yVar);
   }
 
   /**
@@ -357,6 +357,20 @@ public class DensityPlot extends ListPlot {
   @Override
   protected int dependentRangeOffset() {
     return 0;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is evaluated at the sample points: a function which iterates until its values
+    // agree never stops on symbolic coordinates
+    // only the plot of a function; a plot of data or of a predicate reads its argument evaluated
+    return getClass() == DensityPlot.class;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // D(f, x) or an expansion is still done once with symbolic coordinates, if it finishes
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override

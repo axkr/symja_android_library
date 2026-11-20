@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.Serializable;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -52,7 +53,7 @@ public class LastCalculationsHistory implements Serializable {
    * @return <code>F.NIL</code> if the output history isn't available for the given <code>index
    *     </code>.
    */
-  public IExpr entry(int index) {
+  public @AllowNIL IExpr entry(int index) {
     if (index > fAllEntriesCounter || index == 0) {
       return F.NIL;
     }

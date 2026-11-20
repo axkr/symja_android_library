@@ -590,6 +590,7 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSum002() {
     checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
         "0.7795115373932017");

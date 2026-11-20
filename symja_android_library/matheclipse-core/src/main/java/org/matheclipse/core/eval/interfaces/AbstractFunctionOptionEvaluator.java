@@ -1,10 +1,14 @@
 package org.matheclipse.core.eval.interfaces;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -32,6 +36,20 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   protected boolean samplesFirstArgument() {
     return false;
   }
+
+  /**
+   * The milliseconds which the first argument of a call with {@link #samplesFirstArgument()} may
+   * take to evaluate once with symbolic variables, quietly, before it is sampled: if it finishes,
+   * its value is sampled, so that <code>D(f, x)</code> is differentiated and an expansion is done
+   * once; if it doesn't, as for an iteration which never settles on symbols, the argument as it is
+   * written is sampled. <code>0</code> samples the argument as it is written.
+   */
+  protected long symbolicFirstArgumentMillis() {
+    return 0L;
+  }
+
+  /** The time a plot gives its function to evaluate with symbolic variables before sampling it. */
+  protected static final long PLOT_SYMBOLIC_MILLIS = 400L;
 
   /**
    * Whether a range of the call may have bounds which depend on the variable of an earlier range,
@@ -146,6 +164,9 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       IExpr first = held.argSize() > 0 ? held.arg1() : F.NIL;
       boolean holdFirst = samplesFirstArgument() && first.isPresent() && !first.isSymbol()
           && !first.isAST(S.Evaluate);
+      if (holdFirst && symbolicFirstArgumentMillis() > 0L) {
+        first = symbolicValue(first, held, variables, symbolicFirstArgumentMillis(), engine);
+      }
       IASTAppendable list = F.ListAlloc(held.argSize());
       list.appendArgs(held);
       if (holdFirst) {
@@ -168,6 +189,176 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       }
       return body.apply(call);
     }, variables);
+  }
+
+  /**
+   * The value of <code>expr</code> evaluated quietly within <code>millis</code> milliseconds, or
+   * <code>expr</code> itself if the evaluation doesn't finish in time or runs into a limit, or if
+   * the value is not what <code>expr</code> gives at numeric points of the ranges of the call.
+   *
+   * <p>
+   * With the variables symbolic, a function may take the variable of the call for one of its own:
+   * <code>h(y_) := FindRoot(Cos(x) == y*x, {x, 1.0})</code> solves for the plot variable in
+   * <code>h(x)</code> and gives a constant, and a function which only has a value for numbers gives
+   * an expression of other symbols. Where the value has lost the dependence on the variables or is
+   * no number at a point of the ranges, <code>expr</code> is evaluated with the variables set to the
+   * numbers of a few such points, as a sample would be; a number there which the value doesn't give
+   * means that <code>expr</code> is sampled as it is written.
+   *
+   * @param expr the first argument as it is written
+   * @param held the call as it is written
+   * @param variables the variables of the ranges of the call
+   */
+  private static IExpr symbolicValue(IExpr expr, IAST held, IAST variables, long millis,
+      EvalEngine engine) {
+    boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      IExpr value = TimeLimits.evaluateOrNil(expr, millis);
+      if (value.isNIL()) {
+        return expr;
+      }
+      if (value.equals(expr) || variables.argSize() == 0) {
+        return value;
+      }
+      IExpr decided = TimeLimits.callOrNil(engine, () -> {
+        List<IAST> probes = rangeProbes(held, variables, engine);
+        if (probes.isEmpty()) {
+          return value;
+        }
+        // a value of other symbols than the variables gives no number at a point
+        boolean suspect = lostDependence(expr, value, variables)
+            || numericLeaves(engine.evaluate(F.subst(value, probes.get(0)))) == null;
+        return !suspect || agreesAtProbes(expr, value, probes, engine) ? value : expr;
+      }, millis);
+      return decided.isNIL() ? value : decided;
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+  }
+
+  /** The most points of the ranges at which a symbolic value is compared with its definition. */
+  private static final int MAX_SYMBOLIC_PROBES = 3;
+
+  /**
+   * Points of the ranges <code>{x, xmin, xmax}</code> of the call with numeric bounds, as lists of
+   * rules <code>{x -> value, ...}</code>; empty if a variable has no such range.
+   */
+  private static List<IAST> rangeProbes(IAST held, IAST variables, EvalEngine engine) {
+    int n = variables.argSize();
+    IExpr[] vars = new IExpr[n];
+    double[] mins = new double[n];
+    double[] maxs = new double[n];
+    for (int k = 0; k < n; k++) {
+      mins[k] = Double.NaN;
+      maxs[k] = Double.NaN;
+    }
+    for (int i = 2; i < held.size(); i++) {
+      IExpr arg = held.get(i);
+      if (arg.isList() && arg.argSize() >= 3) {
+        int k = variables.indexOf(arg.first()) - 1;
+        if (k >= 0 && Double.isNaN(mins[k])) {
+          vars[k] = arg.first();
+          mins[k] = engine.evalN(arg.second()).evalfNaN();
+          maxs[k] = engine.evalN(arg.get(3)).evalfNaN();
+        }
+      }
+    }
+    List<IAST> probes = PlotShapeProbe.rangeProbes(vars, mins, maxs);
+    return probes.size() > MAX_SYMBOLIC_PROBES ? probes.subList(0, MAX_SYMBOLIC_PROBES) : probes;
+  }
+
+  /**
+   * Whether <code>value</code>, or one of the items of a list it is, is free of the
+   * <code>variables</code> while the matching part of <code>expr</code> is not.
+   */
+  private static boolean lostDependence(IExpr expr, IExpr value, IAST variables) {
+    if (expr.isList() && value.isList() && expr.size() == value.size()) {
+      for (int i = 1; i < value.size(); i++) {
+        if (lostDependence(((IAST) expr).get(i), ((IAST) value).get(i), variables)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (isFreeOf(expr, variables)) {
+      return false;
+    }
+    if (value.isList()) {
+      for (IExpr item : (IAST) value) {
+        if (lostDependence(expr, item, variables)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    return isFreeOf(value, variables);
+  }
+
+  private static boolean isFreeOf(IExpr expr, IAST variables) {
+    return expr.isFree(x -> variables.contains(x), true);
+  }
+
+  /**
+   * Whether <code>expr</code>, evaluated with the variables set to the numbers of a probe, gives
+   * the numbers <code>value</code> gives there, at every probe where it gives numbers.
+   */
+  private static boolean agreesAtProbes(IExpr expr, IExpr value, List<IAST> probes,
+      EvalEngine engine) {
+    for (IAST probe : probes) {
+      engine.checkTimeLimit();
+      IASTAppendable assignments = F.ListAlloc(probe.argSize());
+      for (IExpr rule : probe) {
+        assignments.append(F.Set(rule.first(), rule.second()));
+      }
+      double[] written = numericLeaves(engine.evalBlock(expr, assignments));
+      if (written == null) {
+        // not a sample which the plot could draw either
+        continue;
+      }
+      double[] symbolic = numericLeaves(engine.evaluate(F.subst(value, probe)));
+      if (symbolic == null || symbolic.length != written.length) {
+        return false;
+      }
+      for (int k = 0; k < written.length; k++) {
+        double scale = Math.max(1.0, Math.max(Math.abs(written[k]), Math.abs(symbolic[k])));
+        if (!(Math.abs(written[k] - symbolic[k]) <= 1.0e-6 * scale)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The real numbers of <code>expr</code>, a real number or nested lists of them, in order;
+   * <code>null</code> if it is something else.
+   */
+  private static double[] numericLeaves(IExpr expr) {
+    List<Double> leaves = new ArrayList<>();
+    return collectNumericLeaves(expr, leaves)
+        ? leaves.stream().mapToDouble(Double::doubleValue).toArray()
+        : null;
+  }
+
+  private static boolean collectNumericLeaves(IExpr expr, List<Double> leaves) {
+    if (expr.isList()) {
+      for (IExpr item : (IAST) expr) {
+        if (!collectNumericLeaves(item, leaves)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (!expr.isReal()) {
+      return false;
+    }
+    double d = expr.evalfNaN();
+    if (!Double.isFinite(d)) {
+      return false;
+    }
+    leaves.add(d);
+    return true;
   }
 
   @Override

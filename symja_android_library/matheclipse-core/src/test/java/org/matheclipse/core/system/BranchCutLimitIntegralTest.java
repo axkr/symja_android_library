@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * One-sided limits on a branch cut, definite integrals whose antiderivative crosses a cut, and
@@ -85,6 +86,7 @@ public class BranchCutLimitIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRealParameters() {
     check("Integrate(Cos(b*x)/(x^2 + 9), {x, -Infinity, Infinity})", //
         "ConditionalExpression(Pi/(3*E^(3*Abs(b))),b∈Reals)");

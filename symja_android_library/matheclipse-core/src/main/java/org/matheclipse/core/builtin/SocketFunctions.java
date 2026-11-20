@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -137,7 +138,7 @@ public class SocketFunctions {
    */
   private static final class SocketOpen extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -162,7 +163,7 @@ public class SocketFunctions {
   /** <code>SocketConnect[…]</code>: the near end of a connection to somewhere. */
   private static final class SocketConnect extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -193,7 +194,7 @@ public class SocketFunctions {
    */
   private static final class SocketListen extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -226,7 +227,7 @@ public class SocketFunctions {
    */
   private static final class SocketReadMessage extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -256,7 +257,7 @@ public class SocketFunctions {
   /** <code>SocketReadyQ[socket]</code>: are there bytes waiting? */
   private static final class SocketReadyQ extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -277,7 +278,7 @@ public class SocketFunctions {
   /** <code>SocketWaitNext[{socket, …}]</code>: the first of them with something to read. */
   private static final class SocketWaitNext extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -313,7 +314,7 @@ public class SocketFunctions {
   /** <code>SocketWaitAll[{socket, …}]</code>: wait until every one of them has something. */
   private static final class SocketWaitAll extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -353,7 +354,7 @@ public class SocketFunctions {
   /** <code>Sockets[]</code>: everything still open. */
   private static final class Sockets extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isOSAccessEnabled(engine)) {
         return F.NIL;
       }
@@ -402,7 +403,7 @@ public class SocketFunctions {
   /** <code>WriteLine[target, string]</code>: the string and a newline. */
   private static final class WriteLine extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg2().isString()) {
         return F.NIL;
       }
@@ -423,7 +424,7 @@ public class SocketFunctions {
   /** <code>BinaryReadList[socket]</code>: everything waiting, as a list of bytes. */
   private static final class BinaryReadList extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       SocketEntry entry = entryOf(ast.arg1());
       if (entry == null) {
         return F.NIL;

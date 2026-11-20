@@ -302,7 +302,8 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
    * The curve point as {@code {x, y, z}} in space, before it is turned about the axis.
    *
    * <p>
-   * A bare {@code fz} is the point {@code {t, 0, fz}}; a pair {@code {fx, fz}} is the point
+   * A bare {@code fz}, or {@code {fz}}, is the point {@code {t, 0, fz}}; a pair {@code {fx, fz}} is
+   * the point
    * {@code {fx, 0, fz}}; a triple is a space curve.
    */
   private static double[] evaluateCurve(IExpr func, IExpr tVar, double t, EvalEngine engine,
@@ -310,6 +311,10 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     Plot3DTools.monitor(monitor, engine);
     try {
       IExpr value = engine.evaluate(F.subst(func, F.List(F.Rule(tVar, F.num(t)))));
+      if (value.isList() && value.argSize() == 1) {
+        // a profile {fz} of a list of profiles is the bare height fz
+        value = value.first();
+      }
       if (value.isList()) {
         IAST list = (IAST) value;
         if (list.argSize() == 2) {

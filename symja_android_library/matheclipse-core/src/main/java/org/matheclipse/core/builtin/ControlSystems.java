@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -256,7 +257,7 @@ public class ControlSystems {
    */
   private static final class TransferFunctionModel extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (!ast.arg2().isVariable() || isNormalForm(ast.arg1())) {
         return F.NIL;
       }
@@ -318,7 +319,7 @@ public class ControlSystems {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       Model model = Model.of(ast.arg1(), engine);
       if (model == null) {
         return F.NIL;
@@ -357,7 +358,7 @@ public class ControlSystems {
    */
   private static final class OutputResponse extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       Model model = Model.of(ast.arg1(), engine);
       if (model == null || !model.samplingPeriod().equals(S.None)) {
         return F.NIL;
@@ -402,7 +403,7 @@ public class ControlSystems {
   }
 
   /** The responses by the inverse Laplace transform, or <code>F.NIL</code>. */
-  private static IExpr symbolicResponse(Model model, IAST inputs, IExpr t, EvalEngine engine) {
+  private static @AllowNIL IExpr symbolicResponse(Model model, IAST inputs, IExpr t, EvalEngine engine) {
     IExpr s = model.var;
     IExpr[] transforms = new IExpr[model.cols()];
     for (int j = 0; j < transforms.length; j++) {
@@ -545,7 +546,7 @@ public class ControlSystems {
   }
 
   /** The simulated responses as <code>{InterpolatingFunction(...)(t), ...}</code>. */
-  private static IExpr simulatedResponse(Model model, IAST inputs, ISymbol t, double t0, double t1,
+  private static @AllowNIL IExpr simulatedResponse(Model model, IAST inputs, ISymbol t, double t0, double t1,
       EvalEngine engine) {
     double[][] outputs = new double[model.rows()][OUTPUT_INTERVALS + 1];
     double dt = (t1 - t0) / OUTPUT_INTERVALS;
@@ -627,7 +628,7 @@ public class ControlSystems {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       Model model = Model.of(ast.arg1(), engine);
       if (model == null || model.hasDelay()) {
         return F.NIL;
@@ -709,7 +710,7 @@ public class ControlSystems {
    * <code>b^n</code>. With an inexact sampling <code>period</code> a non-constant result is
    * inexact too.
    */
-  private static IExpr homogenize(IExpr p, IExpr x, IExpr a, IExpr b, int n, IExpr period,
+  private static @AllowNIL IExpr homogenize(IExpr p, IExpr x, IExpr a, IExpr b, int n, IExpr period,
       EvalEngine engine) {
     IExpr list = engine.evaluate(F.CoefficientList(p, x));
     if (!list.isList()) {
@@ -773,7 +774,7 @@ public class ControlSystems {
     private static final int STEPS = 200;
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr range = ast.arg2();
       if (!range.isList3() || !range.first().isVariable()) {
         return F.NIL;
@@ -943,7 +944,7 @@ public class ControlSystems {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IAST models = ast.arg1().isList() ? (IAST) ast.arg1() : F.list(ast.arg1());
       int next = 2;
       if (!models.forAll(m -> m.isAST(S.TransferFunctionModel))) {

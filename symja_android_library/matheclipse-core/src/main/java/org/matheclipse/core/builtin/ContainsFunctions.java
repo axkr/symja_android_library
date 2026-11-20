@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.BiPredicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -60,7 +61,7 @@ public class ContainsFunctions {
     static final ContainsAny CONST = new ContainsAny();
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
 

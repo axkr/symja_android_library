@@ -167,8 +167,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The function of the legacy option EdgeRenderingFunction draws an edge from its points, its
-   * two vertices and its label; no default label is drawn.
+   * The function of the legacy option EdgeRenderingFunction draws an edge from its points and the
+   * edge itself; no default label is drawn.
    */
   @Test
   public void testEdgeRenderingFunction() {
@@ -179,25 +179,28 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("Cases(GraphPlot({{p -> q, \"u\"}, {q -> r, \"v\"}}, "
         + "EdgeRenderingFunction -> (Line(#1) &)), _Arrow, Infinity)", //
         "{}");
-    // #2 is the pair of vertices, #3 the edge; the edges of a list of rules are undirected
+    // #2 is the edge; the edges of a list of rules are undirected
     check("Cases(GraphPlot({{p -> q, \"u\"}, q -> r, {r -> s, \"w\"}}, "
-        + "EdgeRenderingFunction -> (edge(Length(#1), #2, #3) &)), _edge, Infinity)", //
-        "{edge(2,{p,q},p<->q),edge(2,{q,r},q<->r),edge(2,{r,s},r<->s)}");
+        + "EdgeRenderingFunction -> (edge(Length(#1), #2) &)), _edge, Infinity)", //
+        "{edge(2,p<->q),edge(2,q<->r),edge(2,r<->s)}");
+    check("Cases(GraphPlot({{p -> q, \"u\"}, q -> r}, "
+        + "EdgeRenderingFunction -> (edge(Length({##})) &)), _edge, Infinity)", //
+        "{edge(2),edge(2)}");
     check("Cases(GraphPlot({{p -> q, \"u\"}, {q -> r, \"v\"}}, "
-        + "EdgeRenderingFunction -> ({Line(#1), Text(#3, Mean(#1))} &)), Text(l_, _) :> l, Infinity)", //
+        + "EdgeRenderingFunction -> ({Line(#1), Text(#2, Mean(#1))} &)), Text(l_, _) :> l, Infinity)", //
         "{p<->q,q<->r}");
     // the edges of a graph are passed as they are
-    check("Cases(GraphPlot(Graph({p -> q}), EdgeRenderingFunction -> (edge(#3) &)), _edge, Infinity)", //
+    check("Cases(GraphPlot(Graph({p -> q}), EdgeRenderingFunction -> (edge(#2) &)), _edge, Infinity)", //
         "{edge(p->q)}");
     // the option is no option of the picture
     check("FreeQ(GraphPlot({p -> q, q -> r}, EdgeRenderingFunction -> (Line(#1) &), "
         + "PlotLabel -> \"t\"), EdgeRenderingFunction)", //
         "True");
     check("Cases(TreePlot({{p -> q, \"u\"}, {p -> r, \"v\"}}, "
-        + "EdgeRenderingFunction -> (edge(#2, #3) &)), _edge, Infinity)", //
-        "{edge({p,q},p->q),edge({p,r},p->r)}");
+        + "EdgeRenderingFunction -> (edge(#2) &)), _edge, Infinity)", //
+        "{edge(p->q),edge(p->r)}");
     check("Cases(TreePlot({{p -> q, \"u\"}, {p -> r, \"v\"}}, "
-        + "EdgeRenderingFunction -> (edge(#2, #3) &)), Text(l_, ___) :> l, Infinity)", //
+        + "EdgeRenderingFunction -> (edge(#2) &)), Text(l_, ___) :> l, Infinity)", //
         "{u,v}");
     // the points of an edge are the positions of its two vertices
     check("With({g = TreePlot({p -> q}, EdgeRenderingFunction -> (edge(#1) &))}, "
@@ -296,6 +299,40 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "2");
     check("Length(Cases(GraphPlot3D({1->2,2->3}, DirectedEdges->True),_Arrow,Infinity))", //
         "2");
+  }
+
+  /**
+   * The option VertexRenderingFunction of the older graph plots: f draws a vertex as
+   * f(position, vertex), None and Automatic draw the default shapes.
+   */
+  @Test
+  public void testVertexRenderingFunction() {
+    check("p=GraphPlot({x->y,y->z,z->x}, VertexRenderingFunction->(mark(#2,#1)&));"
+        + "{Sort(Cases(p,mark(v_,_):>v,Infinity)), "
+        + "MatchQ(Cases(p,mark(_,q_):>q,Infinity),{{_Real,_Real}..}), "
+        + "Length(Cases(p,_Disk,Infinity)), FreeQ(Rest(List@@p),VertexRenderingFunction)}", //
+        "{{x,y,z},True,0,True}");
+    // the vertices at the coordinates they are given
+    check("Cases(GraphPlot({1->2,2->3}, VertexCoordinates->{{1,1},{2,3},{4,0}}, "
+        + "VertexRenderingFunction->(at(#1)&)),_at,Infinity)", //
+        "{at({1.0,1.0}),at({2.0,3.0}),at({4.0,0.0})}");
+    check("Length(Cases(GraphPlot({1->2,2->3}, VertexRenderingFunction->None),_Disk,Infinity))", //
+        "3");
+    check("Length(Cases(GraphPlot({1->2,2->3}, VertexRenderingFunction->Automatic),_Disk,"
+        + "Infinity))", //
+        "3");
+    // in three dimensions
+    check("p=GraphPlot3D({x->y,y->z}, VertexRenderingFunction->(mark(#2,#1)&));"
+        + "{Sort(Cases(p,mark(v_,_):>v,Infinity)), "
+        + "MatchQ(Cases(p,mark(_,q_):>q,Infinity),{{_Real,_Real,_Real}..}), "
+        + "Length(Cases(p,_Sphere,Infinity))}", //
+        "{{x,y,z},True,0}");
+    // VertexLabeling -> True writes the names; the options of the plot are not in the picture
+    check("p=GraphPlot3D({u->v,v->w}, VertexLabeling->True, VertexRenderingFunction->None, "
+        + "Method->\"SpringEmbedding\");"
+        + "{Cases(p,Text(Style(l_,s_),_,o_):>{l,s,o},Infinity), "
+        + "Length(Cases(p,_Sphere,Infinity)), Rest(List@@p)}", //
+        "{{{u,10,{-1,-1}},{v,10,{-1,-1}},{w,10,{-1,-1}}},3,{Boxed->False,Axes->False}}");
   }
 
   @Test

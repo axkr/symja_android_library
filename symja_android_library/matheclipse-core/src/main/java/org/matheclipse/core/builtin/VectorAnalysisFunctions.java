@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -78,7 +79,7 @@ public class VectorAnalysisFunctions {
   private static final class Curl extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       Metric metric = Metric.CARTESIAN;
       if (ast.arg2().isList()) {
         final IAST variables = (IAST) ast.arg2();
@@ -265,7 +266,7 @@ public class VectorAnalysisFunctions {
 
     // CPD-OFF closed-form formulas per coordinate system
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (ast.arg1().isListOfLists()) {
       // return ast.arg1().mapThread(ast, 1);
       // }
@@ -531,7 +532,7 @@ public class VectorAnalysisFunctions {
   private static final class Grad extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList() && ast.arg2().size() > 1) {
         final IExpr arg1 = ast.arg1();
         final IAST variables = (IAST) ast.arg2();
@@ -575,7 +576,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
-    private IExpr grad3Metric(final IExpr function, final String metricStr, final IAST variables,
+    private @AllowNIL IExpr grad3Metric(final IExpr function, final String metricStr, final IAST variables,
         EvalEngine engine) {
       Metric metric;
       final int numberOfVars = variables.argSize();
@@ -623,7 +624,7 @@ public class VectorAnalysisFunctions {
     }
 
     // CPD-OFF closed-form formulas per coordinate system
-    private IExpr grad3(IAST list, final String metricStr, IntArrayList dimensions,
+    private @AllowNIL IExpr grad3(IAST list, final String metricStr, IntArrayList dimensions,
         final IAST variables, EvalEngine engine) {
       Metric metric;
       final int numberOfVars = variables.argSize();
@@ -856,7 +857,7 @@ public class VectorAnalysisFunctions {
   private static final class DiffusionPDETerm extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList2()) {
         return F.NIL;
       }
@@ -907,7 +908,7 @@ public class VectorAnalysisFunctions {
   private static final class HessianMatrix extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isList() && ast.arg2().size() > 1) {
         final IExpr arg1 = ast.arg1();
         final IAST variables = (IAST) ast.arg2();
@@ -932,7 +933,7 @@ public class VectorAnalysisFunctions {
   private static final class Laplacian extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       final IExpr arg2 = ast.arg2();
 
@@ -983,7 +984,7 @@ public class VectorAnalysisFunctions {
       return F.NIL;
     }
 
-    private IExpr laplacian(final IAST ast, EvalEngine engine, final IExpr arg1,
+    private @AllowNIL IExpr laplacian(final IAST ast, EvalEngine engine, final IExpr arg1,
         final IAST variables, Metric metric, final IAST fun) {
       final int numberOfVars = variables.argSize();
       switch (metric) {
@@ -1240,7 +1241,7 @@ public class VectorAnalysisFunctions {
      * @param variables the list of variables
      * @return
      */
-    private static IExpr laplacianCartesian(IAST f, IAST variables) {
+    private static @AllowNIL IExpr laplacianCartesian(IAST f, IAST variables) {
       VariablesSet variablesSet = new VariablesSet(f);
       IASTAppendable newVariableList = F.ListAlloc(variables.size());
       for (int i = 1; i < variables.size(); i++) {
@@ -1274,7 +1275,7 @@ public class VectorAnalysisFunctions {
   private static final class RotationMatrix extends LinearAlgebra.AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr theta = ast.arg1();
       if (ast.isAST1()) {
         if (theta.isList()) {
@@ -1339,7 +1340,7 @@ public class VectorAnalysisFunctions {
     }
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       IExpr angles = ast.arg1();
       int[] axes = ast.isAST2() ? eulerAxes(ast.arg2()) : DEFAULT_EULER_AXES;
       if (axes == null || angles.isVector() != 3) {
@@ -1423,7 +1424,7 @@ public class VectorAnalysisFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dimensions = ast.arg1().isMatrix();
       int[] axes = ast.isAST2() ? eulerAxes(ast.arg2()) : DEFAULT_EULER_AXES;
       if (dimensions == null || dimensions[0] != 3 || dimensions[1] != 3 || axes == null
@@ -1556,7 +1557,7 @@ public class VectorAnalysisFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return CoordinateCharts.transformations();
       }
@@ -1653,7 +1654,7 @@ public class VectorAnalysisFunctions {
     }
 
     /** The Jacobian of the mapping or its determinant at the coordinates <code>target</code>. */
-    private static IExpr derivative(ChartSpec from, ChartSpec to, IAST target,
+    private static @AllowNIL IExpr derivative(ChartSpec from, ChartSpec to, IAST target,
         boolean determinant, EvalEngine engine) {
       IAST variables = F.mapRange(1, target.size(), i -> F.Dummy());
       IAST mapping = mapping(from, to, variables);

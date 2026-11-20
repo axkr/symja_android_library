@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Sums and products whose closed form must not step over a pole, a zero or a divergence of the
@@ -88,6 +89,7 @@ public class SumProductSoundnessTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTwoSidedAndRepeatedFactors() {
     check("Sum(1/(k + 1/4)^2, {k, -Infinity, Infinity})", //
         "2*Pi^2");
@@ -117,6 +119,7 @@ public class SumProductSoundnessTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRationalSumsToInfinity() {
     check("Sum(1/(k^2 + 4), {k, 1, Infinity})", //
         "1/8*(-1+2*Pi*Coth(2*Pi))");

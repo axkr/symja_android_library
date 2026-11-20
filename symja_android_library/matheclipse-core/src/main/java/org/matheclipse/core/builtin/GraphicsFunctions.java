@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -32,7 +33,7 @@ public class GraphicsFunctions {
   private static class Arrow extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -48,7 +49,7 @@ public class GraphicsFunctions {
   private static class Circle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.Circle(F.List(F.C0, F.C0));
       }
@@ -71,12 +72,10 @@ public class GraphicsFunctions {
   private static class Cone extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the default radius 1 stays implied
       if (ast.isAST0()) {
-        return F.Cone(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
-      }
-      if (ast.isAST1()) {
-        return F.Cone(ast.arg1(), F.C1);
+        return F.unaryAST1(S.Cone, F.list(F.List(0, 0, -1), F.List(0, 0, 1)));
       }
       return F.NIL;
     }
@@ -93,7 +92,7 @@ public class GraphicsFunctions {
   private static class Cube extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -109,7 +108,7 @@ public class GraphicsFunctions {
   private static class Cuboid extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the unit cube stays implied by its lower corner
       if (ast.isAST0()) {
         return F.unaryAST1(S.Cuboid, F.List(0, 0, 0));
@@ -129,12 +128,10 @@ public class GraphicsFunctions {
   private static class Cylinder extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the default radius 1 stays implied
       if (ast.isAST0()) {
-        return F.Cylinder(F.list(F.List(0, 0, -1), F.List(0, 0, 1)), F.C1);
-      }
-      if (ast.isAST1()) {
-        return F.Cylinder(ast.arg1(), F.C1);
+        return F.unaryAST1(S.Cylinder, F.list(F.List(0, 0, -1), F.List(0, 0, 1)));
       }
       return F.NIL;
     }
@@ -169,7 +166,7 @@ public class GraphicsFunctions {
   private static class Annulus extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.binaryAST2(S.Annulus, F.CListC0C0, F.List(F.C1D2, F.C1));
       }
@@ -180,7 +177,7 @@ public class GraphicsFunctions {
   private static class Disk extends Circle {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.Disk(F.List(F.C0, F.C0));
       }
@@ -196,7 +193,7 @@ public class GraphicsFunctions {
   private static class Dodecahedron extends Tetrahedron {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -243,7 +240,7 @@ public class GraphicsFunctions {
 
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       return F.NIL;
     }
@@ -265,7 +262,7 @@ public class GraphicsFunctions {
   private static class Icosahedron extends Tetrahedron {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -302,7 +299,7 @@ public class GraphicsFunctions {
   private static final class Show extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTAppendable graphics = F.ListAlloc(ast.argSize());
       IASTAppendable options = F.ListAlloc();
       IASTAppendable legends = F.ListAlloc();
@@ -340,14 +337,17 @@ public class GraphicsFunctions {
         return graphics.arg1();
       }
       IASTAppendable primitives = F.ListAlloc(graphics.argSize());
+      boolean first = true;
       for (IExpr g : graphics) {
         if (((IAST) g).argSize() > 0) {
           // an empty Graphics() or Graphics3D() adds no primitives
           primitives.append(((IAST) g).arg1());
         }
         for (int i = 2; i < ((IAST) g).size(); i++) {
-          addOptions(((IAST) g).get(i), options);
+          // the range comes from the first graphic only; a later one does not narrow or fix it
+          addOptions(((IAST) g).get(i), options, !first);
         }
+        first = false;
       }
       IASTAppendable result = F.ast(head, options.argSize() + 1);
       result.append(primitives);
@@ -405,13 +405,19 @@ public class GraphicsFunctions {
       return false;
     }
 
-    /** An option of a graphic - a rule, or a list of them - added in order. */
-    private static void addOptions(IExpr option, IASTAppendable options) {
+    /**
+     * An option of a graphic - a rule, or a list of them - added in order.
+     *
+     * @param skipPlotRange whether a <code>PlotRange</code> rule is left out
+     */
+    private static void addOptions(IExpr option, IASTAppendable options, boolean skipPlotRange) {
       if (option.isRuleAST()) {
-        options.append(option);
+        if (!skipPlotRange || option.first() != S.PlotRange) {
+          options.append(option);
+        }
       } else if (option.isList()) {
         for (IExpr rule : (IAST) option) {
-          addOptions(rule, options);
+          addOptions(rule, options, skipPlotRange);
         }
       }
     }
@@ -440,7 +446,7 @@ public class GraphicsFunctions {
     private static final double WIDTH = 0.2;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       double value = ast.arg1().evalfNaN();
       if (!Double.isFinite(value)) {
         return F.NIL;
@@ -555,6 +561,7 @@ public class GraphicsFunctions {
       S.GraphicsRow.setEvaluator(new GraphicsRow());
       S.GraphicsColumn.setEvaluator(new GraphicsColumn());
       S.GraphicsGrid.setEvaluator(new GraphicsGrid());
+      S.GraphicsArray.setEvaluator(new GraphicsArray());
       S.Point.setEvaluator(new Point());
       S.Polygon.setEvaluator(new Polygon());
       S.Rectangle.setEvaluator(new Rectangle());
@@ -571,7 +578,7 @@ public class GraphicsFunctions {
   private static final class Labeled extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -594,7 +601,7 @@ public class GraphicsFunctions {
   private static final class Overlay extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the wrapper must survive evaluation - it is resolved by
       // org.matheclipse.core.graphics.svg.SvgLayout#overlay
       return F.NIL;
@@ -690,7 +697,7 @@ public class GraphicsFunctions {
   private static final class GraphicsRow extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // resolved by org.matheclipse.core.graphics.svg.SvgLayout#row
       return F.NIL;
     }
@@ -719,7 +726,7 @@ public class GraphicsFunctions {
   private static final class GraphicsColumn extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // resolved by org.matheclipse.core.graphics.svg.SvgLayout#column
       return F.NIL;
     }
@@ -752,7 +759,7 @@ public class GraphicsFunctions {
   private static final class GraphicsGrid extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // resolved by org.matheclipse.core.graphics.svg.SvgLayout#grid
       return F.NIL;
     }
@@ -765,6 +772,51 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // {{rows}}, and any number of option rules
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, layoutOptions());
+    }
+  }
+
+  /**
+   * <code>GraphicsArray({g1, g2, ...})</code> draws its items in one row,
+   * <code>GraphicsArray({{g11, g12, ...}, ...})</code> in a grid. It is the older name of
+   * {@link GraphicsGrid} and becomes the <code>GraphicsGrid</code> with the same rows and options,
+   * so that both draw the same picture, with the message <code>GraphicsArray::obs</code>.
+   */
+  private static final class GraphicsArray extends AbstractFunctionEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST items = (IAST) ast.arg1();
+      IAST rows;
+      if (items.forAll(x -> x.isList())) {
+        rows = items;
+      } else if (items.exists(x -> x.isList())) {
+        // a mixture of rows and single items has no layout
+        return F.NIL;
+      } else {
+        rows = F.List(items);
+      }
+      // `1` is obsolete. Switching to `2`.
+      Errors.printMessage(S.GraphicsArray, "obs", F.list(S.GraphicsArray, S.GraphicsGrid), engine);
+      return ast.setAtCopy(1, rows).apply(S.GraphicsGrid);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // {items} or {{rows}}, and any number of option rules
       return ARGS_1_INFINITY;
     }
 
@@ -792,7 +844,7 @@ public class GraphicsFunctions {
   private static final class Tooltip extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the wrapper must survive evaluation - it is read by
       // org.matheclipse.core.graphics.svg.PrimitiveCollector and its 3D counterpart
       return F.NIL;
@@ -814,7 +866,7 @@ public class GraphicsFunctions {
   private static class Line extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -833,7 +885,7 @@ public class GraphicsFunctions {
   private static class Octahedron extends Tetrahedron {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -849,7 +901,7 @@ public class GraphicsFunctions {
   private static class Point extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -865,7 +917,7 @@ public class GraphicsFunctions {
   private static class Polygon extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -883,7 +935,7 @@ public class GraphicsFunctions {
   private static class Rectangle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 0) {
         return F.Rectangle(F.List(F.C0, F.C0));
       }
@@ -907,7 +959,7 @@ public class GraphicsFunctions {
   private static class AbsoluteOptions extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       IExpr options = engine.evaluate(F.Options(expr));
       if (!options.isList()) {
@@ -961,7 +1013,7 @@ public class GraphicsFunctions {
     }
 
     /** The rule for the option <code>name</code> in a list of rules, or {@link F#NIL}. */
-    private static IExpr optionRule(IAST rules, IExpr name) {
+    private static @AllowNIL IExpr optionRule(IAST rules, IExpr name) {
       for (IExpr rule : rules) {
         if (rule.isRuleAST() && rule.first().equals(name)) {
           return rule;
@@ -983,7 +1035,7 @@ public class GraphicsFunctions {
   private static class PlotRange extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.isAST1() || !ast.arg1().isAST(S.Graphics)) {
         return F.NIL;
       }
@@ -1191,7 +1243,7 @@ public class GraphicsFunctions {
   private static class Blend extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         if (ast.isAST2() && ast.arg2().isReal()) {
@@ -1225,7 +1277,7 @@ public class GraphicsFunctions {
         IExpr element = list.get(i + 1);
         colors[i] = positioned ? element.second() : element;
         positions[i] = positioned ? element.first() : n == 1 ? F.C0 : F.QQ(i, n - 1);
-        values[i] = ColorValue.of(colors[i], engine);
+        values[i] = colorWithOpacity(colors[i], engine);
         if (values[i] == null) {
           if (colors[i].isAST(S.Image) || colors[i] instanceof org.matheclipse.core.interfaces.IDataExpr) {
             return F.NIL;
@@ -1255,10 +1307,10 @@ public class GraphicsFunctions {
       // the color at the parameter arg2
       double t = arg2.evalf();
       if (n == 1 || t <= positions[0].evalf()) {
-        return colors[0];
+        return endColor(colors[0], values[0]);
       }
       if (t >= positions[n - 1].evalf()) {
-        return colors[n - 1];
+        return endColor(colors[n - 1], values[n - 1]);
       }
       int k = 0;
       while (k < n - 2 && positions[k + 1].evalf() <= t) {
@@ -1279,6 +1331,27 @@ public class GraphicsFunctions {
           opaque ? null : interpolate(from.opacity, to.opacity, u, engine)).toDirective();
     }
 
+    /**
+     * A color directive, or <code>Opacity(a, color)</code> which is the color with the opacity
+     * <code>a</code>.
+     *
+     * @return <code>null</code> if <code>color</code> is no such directive
+     */
+    private static ColorValue colorWithOpacity(IExpr color, EvalEngine engine) {
+      if (color.isAST(S.Opacity, 3) && color.first().isReal()) {
+        ColorValue value = ColorValue.of(color.second(), engine);
+        return value == null ? null : value.withOpacity(color.first());
+      }
+      return ColorValue.of(color, engine);
+    }
+
+    /**
+     * The color at an end of the blend: a color directive as it is, <code>Opacity(a, color)</code>
+     * as the color directive with the opacity <code>a</code>.
+     */
+    private static IExpr endColor(IExpr color, ColorValue value) {
+      return color.isAST(S.Opacity, 3) ? value.toDirective() : color;
+    }
     /** <code>a + u (b - a)</code>; for machine numbers as one fused multiply-add. */
     private static IExpr interpolate(IExpr a, IExpr b, IExpr u, EvalEngine engine) {
       if (a.isMachineNumber() || b.isMachineNumber() || u.isMachineNumber()) {
@@ -1289,7 +1362,7 @@ public class GraphicsFunctions {
     }
 
     /** The colors mixed by the weights. */
-    private static IExpr mix(ColorValue[] values, IAST weights, EvalEngine engine) {
+    private static @AllowNIL IExpr mix(ColorValue[] values, IAST weights, EvalEngine engine) {
       IExpr total = engine.evaluate(weights.setAtCopy(0, S.Plus));
       if (total.isZero()) {
         return F.NIL;
@@ -1363,7 +1436,7 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr fraction = ast.isAST2() ? ast.arg2() : F.C1D3;
       if (!fraction.isReal()) {
         return F.NIL;
@@ -1371,7 +1444,7 @@ public class GraphicsFunctions {
       return blend(ast.arg1(), fraction, engine);
     }
 
-    private IExpr blend(IExpr colour, IExpr fraction, EvalEngine engine) {
+    private @AllowNIL IExpr blend(IExpr colour, IExpr fraction, EvalEngine engine) {
       if (colour.isList()) {
         IAST list = (IAST) colour;
         IASTAppendable result = F.ListAlloc(list.argSize());
@@ -1425,7 +1498,7 @@ public class GraphicsFunctions {
   private static class Scaled extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Scaled({x, y}) is a position in the plot range, which only the renderer knows: it stays
       return F.NIL;
     }
@@ -1442,7 +1515,7 @@ public class GraphicsFunctions {
   private static class Sphere extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the radius 1 stays implied, as in Sphere[{0, 0, 0}]: writing it out turns
       // Sphere[{0,0,0}] /. Sphere -> Cuboid into Cuboid[{0,0,0}, 1], which is no cuboid at all
       if (ast.isAST0()) {
@@ -1463,7 +1536,7 @@ public class GraphicsFunctions {
   private static class Tetrahedron extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1479,7 +1552,7 @@ public class GraphicsFunctions {
   private static class Text extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1497,7 +1570,7 @@ public class GraphicsFunctions {
   private static class Tube extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1536,7 +1609,7 @@ public class GraphicsFunctions {
    *
    * @return {@link F#NIL} if this is not a <code>GraphicsComplex</code> with a point table
    */
-  public static IExpr graphicsComplexNormal(IAST graphicsComplex) {
+  public static @AllowNIL IExpr graphicsComplexNormal(IAST graphicsComplex) {
     if (graphicsComplex.argSize() < 2 || !graphicsComplex.arg1().isList()) {
       return F.NIL;
     }

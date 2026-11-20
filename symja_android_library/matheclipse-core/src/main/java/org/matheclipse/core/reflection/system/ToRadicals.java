@@ -7,6 +7,7 @@ import java.util.List;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -183,6 +184,62 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    *         exceeds {@code maxDegree}).
    */
   public static IExpr rootToRadicals(final IAST ast, EvalEngine engine, int maxDegree) {
+    if ((ast.size() == 3 || ast.size() == 4) && ast.arg1().isFunction()
+        && leastPrecision(ast.arg1().first()) != Long.MAX_VALUE
+        && leastPrecision(ast.arg1().first()) > ParserConfig.MACHINE_PRECISION) {
+      // coefficients with more digits than a machine number: the root of the polynomial with the
+      // exact values of the coefficients, to their precision
+      IExpr body = ast.arg1().first();
+      IExpr exactBody = engine.evaluate(F.Rationalize(body, F.C0));
+      if (exactBody.isFree(x -> x.isInexactNumber(), false)) {
+        IExpr exact = rootToRadicalsOfDegree(ast.setAtCopy(1, F.Function(exactBody)), engine,
+            maxDegree);
+        return exact.isPresent() ? inexactRoot(body, exact, engine) : F.NIL;
+      }
+    }
+    IExpr result = rootToRadicalsOfDegree(ast, engine, maxDegree);
+    if (result.isPresent() && (ast.size() == 3 || ast.size() == 4) && ast.arg1().isFunction()
+        && !ast.arg1().first().isFree(x -> x.isInexactNumber(), false)) {
+      // a root of a polynomial with an inexact coefficient is inexact too, also where an exact
+      // factor like # gives it exactly
+      return inexactRoot(ast.arg1().first(), result, engine);
+    }
+    return result;
+  }
+
+  /**
+   * The value of an exactly computed root of the polynomial <code>body</code> with the precision
+   * of its least precise coefficient.
+   */
+  private static IExpr inexactRoot(IExpr body, IExpr root, EvalEngine engine) {
+    long precision = leastPrecision(body);
+    boolean machine = precision <= org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION;
+    IExpr value = machine ? engine.evalN(root) : engine.evalN(root, precision);
+    if (value.isZero()) {
+      // a zero has the accuracy of the coefficients
+      return machine ? F.CD0 : org.matheclipse.core.expression.ApfloatNum.zero(precision);
+    }
+    return value;
+  }
+
+  /** The least precision of an inexact number in <code>expr</code>. */
+  private static long leastPrecision(IExpr expr) {
+    if (expr instanceof org.matheclipse.core.interfaces.INum) {
+      return ((org.matheclipse.core.interfaces.INum) expr).precision();
+    }
+    if (expr instanceof org.matheclipse.core.interfaces.IComplexNum) {
+      return ((org.matheclipse.core.interfaces.IComplexNum) expr).precision();
+    }
+    long precision = Long.MAX_VALUE;
+    if (expr.isAST()) {
+      for (IExpr arg : (IAST) expr) {
+        precision = Math.min(precision, leastPrecision(arg));
+      }
+    }
+    return precision;
+  }
+
+  private static IExpr rootToRadicalsOfDegree(final IAST ast, EvalEngine engine, int maxDegree) {
     if (ast.isAST1() && ast.arg1().isList2()) {
       IExpr f = ast.arg1().first();
       IExpr c = ast.arg1().second();

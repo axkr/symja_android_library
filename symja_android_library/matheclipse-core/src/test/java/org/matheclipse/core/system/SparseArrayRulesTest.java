@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /** The SparseArray rule {p1, p2, ...} -> {v1, v2, ...} (WMA). */
 public class SparseArrayRulesTest extends ExprEvaluatorTestCase {
@@ -85,6 +86,7 @@ public class SparseArrayRulesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSymbolicRightHandSide() {
     // the matrix is neither decomposed nor written out
     check("Head(LinearSolve(SparseArray({i_, i_} -> 3.0, {2500, 2500}), w))", //

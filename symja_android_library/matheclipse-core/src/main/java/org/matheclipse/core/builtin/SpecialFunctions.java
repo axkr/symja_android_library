@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.external.apfloat.ApcomplexParabolicCylinderMath;
 import org.matheclipse.external.apfloat.ApcomplexCoulombMath;
 import java.util.function.BiFunction;
@@ -134,7 +135,7 @@ public class SpecialFunctions {
     private static final double MAX_BETA_ARGUMENT = 1.0e6;
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       switch (argSize) {
         case 4: {
@@ -203,7 +204,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr betaSymbolic = F.NIL;
         int argSize = ast.argSize();
@@ -265,7 +266,7 @@ public class SpecialFunctions {
      * 
      * @return
      */
-    private static IExpr beta(IExpr a, IExpr b) {
+    private static @AllowNIL IExpr beta(IExpr a, IExpr b) {
     // CPD-ON
       if (F.isExactZero(a) || F.isExactZero(b)) {
         return F.CComplexInfinity;
@@ -321,7 +322,7 @@ public class SpecialFunctions {
      * 
      * @return
      */
-    private IExpr incompleteBeta(IExpr z, IExpr a, IExpr b) {
+    private @AllowNIL IExpr incompleteBeta(IExpr z, IExpr a, IExpr b) {
       EvalEngine engine = EvalEngine.get();
       try {
         if (F.isExactZero(z)) {
@@ -374,7 +375,7 @@ public class SpecialFunctions {
      * @param b
      * @return
      */
-    private IExpr generalizedIncompleteBeta(IExpr z1, IExpr z2, IExpr a, IExpr b) {
+    private @AllowNIL IExpr generalizedIncompleteBeta(IExpr z1, IExpr z2, IExpr a, IExpr b) {
       if (F.isExactZero(z2)) {
       // CPD-ON
         IExpr aRe = a.re();
@@ -402,7 +403,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2() && ast.arg1() instanceof Num && ast.arg2() instanceof Num) {
         final double a = ((Num) ast.arg1()).doubleValue();
         final double b = ((Num) ast.arg2()).doubleValue();
@@ -463,7 +464,7 @@ public class SpecialFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       switch (argSize) {
         case 4: {
@@ -491,7 +492,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         return betaRegularized3(ast, engine);
       }
@@ -501,7 +502,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
 
       try {
         IExpr z = ast.arg1();
@@ -599,7 +600,7 @@ public class SpecialFunctions {
      * @param engine
      * @return
      */
-    private IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
+    private @AllowNIL IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
       try {
         IExpr z1 = ast.arg1();
         IExpr z2 = ast.arg2();
@@ -643,7 +644,7 @@ public class SpecialFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         // (Zeta(z,1/4)/2^z-Zeta(z,3/4)/2^z)/2^z
         IExpr z = ast.arg1();
@@ -656,7 +657,7 @@ public class SpecialFunctions {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isMinusOne()) {
         return F.C0;
@@ -701,7 +702,7 @@ public class SpecialFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return functionExpand(ast.arg1());
       }
@@ -719,7 +720,7 @@ public class SpecialFunctions {
       return dirirchletEta(z, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr dirirchletEta(IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr dirirchletEta(IExpr z, boolean numericMode) {
       if (z.isMinusOne()) {
         return F.C1D4;
       }
@@ -791,7 +792,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         // Erf(z2) - Erf(z1)
         return F.Subtract(F.Erf(ast.arg2()), F.Erf(ast.arg1()));
@@ -800,7 +801,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr z0 = ast.arg1();
         IExpr z1 = ast.arg2();
@@ -847,7 +848,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.erf();
@@ -907,7 +908,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr h = ast.arg1();
       IExpr a = ast.arg2();
       if (a.isZero()) {
@@ -944,7 +945,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() != 2 || !(ast.arg1() instanceof INum) || !(ast.arg2() instanceof INum)) {
         return F.NIL;
       }
@@ -1006,16 +1007,17 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
       IExpr a = ast.arg2();
       IExpr b = ast.arg3();
       if (ast.argSize() == 4) {
         IExpr b1 = ast.arg4();
         if (b.equals(b1)) {
-          return F.C0;
+          return zero(ast, engine);
         }
-        if (a.isZero() && !b.isNegativeResult() && !b1.isNegativeResult()) {
+        if (a.isZero() && !m.isNonPositiveResult() && !b.isNegativeResult()
+            && !b1.isNegativeResult()) {
           // GammaRegularized(m, b^2/2, b1^2/2)
           return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)), F.Times(F.C1D2, F.Sqr(b1)));
         }
@@ -1029,7 +1031,7 @@ public class SpecialFunctions {
         if (b.isZero() && m.isPositiveResult()) {
           return F.C1;
         }
-        if (a.isZero() && !b.isNegativeResult()) {
+        if (a.isZero() && !m.isNonPositiveResult() && !b.isNegativeResult()) {
           // GammaRegularized(m, b^2/2)
           return F.GammaRegularized(m, F.Times(F.C1D2, F.Sqr(b)));
         }
@@ -1045,8 +1047,19 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
+    /** The zero of the difference of equal limits: a machine zero for machine numbers. */
+    private static IExpr zero(IAST ast, EvalEngine engine) {
+      if (engine.isArbitraryMode()) {
+        return F.C0;
+      }
+      if (engine.isDoubleMode() || ast.exists(IExpr::isInexactNumber)) {
+        return F.CD0;
+      }
+      return F.C0;
+    }
+
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       // the real orders m > 0 and the real limits b >= 0
       for (int i = 1; i < ast.size(); i++) {
         if (!(ast.get(i) instanceof INum)) {
@@ -1132,7 +1145,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (F.isExactZero(z)) {
         return F.C1;
@@ -1176,7 +1189,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.erfc();
@@ -1217,7 +1230,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (F.isExactZero(z)) {
         return F.C0;
@@ -1254,7 +1267,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.erfi();
@@ -1292,7 +1305,7 @@ public class SpecialFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr z = ast.arg2();
@@ -1334,7 +1347,7 @@ public class SpecialFunctions {
       }
     }
 
-    private static IExpr gammaRegularized2(IExpr a, IExpr z1, IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr gammaRegularized2(IExpr a, IExpr z1, IAST ast, EvalEngine engine) {
       if (a.isZero()) {
         return F.C0;
       } else if (a.isNumEqualRational(F.C1D2)) {
@@ -1380,7 +1393,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private static IExpr gammaRegularzed3(IExpr a, IExpr z1, IExpr z2, final IAST ast,
+    private static @AllowNIL IExpr gammaRegularzed3(IExpr a, IExpr z1, IExpr z2, final IAST ast,
         EvalEngine engine) {
       if (a.isOne()) {
         // E^(-arg2)-E^(-arg3)
@@ -1472,7 +1485,7 @@ public class SpecialFunctions {
   private static class HypergeometricPFQRegularized extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isList() || !ast.arg2().isList() || !ast.arg3().isNumber()) {
         return F.NIL;
       }
@@ -1575,7 +1588,7 @@ public class SpecialFunctions {
      * for a negative <code>k+a</code> where {@link LerchPhi} is real.
      */
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         return WorkingPrecision.evaluate(ast, engine, false, arguments -> ApcomplexZetaMath
             .lerchPhi(arguments[0], arguments[1], arguments[2]));
@@ -1634,7 +1647,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         // if (arg1.isList()) {
@@ -1681,7 +1694,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.inverseErf();
@@ -1720,7 +1733,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr e1DblArg(final double arg1) {
+    public @AllowNIL IExpr e1DblArg(final double arg1) {
       if (arg1 >= 0. && arg1 <= 2.0) {
         try {
           return Num.valueOf(org.hipparchus.special.Erf.erfcInv(arg1));
@@ -1746,7 +1759,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       // if (arg1.isList()) {
       // return ((IAST) arg1).mapThread(x -> F.InverseErfc(x));
       // }
@@ -1773,7 +1786,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.inverseErfc();
@@ -1883,7 +1896,7 @@ public class SpecialFunctions {
     }
 
     /** <code>InverseBetaRegularized(z, a, b)</code> for real numbers. */
-    private static IExpr numericInverseBeta(EvalEngine engine, IExpr z, IExpr a, IExpr b) {
+    private static @AllowNIL IExpr numericInverseBeta(EvalEngine engine, IExpr z, IExpr a, IExpr b) {
       if (!engine.isNumericMode() || !z.isReal() || !a.isReal() || !b.isReal()) {
         return F.NIL;
       }
@@ -1902,7 +1915,7 @@ public class SpecialFunctions {
     }
 
     /** <code>InverseBetaRegularized(z1, z2, a, b)</code> for real numbers. */
-    private static IExpr numericInverseBeta(EvalEngine engine, IExpr z1, IExpr z2, IExpr a,
+    private static @AllowNIL IExpr numericInverseBeta(EvalEngine engine, IExpr z1, IExpr z2, IExpr a,
         IExpr b) {
       if (!engine.isNumericMode() || !z1.isReal() || !z2.isReal() || !a.isReal() || !b.isReal()) {
         return F.NIL;
@@ -1998,7 +2011,7 @@ public class SpecialFunctions {
     }
 
     /** <code>InverseGammaRegularized(a, z)</code> - the upper tail - for real numbers. */
-    private static IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z) {
+    private static @AllowNIL IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z) {
       if (!engine.isNumericMode() || !a.isReal() || !z.isReal()) {
         return F.NIL;
       }
@@ -2017,7 +2030,7 @@ public class SpecialFunctions {
     }
 
     /** <code>InverseGammaRegularized(a, z1, z2)</code> for real numbers. */
-    private static IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z1, IExpr z2) {
+    private static @AllowNIL IExpr numericInverseGamma(EvalEngine engine, IExpr a, IExpr z1, IExpr z2) {
       if (!engine.isNumericMode() || !a.isReal() || !z1.isReal() || !z2.isReal()) {
         return F.NIL;
       }
@@ -2065,7 +2078,7 @@ public class SpecialFunctions {
     private static final int MAX_INTEGER_LERCH_SHIFT = 1000;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr s = ast.arg2();
       IExpr a = ast.arg3();
@@ -2084,7 +2097,7 @@ public class SpecialFunctions {
       return evaluateSymbolic(z, s, a, engine);
     }
 
-    private static IExpr evaluateSymbolic(IExpr z, IExpr s, IExpr a, EvalEngine engine) {
+    private static @AllowNIL IExpr evaluateSymbolic(IExpr z, IExpr s, IExpr a, EvalEngine engine) {
       if (s.isZero()) {
         // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/02/01/0007/
         return F.Power(F.Subtract(F.C1, z), F.CN1);
@@ -2217,7 +2230,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3 && ast.arg1().isMachineNumber() && ast.arg2().isMachineNumber()
           && ast.arg3().isMachineNumber()) {
         // the series in machine arithmetic for |z| < 1 and Re(a) > 0
@@ -2357,7 +2370,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr e1DblArg(final double arg1) {
+    public @AllowNIL IExpr e1DblArg(final double arg1) {
       try {
         if (arg1 == 0.0) {
           return F.CInfinity;
@@ -2386,7 +2399,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInfinity() || F.isExactZero(arg1)) {
         return F.CInfinity;
       }
@@ -2416,7 +2429,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         return z.logGamma();
@@ -2449,7 +2462,7 @@ public class SpecialFunctions {
      *
      * @return {@link F#NIL} for a positive fraction which is no half-integer, and for 1/2
      */
-    private static IExpr polyGammaAtFraction(int n, IFraction x, EvalEngine engine) {
+    private static @AllowNIL IExpr polyGammaAtFraction(int n, IFraction x, EvalEngine engine) {
       IExpr sign = (n & 1) == 0 ? F.C1 : F.CN1;
       if (x.denominator().equals(F.C2)) {
         // x == 1/2 + m
@@ -2479,7 +2492,7 @@ public class SpecialFunctions {
           F.Times(F.CN1, S.Pi, F.subst(derivative, F.Rule(t, x)))));
     }
 
-    public IExpr e1ApfloatArg(Apfloat arg1) {
+    public @AllowNIL IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       try {
         return F.num(h.digamma(arg1));
@@ -2490,7 +2503,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+    public @AllowNIL IExpr e1ApcomplexArg(Apcomplex arg1) {
       FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
       try {
         return F.complexNum(h.digamma(arg1));
@@ -2570,7 +2583,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr arg1 = ast.arg1();
         IExpr z = ast.arg2();
@@ -2647,7 +2660,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isMathematicalIntegerNegative()) {
@@ -2786,7 +2799,7 @@ public class SpecialFunctions {
      * <code>q^-n*Sum(Cos(2*Pi*k*x)*Zeta(n, k/q), {k, 1, q})</code> (or with <code>Sin</code>) of
      * Hurwitz zeta values, which is written with <code>PolyGamma</code>.
      */
-    private static IExpr polyLogAtRootOfUnity(IExpr n, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr polyLogAtRootOfUnity(IExpr n, IExpr z, EvalEngine engine) {
       int order = n.toIntDefault();
       if (order < 2 || order > 64 || !z.isNumericFunction() || z.isReal()) {
         return F.NIL;
@@ -2856,7 +2869,7 @@ public class SpecialFunctions {
     private static final int MAX_NEGATIVE_POLYLOG_ORDER = 1000;
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         return polyLogAtRootOfUnity(ast.arg1(), ast.arg2(), engine);
       }
@@ -2869,7 +2882,7 @@ public class SpecialFunctions {
      * - zeta_functions.py</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr x = ast.arg2();
       if (ast.isAST3()) {
@@ -2888,7 +2901,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber v = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -2903,7 +2916,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private IExpr polyLogSymbolic(IExpr n, IExpr z) {
+    private @AllowNIL IExpr polyLogSymbolic(IExpr n, IExpr z) {
       if (F.isExactZero(z)) {
         return F.C0;
       }
@@ -2995,7 +3008,7 @@ public class SpecialFunctions {
      * <code>PolyLog(n, p, z)</code> for machine numbers with real <code>n, p &gt; 0</code> and at
      * least one inexact argument, by the integral representation.
      */
-    private static IExpr nielsenNumeric(IExpr n, IExpr p, IExpr z) {
+    private static @AllowNIL IExpr nielsenNumeric(IExpr n, IExpr p, IExpr z) {
       if (!n.isReal() || !p.isReal() || !z.isNumber()
           || !(n.isInexactNumber() || p.isInexactNumber() || z.isInexactNumber())) {
         return F.NIL;
@@ -3030,7 +3043,7 @@ public class SpecialFunctions {
       }
     }
 
-    private IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {
+    private @AllowNIL IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {
       if (F.isExactZero(z)) {
         return F.C0;
       }
@@ -3214,7 +3227,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr e1ObjArg(final IExpr o) {
+    public @AllowNIL IExpr e1ObjArg(final IExpr o) {
       IExpr temp = functionExpandLogArg(o);
       if (temp.isPresent()) {
         return temp;
@@ -3225,7 +3238,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private static IExpr functionExpandLogArg(final IExpr o) {
+    private static @AllowNIL IExpr functionExpandLogArg(final IExpr o) {
       if (o.isTimes() && o.first().isFraction() && o.argSize() == 3) {
         // ProductLog(Rational(k_,n_)*b_^Rational(c_,n_)*Log(b_)) :=
         // Module( {a, v},
@@ -3330,7 +3343,7 @@ public class SpecialFunctions {
   private static class StieltjesGamma extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if ((n.isNumber() && !n.isInteger()) || n.isNegativeResult()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
@@ -3405,7 +3418,7 @@ public class SpecialFunctions {
    * numbers and at the engine's precision otherwise, returned as a real number when its imaginary
    * part is zero.
    */
-  private static IExpr atWorkingPrecision(IAST ast, WorkingPrecisionRoutine routine) {
+  private static @AllowNIL IExpr atWorkingPrecision(IAST ast, WorkingPrecisionRoutine routine) {
     boolean machinePrecision = true;
     Apcomplex[] args = new Apcomplex[ast.argSize()];
     for (int i = 1; i <= ast.argSize(); i++) {
@@ -3445,7 +3458,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         return atWorkingPrecision(ast,
             (x, h) -> odd ? ApcomplexMathieuMath.mathieuCharacteristicB(x[0], x[1], h.precision())
@@ -3455,7 +3468,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr r = ast.arg1();
       IExpr q = ast.arg2();
       if (q.isZero()) {
@@ -3494,7 +3507,7 @@ public class SpecialFunctions {
   private static final class MathieuCharacteristicExponent extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         return atWorkingPrecision(ast,
             (x, h) -> ApcomplexMathieuMath.mathieuCharacteristicExponent(x[0], x[1],
@@ -3504,7 +3517,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg2().isZero()) {
         return F.Sqrt(ast.arg1());
       }
@@ -3544,7 +3557,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         return atWorkingPrecision(ast,
             (x, h) -> kind.apply(x[0], x[1], x[2], h.precision()));
@@ -3553,7 +3566,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr q = ast.arg2();
       IExpr z = ast.arg3();
@@ -3626,7 +3639,7 @@ public class SpecialFunctions {
    * <code>StruveH(n, I*z)</code> or <code>StruveL(n, I*z)</code> in terms of the other function of
    * <code>z</code>, <code>((I*z)^(1+n)*partner(n,z))/z^(1+n)</code>.
    */
-  private static IExpr struveImaginaryArgument(IAST ast, BinaryOperator<IExpr> partner) {
+  private static @AllowNIL IExpr struveImaginaryArgument(IAST ast, BinaryOperator<IExpr> partner) {
     if (ast.isAST2()) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
@@ -3645,7 +3658,7 @@ public class SpecialFunctions {
    *
    * @return {@link F#NIL} if <code>z</code> is not of negative form
    */
-  private static IExpr struveReflection(ISymbol head, IExpr nu, IExpr z) {
+  private static @AllowNIL IExpr struveReflection(ISymbol head, IExpr nu, IExpr z) {
     IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
     if (negZ.isPresent()) {
       return F.Times(F.CN1, F.Power(z, nu), F.Power(negZ, F.Negate(nu)),
@@ -3658,7 +3671,7 @@ public class SpecialFunctions {
    * The numeric value of <code>StruveH</code> or <code>StruveL</code>: the machine routine for two
    * machine reals, the working precision routine, and last the series of the library.
    */
-  private static IExpr struveNumeric(IAST ast, DoubleBinaryOperator machineFunction,
+  private static @AllowNIL IExpr struveNumeric(IAST ast, DoubleBinaryOperator machineFunction,
       WorkingPrecision.Routine routine,
       BiFunction<IInexactNumber, IInexactNumber, IExpr> series) {
     if (ast.argSize() == 2) {
@@ -3689,7 +3702,7 @@ public class SpecialFunctions {
     return F.NIL;
   }
 
-  private static IExpr struveAtZero(IExpr nu) {
+  private static @AllowNIL IExpr struveAtZero(IExpr nu) {
     if (nu.isFraction() && ((IFraction) nu).denominator().equals(F.C2) && nu.isNegative()) {
       // nu = -n-1/2: the terms with a pole of Gamma(k+nu+3/2) are zero, the first other one has
       // the power (z/2)^(n+1/2)
@@ -3728,7 +3741,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr result = struveH(arg1, arg2, engine);
@@ -3736,7 +3749,7 @@ public class SpecialFunctions {
     }
 
     // CPD-OFF closed-form half-integer Struve formulas
-    private IExpr struveH(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    private @AllowNIL IExpr struveH(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
         if (F.isExactZero(arg2)) {
           return struveAtZero(arg1);
@@ -3813,7 +3826,7 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr result = struveL(arg1, arg2, engine);
@@ -3821,7 +3834,7 @@ public class SpecialFunctions {
     }
 
     // CPD-OFF closed-form half-integer Struve formulas
-    private static IExpr struveL(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    private static @AllowNIL IExpr struveL(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
         if (F.isExactZero(arg2)) {
           return struveAtZero(arg1);

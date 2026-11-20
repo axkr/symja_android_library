@@ -60,7 +60,7 @@ public class TraditionalFormTest extends ExprEvaluatorTestCase {
     check("ToBoxes(TraditionalForm(HoldForm(Div(h, {u, v, w})))) // InputForm", //
         "TagBox(FormBox(TagBox(RowBox({SubscriptBox(\"∇\",RowBox({\"{\",RowBox({\"u\",\",\",\"v\",\",\",\"w\"}),\"}\"})),\"⋅\",\"h\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
     check("ToBoxes(TraditionalForm(HoldForm(E(w)))) // InputForm", //
-        "TagBox(FormBox(TagBox(RowBox({\"\",\"(\",\"w\",\")\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
+        "TagBox(FormBox(TagBox(RowBox({\"\\[ExponentialE]\",\"(\",\"w\",\")\"}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
   }
 
   @Test
@@ -137,6 +137,33 @@ public class TraditionalFormTest extends ExprEvaluatorTestCase {
         "SuperscriptBox(\"m\",\"†\")");
     check("ToBoxes(TraditionalForm(HoldForm(Subscript(q, k)^3))) // InputForm", //
         "TagBox(FormBox(TagBox(SubsuperscriptBox(\"q\",\"k\",\"3\"),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
+  }
+
+  /** A subscripted variable is ordered among the factors of a product by its base symbol. */
+  @Test
+  public void testSubscriptedFactorOrder() {
+    check("ToBoxes(TraditionalForm(v*Subscript(a, 5))) // InputForm", //
+        "TagBox(FormBox(RowBox({SubscriptBox(\"a\",\"5\"),\" \",\"v\"}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("ToBoxes(TraditionalForm(y*Subscript(b, 4)*x)) // InputForm", //
+        "TagBox(FormBox(RowBox({SubscriptBox(\"b\",\"4\"),\" \",\"x\",\" \",\"y\"}),TraditionalForm),TraditionalForm,Editable->True)");
+    // the number stays in front
+    check("ToBoxes(TraditionalForm(7*u*Subscript(d, 1))) // InputForm", //
+        "TagBox(FormBox(RowBox({\"7\",\" \",SubscriptBox(\"d\",\"1\"),\" \",\"u\"}),TraditionalForm),TraditionalForm,Editable->True)");
+    // a power is ordered by its base
+    check("ToBoxes(TraditionalForm(u^3*Subscript(d, 1))) // InputForm", //
+        "TagBox(FormBox(RowBox({SubscriptBox(\"d\",\"1\"),\" \",SuperscriptBox(\"u\",\"3\")}),TraditionalForm),TraditionalForm,Editable->True)");
+    // the variables come before the functions
+    check("ToBoxes(TraditionalForm(y*Sin(v)*Subscript(b, 4))) // InputForm", //
+        "TagBox(FormBox(RowBox({SubscriptBox(\"b\",\"4\"),\" \",\"y\",\" \",RowBox({\"sin\",\"(\",\"v\",\")\"})}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("ToBoxes(TraditionalForm(Subscript(b, 7)*Subscript(b, 2))) // InputForm", //
+        "TagBox(FormBox(RowBox({SubscriptBox(\"b\",\"2\"),\" \",SubscriptBox(\"b\",\"7\")}),TraditionalForm),TraditionalForm,Editable->True)");
+    check("ToBoxes(TraditionalForm(a*Subscript(v, 6))) // InputForm", //
+        "TagBox(FormBox(RowBox({\"a\",\" \",SubscriptBox(\"v\",\"6\")}),TraditionalForm),TraditionalForm,Editable->True)");
+    // StandardForm and a held product keep the canonical order
+    check("ToBoxes(v*Subscript(a, 5)) // InputForm", //
+        "RowBox({\"v\",\" \",SubscriptBox(\"a\",\"5\")})");
+    check("ToBoxes(TraditionalForm(HoldForm(v*Subscript(a, 5)))) // InputForm", //
+        "TagBox(FormBox(TagBox(RowBox({\"v\",\" \",SubscriptBox(\"a\",\"5\")}),HoldForm),TraditionalForm),TraditionalForm,Editable->True)");
   }
 
   /** <code>Mod(m, n)</code> is the template of the notation <code>m mod n</code>. */

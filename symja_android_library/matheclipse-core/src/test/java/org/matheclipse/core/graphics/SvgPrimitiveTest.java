@@ -626,7 +626,8 @@ public class SvgPrimitiveTest {
   public void testAColorFunctionMayAnswerWithADirective() {
     List<Prim2D> painted = collectPlot("Plot[Sin[x], {x, 0, 6}, PlotPoints -> 21, "
         + "ColorFunction -> (Directive[Opacity[0.4], Red]&)]");
-    assertTrue(painted.size() > 5);
+    // a curve of one colour is one polyline
+    assertFalse(painted.isEmpty());
     for (Prim2D p : painted) {
       assertEquals(Color.RED, p.style.strokeColor);
       assertEquals(0.4, p.style.opacity, 1e-9, "the opacity of the directive has to be applied");
@@ -634,14 +635,15 @@ public class SvgPrimitiveTest {
   }
 
   /**
-   * A step the function cannot answer for keeps the colour the curve would have had. It used to
+   * A point the function cannot answer for keeps the colour the curve would have had. It used to
    * cost the whole curve its colouring, so one hole left a plain line.
    */
   @Test
   public void testAFailingColorFunctionFallsBackPerStep() {
     List<Prim2D> painted = collectPlot("Plot[x, {x, 0, 6}, PlotPoints -> 41, "
         + "ColorFunction -> (If[#2 > 0.5, Red, Indeterminate]&)]");
-    assertTrue(painted.size() > 20, "the curve is still drawn in steps");
+    // one polyline for each run of points of one colour
+    assertTrue(painted.size() >= 2, "the curve is still drawn in its colours");
     java.util.Set<Color> colors = new java.util.HashSet<>();
     for (Prim2D p : painted) {
       colors.add(p.style.strokeColor);
@@ -660,7 +662,7 @@ public class SvgPrimitiveTest {
   public void testAParametricCurveIsGivenItsParameter() {
     List<Double> byParameter =
         hues("ParametricPlot[{Cos[t], Sin[t]}, {t, 0, 6.28}, PlotPoints -> 24, "
-            + "ColorFunction -> (Hue[#3]&)]");
+            + "ColorFunction -> (Hue[0.9*#3]&)]");
     assertTrue(byParameter.size() > 10, () -> "expected the curve in steps, got " + byParameter);
     assertTrue(isAscending(byParameter),
         () -> "the parameter runs one way along the curve: " + byParameter);
@@ -678,7 +680,8 @@ public class SvgPrimitiveTest {
   @Test
   public void testTheParameterDoesNotRestartAfterABreak() {
     List<Double> hues = hues("ParametricPlot[{t, t}, {t, 0, 10}, PlotPoints -> 40, "
-        + "RegionFunction -> Function[{x, y}, x < 3 || x > 7], ColorFunction -> (Hue[#3]&)]");
+        + "RegionFunction -> Function[{x, y}, x < 3 || x > 7], "
+        + "ColorFunction -> (Hue[0.9*#3]&)]");
     assertTrue(hues.size() > 10);
     assertTrue(isAscending(hues), () -> "the parameter kept running across the hole: " + hues);
     // the hole is 4 of the 10 the parameter covers, so the colours step over it rather than

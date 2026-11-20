@@ -55,6 +55,21 @@ public class SetPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSetPrecisionNHoldAttributes() {
+    // the arguments which N leaves alone keep their exact values
+    check("SetAttributes(hf, NHoldFirst); SetPrecision(hf(1/4, 3/8), 12)", //
+        "hf(1/4,0.375)");
+    check("SetAttributes(hr, NHoldRest); SetAccuracy(hr(1/4, 3/8), 9)", //
+        "hr(0.25,3/8)");
+    check("SetAttributes(ha, NHoldAll); SetPrecision(ha(1/4, 3/8), 12)", //
+        "ha(1/4,3/8)");
+    check("SetPrecision(FractionalPart(y + 2/7), 10)", //
+        "FractionalPart(0.2857142857+y)");
+    check("SetPrecision(g''(1/4), 12)", //
+        "g''(0.25)");
+  }
+
+  @Test
   public void testSetPrecisionMachineAndExact() {
     check("SetPrecision(N(E, 30), MachinePrecision)", //
         "2.718281828459045");

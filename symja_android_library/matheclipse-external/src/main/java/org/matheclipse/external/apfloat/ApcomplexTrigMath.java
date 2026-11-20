@@ -38,6 +38,67 @@ public class ApcomplexTrigMath
     }
 
     /**
+     * Hyperbolic sine to the given precision, also for a tiny argument.<p>
+     *
+     * (exp(<i>z</i>) - exp(-<i>z</i>)) / 2 cancels the leading digits for |<i>z</i>| &lt; 1, as
+     * many as the argument has zeros after the decimal point; they are calculated in addition.
+     *
+     * @param z The argument.
+     * @param precision The precision of the result.
+     *
+     * @return sinh(<i>z</i>)
+     */
+
+    public static Apcomplex sinh(Apcomplex z, long precision)
+        throws ApfloatRuntimeException
+    {
+        if (precision == Apfloat.INFINITE)
+        {
+            return ApcomplexMath.sinh(z);
+        }
+        if (z.real().signum() == 0 && z.imag().signum() == 0 || -z.scale() >= precision)
+        {
+            // sinh(z) = z (1 + z^2/6 + ...)
+            return z.precision(precision);
+        }
+        Apcomplex w = z.precision(ApfloatHelperShim.extendPrecision(precision + cancelledDigits(z)));
+        return ApcomplexMath.sinh(w).precision(precision);
+    }
+
+    /**
+     * Hyperbolic tangent to the given precision, also for a tiny argument.<p>
+     *
+     * The numerator of (exp(2<i>z</i>) - 1) / (exp(2<i>z</i>) + 1) cancels as many leading digits
+     * as the argument has zeros after the decimal point; they are calculated in addition.
+     *
+     * @param z The argument.
+     * @param precision The precision of the result.
+     *
+     * @return tanh(<i>z</i>)
+     */
+
+    public static Apcomplex tanh(Apcomplex z, long precision)
+        throws ApfloatRuntimeException
+    {
+        if (precision == Apfloat.INFINITE)
+        {
+            return ApcomplexMath.tanh(z);
+        }
+        if (z.real().signum() == 0 && z.imag().signum() == 0 || -z.scale() >= precision)
+        {
+            // tanh(z) = z (1 - z^2/3 + ...)
+            return z.precision(precision);
+        }
+        Apcomplex w = z.precision(ApfloatHelperShim.extendPrecision(precision + cancelledDigits(z)));
+        return ApcomplexMath.tanh(w).precision(precision);
+    }
+
+    private static long cancelledDigits(Apcomplex z)
+    {
+        return Math.abs(z.scale()) + 1L;
+    }
+
+    /**
      * Cotangent, cos(<i>z</i>) / sin(<i>z</i>).
      *
      * @param z The argument.

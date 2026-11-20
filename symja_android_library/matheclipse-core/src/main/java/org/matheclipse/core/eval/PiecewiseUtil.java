@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -19,7 +20,7 @@ public class PiecewiseUtil {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if there is no <code>Piecewise</code> argument
    */
-  private static IExpr distributeOverPiecewise(final IAST function, boolean plus,
+  private static @AllowNIL IExpr distributeOverPiecewise(final IAST function, boolean plus,
       EvalEngine engine) {
     int piecewisePosition = function.indexOf(x -> x.isPiecewise() != null);
     if (piecewisePosition > 0) {
@@ -56,7 +57,7 @@ public class PiecewiseUtil {
    * @param max <code>true</code> for <code>Max</code>
    * @return {@link F#NIL} if the function has less than two arguments
    */
-  private static IExpr minMaxPiecewise(final IAST function, boolean max) {
+  private static @AllowNIL IExpr minMaxPiecewise(final IAST function, boolean max) {
     final int argSize = function.argSize();
     if (argSize > 1) {
       IASTAppendable conditions = F.ListAlloc(argSize);
@@ -90,7 +91,7 @@ public class PiecewiseUtil {
    *        rewritten.
    * @return {@link F#NIL} if evaluation wasn't possible
    */
-  public static IExpr piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
+  public static @AllowNIL IExpr piecewiseExpand(final IAST function, IBuiltInSymbol domain) {
     EvalEngine engine = EvalEngine.get();
     IExpr head = function.head();
 

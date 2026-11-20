@@ -277,6 +277,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExpectationNumericFallback() {
     // N(Expectation(...)) falls back to NExpectation if there is no symbolic result
     check("N(Expectation(Sin(x), Distributed(x, PoissonDistribution(2))))", //
@@ -539,6 +540,87 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     // TODO
     // check("Skewness(FRatioDistribution(n, m))", //
     // "");
+  }
+
+  @Test
+  public void testFisherZDistribution() {
+    check("PDF(FisherZDistribution(n, m), x)", //
+        "(2*E^(n*x)*m^(m/2)*n^(n/2)*(m+E^(2*x)*n)^(1/2*(-m-n)))/Beta(n/2,m/2)");
+    check("CDF(FisherZDistribution(n, m), x)", //
+        "BetaRegularized((E^(2*x)*n)/(m+E^(2*x)*n),n/2,m/2)");
+    check("SurvivalFunction(FisherZDistribution(n, m), x)", //
+        "BetaRegularized(m/(m+E^(2*x)*n),m/2,n/2)");
+    check("Quantile(FisherZDistribution(n, m), q)", //
+        "ConditionalExpression(Piecewise({{Log((m*(-1+1/InverseBetaRegularized(1,-q,m/2,n/\n"
+            + "2)))/n)/2,0<q<1},{-Infinity,q<=0}},Infinity),0<=q<=1)");
+    check("Mean(FisherZDistribution(n, m))", //
+        "1/2*(Log(m/n)-PolyGamma(0,m/2)+PolyGamma(0,n/2))");
+    check("Median(FisherZDistribution(n, m))", //
+        "Log((m*(-1+1/InverseBetaRegularized(1,-1/2,m/2,n/2)))/n)/2");
+    check("Variance(FisherZDistribution(n, m))", //
+        "1/4*(PolyGamma(1,m/2)+PolyGamma(1,n/2))");
+    check("Skewness(FisherZDistribution(n, m))", //
+        "(-PolyGamma(2,m/2)+PolyGamma(2,n/2))/(PolyGamma(1,m/2)+PolyGamma(1,n/2))^(3/2)");
+    check("Kurtosis(FisherZDistribution(n, m))", //
+        "3+(PolyGamma(3,m/2)+PolyGamma(3,n/2))/(PolyGamma(1,m/2)+PolyGamma(1,n/2))^2");
+    check("CentralMoment(FisherZDistribution(n, m), 3)", //
+        "1/8*(-PolyGamma(2,m/2)+PolyGamma(2,n/2))");
+    check("MomentGeneratingFunction(FisherZDistribution(n, m), t)", //
+        "((m/n)^(t/2)*Gamma(1/2*(m-t))*Gamma(1/2*(n+t)))/(Gamma(m/2)*Gamma(n/2))");
+    check("CharacteristicFunction(FisherZDistribution(4, 2), t)", //
+        "(Gamma(1/2*(2-I*t))*Gamma(1/2*(4+I*t)))/2^(I*1/2*t)");
+    check("{Mean(FisherZDistribution(n, n)), Skewness(FisherZDistribution(n, n))}", //
+        "{0,0}");
+    check("Mean(FisherZDistribution(4, 2))", //
+        "1/2*(1-Log(2))");
+    check("Variance(FisherZDistribution(4, 2))", //
+        "1/4*(-1+Pi^2/3)");
+    check("CDF(FisherZDistribution(4, 2), x)", //
+        "(16*E^(4*x))/(2+4*E^(2*x))^2");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(FisherZDistribution(4, 2), x), {x, -Infinity, Infinity})", //
+        "1.0");
+    check("NIntegrate((x-Mean(FisherZDistribution(4, 2)))^3*PDF(FisherZDistribution(4, 2), x), "
+        + "{x, -Infinity, Infinity})", //
+        "0.25");
+    check("N({CentralMoment(FisherZDistribution(4, 2), 3), " //
+        + "Kurtosis(FisherZDistribution(4, 2))})", //
+        "{0.25,4.33268}");
+
+    check("PDF(FisherZDistribution(3, 5), {-1.0, 0.0, 0.3})", //
+        "{0.172472,0.722349,0.606443}");
+    check("CDF(FisherZDistribution(3, 5), {-1.0, 0.0, 0.3})", //
+        "{0.0652221,0.535145,0.739932}");
+    check("N(CDF(FisherZDistribution(3, 5), 3/10))", //
+        "0.739932");
+    check("N(CDF(FisherZDistribution(4, 2), 1/2), 30)", //
+        "0.71341266942642611597008092327");
+    // no overflow of E^(2*x) and no cancellation in the upper tail
+    check("{PDF(FisherZDistribution(4, 2), 400.0), CDF(FisherZDistribution(4, 2), 400.0)}", //
+        "{0.0,1.0}");
+    check("SurvivalFunction(FisherZDistribution(4, 2), 20.0)", //
+        "4.24835*10^-18");
+    check("N(SurvivalFunction(FisherZDistribution(4, 2), 20), 20)", //
+        "0.0000000000000000042483542552915889818");
+    check("Quantile(FisherZDistribution(4, 2), {0, 0.25, 0.5, 0.75, 1})", //
+        "{-Infinity,-0.346574,0.0941132,0.586558,Infinity}");
+    check("CDF(FisherZDistribution(4, 2), Quantile(FisherZDistribution(4, 2), 0.3))", //
+        "0.3");
+
+    check("Length(RandomVariate(FisherZDistribution(4, 2), 10))", //
+        "10");
+    check("Abs(Mean(RandomVariate(FisherZDistribution(4, 2), 10^4)) - 0.153426) < 0.05", //
+        "True");
+
+    check("DistributionParameterAssumptions(FisherZDistribution(n, m))", //
+        "n>0&&m>0");
+    // message: FisherZDistribution: Parameter -1 at position 1 in FisherZDistribution(-1,2) is
+    // expected to be positive.
+    check("PDF(FisherZDistribution(-1, 2), x)", //
+        "PDF(FisherZDistribution(-1,2),x)");
+    check("RandomVariate(FisherZDistribution(2, 0))", //
+        "RandomVariate(FisherZDistribution(2,0))");
   }
 
   @Test
@@ -1079,6 +1161,71 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "-3+3*E^(2*b^2)+2*E^(3*b^2)+E^(4*b^2)");
     check("Kurtosis(GeometricDistribution(a))", //
         "3+(6-6*a+a^2)/(1-a)");
+  }
+
+  @Test
+  public void testKDistribution() {
+    check("PDF(KDistribution(nu, w), x)", //
+        "Piecewise({{(4*(nu/w)^(1/2*(1+nu))*x^nu*BesselK(-1+nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>\n"
+            + "0}},0)");
+    check("CDF(KDistribution(nu, w), x)", //
+        "Piecewise({{1+(-2*(Sqrt(nu/w)*x)^nu*BesselK(nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>0}},\n"
+            + "0)");
+    check("SurvivalFunction(KDistribution(nu, w), x)", //
+        "Piecewise({{(2*(Sqrt(nu/w)*x)^nu*BesselK(nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>0}},1)");
+    check("Mean(KDistribution(nu, w))", //
+        "(Sqrt(Pi)*Sqrt(w)*Pochhammer(nu,1/2))/(2*Sqrt(nu))");
+    check("Variance(KDistribution(nu, w))", //
+        "w*(1+(-Pi*Pochhammer(nu,1/2)^2)/(4*nu))");
+    check("Moment(KDistribution(nu, w), 3)", //
+        "3/4*Sqrt(Pi)*(w/nu)^(3/2)*Pochhammer(nu,3/2)");
+    // w is the mean square
+    check("Expectation(x^2, x \\[Distributed] KDistribution(nu, w))", //
+        "w");
+    check("CDF(KDistribution(2, 3), x)", //
+        "Piecewise({{1-4/3*x^2*BesselK(2,2*Sqrt(2/3)*x),x>0}},0)");
+    check("Mean(KDistribution(2, 3))", //
+        "3/8*Sqrt(3/2)*Pi");
+    check("Variance(KDistribution(2, 3))", //
+        "3*(1-9/128*Pi^2)");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(KDistribution(2.5, 3), x), {x, 0, Infinity})", //
+        "1.0");
+    check("NIntegrate((x-Mean(KDistribution(2.5, 3)))^4*PDF(KDistribution(2.5, 3), x), "
+        + "{x, 0, Infinity})", //
+        "3.86667");
+    check("N({CentralMoment(KDistribution(2.5, 3), 3), " //
+        + "CentralMoment(KDistribution(2.5, 3), 4)})", //
+        "{0.973729,3.86667}");
+    check("N({Skewness(KDistribution(2.5, 3)), Kurtosis(KDistribution(2.5, 3))})", //
+        "{1.20687,5.14793}");
+    // for nu -> Infinity the limit is the RayleighDistribution
+    check("N({Skewness(KDistribution(10^6, 1)), Kurtosis(KDistribution(10^6, 1))})", //
+        "{0.631113,3.2451}");
+
+    check("PDF(KDistribution(2.5, 3), {0.5, 1.0, 2.0})", //
+        "{0.426539,0.505802,0.268262}");
+    check("CDF(KDistribution(2.5, 3), {-1.0, 0.5, 1.0, 2.0})", //
+        "{0,0.120739,0.365781,0.763937}");
+    check("{PDF(KDistribution(2, 3), 1.5), CDF(KDistribution(2, 3), 1.5)}", //
+        "{0.385516,0.608643}");
+    check("SurvivalFunction(KDistribution(2, 3), 40.0)", //
+        "1.45872*10^-26");
+
+    check("Length(RandomVariate(KDistribution(2, 3), 10))", //
+        "10");
+    check("Abs(Mean(RandomVariate(KDistribution(2, 3), 10^4)^2) - 3) < 0.3", //
+        "True");
+
+    check("DistributionParameterAssumptions(KDistribution(nu, w))", //
+        "nu>0&&w>0");
+    // message: KDistribution: Parameter -2 at position 1 in KDistribution(-2,3) is expected to be
+    // positive.
+    check("PDF(KDistribution(-2, 3), x)", //
+        "PDF(KDistribution(-2,3),x)");
+    check("RandomVariate(KDistribution(2, -3))", //
+        "RandomVariate(KDistribution(2,-3))");
   }
 
   @Test
@@ -1857,6 +2004,26 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSkewNormalDistributionRandomVariate() {
+    check("Head(RandomVariate(SkewNormalDistribution(-1, 3, 2)))", //
+        "Real");
+    check("Dimensions(RandomVariate(SkewNormalDistribution(0, 2, -3), {2, 5}))", //
+        "{2,5}");
+    check("Dimensions(RandomReal(SkewNormalDistribution(0, 1, 5), {4, 3}))", //
+        "{4,3}");
+    // the sample moments are near the moments of the distribution
+    check("SeedRandom(1234); d = SkewNormalDistribution(-2, 3, 5); s = RandomVariate(d, 20000);" //
+        + "{Abs(Mean(s) - N(Mean(d))) < 0.1, Abs(Variance(s)/N(Variance(d)) - 1) < 0.05, "
+        + "Abs(Skewness(s) - N(Skewness(d))) < 0.1}", //
+        "{True,True,True}");
+    check("SeedRandom(4321); s = RandomVariate(SkewNormalDistribution(1, 2, -7), 20000); "
+        + "Skewness(s) < -0.6", //
+        "True");
+    check("RandomVariate(SkewNormalDistribution(0, 1, b))", //
+        "RandomVariate(SkewNormalDistribution(0,1,b))");
+  }
+
+  @Test
   public void testInverseGaussianDistribution() {
     check("PDF(InverseGaussianDistribution(1, 4), x)", //
         "Piecewise({{(Sqrt(2/Pi)*Sqrt(1/x^3))/E^((2*(1-x)^2)/x),x>0}},0)");
@@ -1890,5 +2057,143 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{True,True,True}");
     check("SeedRandom(7); Length(RandomReal(InverseGaussianDistribution(0.2, 6), 5))", //
         "5");
+  }
+
+  /**
+   * The machine value <code>v</code> in a form the parser reads back exactly.
+   */
+  private static String machine(double v) {
+    return String.format(java.util.Locale.ROOT, "%.17e", v).replace("e", "*10^");
+  }
+
+  /**
+   * The density and the CDF of <code>distribution</code> agree with those of the Hipparchus
+   * distribution <code>hipparchus</code>, whose parameters are translated from the parameters of
+   * <code>distribution</code>.
+   */
+  private void checkAgainstHipparchus(String distribution,
+      org.hipparchus.distribution.RealDistribution hipparchus, double... xs) {
+    for (double x : xs) {
+      check("Abs(PDF(" + distribution + ", " + machine(x) + ")/(" + machine(hipparchus.density(x))
+          + ") - 1) < 10^-12", //
+          "True");
+      check("Abs(CDF(" + distribution + ", " + machine(x) + ") - ("
+          + machine(hipparchus.cumulativeProbability(x)) + ")) < 10^-12", //
+          "True");
+    }
+  }
+
+  @Test
+  public void testHipparchusParametrization() {
+    // ExponentialDistribution(rate) - Hipparchus takes the mean 1/rate
+    checkAgainstHipparchus("ExponentialDistribution(2.5)",
+        new org.hipparchus.distribution.continuous.ExponentialDistribution(1.0 / 2.5), 0.1, 0.7,
+        2.0);
+    // ErlangDistribution(k, rate) - GammaDistribution with the shape k and the scale 1/rate
+    checkAgainstHipparchus("ErlangDistribution(3, 2.5)",
+        new org.hipparchus.distribution.continuous.GammaDistribution(3.0, 1.0 / 2.5), 0.2, 1.1,
+        3.0);
+    // ChiSquareDistribution(v) - GammaDistribution with the shape v/2 and the scale 2
+    checkAgainstHipparchus("ChiSquareDistribution(3.4)",
+        new org.hipparchus.distribution.continuous.GammaDistribution(1.7, 2.0), 0.3, 2.2, 7.5);
+    // NakagamiDistribution(m, w) - the same parameters
+    checkAgainstHipparchus("NakagamiDistribution(1.7, 2.3)",
+        new org.hipparchus.distribution.continuous.NakagamiDistribution(1.7, 2.3), 0.4, 1.3,
+        2.6);
+    // HalfNormalDistribution(t) - the standard deviation Sqrt(Pi/2)/t of the folded normal
+    checkAgainstHipparchus("HalfNormalDistribution(1.3)",
+        new org.hipparchus.distribution.continuous.HalfNormalDistribution(
+            Math.sqrt(Math.PI / 2.0) / 1.3),
+        0.05, 0.8, 2.1);
+  }
+
+  @Test
+  public void testRandomVariateHipparchusGenerators() {
+    // the sample moments are those of the distribution with the same parameters; a parameter
+    // taken as the wrong one of rate and scale is off by a factor
+    String[] distributions = {"ExponentialDistribution(3)", "ErlangDistribution(3, 2)",
+        "ChiSquareDistribution(5)", "ChiSquareDistribution(0.3)", "NakagamiDistribution(2.5, 3)",
+        "NakagamiDistribution(0.7, 1.5)", "GammaDistribution(2, 3, 3/2, 1)",
+        "GammaDistribution(0.6, 2, 0.8, -1)", "HalfNormalDistribution(3/2)"};
+    for (String d : distributions) {
+      check("SeedRandom(2024); d = " + d + "; s = RandomVariate(d, 20000);"
+          + "{Abs(Mean(s)/N(Mean(d)) - 1) < 0.05, Abs(Variance(s)/N(Variance(d)) - 1) < 0.15}", //
+          "{True,True}");
+    }
+    // seeded samples repeat
+    check("SeedRandom(11); a = RandomVariate(NakagamiDistribution(2, 3), 4);"
+        + " SeedRandom(11); b = RandomVariate(NakagamiDistribution(2, 3), 4); a === b", //
+        "True");
+    check("SeedRandom(11); a = RandomVariate(ErlangDistribution(4, 1/2), {2, 3});"
+        + " SeedRandom(11); b = RandomVariate(ErlangDistribution(4, 1/2), {2, 3});"
+        + " {a === b, Dimensions(a)}", //
+        "{True,{2,3}}");
+    // the support
+    check("SeedRandom(5); {Min(RandomVariate(GammaDistribution(2, 3, 3/2, 1), 1000)) > 1,"
+        + " Min(RandomVariate(HalfNormalDistribution(2), 1000)) >= 0,"
+        + " Min(RandomVariate(NakagamiDistribution(0.6, 2), 1000)) >= 0}", //
+        "{True,True,True}");
+    check("Head(RandomVariate(ErlangDistribution(2, 5)))", //
+        "Real");
+    // invalid parameters
+    check("RandomVariate(ErlangDistribution(-1, 2))", //
+        "RandomVariate(ErlangDistribution(-1,2))");
+    check("RandomVariate(ChiSquareDistribution(-2), 3)", //
+        "RandomVariate(ChiSquareDistribution(-2),3)");
+    check("RandomVariate(GammaDistribution(2, 3, -1, 0), 3)", //
+        "RandomVariate(GammaDistribution(2,3,-1,0),3)");
+    // HalfNormalDistribution: Parameter 0 at position 1 in HalfNormalDistribution(0) is expected
+    // to be positive.
+    check("RandomVariate(HalfNormalDistribution(0))", //
+        "RandomVariate(HalfNormalDistribution(0))");
+    // NakagamiDistribution: Parameter -1 at position 1 in NakagamiDistribution(-1,3) is expected
+    // to be positive.
+    check("RandomVariate(NakagamiDistribution(-1, 3))", //
+        "RandomVariate(NakagamiDistribution(-1,3))");
+    // ErlangDistribution: Parameter 5/2 at position 1 in ErlangDistribution(5/2,1) is expected to
+    // be a positive integer.
+    check("RandomVariate(ErlangDistribution(5/2, 1), 3)", //
+        "RandomVariate(ErlangDistribution(5/2,1),3)");
+    // the shape of ErlangDistribution is an exact integer
+    check("RandomVariate(ErlangDistribution(3.0, 1), 3)", //
+        "RandomVariate(ErlangDistribution(3.0,1),3)");
+    // a small shape: U^(1/shape) underflows to 0.0, as in Mathematica
+    check("SeedRandom(1); {Min(RandomVariate(ChiSquareDistribution(1/100), 10000)) >= 0,"
+        + " Min(RandomVariate(GammaDistribution(1/200, 1, 1, 0), 10000)) >= 0}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testHalfNormalDistribution() {
+    check("PDF(HalfNormalDistribution(t), x)", //
+        "Piecewise({{(2*t)/(E^((t^2*x^2)/Pi)*Pi),x>0}},0)");
+    check("CDF(HalfNormalDistribution(t), x)", //
+        "Piecewise({{Erf((t*x)/Sqrt(Pi)),x>0}},0)");
+    check("Quantile(HalfNormalDistribution(t), q)", //
+        "ConditionalExpression(Piecewise({{(Sqrt(Pi)*InverseErf(q))/t,0<q<1},{0,q<=0}},Infinity),\n"
+            + "0<=q<=1)");
+    check("{Mean(HalfNormalDistribution(t)), Variance(HalfNormalDistribution(t)),"
+        + " Median(HalfNormalDistribution(t))}", //
+        "{1/t,(-2+Pi)/(2*t^2),(Sqrt(Pi)*InverseErf(1/2))/t}");
+    check("{Skewness(HalfNormalDistribution(t)), Kurtosis(HalfNormalDistribution(t))}", //
+        "{(Sqrt(2)*(4-Pi))/(-2+Pi)^(3/2),(-12-4*Pi+3*Pi^2)/(2-Pi)^2}");
+    check("{Moment(HalfNormalDistribution(t), 3), Moment(HalfNormalDistribution(t), 4)}", //
+        "{Pi/t^3,3/4*Pi^2/t^4}");
+    check("Table(CentralMoment(HalfNormalDistribution(t), m), {m, 0, 4})", //
+        "{1,0,(-1+Pi/2)/t^2,(2-Pi/2)/t^3,(-3-Pi+3/4*Pi^2)/t^4}");
+    check("Simplify(CentralMoment(HalfNormalDistribution(t), 3) - "
+        + "Skewness(HalfNormalDistribution(t))*Variance(HalfNormalDistribution(t))^(3/2), t > 0)", //
+        "0");
+    check("Expectation(x^2, Distributed(x, HalfNormalDistribution(t)))", //
+        "Pi/(2*t^2)");
+    check("Integrate(PDF(HalfNormalDistribution(t), x), {x, 0, Infinity}, Assumptions -> t > 0)", //
+        "1");
+    checkNumeric("NIntegrate(x*PDF(HalfNormalDistribution(2/3), x), {x, 0, Infinity})", //
+        "1.5");
+    check("{CDF(HalfNormalDistribution(2), -1), PDF(HalfNormalDistribution(2), -1),"
+        + " Quantile(HalfNormalDistribution(2), {0, 1})}", //
+        "{0,0,{0,Infinity}}");
+    checkNumeric("CDF(HalfNormalDistribution(2), Quantile(HalfNormalDistribution(2), 0.3))", //
+        "0.3");
   }
 }

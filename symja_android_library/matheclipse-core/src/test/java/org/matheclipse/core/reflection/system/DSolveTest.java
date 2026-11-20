@@ -2766,6 +2766,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveBesselTwoPowers() {
     // WMA: Sqrt(x)*BesselI(-Sqrt(5)/3, 2*x^(3/2)/3) and Sqrt(x)*BesselI(Sqrt(5)/3, 2*x^(3/2)/3)
     check("DSolve(y''(x) == (x + 1/x^2)*y(x), y(x), x)", //

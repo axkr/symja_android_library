@@ -126,20 +126,23 @@ public class ComplexNum implements IComplexNum {
     if (c.isInfinite()) {
       return Double.POSITIVE_INFINITY;
     }
-
-    if (Math.abs(c.getReal()) < Math.abs(c.getImaginary())) {
-      if (F.isZero(c.getImaginary())) {
-        return Math.abs(c.getReal());
+    // scaled by the larger part, so that tiny or huge parts neither underflow nor overflow; only
+    // an exact zero is left out: a tolerant zero test dropped a part which is small only in
+    // absolute terms, Abs(3.0*10^-200+4.0*10^-200*I) was 3.0*10^-200
+    final double re = Math.abs(c.getReal());
+    final double im = Math.abs(c.getImaginary());
+    if (re < im) {
+      if (re == 0.0) {
+        return im;
       }
-      final double q = c.getReal() / c.getImaginary();
-      return Math.abs(c.getImaginary()) * Math.sqrt(1 + q * q);
-    } else {
-      if (F.isZero(c.getReal())) {
-        return Math.abs(c.getImaginary());
-      }
-      final double q = c.getImaginary() / c.getReal();
-      return Math.abs(c.getReal()) * Math.sqrt(1 + q * q);
+      final double q = re / im;
+      return im * Math.sqrt(1.0 + q * q);
     }
+    if (im == 0.0) {
+      return re;
+    }
+    final double q = im / re;
+    return re * Math.sqrt(1.0 + q * q);
   }
 
   /**
@@ -1938,7 +1941,8 @@ public class ComplexNum implements IComplexNum {
         // a machine number adds no error
         return acn.plus(this);
       }
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
+      return ApcomplexNum
+          .machineResult(ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn));
     }
     if (that instanceof ApfloatNum) {
       ApfloatNum afn = (ApfloatNum) that;
@@ -2036,7 +2040,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IComplexNum pow(final IComplexNum val) {
-    if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
+    // only the zero itself: a tolerance took 1.0*10^-20+1.0*10^-20*I for 0 and gave its
+    // reciprocal as ComplexInfinity
+    if (isZero()) {
       IReal sn = val.re();
       if (sn.isNegative()) {
         Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, sn)), EvalEngine.get());
@@ -2297,7 +2303,9 @@ public class ComplexNum implements IComplexNum {
         // a machine number adds no error
         return ((ApcomplexNum) that).times(this);
       }
-      return apcomplexNumValue().multiply((ApcomplexNum) that);
+      return ApcomplexNum.machineResult(apcomplexNumValue().multiply((ApcomplexNum) that),
+          () -> ApcomplexNum.wide(this)
+              .multiply(ApcomplexNum.wide(((ApcomplexNum) that).apcomplexValue())));
     }
     if (that instanceof ApfloatNum) {
       if (((ApfloatNum) that).isSignificanceTracked()) {

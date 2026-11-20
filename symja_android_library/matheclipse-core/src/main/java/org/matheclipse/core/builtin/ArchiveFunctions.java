@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -56,7 +57,7 @@ public class ArchiveFunctions {
    */
   private static class Import extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -191,7 +192,7 @@ public class ArchiveFunctions {
    */
   private static class ExportByteArray extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr format = ast.size() > 2 ? ast.arg2() : F.stringx("ExpressionJSON");
       IExpr text = org.matheclipse.core.reflection.system.ExportString
           .exportText(F.binaryAST2(S.ExportString, ast.arg1(), format), engine);
@@ -211,7 +212,7 @@ public class ArchiveFunctions {
   /** <code>ImportByteArray[bytes, format]</code>: the other direction. */
   private static class ImportByteArray extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       byte[] bytes;
       if (arg1 instanceof org.matheclipse.core.expression.data.ByteArrayExpr) {
@@ -235,7 +236,7 @@ public class ArchiveFunctions {
   /** <code>ExtractArchive[archive, directory]</code>: unpack an archive, answering what it wrote. */
   private static class ExtractArchive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }
@@ -282,7 +283,7 @@ public class ArchiveFunctions {
    */
   private static class CreateArchive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!Config.isFileSystemEnabled(engine)) {
         return F.NIL;
       }

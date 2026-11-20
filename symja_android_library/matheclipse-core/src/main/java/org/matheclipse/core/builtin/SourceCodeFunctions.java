@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -54,7 +55,7 @@ public class SourceCodeFunctions {
   private static class FunctionURL extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isBuiltInSymbol()) {
         IBuiltInSymbol builtin = (IBuiltInSymbol) ast.arg1();
         String url = Documentation.functionURL(builtin);

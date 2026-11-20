@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Optional;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
@@ -215,7 +216,7 @@ public class PredicateQ {
       S.FreeQ.setEvaluator(new FreeQ());
       S.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
       S.IndefiniteMatrixQ.setEvaluator(new IndefiniteMatrixQ());
-      S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
+      S.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber() || x.isOutOfRange());
       S.IntegerQ.setPredicateQ(x -> x.isInteger());
       S.ListQ.setPredicateQ(x -> x.isList());
       S.LowerTriangularMatrixQ.setEvaluator(new LowerTriangularMatrixQ());
@@ -232,8 +233,8 @@ public class PredicateQ {
       S.NotListQ.setPredicateQ(x -> !x.isList());
       S.NormalMatrixQ.setEvaluator(new NormalMatrixQ());
       S.NameQ.setEvaluator(new NameQ());
-      S.NumberQ.setPredicateQ(x -> x.isNumber());
-      S.NumericQ.setPredicateQ(x -> x.isNumericFunction());
+      S.NumberQ.setPredicateQ(x -> x.isNumber() || x.isOutOfRange());
+      S.NumericQ.setPredicateQ(x -> x.isNumericFunction() || x.isOutOfRange());
       S.OddQ.setEvaluator(new OddQ());
       S.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
       S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
@@ -719,7 +720,7 @@ public class PredicateQ {
   private static final class FreeQ extends AbstractCoreFunctionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a1 = ast.arg1();
         IExpr a2 = ast.arg2();
@@ -854,7 +855,7 @@ public class PredicateQ {
   private static class LowerTriangularMatrixQ extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       int[] dims = arg1.isMatrix();
       if (dims == null) {
@@ -994,7 +995,7 @@ public class PredicateQ {
   private static final class MatrixQ extends AbstractCoreFunctionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a QuantityArray is measured as the array it stands for, not as its two arguments
       final IExpr arg1 =
           QuantityFunctions.normalizeQuantityArray(engine.evaluate(ast.arg1()));
@@ -1114,7 +1115,7 @@ public class PredicateQ {
   private static final class NameQ extends AbstractCoreFunctionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         arg1 = engine.evaluate(ast.arg1());
@@ -1177,7 +1178,7 @@ public class PredicateQ {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
       if (options == null) {
         return F.NIL;
@@ -1230,7 +1231,7 @@ public class PredicateQ {
       implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
       if (options == null) {
         return F.NIL;
@@ -1270,7 +1271,7 @@ public class PredicateQ {
   private static final class NormalMatrixQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
       if (options == null) {
         return F.NIL;
@@ -1405,7 +1406,7 @@ public class PredicateQ {
       implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       final IExpr arg1 = engine.evaluate(ast.arg1());
       MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
@@ -1804,7 +1805,7 @@ public class PredicateQ {
       implements IPredicate {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr a1 = ast.arg1();
         return specialsFreeQ(a1, engine);
@@ -1902,7 +1903,7 @@ public class PredicateQ {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       MatrixQOptions options = MatrixQOptions.read(ast, 2, engine);
       if (options == null) {
@@ -1994,7 +1995,7 @@ public class PredicateQ {
   private static class UnitaryMatrixQ extends AbstractFunctionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       int[] dims = arg1.isMatrix();
       if (dims == null) {
@@ -2222,7 +2223,7 @@ public class PredicateQ {
   private static final class VectorQ extends AbstractCoreFunctionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       // a QuantityArray is measured as the array it stands for, not as its two arguments
       final IExpr arg1 =

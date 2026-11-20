@@ -139,6 +139,11 @@ public class DerivativeDivides {
         // last resort for an inner function the structural substitution above cannot see
         gOfT = rewriteFrozen(integrand, du, u, t, x, engine);
       }
+      if ((gOfT.isNIL() || !gOfT.isFree(x, true)) && !u.isFree(S.Log, true)) {
+        // E^u with a logarithm in u is split on evaluation, E^(2*x+Log(x)) is x*E^(2*x): divided
+        // by E^u the rest may still be a function of u
+        gOfT = exponentialOfInner(g, u, t, x, engine);
+      }
       if (gOfT.isNIL() || !gOfT.isFree(x, true)) {
         continue;
       }
@@ -162,6 +167,25 @@ public class DerivativeDivides {
         return result;
       }
       // spurious / wrong-branch candidate: try the next inner function
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Write <code>g</code> as <code>E^t*h(t)</code> with <code>t == u(x)</code>.
+   *
+   * @return {@link F#NIL} if <code>g/E^u</code> isn't a function of <code>u</code>
+   */
+  private static IExpr exponentialOfInner(IExpr g, IExpr u, ISymbol t, IExpr x,
+      EvalEngine engine) {
+    try {
+      final IExpr h = engine.evaluate(F.Together(F.Times(g, F.Power(S.E, F.Negate(u)))));
+      final IExpr hOfT = F.subst(h, u, t);
+      if (hOfT.isFree(x, true)) {
+        return engine.evaluate(F.Times(F.Power(S.E, t), hOfT));
+      }
+    } catch (RuntimeException rex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
   }

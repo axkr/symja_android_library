@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -354,41 +355,101 @@ public final class Plot3DTools {
    * @param grid the sampled surface, {@code null} at a point that has no value
    * @param values the mesh function at each of those points
    * @param targets the levels to draw
-   * @return <code>{{i, j}, ...}</code>, the segments as pairs of vertex numbers
+   * @return <code>{{i, j, k, ...}, ...}</code>, the mesh curves as lists of vertex numbers: the
+   *         segments of each level joined where they meet, so a connected curve is one entry
    */
   public static IASTAppendable meshSegments(GraphicsComplexBuilder builder, double[][][] grid,
       double[][] values, double[] targets) {
     int nx = grid.length;
     int ny = nx > 0 ? grid[0].length : 0;
-    IASTAppendable segments = F.ListAlloc(targets.length * 8);
+    IASTAppendable curves = F.ListAlloc(targets.length * 2);
     if (nx < 2 || ny < 2) {
-      return segments;
+      return curves;
     }
     for (double target : targets) {
+      IASTAppendable segments = F.ListAlloc(nx + ny);
       for (int i = 0; i < nx - 1; i++) {
         for (int j = 0; j < ny - 1; j++) {
           traceCell(builder, segments, grid, values, i, j, target);
         }
       }
+      appendCurves(curves, segments);
     }
-    return segments;
+    return curves;
   }
 
   /**
-   * Draw mesh segments inside the surface's {@code GraphicsComplex}, in a group of their own as
-   * Mathematica writes them: the group scopes the style, and {@code VertexColors -> None} keeps a
-   * coloured surface's vertex colours off the lines.
+   * The mesh functions a surface over the <code>x, y</code> plane is drawn with: a <code>Mesh</code>
+   * count <code>n</code> or <code>{xspec, yspec}</code> without explicit <code>MeshFunctions</code>
+   * draws its lines at levels of <code>x</code> and of <code>y</code> rather than along the sampling
+   * grid, <code>n</code> lines spaced evenly inside the range of each.
    *
+   * @param meshFunctions the <code>MeshFunctions</code> option
+   * @param meshOption the <code>Mesh</code> option
+   */
+  public static IExpr coordinateMeshFunctions(IExpr meshFunctions, IExpr meshOption) {
+    if (meshFunctions == S.Automatic && (isPerDirectionMesh(meshOption) || meshOption.isInteger())) {
+      return F.list(F.Function(F.Slot1), F.Function(F.Slot2));
+    }
+    return meshFunctions;
+  }
+
+  /**
+   * The mesh curves {@code MeshFunctions} asks for, as levels of each function it names.
+   *
+   * <p>
+   * {@code Automatic} keeps the lines on the sampling grid, which the surface builder already
+   * draws, so only an explicit list produces anything here.
+   *
+   * @return the curves as lists of vertex numbers, see {@link #meshSegments}
+   */
+  public static IAST meshFunctionCurves(GraphicsComplexBuilder builder, double[][][] grid,
+      IExpr meshFunctions, IExpr meshOption, EvalEngine engine) {
+    if (meshFunctions == S.Automatic || meshFunctions.isNone() || meshOption.isNone()) {
+      return F.CEmptyList;
+    }
+    IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
+    IASTAppendable all = F.ListAlloc(list.argSize() * 8);
+    for (int k = 1; k < list.size(); k++) {
+      double[][] values = meshFunctionValues(grid, list.get(k), null, null, engine);
+      all.appendArgs(meshSegments(builder, grid, values, meshLevels(meshOption, k - 1, values)));
+    }
+    return all;
+  }
+
+  /**
+   * Append the segments of one level, joined into curves, to <code>curves</code>.
+   *
+   * @param curves the curves as lists of vertex numbers
+   * @param segments the segments as pairs of vertex numbers
+   */
+  public static void appendCurves(IASTAppendable curves, IAST segments) {
+    for (int[] curve : GraphicsComplexBuilder.joinEdges(segments)) {
+      curves.append(F.mapRange(0, curve.length, k -> F.ZZ(curve[k])));
+    }
+  }
+
+  /**
+   * Draw mesh curves inside the surface's {@code GraphicsComplex}, in a group of their own as
+   * Mathematica writes them: the group scopes the style, and {@code VertexColors -> None} keeps a
+   * coloured surface's vertex colours off the lines. Each curve is a {@code Line} of its own.
+   *
+   * @param curves the curves as lists of vertex numbers, see {@link #meshSegments}
    * @param meshStyle the {@code MeshStyle} option; {@code Automatic} draws the lines black
    */
-  public static void addMeshSegments(GraphicsComplexBuilder builder, IAST segments,
+  public static void addMeshSegments(GraphicsComplexBuilder builder, IAST curves,
       IExpr meshStyle) {
-    if (segments.argSize() == 0) {
+    if (curves.argSize() == 0) {
       return;
     }
     IExpr style = meshStyle == null || meshStyle == S.Automatic ? S.Black : meshStyle;
-    builder.addPrimitive(F.List(style,
-        F.binaryAST2(S.Line, segments, F.Rule(S.VertexColors, S.None))));
+    IASTAppendable group = F.ListAlloc(curves.argSize() + 1);
+    group.append(style);
+    // one line per mesh curve
+    for (IExpr curve : curves) {
+      group.append(F.binaryAST2(S.Line, curve, F.Rule(S.VertexColors, S.None)));
+    }
+    builder.addPrimitive(group);
   }
 
   /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
@@ -460,9 +521,12 @@ public final class Plot3DTools {
       }
       return java.util.Arrays.copyOf(explicit, n);
     }
-    int count = entry.toIntDefault(MESH_FUNCTION_LEVELS);
+    if (entry.isNone() || entry.isFalse()) {
+      return new double[0];
+    }
+    int count = entry.isInteger() ? entry.toIntDefault(0) : MESH_FUNCTION_LEVELS;
     if (count < 1) {
-      count = MESH_FUNCTION_LEVELS;
+      return new double[0];
     }
     double min = Double.MAX_VALUE;
     double max = -Double.MAX_VALUE;
@@ -700,8 +764,11 @@ public final class Plot3DTools {
     int[] crossings = new int[4];
     int count = 0;
     for (int edge = 0; edge < 4; edge++) {
-      int a = edge;
-      int b = (edge + 1) % 4;
+      // the two cells sharing an edge walk it in opposite directions; taking its corners in one
+      // order (the lower grid index first) places the crossing at the very same point for both,
+      // so they share its vertex and the mesh curve joins up across the cells
+      int a = edge < 2 ? edge : (edge + 1) % 4;
+      int b = edge < 2 ? edge + 1 : edge;
       double va = at[a];
       double vb = at[b];
       if ((va < target) == (vb < target)) {
@@ -827,6 +894,20 @@ public final class Plot3DTools {
     // which at the default sampling covers the surface in a dark grid; draws about
     // fifteen lines each way whatever the sampling is.
     builder.setStyle(style, F.EdgeForm(S.None));
+  }
+
+  /**
+   * Whether a {@code Mesh} option value gives each direction its own lines:
+   * {@code {xspec, yspec}} where an entry is a count, {@code None} or a list of levels. Such a mesh
+   * is drawn at levels of the coordinates rather than along the sampling grid.
+   */
+  public static boolean isPerDirectionMesh(IExpr meshOption) {
+    if (meshOption == null || !meshOption.isList2()) {
+      return false;
+    }
+    IAST pair = (IAST) meshOption;
+    return pair.forAll(
+        entry -> entry.isList() || entry.isNone() || entry.isFalse() || entry.isInteger());
   }
 
   /** Whether a {@code Mesh} option value asks for mesh lines. */
@@ -980,6 +1061,47 @@ public final class Plot3DTools {
       IExpr[] options, ISymbol plotSymbol, EvalEngine engine) {
     return PlotColorFunction.of(family, options[X_COLOR_FUNCTION],
         options[X_COLOR_FUNCTION_SCALING], plotSymbol, engine).sink(PlotColorFunction.Sink.FLAT);
+  }
+
+  /**
+   * Colour the vertices of a surface by its {@code ColorFunction}.
+   *
+   * <p>
+   * Where every vertex gets the same colour, that colour is the style of the whole surface, and it
+   * may be a directive with an opacity; the vertices get no colours of their own. Otherwise each
+   * vertex gets its colour, reduced to one colour, as the {@code VertexColors} of the complex.
+   *
+   * @param builder the finished surface
+   * @param colors the colouring, built with the sink {@link PlotColorFunction.Sink#DIRECTIVE}
+   * @param tuple the arguments of the colour function at the coordinates of a vertex
+   * @return the colour of every vertex, or {@link F#NIL} if the vertices are coloured one by one
+   *         or there are none
+   */
+  public static IExpr colorVertices(GraphicsComplexBuilder builder, PlotColorFunction colors,
+      java.util.function.Function<double[], double[]> tuple, EvalEngine engine) {
+    int n = builder.vertexCount();
+    if (n == 0) {
+      return F.NIL;
+    }
+    IExpr[] vertexColors = new IExpr[n];
+    boolean uniform = true;
+    for (int v = 0; v < n; v++) {
+      engine.checkTimeLimit();
+      vertexColors[v] = colors.color(tuple.apply(builder.coordinatesOf(v + 1)));
+      uniform &= vertexColors[v].equals(vertexColors[0]);
+    }
+    if (uniform) {
+      return vertexColors[0];
+    }
+    IASTAppendable list = F.ListAlloc(n);
+    for (IExpr color : vertexColors) {
+      // a colour of its own stands as it is; a directive is folded into one colour
+      IExpr flat = org.matheclipse.core.graphics.svg.ColorUtil.parse(color) != null ? color
+          : GraphicsOptions.toColorExpr(color, F.NIL);
+      list.append(flat.isPresent() ? flat : F.RGBColor(F.C0, F.C0, F.C0));
+    }
+    builder.setVertexColors(list);
+    return F.NIL;
   }
 
   /**
@@ -1451,10 +1573,53 @@ public final class Plot3DTools {
    */
   static IExpr surfaceGraphics3D(IAST graphicsList, IAST originalAST, int argSize,
       IExpr[] options) {
-    return graphics3D(graphicsList, originalAST, argSize,
+    IExpr result = graphics3D(graphicsList, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, options[X_PLOT_RANGE]),
             F.Rule(S.BoxRatios, automaticBoxRatios(options[X_BOX_RATIOS], graphicsList)),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, PLOT_LIGHTING)});
+    return withSymmetricPlotRange(result);
+  }
+
+  /**
+   * The graphic with a single number <code>PlotRange -&gt; r</code> written out as the box it
+   * stands for, <code>{{-r, r}, {-r, r}, {-r, r}}</code>, and a bare pair
+   * <code>PlotRange -&gt; {min, max}</code> as that range for each of the three axes. The numbers
+   * keep the form they were given in.
+   *
+   * @param graphic a <code>Graphics3D</code>, possibly inside <code>Legended</code>
+   */
+  private static IExpr withSymmetricPlotRange(IExpr graphic) {
+    if (graphic.isAST(S.Legended) && graphic.argSize() >= 1) {
+      IExpr inner = withSymmetricPlotRange(graphic.first());
+      return inner == graphic.first() ? graphic : ((IAST) graphic).setAtCopy(1, inner);
+    }
+    if (!graphic.isAST(S.Graphics3D)) {
+      return graphic;
+    }
+    IAST g = (IAST) graphic;
+    for (int i = 2; i < g.size(); i++) {
+      IExpr option = g.get(i);
+      if (option.isRuleAST() && option.first() == S.PlotRange) {
+        IExpr value = option.second();
+        IExpr side = F.NIL;
+        if (value.isReal()) {
+          IReal r = ((IReal) value).abs();
+          if (!Double.isFinite(r.evalf()) || r.isZero()) {
+            return graphic;
+          }
+          // the number keeps the form it was given in
+          side = F.List(r.negate(), r);
+        } else if (value.isList2() && !value.first().isList() && !value.second().isList()) {
+          // a bare {min, max} is the range of each of the three axes
+          side = value;
+        }
+        if (side.isPresent()) {
+          return g.setAtCopy(i, F.Rule(S.PlotRange, F.List(side, side, side)));
+        }
+        return graphic;
+      }
+    }
+    return graphic;
   }
 
   /**

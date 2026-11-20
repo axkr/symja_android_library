@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongToDoubleFunction;
@@ -188,7 +189,7 @@ public class StatisticsDiscreteDistributions {
    * @param size the number of values
    * @param distribution <code>null</code> if the parameters are not valid numbers
    */
-  private static IExpr sampleBySurvival(Random random, int size, Survival distribution) {
+  private static @AllowNIL IExpr sampleBySurvival(Random random, int size, Survival distribution) {
     if (distribution == null || !distribution.isNumeric()) {
       return F.NIL;
     }
@@ -231,7 +232,7 @@ public class StatisticsDiscreteDistributions {
    * @param icdf the distribution's evaluator, whose exact <code>CDF</code> decides ties
    * @param engine the evaluation engine
    */
-  private static IExpr inverseCDFBySurvival(IAST dist, IExpr probability,
+  private static @AllowNIL IExpr inverseCDFBySurvival(IAST dist, IExpr probability,
       Supplier<Survival> factory, ICDF icdf, EvalEngine engine) {
     if (!probability.isReal()) {
       return F.NIL;
@@ -280,7 +281,7 @@ public class StatisticsDiscreteDistributions {
   }
 
   /** <code>CDF(dist, k) >= q</code>, evaluated exactly; neither true nor false if undecided. */
-  private static IExpr cdfAtLeast(ICDF icdf, IAST dist, long k, IExpr probability,
+  private static @AllowNIL IExpr cdfAtLeast(ICDF icdf, IAST dist, long k, IExpr probability,
       EvalEngine engine) {
     IExpr cdf = icdf.cdf(dist, F.ZZ(k), engine);
     if (cdf.isNIL()) {
@@ -308,7 +309,7 @@ public class StatisticsDiscreteDistributions {
    * @param tailRatio the limit, below <code>1</code>, of <code>P(X == x+1)/P(X == x)</code>
    * @return {@link F#NIL} after {@link #SUMMATION_LIMIT} terms
    */
-  private static IExpr quantileBySummation(double q, long lo, LongToDoubleFunction logProbability,
+  private static @AllowNIL IExpr quantileBySummation(double q, long lo, LongToDoubleFunction logProbability,
       double tailRatio) {
     long last = sumProbabilities(lo, SUMMATION_LIMIT, logProbability, tailRatio, q, null);
     return last < 0L ? F.NIL : F.ZZ(last);
@@ -387,7 +388,7 @@ public class StatisticsDiscreteDistributions {
    * @param logProbability <code>null</code> if the parameters are not valid numbers, which leaves
    *        the <code>CDF</code> unevaluated
    */
-  private static IExpr cdfOfNumericArguments(IAST dist, IExpr k, IPDF ipdf, long lo,
+  private static @AllowNIL IExpr cdfOfNumericArguments(IAST dist, IExpr k, IPDF ipdf, long lo,
       LongToDoubleFunction logProbability, double tailRatio, EvalEngine engine) {
     if (k.isInfinity()) {
       return F.C1;
@@ -463,7 +464,7 @@ public class StatisticsDiscreteDistributions {
   }
 
   /** <code>Floor(Exp(logValue))</code> for a value too large for a <code>long</code>. */
-  private static IExpr integerFromLog(double logValue) {
+  private static @AllowNIL IExpr integerFromLog(double logValue) {
     if (!Double.isFinite(logValue)) {
       return F.NIL;
     }
@@ -572,7 +573,7 @@ public class StatisticsDiscreteDistributions {
       IGeneratingFunction {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         // 1 - p + p*z
@@ -588,7 +589,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       if (dist.isAST1() && n.isInteger() && n.isPositive()) {
         // E[X^n] == p for every n >= 1, because X only takes the values 0 and 1
         return dist.arg1();
@@ -597,7 +598,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.LessEqual(F.C0, dist.arg1(), F.C1);
       }
@@ -605,7 +606,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         IExpr function =
@@ -619,7 +620,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{1,m==0},{((1-n)^(-1+m)-1/(-n)^(1-m))*(1-n)*n,m>0}},0);
@@ -635,7 +636,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -645,7 +646,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         IExpr function =
@@ -659,7 +660,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr a = dist.arg1();
         // 3+(1-6*(1-a)*a)/((1-a)*a);
@@ -671,7 +672,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         return dist.arg1();
       }
@@ -680,7 +681,7 @@ public class StatisticsDiscreteDistributions {
 
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
         // (p) => Piecewise({{1, p > 1/2}}, 0)
         return F.Piecewise(F.list(F.list(F.C1, F.Greater(dist.arg1(), F.C1D2))), F.C0);
@@ -689,7 +690,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         //
@@ -703,7 +704,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
         double p = dist.arg1().evalfNaN();
@@ -721,7 +722,7 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
         // (1 - 2*s)/Sqrt((1 - s)*s)
@@ -732,7 +733,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr N = dist.arg1();
         return F.Times(N, F.Subtract(F.C1, N));
@@ -828,7 +829,7 @@ public class StatisticsDiscreteDistributions {
       IGeneratingFunction {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr p = dist.arg2();
@@ -850,7 +851,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Element(dist.arg1(), S.Integers), F.GreaterEqual(dist.arg1(), F.C0),
             F.LessEqual(F.C0, dist.arg2(), F.C1));
@@ -859,7 +860,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -870,7 +871,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -890,13 +891,13 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       // CPD-OFF generated distribution formulas with matching boilerplate
       return F.NIL;
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -906,7 +907,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -949,7 +950,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -963,7 +964,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         return F.Times(dist.arg1(), dist.arg2());
       }
@@ -971,13 +972,13 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       // CPD-OFF generated distribution formulas with matching boilerplate
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -996,7 +997,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         int n = dist.arg1().toIntDefault(-1);
         if (n >= 0) {
@@ -1015,7 +1016,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
@@ -1027,7 +1028,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         // (1 - m) m n
         return F.Times(dist.arg1(), dist.arg2(), F.Subtract(F.C1, dist.arg2()));
@@ -1071,7 +1072,7 @@ public class StatisticsDiscreteDistributions {
       IDiscreteDistribution, IStatistics, ICDF, IPDF, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -1108,7 +1109,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -1127,7 +1128,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1138,7 +1139,7 @@ public class StatisticsDiscreteDistributions {
 
     // CPD-OFF generated distribution formulas with matching boilerplate
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -1165,7 +1166,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // (max + min)/2
@@ -1175,7 +1176,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr l = minMax[0];
@@ -1202,7 +1203,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -1218,7 +1219,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
       // CPD-ON
@@ -1236,7 +1237,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         return F.C0;
@@ -1245,7 +1246,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // (1/12)*(-1+(1+max-min)^2)
@@ -1262,7 +1263,7 @@ public class StatisticsDiscreteDistributions {
       IDiscreteDistribution, IPDF, IStatistics, ICentralMoment, IGeneratingFunction, IRandomVariate {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         // p/(1 - (1-p)*z)
@@ -1273,7 +1274,7 @@ public class StatisticsDiscreteDistributions {
     // IRandomVariate
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.LessEqual(F.C0, dist.arg1(), F.C1);
       }
@@ -1281,7 +1282,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr standardDeviation(IAST dist) {
+    public @AllowNIL IExpr standardDeviation(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Sqrt(1-n)/n
@@ -1291,7 +1292,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{(1 - n)^(1 + Floor(#)), # >= 0}}, 1) &
@@ -1304,7 +1305,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         IExpr function =
@@ -1319,7 +1320,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // Piecewise({{n*HurwitzLerchPhi(1-n,-m,1-1/n),m>=0}},0)
@@ -1339,7 +1340,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1376,7 +1377,7 @@ public class StatisticsDiscreteDistributions {
 
 
     @Override
-    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         // 3+(6-6*n+n^2)/(1-n)
@@ -1387,7 +1388,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         // -1 + 1/n
         IExpr n = dist.arg1();
@@ -1397,12 +1398,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         //
@@ -1419,7 +1420,7 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         return
@@ -1430,7 +1431,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         // (1-n) / n^2
         IExpr n = dist.arg1();
@@ -1476,7 +1477,7 @@ public class StatisticsDiscreteDistributions {
       IDiscreteDistribution, IPDF, IStatistics, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr n = dist.arg1();
         IExpr ns = dist.arg2();
@@ -1516,7 +1517,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr n = dist.arg1();
         IExpr ns = dist.arg2();
@@ -1558,7 +1559,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1568,12 +1569,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
       // CPD-ON
         int param[] = parameters(dist);
@@ -1590,7 +1591,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -1611,7 +1612,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr n = dist.arg1();
         IExpr ns = dist.arg2();
@@ -1634,7 +1635,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST3()) {
         int param[] = parameters(dist);
         if (param != null) {
@@ -1652,7 +1653,7 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST3()) {
         int param[] = parameters(dist);
         if (param != null) {
@@ -1663,7 +1664,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST3()) {
         int param[] = parameters(dist);
         if (param != null) {
@@ -1735,7 +1736,7 @@ public class StatisticsDiscreteDistributions {
       implements IDiscreteDistribution, ICDF, IPDF, IStatistics, IRandomVariate, ICovariance {
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m0 = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -1752,7 +1753,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr covariance(IAST dist, EvalEngine engine) {
+    public @AllowNIL IExpr covariance(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr theta = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -1778,7 +1779,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -1788,12 +1789,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         IExpr theta = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -1806,12 +1807,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m0 = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -1846,7 +1847,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         IExpr thetaExpr = dist.arg1();
         IExpr lambdaExpr = dist.arg2();
@@ -1890,7 +1891,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr theta = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -1945,7 +1946,7 @@ public class StatisticsDiscreteDistributions {
       IDiscreteDistribution, IPDF, IStatistics, IRandomVariate, IGeneratingFunction {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr lambda = dist.arg1();
         // E^(lambda*(z-1))
@@ -1955,7 +1956,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr moment(IAST dist, IExpr n) {
+    public @AllowNIL IExpr moment(IAST dist, IExpr n) {
       int order = n.toIntDefault();
       if (dist.isAST1() && order >= 0) {
         // E[X^n] = Sum(StirlingS2(n, k)*lambda^k, {k, 0, n})
@@ -1987,7 +1988,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.Greater(dist.arg1(), F.C0);
       }
@@ -1995,7 +1996,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         if (isNonPositiveParameter(p, dist)) {
@@ -2013,7 +2014,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2023,7 +2024,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         if (isNonPositiveParameter(p, dist)) {
@@ -2060,7 +2061,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
         if (isNonPositiveParameter(arg1, dist)) {
@@ -2072,7 +2073,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
         if (isNonPositiveParameter(arg1, dist)) {
@@ -2083,7 +2084,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
         if (isNonPositiveParameter(p, dist)) {
@@ -2102,7 +2103,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
         IExpr arg1 = dist.arg1();
@@ -2126,7 +2127,7 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
         if (isNonPositiveParameter(n, dist)) {
@@ -2138,7 +2139,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
         if (isNonPositiveParameter(arg1, dist)) {
@@ -2191,7 +2192,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2201,7 +2202,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IAST categories = categories(dist);
       if (categories != null && categories.forAll(IExpr::isNumber)) {
         IAST p = probabilities(dist, categories, EvalEngine.get());
@@ -2216,7 +2217,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -2225,7 +2226,7 @@ public class StatisticsDiscreteDistributions {
      * categories and a <code>Piecewise</code> of the equations otherwise.
      */
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IAST categories = categories(dist);
       if (categories == null || k.isNIL()) {
         return F.NIL;
@@ -2270,7 +2271,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       IAST categories = categories(dist);
       if (categories == null) {
         return F.NIL;
@@ -2332,7 +2333,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr b = dist.arg1();
         if (k.isPresent() && !k.isList()) {
@@ -2359,7 +2360,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2397,7 +2398,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         IExpr b = dist.arg1();
         // b - Log(b!)/Log(b)
@@ -2407,12 +2408,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.GreaterEqual(dist.arg1(), F.C2);
       }
@@ -2420,7 +2421,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr b = dist.arg1();
         if (isZeroProbability(k)) {
@@ -2439,12 +2440,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       return F.NIL;
     }
   }
@@ -2458,7 +2459,7 @@ public class StatisticsDiscreteDistributions {
       IRandomVariate {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2481,7 +2482,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2508,7 +2509,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2561,7 +2562,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2574,12 +2575,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST3()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0),
             F.GreaterEqual(dist.arg3(), F.C0));
@@ -2589,7 +2590,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2617,12 +2618,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST3()) {
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -2674,7 +2675,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         int n = dist.arg2().toIntDefault();
         // CPD-OFF generated distribution formulas with matching boilerplate
@@ -2685,7 +2686,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2() && k.isReal()) {
         LongToDoubleFunction logProbability = logProbability(dist);
         double q = ((IReal) k).doubleValue();
@@ -2707,7 +2708,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2717,7 +2718,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         // n/(1 - a)
         return F.Divide(dist.arg2(), F.Subtract(F.C1, dist.arg1()));
@@ -2727,12 +2728,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         double a = dist.arg1().evalfNaN();
         int n = dist.arg2().toIntDefault();
@@ -2753,7 +2754,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Less(F.C0, dist.arg1(), F.C1), F.Greater(dist.arg2(), F.C0));
       }
@@ -2761,7 +2762,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr n = dist.arg2();
@@ -2783,12 +2784,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
         IExpr n = dist.arg2();
@@ -2807,7 +2808,7 @@ public class StatisticsDiscreteDistributions {
       IRandomVariate {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr t = dist.arg1();
         // Log(1 - t*z)/Log(1 - t)
@@ -2822,7 +2823,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr t = dist.arg1();
         // Piecewise({{1 + Beta(t, 1 + Floor(#), 0)/Log(1 - t), # >= 1}}, 0) &
@@ -2835,7 +2836,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -2845,7 +2846,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1() && k.isReal()) {
         double t = dist.arg1().evalfNaN();
         double q = ((IReal) k).doubleValue();
@@ -2867,7 +2868,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         IExpr t = dist.arg1();
         // -(t/((1 - t)*Log(1 - t)))
@@ -2877,7 +2878,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -2889,7 +2890,7 @@ public class StatisticsDiscreteDistributions {
      * <code>1</code>.
      */
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         double t = dist.arg1().evalfNaN();
         if (0.0 < t && t < 1.0) {
@@ -2921,7 +2922,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.Less(F.C0, dist.arg1(), F.C1);
       }
@@ -2929,7 +2930,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr t = dist.arg1();
         if (isZeroProbability(k)) {
@@ -2947,12 +2948,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr t = dist.arg1();
         // -((t*(t + Log(1 - t)))/((-1 + t)^2*Log(1 - t)^2))
@@ -2992,7 +2993,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         // CPD-OFF generated distribution formulas with matching boilerplate
         return cdfOfNumericArguments(dist, k, this, 0L, logProbability(dist), tailRatio(dist),
@@ -3002,7 +3003,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2() && k.isReal()) {
         LongToDoubleFunction logProbability = logProbability(dist);
         double q = ((IReal) k).doubleValue();
@@ -3023,7 +3024,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3033,7 +3034,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST2()) {
         // m/(1 - lambda)
         return F.Divide(dist.arg1(), F.Subtract(F.C1, dist.arg2()));
@@ -3043,7 +3044,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
@@ -3054,7 +3055,7 @@ public class StatisticsDiscreteDistributions {
      * deviate for <code>n</code> ancestors, and <code>0</code> without any.
      */
     @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         double mu = dist.arg1().evalfNaN();
         double lambda = dist.arg2().evalfNaN();
@@ -3075,7 +3076,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
         return F.And(F.Greater(dist.arg1(), F.C0), F.LessEqual(F.C0, dist.arg2()),
             F.Less(dist.arg2(), F.C1));
@@ -3084,7 +3085,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr m = dist.arg1();
         IExpr lambda = dist.arg2();
@@ -3105,12 +3106,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST2()) {
         // m/(1 - lambda)^3
         return F.Divide(dist.arg1(), F.Power(F.Subtract(F.C1, dist.arg2()), F.C3));
@@ -3138,7 +3139,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         IExpr a = shapes[0];
@@ -3154,7 +3155,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3193,7 +3194,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         IExpr a = shapes[0];
@@ -3206,12 +3207,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         return F.And(F.Greater(shapes[0], F.C0), F.Greater(shapes[1], F.C0));
@@ -3220,7 +3221,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         IExpr a = shapes[0];
@@ -3241,12 +3242,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         IExpr a = shapes[0];
@@ -3273,7 +3274,7 @@ public class StatisticsDiscreteDistributions {
       IRandomVariate {
 
     @Override
-    public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
+    public @AllowNIL IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr r = dist.arg1();
         // PolyLog(1 + r, z)/Zeta(1 + r)
@@ -3300,7 +3301,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr r = dist.arg1();
         // Piecewise({{HarmonicNumber(Floor(#), 1 + r)/Zeta(1 + r), # >= 1}}, 0) &
@@ -3326,12 +3327,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1() && k.isRational() && !k.isZero() && !k.isOne()) {
         // the CDF of the unbounded distribution is a ratio with a zeta value, which an exact
         // probability can't be compared with exactly
@@ -3404,7 +3405,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr mean(IAST dist) {
+    public @AllowNIL IExpr mean(IAST dist) {
       if (dist.isAST1()) {
         IExpr r = dist.arg1();
         // Piecewise({{Zeta(r)/Zeta(1 + r), r > 1}}, Infinity)
@@ -3421,12 +3422,12 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr median(IAST dist) {
+    public @AllowNIL IExpr median(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr parameterAssumptions(IAST dist) {
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
         return F.Greater(dist.arg1(), F.C0);
       }
@@ -3437,7 +3438,7 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
-    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr r = dist.arg1();
         if (isZeroProbability(k)) {
@@ -3468,12 +3469,12 @@ public class StatisticsDiscreteDistributions {
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
-    public IExpr skewness(IAST dist) {
+    public @AllowNIL IExpr skewness(IAST dist) {
       return F.NIL;
     }
 
     @Override
-    public IExpr variance(IAST dist) {
+    public @AllowNIL IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr r = dist.arg1();
         // Piecewise({{-(Zeta(r)^2/Zeta(1 + r)^2) + Zeta(-1 + r)/Zeta(1 + r), r > 2}}, Infinity)

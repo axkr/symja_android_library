@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.File;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -106,7 +107,7 @@ public final class StringFunctions {
   private static class Alphabet extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       String alphabet = LATIN_ALPHABET;
       if (ast.isAST1()) {
         String str = ast.arg1().toString();
@@ -170,7 +171,7 @@ public final class StringFunctions {
   private static final class AlphabeticOrder extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr language = F.NIL;
       if (ast.head().isAST(S.AlphabeticOrder)) {
         IAST operator = (IAST) ast.head();
@@ -245,7 +246,7 @@ public final class StringFunctions {
   private static final class LongestOrderedSequence extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST call = ast;
       boolean ignoreCase = false;
       if (ast.last().isRuleAST() && ast.last().first() == S.IgnoreCase) {
@@ -331,7 +332,7 @@ public final class StringFunctions {
   private static final class AlphabeticSort extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isListOfStrings()) {
         return F.NIL;
       }
@@ -387,7 +388,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       double gap = option[0].evalfNaN();
       Map<IExpr, Double> similarity = similarityRules(option[2], option[1].isTrue());
@@ -519,7 +520,7 @@ public final class StringFunctions {
   private static final class PalindromeQ extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
@@ -572,7 +573,7 @@ public final class StringFunctions {
   private static final class RemoveDiacritics extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -611,7 +612,7 @@ public final class StringFunctions {
   private static class BaseDecode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -665,7 +666,7 @@ public final class StringFunctions {
   private static class BaseEncode extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ByteArrayExpr) {
         String encoding = baseEncoding(ast);
@@ -703,7 +704,7 @@ public final class StringFunctions {
   private static class ByteArrayToString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof ByteArrayExpr) {
         TextEncoding encoding = TextEncoding.utf8();
@@ -819,7 +820,7 @@ public final class StringFunctions {
   private static class Characters extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
@@ -841,7 +842,7 @@ public final class StringFunctions {
 
   private static class CreateUUID extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         String uuid = UUID.randomUUID().toString();
         return F.stringx(uuid);
@@ -917,7 +918,7 @@ public final class StringFunctions {
   private static final class EditDistance extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       IExpr arg1 = ast.arg1();
@@ -1004,7 +1005,7 @@ public final class StringFunctions {
      * @param separator the filename separator character
      * @return
      */
-    private static IExpr fileDrop(String fileName, int n, char separator) {
+    private static @AllowNIL IExpr fileDrop(String fileName, int n, char separator) {
       if (n < 0) {
         int fromIndex = fileName.length() - 1;
         while (n < 0) {
@@ -1078,7 +1079,7 @@ public final class StringFunctions {
   private static class ToFileName extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr dirs = ast.arg1();
       IASTAppendable parts = F.ListAlloc();
       if (dirs.isString()) {
@@ -1138,7 +1139,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       if (positions) {
@@ -1271,11 +1272,11 @@ public final class StringFunctions {
    * A match scores 1, a mismatch and a gap -1; adjacent mismatches and gaps form one pair.
    */
   private static class SequenceAlignment extends AbstractFunctionEvaluator {
-    /** The largest score table, about 100 MB. */
+    /** The largest table of traceback bits, about 6 MB. */
     private static final long MAX_ALIGNMENT_CELLS = 25_000_000L;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         // MergeDifferences gives the same alignment either way
         if (!ast.arg3().isRuleAST() || ast.arg3().first() != S.MergeDifferences) {
@@ -1293,24 +1294,40 @@ public final class StringFunctions {
       List<IExpr> y = strings ? LongestCommonSequence.characters(b.toString()) : elements((IAST) b);
       final int n = x.size();
       final int m = y.size();
-      final long cells = (long) (n + 1) * (m + 1);
-      if (cells > MAX_ALIGNMENT_CELLS || cells > Config.MAX_AST_SIZE) {
-        // the score table grows with the product of the lengths
+      final long cells = (long) n * m;
+      if (cells > MAX_ALIGNMENT_CELLS) {
+        // the traceback table grows with the product of the lengths
         ASTElementLimitExceeded.throwIt(cells);
       }
-      // score[i][j] is the best score of aligning x[i..] with y[j..]
-      int[][] score = new int[n + 1][m + 1];
-      for (int i = n; i >= 0; i--) {
+      // With score(i, j) the best score of aligning x[i..] with y[j..], the traceback only asks
+      // whether the diagonal step and the step down x are optimal at (i, j). These two bits per
+      // cell are kept; the scores themselves only need the row below.
+      final java.util.BitSet diagonalBest = new java.util.BitSet((int) cells);
+      final java.util.BitSet downBest = new java.util.BitSet((int) cells);
+      int[] below = new int[m + 1];
+      int[] row = new int[m + 1];
+      for (int j = 0; j <= m; j++) {
+        below[j] = -(m - j);
+      }
+      for (int i = n - 1; i >= 0; i--) {
         engine.checkTimeLimit();
-        for (int j = m; j >= 0; j--) {
-          if (i == n || j == m) {
-            score[i][j] = -(n - i) - (m - j);
-          } else {
-            int diagonal = score[i + 1][j + 1] + (x.get(i).equals(y.get(j)) ? 1 : -1);
-            score[i][j] =
-                Math.max(diagonal, Math.max(score[i + 1][j] - 1, score[i][j + 1] - 1));
+        row[m] = -(n - i);
+        for (int j = m - 1; j >= 0; j--) {
+          int diagonal = below[j + 1] + (x.get(i).equals(y.get(j)) ? 1 : -1);
+          int down = below[j] - 1;
+          int best = Math.max(diagonal, Math.max(down, row[j + 1] - 1));
+          row[j] = best;
+          int cell = i * m + j;
+          if (best == diagonal) {
+            diagonalBest.set(cell);
+          }
+          if (best == down) {
+            downBest.set(cell);
           }
         }
+        int[] swap = below;
+        below = row;
+        row = swap;
       }
       IASTAppendable result = F.ListAlloc();
       List<IExpr> common = new java.util.ArrayList<>();
@@ -1319,8 +1336,7 @@ public final class StringFunctions {
       int i = 0;
       int j = 0;
       while (i < n || j < m) {
-        if (i < n && j < m && x.get(i).equals(y.get(j))
-            && score[i][j] == score[i + 1][j + 1] + 1) {
+        if (i < n && j < m && x.get(i).equals(y.get(j)) && diagonalBest.get(i * m + j)) {
           appendDifference(result, partOfA, partOfB, strings);
           common.add(x.get(i));
           i++;
@@ -1328,11 +1344,10 @@ public final class StringFunctions {
           continue;
         }
         appendCommon(result, common, strings);
-        if (i < n && j < m && !x.get(i).equals(y.get(j))
-            && score[i][j] == score[i + 1][j + 1] - 1) {
+        if (i < n && j < m && !x.get(i).equals(y.get(j)) && diagonalBest.get(i * m + j)) {
           partOfA.add(x.get(i++));
           partOfB.add(y.get(j++));
-        } else if (i < n && (j == m || score[i][j] == score[i + 1][j] - 1)) {
+        } else if (i < n && (j == m || downBest.get(i * m + j))) {
           partOfA.add(x.get(i++));
         } else {
           partOfB.add(y.get(j++));
@@ -1387,7 +1402,7 @@ public final class StringFunctions {
   private static class FileNameJoin extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int from = 1;
       int to = 1;
       IExpr arg1 = ast.arg1();
@@ -1544,7 +1559,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -1605,7 +1620,7 @@ public final class StringFunctions {
 
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
-    private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
+    private static @AllowNIL IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
         EvalEngine engine) {
       final StringBuilder buffer = new StringBuilder(charList.size());
       for (int i = 1; i < charList.size(); i++) {
@@ -1630,7 +1645,7 @@ public final class StringFunctions {
      * The string of character codes in an encoding: the codes below 256 are bytes of the encoding,
      * the larger ones are the characters they name.
      */
-    private static IExpr fromEncoding(final IAST codeList, TextEncoding encoding,
+    private static @AllowNIL IExpr fromEncoding(final IAST codeList, TextEncoding encoding,
         EvalEngine engine) {
       int[] codes = new int[codeList.argSize()];
       for (int i = 1; i < codeList.size(); i++) {
@@ -1644,7 +1659,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       // an encoding name which is not known here names the characters by their codes
       final TextEncoding encoding =
@@ -1730,7 +1745,7 @@ public final class StringFunctions {
   private static class FromLetterNumber extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
         return ((IAST) ast.arg1()).mapThread(ast, 1);
       }
@@ -2014,7 +2029,7 @@ public final class StringFunctions {
   private static class LetterQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isString()) {
         return F.booleSymbol(test(ast.arg1()));
       }
@@ -2041,7 +2056,7 @@ public final class StringFunctions {
       implements Predicate<IExpr> {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = Validate.checkStringType(ast, 1, engine);
       if (arg1.isPresent()) {
         return F.booleSymbol(test(arg1));
@@ -2217,7 +2232,7 @@ public final class StringFunctions {
   private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -2306,7 +2321,7 @@ public final class StringFunctions {
    * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the arguments are no string and
    *         string pattern
    */
-  private static IExpr stringPatternQ(final IAST ast, boolean ignoreCase, final EvalEngine engine,
+  private static @AllowNIL IExpr stringPatternQ(final IAST ast, boolean ignoreCase, final EvalEngine engine,
       Predicate<StringPatternMatcher> test) {
     IExpr arg1 = engine.evaluate(ast.arg1());
     if (arg1.isList()) {
@@ -2334,7 +2349,7 @@ public final class StringFunctions {
   private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 2) {
         return stringPatternQ(ast, option[0].isTrue(), engine, matcher -> matcher.find(0));
@@ -2384,7 +2399,7 @@ public final class StringFunctions {
   private static class StringCount extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -2433,7 +2448,7 @@ public final class StringFunctions {
   private static class StringDrop extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = stringPartPrelude(ast, engine);
       if (result != null) {
         return result;
@@ -2478,7 +2493,7 @@ public final class StringFunctions {
   private static class StringExpression extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       StringBuilder buf = new StringBuilder();
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
@@ -2505,7 +2520,7 @@ public final class StringFunctions {
   private static class StringForm extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         String[] args = new String[ast.argSize() - 1];
@@ -2560,7 +2575,7 @@ public final class StringFunctions {
   private static class StringFormat extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
@@ -2599,7 +2614,7 @@ public final class StringFunctions {
 
   private static class StringFreeQ extends AbstractCoreFunctionOptionEvaluator {
 
-    private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
+    private static @AllowNIL IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
         EvalEngine engine) {
       StringPatternMatcher matcher =
           StringPatternMatcher.compile(arg2, false, ignoreCase, ast, engine);
@@ -2611,7 +2626,7 @@ public final class StringFunctions {
     }
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -2716,7 +2731,7 @@ public final class StringFunctions {
   private static class StringInsert extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -2897,7 +2912,7 @@ public final class StringFunctions {
   private static class IntegerString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (!n.isInteger()) {
         if (n.isNumber()) {
@@ -3054,7 +3069,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.head() == S.BioSequence) {
         return BioSequenceStrings.evaluate(ast, arg1, engine);
@@ -3204,7 +3219,7 @@ public final class StringFunctions {
 
     @Override
     // CPD-OFF evaluate prologues of sibling string builtins with different options
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -3290,7 +3305,7 @@ public final class StringFunctions {
   private static class StringPart extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         if (arg1.isListOfStrings()) {
@@ -3355,7 +3370,7 @@ public final class StringFunctions {
   private static class StringPosition extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -3415,7 +3430,7 @@ public final class StringFunctions {
   private static class StringRepeat extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().head() == S.BioSequence) {
         return BioSequenceStrings.evaluate(ast, ast.arg1(), engine);
       }
@@ -3537,7 +3552,7 @@ public final class StringFunctions {
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
@@ -3656,7 +3671,7 @@ public final class StringFunctions {
 
     @Override
     // CPD-OFF evaluate prologues of sibling string builtins with different options
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
@@ -3697,7 +3712,7 @@ public final class StringFunctions {
   private static class StringReplaceList extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       if (argSize >= 2) {
         boolean ignoreCase = option[0].isTrue();
@@ -3889,7 +3904,7 @@ public final class StringFunctions {
   private static class StringTakeDrop extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return nonStringArg1(ast, arg1, engine);
@@ -3923,7 +3938,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isListOfStrings()) {
         return arg1.mapThread(ast, 1);
@@ -3969,7 +3984,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isListOfStrings()) {
         return arg1.mapThread(ast, 1);
@@ -4175,7 +4190,7 @@ public final class StringFunctions {
   private static class StringExtract extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr current = ast.arg1();
       for (int i = 2; i < ast.size(); i++) {
         current = extract(current, ast.get(i), ast, engine);
@@ -4187,7 +4202,7 @@ public final class StringFunctions {
     }
 
     /** One specification, applied to a string or to each of a list of them. */
-    private static IExpr extract(IExpr current, IExpr spec, IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr extract(IExpr current, IExpr spec, IAST ast, EvalEngine engine) {
       if (current.isList()) {
         IAST list = (IAST) current;
         IASTAppendable result = F.ListAlloc(list.argSize());
@@ -4259,7 +4274,7 @@ public final class StringFunctions {
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
@@ -4351,7 +4366,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
         return stringPatternQ(ast, options[0].isTrue(), engine,
@@ -4384,7 +4399,7 @@ public final class StringFunctions {
   private static class StringReplacePart extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST3() && arg1.head() == S.BioSequence) {
         return BioSequenceStrings.evaluate(ast, arg1, engine);
@@ -4548,7 +4563,7 @@ public final class StringFunctions {
   private static class StringTemplate extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       final IExpr head = ast.head();
       if (head.isAST(S.StringTemplate) && head.argSize() >= 1) {
@@ -4570,7 +4585,7 @@ public final class StringFunctions {
   private static class StringToByteArray extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -4612,7 +4627,7 @@ public final class StringFunctions {
         .compile("\\A\\s+|\\s+\\z", java.util.regex.Pattern.UNICODE_CHARACTER_CLASS);
 
     @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    protected @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isList()) {
@@ -4743,7 +4758,7 @@ public final class StringFunctions {
   private static class SyntaxLength extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -4767,7 +4782,7 @@ public final class StringFunctions {
     private static final java.util.regex.Pattern TEMPLATE_SLOT =
         java.util.regex.Pattern.compile("`([^`]*)`");
 
-    private static IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
+    private static @AllowNIL IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
       IExpr defaultValue = F.Missing(S.SlotAbsent, templateSlot.first());
       if (templateSlot.size() > 2) {
         final OptionArgs options =
@@ -4800,7 +4815,7 @@ public final class StringFunctions {
      * @param map the replacement map
      * @return {@link F#NIL} if no replacement was found
      */
-    private static IExpr replaceTemplateSlotFunction(IExpr expr, final Map<IExpr, IExpr> map) {
+    private static @AllowNIL IExpr replaceTemplateSlotFunction(IExpr expr, final Map<IExpr, IExpr> map) {
       if (expr.isASTSizeGE(S.TemplateIf, 3)) {
         IAST templateIf = (IAST) expr;
         IExpr condition = templateIf.arg1();
@@ -4868,7 +4883,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = F.NIL;
       if (ast.isAST2()) {
@@ -4976,7 +4991,7 @@ public final class StringFunctions {
   private static class TemplateIf extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // IExpr arg1 = ast.arg1();
       return F.NIL;
     }
@@ -4994,7 +5009,7 @@ public final class StringFunctions {
   private static class TemplateSlot extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -5123,7 +5138,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       TextFormat format = new TextFormat();
       for (int i = 2; i < ast.size(); i++) {
@@ -5221,7 +5236,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -5281,7 +5296,7 @@ public final class StringFunctions {
    */
   private static final class ToExpression extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr head = F.NIL;
       if (arg1.isString()) {
@@ -5394,7 +5409,7 @@ public final class StringFunctions {
   private static class ToLowerCase extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -5439,15 +5454,18 @@ public final class StringFunctions {
   private static class ToString extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.last().isRuleAST()) {
         // options like PageWidth -> Infinity: the string is written on one line anyway
         int end = ast.size();
         IExpr encoding = F.NIL;
+        IExpr formatType = F.NIL;
         int pageWidth = Integer.MAX_VALUE;
         while (end > 2 && ast.get(end - 1).isRuleAST()) {
           end--;
-          if (ast.get(end).first() == S.CharacterEncoding) {
+          if (ast.get(end).first() == S.FormatType) {
+            formatType = ast.get(end).second();
+          } else if (ast.get(end).first() == S.CharacterEncoding) {
             encoding = ast.get(end).second();
           } else if (ast.get(end).first() == S.PageWidth) {
             int width = ast.get(end).second().toIntDefault();
@@ -5461,7 +5479,12 @@ public final class StringFunctions {
           return F.stringx(CodeFormPrinter.breakLines(
               CodeFormPrinter.fortranForm(ast.arg1().first()), pageWidth));
         }
-        IExpr result = evaluate(ast.subList(1, end), engine);
+        IAST rest = ast.subList(1, end);
+        if (formatType.isPresent() && rest.isAST1()) {
+          // FormatType -> form is the form as second argument
+          rest = F.binaryAST2(S.ToString, rest.arg1(), formatType);
+        }
+        IExpr result = evaluate(rest, engine);
         return encoding.isPresent() && result.isString()
             ? F.stringx(encodeCharacters(result.toString(), encoding))
             : result;
@@ -5512,14 +5535,55 @@ public final class StringFunctions {
       if (encoding.isString("UTF8") || encoding.isString("UTF-8")) {
         return new String(str.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
       }
+      if (encoding.isString("Unicode")) {
+        return privateUseCharacters(str);
+      }
       return str;
+    }
+
+    /**
+     * The text with each named character <code>\[Name]</code> of a private use character, which the
+     * input form writes for it, replaced by the character itself. An escaped backslash
+     * <code>\\</code> stays as it is.
+     */
+    private static String privateUseCharacters(String str) {
+      if (str.indexOf("\\[") < 0) {
+        return str;
+      }
+      StringBuilder buf = new StringBuilder(str.length());
+      int i = 0;
+      while (i < str.length()) {
+        char ch = str.charAt(i);
+        if (ch == '\\' && i + 1 < str.length()) {
+          if (str.charAt(i + 1) == '[') {
+            int end = str.indexOf(']', i + 2);
+            if (end > 0) {
+              String named = org.matheclipse.parser.client.Characters.NamedCharactersMap
+                  .get(str.substring(i + 2, end));
+              if (named != null && named.length() == 1 && named.charAt(0) >= '\uE000'
+                  && named.charAt(0) <= '\uF8FF') {
+                buf.append(named);
+                i = end + 1;
+                continue;
+              }
+            }
+          }
+          // an escape sequence of two characters, like \\, is kept
+          buf.append(ch).append(str.charAt(i + 1));
+          i += 2;
+          continue;
+        }
+        buf.append(ch);
+        i++;
+      }
+      return buf.toString();
     }
 
     /**
      * Replace every subexpression for which a <code>Format[...] := ...</code> definition exists by
      * what the definition gives, outermost first.
      */
-    private static IExpr formatValues(IExpr expr, EvalEngine engine, int depth) {
+    private static @AllowNIL IExpr formatValues(IExpr expr, EvalEngine engine, int depth) {
       if (!expr.isAST() || !RulesData.isUpRulesDefined()
           || depth > engine.getRecursionLimit() && engine.getRecursionLimit() > 0) {
         return expr;
@@ -5546,17 +5610,66 @@ public final class StringFunctions {
 
     /**
      * A traditional form is typeset: the box escape <code>\!\(\*FormBox[..., TraditionalForm]\)
-     * </code>.
+     * </code>. Boxes which are only text, and number forms on one line, are written as plain text
+     * with the displayed digits.
      *
      * @return {@link F#NIL} if no boxes were created
      */
-    private static IExpr traditionalForm(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr traditionalForm(IExpr expr, EvalEngine engine) {
+      if (expr.isAST() && NumberFormatter.formKind(expr.head()) != null) {
+        String formatted = NumberFormPrinter.print((IAST) expr, engine);
+        // a typeset exponent puts the number on two lines: it stays boxed
+        if (formatted != null && formatted.indexOf('\n') < 0) {
+          return F.stringx(formatted);
+        }
+      }
       IExpr boxes =
           engine.evaluate(F.binaryAST2(S.ToBoxes, F.Unevaluated(expr), S.TraditionalForm));
+      if (boxes.isAST(S.FormBox, 3)) {
+        StringBuilder text = new StringBuilder();
+        if (appendTraditionalText(boxes.first(), text)) {
+          return F.stringx(text.toString());
+        }
+      }
       if (BoxNotation.isBox(boxes) || boxes.isString()) {
         return F.stringx(BoxNotation.toBoxString(boxes));
       }
       return F.NIL;
+    }
+
+    /** The box string of a machine real number, like <code>14.6325117`</code>. */
+    private static final java.util.regex.Pattern MACHINE_REAL_BOX =
+        java.util.regex.Pattern.compile("-?[0-9]*\\.[0-9]*`(\\*\\^-?[0-9]+)?");
+
+    /**
+     * Append the text of boxes which are a string or a row of strings, a machine real number with
+     * its displayed digits.
+     *
+     * @return <code>false</code> for any other box and for an arbitrary-precision number
+     */
+    private static boolean appendTraditionalText(IExpr boxes, StringBuilder text) {
+      if (boxes.isString()) {
+        String str = boxes.toString();
+        if (MACHINE_REAL_BOX.matcher(str).matches()) {
+          double value = Double.parseDouble(str.replace("`", "").replace("*^", "E"));
+          text.append(outputForm(F.num(value)));
+          return true;
+        }
+        if (str.indexOf('`') >= 0) {
+          return false;
+        }
+        text.append(str);
+        return true;
+      }
+      if (boxes.isAST(S.RowBox, 2) && boxes.first().isList()) {
+        for (IExpr box : (IAST) boxes.first()) {
+          if (!appendTraditionalText(box, text)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
     /** Print <code>expr</code> the way the console shows it. */
@@ -5575,7 +5688,7 @@ public final class StringFunctions {
      *
      * @return {@link F#NIL} if <code>form</code> isn't a supported output form
      */
-    private static IExpr toStringForm(IExpr expr, IExpr form, EvalEngine engine) {
+    private static @AllowNIL IExpr toStringForm(IExpr expr, IExpr form, EvalEngine engine) {
       if (form == S.StandardForm) {
         if (expr.isString()) {
           return expr;
@@ -5683,7 +5796,7 @@ public final class StringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -5704,7 +5817,7 @@ public final class StringFunctions {
   private static class ToUpperCase extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -5753,7 +5866,7 @@ public final class StringFunctions {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isString()) {
         return F.booleSymbol(test(arg1));

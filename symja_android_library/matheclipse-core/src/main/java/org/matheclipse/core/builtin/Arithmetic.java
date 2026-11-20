@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C0;
@@ -63,6 +64,7 @@ import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -144,7 +146,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr apply(double value) {
+    public @AllowNIL IExpr apply(double value) {
       if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
         double result = Math.abs(value);
         if (result > 0.0) {
@@ -189,7 +191,7 @@ public final class Arithmetic {
 
     private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
       @Override
-      public IExpr apply(IExpr expr) {
+      public @AllowNIL IExpr apply(IExpr expr) {
         if (expr.isNumber()) {
           return expr.abs();
         }
@@ -235,12 +237,16 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isDirectedInfinity()) {
         return F.CInfinity;
       }
       if (arg1.isNumber()) {
         return ((INumber) arg1).abs();
+      }
+      if (arg1.isOverflow() || arg1.isUnderflow()) {
+        // a magnitude beyond the range of numbers carries no sign
+        return arg1;
       }
       if (arg1.isQuantity()) {
         // the magnitude, keeping the unit, as Re, Im, Floor, Ceiling and Round already do. For an
@@ -316,7 +322,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().abs() : F.NIL;
     }
 
@@ -392,7 +398,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr leftHandSide = ast.arg1();
       final IExpr head = leftHandSide.head();
       try {
@@ -585,7 +591,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         return arg1.complexArg();
@@ -711,7 +717,7 @@ public final class Arithmetic {
      *
      * @return {@link F#NIL} if there is none
      */
-    private static IExpr commonPositiveFactor(IAST plus) {
+    private static @AllowNIL IExpr commonPositiveFactor(IAST plus) {
       IExpr first = plus.arg1();
       IAST candidates = first.isTimes() ? (IAST) first : F.List(first);
       for (IExpr factor : candidates) {
@@ -730,7 +736,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().complexArg() : F.NIL;
     }
 
@@ -762,7 +768,11 @@ public final class Arithmetic {
    */
   private static class Chop extends AbstractFunctionEvaluator {
 
-    private static IExpr chopNumber(final IExpr x, final double tolerance) {
+    private static @AllowNIL IExpr chopNumber(final IExpr x, final double tolerance) {
+      if (x.isUnderflow()) {
+        // a magnitude below the range of numbers is below every tolerance
+        return F.C0;
+      }
       return x.isNumber() ? F.chopNumber((INumber) x, tolerance) : F.NIL;
     }
 
@@ -890,7 +900,7 @@ public final class Arithmetic {
   private static final class Complex extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.head() == S.Complex) {
           if (!ast.isAST2()) {
@@ -966,7 +976,7 @@ public final class Arithmetic {
   private static final class ConditionalExpression extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       IExpr arg2Evaled = engine.evaluate(arg2);
@@ -1058,7 +1068,7 @@ public final class Arithmetic {
      * @param arg1
      * @return {@link F#NIL} if the evaluation wasn't possible
      */
-    private IExpr conjugate(IExpr arg1) {
+    private @AllowNIL IExpr conjugate(IExpr arg1) {
       if (arg1.isNumber()) {
         return arg1.conjugate();
       }
@@ -1102,7 +1112,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr temp = conjugate(arg1);
       if (temp.isPresent()) {
         return temp;
@@ -1178,7 +1188,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().conjugate() : F.NIL;
     }
 
@@ -1269,7 +1279,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
         if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
@@ -1336,7 +1346,7 @@ public final class Arithmetic {
   private static class Differences extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int c = 1;
 
@@ -1467,7 +1477,7 @@ public final class Arithmetic {
      * @param a2 the symbolic factor to fold in
      * @return the normalised {@code DirectedInfinity} or {@link F#NIL}
      */
-    public static IExpr timesInfSymbolic(IAST inf, IExpr a2) {
+    public static @AllowNIL IExpr timesInfSymbolic(IAST inf, IExpr a2) {
       if (!inf.isAST1()) {
         return F.NIL;
       }
@@ -1510,7 +1520,7 @@ public final class Arithmetic {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         boolean numericMode = engine.isNumericMode();
         try {
@@ -1812,7 +1822,7 @@ public final class Arithmetic {
       return false;
     }
 
-    private static IExpr basicRewrite2(final IExpr o0, final IExpr z) {
+    private static @AllowNIL IExpr basicRewrite2(final IExpr o0, final IExpr z) {
       if (F.isExactZero(z)) {
         if (F.isExactZero(o0)) {
           return F.CInfinity;
@@ -1834,7 +1844,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    private IExpr basicRewrite1(final IExpr arg1) {
+    private @AllowNIL IExpr basicRewrite1(final IExpr arg1) {
       if (F.isExactZero(arg1)) {
         return F.CComplexInfinity;
       }
@@ -1844,7 +1854,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    public IExpr e1ObjArg(final IExpr arg1) {
+    public @AllowNIL IExpr e1ObjArg(final IExpr arg1) {
       IExpr temp = basicRewrite1(arg1);
       if (temp.isPresent()) {
         return temp;
@@ -1983,7 +1993,7 @@ public final class Arithmetic {
     // }
 
 
-    public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
+    public @AllowNIL IExpr e2ObjArg(final IExpr o0, final IExpr z) {
       IExpr temp = basicRewrite2(o0, z);
       if (temp.isPresent()) {
         return temp;
@@ -2002,7 +2012,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         final int argSize = ast.argSize();
         IExpr a = ast.arg1();
@@ -2031,7 +2041,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr z = ast.arg2();
@@ -2085,7 +2095,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       final int argSize = ast.argSize();
       switch (argSize) {
         case 1: {
@@ -2165,7 +2175,7 @@ public final class Arithmetic {
   private static final class GCD extends AbstractArgMultiple {
 
     @Override
-    public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
+    public @AllowNIL IExpr e2ComArg(final IComplex c0, final IComplex c1) {
       Optional<GaussianInteger> gi0 = c0.gaussianInteger();
       Optional<GaussianInteger> gi1 = c1.gaussianInteger();
 
@@ -2195,7 +2205,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         return F.C0;
       } else if (ast.isAST1()) {
@@ -2246,7 +2256,7 @@ public final class Arithmetic {
    */
   private static final class HarmonicNumber extends AbstractEvaluator implements IFunctionExpand {
 
-    private static IExpr harmonic(IExpr arg1, final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr harmonic(IExpr arg1, final IAST ast, EvalEngine engine) {
       if (arg1.isNumber()) {
         if (arg1.isMathematicalIntegerNegative()) {
           return F.CComplexInfinity;
@@ -2300,7 +2310,7 @@ public final class Arithmetic {
      * @param engine
      * @return
      */
-    private static IExpr harmonic(IExpr n, IExpr r, final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr harmonic(IExpr n, IExpr r, final IAST ast, EvalEngine engine) {
       if (r.isOne()) {
         return F.HarmonicNumber(n);
       } else {
@@ -2386,7 +2396,7 @@ public final class Arithmetic {
      * The harmonic number <code>HarmonicNumber(n, r, s) = Sum(s^k/k^r, {k, 1, n})</code>, which
      * is <code>PolyLog(r, s)</code> for <code>n = Infinity</code>.
      */
-    private static IExpr harmonic(IExpr n, IExpr r, IExpr s, EvalEngine engine) {
+    private static @AllowNIL IExpr harmonic(IExpr n, IExpr r, IExpr s, EvalEngine engine) {
       if (s.isOne()) {
         return F.HarmonicNumber(n, r);
       }
@@ -2453,7 +2463,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
         if (ast.isAST3()) {
@@ -2476,7 +2486,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
         // EulerGamma+PolyGamma(0,1+n)
@@ -2502,7 +2512,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         if (n.isMathematicalIntegerNegative()) {
@@ -2587,7 +2597,7 @@ public final class Arithmetic {
      * <code>H(1, n) = HarmonicNumber(n)</code> and
      * <code>H(r, n) = Sum(H(r-1, k), {k, 1, n})</code>.
      */
-    private static IExpr hyperHarmonic(IExpr r, IExpr n, EvalEngine engine) {
+    private static @AllowNIL IExpr hyperHarmonic(IExpr r, IExpr n, EvalEngine engine) {
       if (r.isOne()) {
         return F.HarmonicNumber(n);
       }
@@ -2620,7 +2630,7 @@ public final class Arithmetic {
      * <code>H(1, n, m) = HarmonicNumber(n, m)</code> and
      * <code>H(r, n, m) = Sum(H(r-1, k, m), {k, 1, n})</code>.
      */
-    private static IExpr hyperHarmonic(IExpr r, IExpr n, IExpr m, final IAST ast,
+    private static @AllowNIL IExpr hyperHarmonic(IExpr r, IExpr n, IExpr m, final IAST ast,
         EvalEngine engine) {
       if (m.isOne()) {
         return F.HyperHarmonicNumber(r, n);
@@ -2673,7 +2683,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         return hyperHarmonicGammaForm(ast.arg1(), ast.arg2());
       }
@@ -2681,7 +2691,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber r = (IInexactNumber) ast.arg1();
         IInexactNumber n = (IInexactNumber) ast.arg2();
@@ -2773,7 +2783,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isUniform(UniformFlags.REAL)) {
         return F.C0;
       }
@@ -2900,7 +2910,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().im() : F.NIL;
     }
 
@@ -3045,7 +3055,7 @@ public final class Arithmetic {
   private static final class LCM extends AbstractArgMultiple {
 
     @Override
-    public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
+    public @AllowNIL IExpr e2ComArg(final IComplex c0, final IComplex c1) {
       Optional<GaussianInteger> gi0 = c0.gaussianInteger();
       Optional<GaussianInteger> gi1 = c1.gaussianInteger();
 
@@ -3070,7 +3080,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
       if (arg1.isZero()) {
         return arg1;
       }
@@ -3083,7 +3093,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.arg1().isExactNumber()) {
           return ast.arg1().abs();
@@ -3108,7 +3118,7 @@ public final class Arithmetic {
   private static final class MantissaExponent extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr base = F.C10;
       if (ast.size() == 3) {
@@ -3118,34 +3128,175 @@ public final class Arithmetic {
           return Errors.printMessage(ast.topHead(), "rbase", F.List(base), engine);
         }
       }
-      if (n.equals(F.C0) || n.equals(F.CD0)) {
-        return F.CListC0C0;
+      if (n.isZero()) {
+        return F.list(n, F.C0);
       }
-      IExpr nN = engine.evalN(n);
-      if (!nN.isRealResult()) {
+      if (n.isRational() && base.isRational()) {
+        return exactMantissaExponent((IRational) n, (IRational) base);
+      }
+      if (n instanceof Num && base.isRational() && Double.isFinite(((Num) n).doubleValue())) {
+        return machineMantissaExponent(((Num) n).doubleValue(), (IRational) base);
+      }
+      if (!n.isNumericFunction(true)) {
+        // a symbol is no number which is not real
+        return F.NIL;
+      }
+      if (n.isInexactNumber() && !n.isReal()) {
+        // "The value `1` is not a real number."
+        return Errors.printMessage(ast.topHead(), "realx", F.List(n), engine);
+      }
+      final long workingDigits = n instanceof ApfloatNum
+          ? ((ApfloatNum) n).precision() + GUARD_DIGITS + exponentDigits((ApfloatNum) n)
+          : MACHINE_WORKING_DIGITS;
+      final IExpr nN = n.isInexactNumber() ? n : numericValue(n, workingDigits, engine);
+      if (!nN.isReal()) {
         // "The value `1` is not a real number."
         return Errors.printMessage(ast.topHead(), "realx", F.List(nN), engine);
       }
-      IExpr baseN = engine.evalN(base);
-      if (baseN.isRealResult()) {
-        if (engine.isArbitraryMode()) {
-          Apfloat x = nN.evalReal().apfloatValue();
-          Apfloat b = baseN.evalReal().apfloatValue();
-          long baseExp = ApfloatMath.log(x, b).longValue();
-          IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
-          return F.list(F.Divide(n, F.Power(base, exp)), exp);
-        }
-        double x = nN.evalfNaN();
-        double b = baseN.evalfNaN();
-        if (Double.isNaN(x) || Double.isNaN(b)) {
-          return F.NIL;
-        }
-        long baseExp = (long) (Math.log(x) / Math.log(b));
-        IInteger exp = F.ZZ((baseExp >= 0) ? baseExp + 1 : baseExp);
-        return F.list(F.Divide(n, F.Power(base, exp)), exp);
+      final Apfloat b = apfloatOf(numericValue(base, workingDigits, engine), workingDigits);
+      if (b == null) {
+        return F.NIL;
       }
+      final Apfloat x = apfloatOf(nN, workingDigits);
+      if (x == null || x.signum() == 0) {
+        return F.NIL;
+      }
+      final Apfloat[] mantissa = new Apfloat[1];
+      // a number of its own precision is a power of the base if it is one to that precision
+      final long toleranceDigits = n instanceof ApfloatNum ? ((ApfloatNum) n).precision()
+          : MACHINE_WORKING_DIGITS - 5L;
+      final long e = locateExponent(ApfloatMath.abs(x).precision(workingDigits), b,
+          toleranceDigits, mantissa);
+      if (n instanceof ApfloatNum) {
+        Apfloat m = mantissa[0].precision(((ApfloatNum) n).precision());
+        return F.list(F.num(x.signum() < 0 ? m.negate() : m), F.ZZ(e));
+      }
+      if (n instanceof INum) {
+        double m = ApfloatNum.nearestDouble(mantissa[0]);
+        return F.list(F.num(x.signum() < 0 ? -m : m), F.ZZ(e));
+      }
+      final IInteger exp = F.ZZ(e);
+      return F.list(F.Divide(n, F.Power(base, exp)), exp);
+    }
 
-      return F.NIL;
+    /**
+     * <code>{m, e}</code> of a machine number for an exact base: the exponent of the exact value of
+     * the double, the mantissa its exact quotient rounded once to the nearest double.
+     */
+    private static IExpr machineMantissaExponent(double d, IRational b) {
+      final java.math.BigDecimal exact = new java.math.BigDecimal(d);
+      final IRational x = exact.scale() > 0
+          ? F.QQ(exact.unscaledValue(), java.math.BigInteger.TEN.pow(exact.scale())).normalize()
+          : F.ZZ(exact.unscaledValue().multiply(java.math.BigInteger.TEN.pow(-exact.scale())));
+      final IAST result = (IAST) exactMantissaExponent(x, b);
+      final IRational m = (IRational) result.arg1();
+      final double mantissa =
+          ApfloatNum.nearestDouble(new Apfloat(m.toBigNumerator(), MACHINE_WORKING_DIGITS)
+              .divide(new Apfloat(m.toBigDenominator(), MACHINE_WORKING_DIGITS)));
+      return F.list(F.num(mantissa), result.arg2());
+    }
+
+    /** The digits the exponent of a machine number is located with. */
+    private static final long MACHINE_WORKING_DIGITS = 40;
+
+    /** The digits added to the precision of an arbitrary precision number to locate it. */
+    private static final long GUARD_DIGITS = 20;
+
+    /**
+     * The value of <code>expr</code> with <code>digits</code> digits; the precision the evaluation
+     * runs with is left as it was.
+     */
+    private static IExpr numericValue(IExpr expr, long digits, EvalEngine engine) {
+      if (expr.isRational()) {
+        IRational q = (IRational) expr;
+        return F.num(new Apfloat(q.toBigNumerator(), digits)
+            .divide(new Apfloat(q.toBigDenominator(), digits)));
+      }
+      final long precision = engine.getNumericPrecision();
+      final boolean numericMode = engine.isNumericMode();
+      // N(expr, digits) leaves its digits as the number of figures to display
+      final int figures = engine.getSignificantFigures();
+      try {
+        return engine.evaluate(F.N(expr, F.ZZ(digits)));
+      } finally {
+        engine.setNumericMode(numericMode, precision, figures);
+      }
+    }
+
+    /** The decimal digits of the decimal exponent of <code>x</code>. */
+    private static long exponentDigits(ApfloatNum x) {
+      return Long.toString(Math.abs(x.apfloatValue().scale())).length();
+    }
+
+    private static Apfloat apfloatOf(IExpr real, long digits) {
+      if (real instanceof ApfloatNum) {
+        return ((ApfloatNum) real).apfloatValue();
+      }
+      if (real instanceof INum) {
+        return ApfloatNum.apfloatOf(((INum) real).getRealPart(), digits);
+      }
+      return null;
+    }
+
+    /**
+     * The exponent <code>e</code> with <code>b^(e-1) &lt;= x &lt; b^e</code>.
+     *
+     * <p>
+     * A power of the base comes out of the working precision a few units off; a mantissa that
+     * close to <code>1</code> is a power and is taken as <code>1/b</code>.
+     *
+     * @param x a positive number
+     * @param b a base greater than 1
+     * @param toleranceDigits a mantissa closer to <code>1</code> than
+     *        <code>10^(-toleranceDigits)</code> is taken as <code>1</code>
+     * @param mantissa receives <code>x/b^e</code>
+     */
+    private static long locateExponent(Apfloat x, Apfloat b, long toleranceDigits,
+        Apfloat[] mantissa) {
+      long e = ApfloatMath.floor(ApfloatMath.log(x).divide(ApfloatMath.log(b))).longValue() + 1L;
+      Apfloat m = x.divide(ApfloatMath.pow(b, e));
+      final Apfloat almostOne =
+          new Apfloat(1).subtract(ApfloatMath.scale(new Apfloat(1), -Math.max(1L, toleranceDigits)));
+      if (m.compareTo(almostOne) >= 0) {
+        m = m.divide(b);
+        e++;
+      } else if (m.multiply(b).compareTo(almostOne) < 0) {
+        m = m.multiply(b);
+        e--;
+      }
+      if (m.multiply(b).compareTo(almostOne) >= 0 && m.multiply(b).compareTo(new Apfloat(1)) < 0) {
+        // a power of the base just below 1/b
+        m = new Apfloat(1).divide(b);
+      }
+      mantissa[0] = m;
+      return e;
+    }
+
+    /** <code>{x/b^e, e}</code> with <code>b^(e-1) &lt;= |x| &lt; b^e</code>, exactly. */
+    private static IExpr exactMantissaExponent(IRational x, IRational b) {
+      final IRational ax = x.abs();
+      long e = (long) Math.floor(logAbs(ax) / logAbs(b)) + 1L;
+      // the estimate is off by at most a step where |x| is close to a power of the base
+      while (ax.isGE(power(b, e))) {
+        e++;
+      }
+      while (ax.isLT(power(b, e - 1L))) {
+        e--;
+      }
+      return F.list(x.divideBy(power(b, e)), F.ZZ(e));
+    }
+
+    private static IRational power(IRational b, long e) {
+      return e >= 0L ? b.powerRational(e) : F.C1.divideBy(b.powerRational(-e));
+    }
+
+    private static double logAbs(IRational r) {
+      return log(r.toBigNumerator().abs()) - log(r.toBigDenominator());
+    }
+
+    private static double log(java.math.BigInteger n) {
+      final int shift = Math.max(0, n.bitLength() - 1000);
+      return Math.log(n.shiftRight(shift).doubleValue()) + shift * Math.log(2.0);
     }
 
     @Override
@@ -3220,7 +3371,7 @@ public final class Arithmetic {
   private static class Overflow extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3230,7 +3381,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -3243,7 +3394,7 @@ public final class Arithmetic {
    * A sum or product evaluated by the first data object among its arguments which knows how to
    * combine with the others - see {@link IDataExpr#arithmetic(IAST, EvalEngine)}.
    */
-  private static IExpr dataArithmetic(IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr dataArithmetic(IAST ast, EvalEngine engine) {
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
       if (arg instanceof IDataExpr) {
@@ -3427,7 +3578,7 @@ public final class Arithmetic {
      * @return the evaluated object or <code>null</code>, if evaluation isn't possible
      */
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final int size = ast.size();
       if (size > 2) {
         if (ast.head() != S.Plus) {
@@ -3558,7 +3709,7 @@ public final class Arithmetic {
       return accumulator.number();
     }
 
-    protected IExpr evaluatePlusOp(IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr evaluatePlusOp(IAST ast, EvalEngine engine) {
       PlusOp plusOp = new PlusOp(ast.size());
       IExpr temp = ast.findFirst(x -> plusOp.plus(x));
       if (temp.isPresent()) {
@@ -3654,7 +3805,7 @@ public final class Arithmetic {
   private static final class Pochhammer extends AbstractArg2 implements IFunctionExpand {
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr n) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr n) {
       if (n.isZero()) {
         return F.C1;
       }
@@ -3860,7 +4011,7 @@ public final class Arithmetic {
 
     private static final Flag POWER_EVALED = Flag.BUILT_IN_EVALED;
 
-    public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
+    public static @AllowNIL IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
       try {
         if (base.isAST()) {
@@ -4244,7 +4395,7 @@ public final class Arithmetic {
      * @param exponent
      * @return
      */
-    private static IExpr complexFraction(final IComplex base, final IFraction exponent) {
+    private static @AllowNIL IExpr complexFraction(final IComplex base, final IFraction exponent) {
       if ((exponent.isNumEqualRational(F.C1D2) || exponent.isNumEqualRational(F.CN1D2))
           && !base.isImaginaryUnit() && !base.isNegativeImaginaryUnit()) {
         IExpr sqrt = sqrtGaussianRational(base);
@@ -4321,7 +4472,7 @@ public final class Arithmetic {
      * @param denominator the least common denominator of both parts
      * @return {@link F#NIL} if the content has no square factor
      */
-    private static IExpr sqrtSquareContent(IRational re, IRational im, IInteger denominator) {
+    private static @AllowNIL IExpr sqrtSquareContent(IRational re, IRational im, IInteger denominator) {
       IInteger content =
           re.multiply(denominator).numerator().gcd(im.multiply(denominator).numerator()).abs();
       IRational ratio = F.QQ(content, denominator);
@@ -4394,18 +4545,45 @@ public final class Arithmetic {
       if (exponent.isMinusOne()) {
         return base.inverse();
       }
-      if (exponent.isNumIntValue()) {
-        return base.pow(exponent);
+      try {
+        if (exponent.isNumIntValue()) {
+          return inRange(base.pow(exponent), base);
+        }
+        if (base.isNegative()) {
+          ApcomplexNum b = base.apcomplexNumValue();
+          ApcomplexNum e = exponent.apcomplexNumValue();
+          return b.pow(e);
+        }
+        return inRange(base.pow(exponent), base);
+      } catch (OverflowException oex) {
+        // beyond the range of the exponent of an arbitrary precision number
+        return outOfRange(true);
       }
-      if (base.isNegative()) {
-        ApcomplexNum b = base.apcomplexNumValue();
-        ApcomplexNum e = exponent.apcomplexNumValue();
-        return b.pow(e);
-      }
-
-      return base.pow(exponent);
     }
     // CPD-ON
+
+    /**
+     * <code>Underflow()</code> for a power of a number other than zero which came out as an exact
+     * zero: its magnitude is below the range of the exponent of an arbitrary precision number.
+     */
+    private static IExpr inRange(INum power, ApfloatNum base) {
+      if (power.isZero() && !base.isZero() && power instanceof ApfloatNum
+          && ((ApfloatNum) power).apfloatValue().precision() == org.apfloat.Apfloat.INFINITE) {
+        return outOfRange(false);
+      }
+      return power;
+    }
+
+    /**
+     * A real arbitrary precision result of an operation of <code>bignum</code> with a machine
+     * number at machine precision. A number of machine precision itself keeps its form: in
+     * machine numeric mode an exact exponent arrives as a machine number too.
+     */
+    private static IExpr machineContagion(IExpr result, ApfloatNum bignum) {
+      return result instanceof ApfloatNum && bignum.precision() > ParserConfig.MACHINE_PRECISION
+          ? ApfloatNum.machineResult((ApfloatNum) result)
+          : result;
+    }
 
     /**
      * The machine value of an exact real number, or the arbitrary precision number of machine
@@ -4467,7 +4645,7 @@ public final class Arithmetic {
      *
      * @return {@link F#NIL} if the result is out of the range of arbitrary precision numbers too
      */
-    private static IExpr machinePrecisionPower(double base, double exponent) {
+    private static @AllowNIL IExpr machinePrecisionPower(double base, double exponent) {
       final long precision = ParserConfig.MACHINE_PRECISION;
       try {
         org.apfloat.FixedPrecisionApfloatHelper h =
@@ -4504,12 +4682,23 @@ public final class Arithmetic {
      * @return {@link F#NIL} if the power is inside the double range, or out of the range of
      *         arbitrary precision numbers too
      */
-    public static IExpr machineIntegerPower(final Num base, final IInteger exponent) {
+    public static @AllowNIL IExpr machineIntegerPower(final Num base, final IInteger exponent) {
       final double x = base.doubleValue();
-      final long n = exponent.toLongDefault();
-      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2 || x == 0.0
-          || !Double.isFinite(x)) {
+      if (x == 0.0 || !Double.isFinite(x)) {
         return F.NIL;
+      }
+      final long n = exponent.toLongDefault();
+      if (n == Long.MIN_VALUE || Math.abs(n) >= Long.MAX_VALUE / 2) {
+        if (Math.abs(x) == 1.0) {
+          // the parity of the exponent decides, not its rounding to a double
+          return F.num(x > 0.0 || exponent.isEven() ? 1.0 : -1.0);
+        }
+        if (Math.abs(Math.log(Math.abs(x)) * exponent.doubleValue()) < MAX_POWER_LOG) {
+          // a base next to 1: an ordinary number beyond the double range, for the general path
+          return F.NIL;
+        }
+        // the exponent of the power is beyond any number, small or large
+        return outOfRange(true);
       }
       // Abs(Log2(x)) is at most Abs(Math.getExponent(x)) + 1: a power whose binary exponent stays
       // far inside the double range needs no Math.pow
@@ -4535,6 +4724,12 @@ public final class Arithmetic {
     }
 
     /**
+     * A bound of <code>Abs(Log(x^n))</code> far inside the range of the exponent of an arbitrary
+     * precision number.
+     */
+    private static final double MAX_POWER_LOG = 1.0e15;
+
+    /**
      * The bits of <code>x^n</code>, taken by binary powering: a power inside the double range is a
      * machine number of 53 bits; an even power is the square of <code>x^(n/2)</code>, whose
      * relative error doubles, one bit less; an odd power is <code>x*x^(n-1)</code>, whose machine
@@ -4557,7 +4752,7 @@ public final class Arithmetic {
      * @param arg2 must be a <code>DirectedInfinity[...]</code> expression
      * @return
      */
-    private static IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
+    private static @AllowNIL IExpr e2NumberDirectedInfinity(final INumber arg1, final IAST arg2) {
       int comp = arg1.compareAbsValueToOne();
       switch (comp) {
         case 1:
@@ -4602,7 +4797,7 @@ public final class Arithmetic {
      *
      * @return {@link F#NIL} if <code>exponent</code> is no half-integer of a small size
      */
-    public static IExpr machineHalfPower(final Num base, final IFraction exponent) {
+    public static @AllowNIL IExpr machineHalfPower(final Num base, final IFraction exponent) {
       if (!exponent.denominator().equals(F.C2)) {
         return F.NIL;
       }
@@ -4640,7 +4835,7 @@ public final class Arithmetic {
     }
 
     // CPD-OFF numeric argument dispatch of separate evaluator hierarchies, kept apart for speed
-    private static IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
+    private static @AllowNIL IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
       // try {
       IExpr result = F.NIL;
       if (o0.isInexactNumber() && !F.isExactZero(o0) && o1.isReal()) {
@@ -4676,10 +4871,17 @@ public final class Arithmetic {
       if (o0 instanceof ApfloatNum) {
         if (o1.isReal()) {
           result = e2ApfloatArg((ApfloatNum) o0, ((IReal) o1).apfloatNumValue());
+          if (o1 instanceof Num) {
+            // a machine operand makes a machine number, as in Plus and Times
+            result = machineContagion(result, (ApfloatNum) o0);
+          }
         }
       } else if (o1 instanceof ApfloatNum) {
         if (o0.isReal()) {
           result = e2ApfloatArg(((IReal) o0).apfloatNumValue(), (ApfloatNum) o1);
+          if (o0 instanceof Num) {
+            result = machineContagion(result, (ApfloatNum) o1);
+          }
         }
       } else if (o0 instanceof Num) {
         if (o1.isReal()) {
@@ -4709,7 +4911,7 @@ public final class Arithmetic {
     }
     // CPD-ON
 
-    private static IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
+    private static @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr exponent) {
       if (base.isAST(S.Surd, 3)) {
         return powerSurd(base, exponent);
       }
@@ -4724,10 +4926,18 @@ public final class Arithmetic {
             && !(base.isPower() && base.base() == S.E) && base.isPositiveResult()) {
           return S.Indeterminate;
         }
+        if (isPositiveRationalBase(base)) {
+          // a huge positive exponent: above the range for a base above 1, below it otherwise
+          return ((IRational) base).isGT(F.C1) ? F.Overflow() : F.Underflow();
+        }
       } else if (exponent.isUnderflow()) {
         // an exponent too small to represent acts as 0. for an approximate positive base
         if (base.isInexactNumber() && base.isPositiveResult()) {
           return F.CD1;
+        }
+        if (isPositiveRationalBase(base)) {
+          // the power differs from 1 by a magnitude below the range
+          return F.Plus(F.C1, exponent);
         }
       }
       if (base.isReal() || exponent.isReal()) {
@@ -4803,7 +5013,7 @@ public final class Arithmetic {
      * @param exponent
      * @return {@link F#NIL} if evaluation is not possible
      */
-    private static IExpr evalDirectedInfinityArg1(final IAST directedInfinity,
+    private static @AllowNIL IExpr evalDirectedInfinityArg1(final IAST directedInfinity,
         final IExpr exponent) {
       if (exponent.isZero()) {
         return S.Indeterminate;
@@ -4842,7 +5052,7 @@ public final class Arithmetic {
      * @param directedInfinity
      * @return {@link F#NIL} if evaluation is not possible
      */
-    private static IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity,
+    private static @AllowNIL IExpr evalDirectedInfinityArg2(final IExpr base, final IAST directedInfinity,
         EvalEngine engine) {
       if (directedInfinity.isComplexInfinity()) {
         return S.Indeterminate;
@@ -4923,7 +5133,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    private static IExpr fractionFraction(IFraction base, IFraction exponent) {
+    private static @AllowNIL IExpr fractionFraction(IFraction base, IFraction exponent) {
       IInteger baseNumerator = base.numerator();
       if (baseNumerator.isZero()) {
         return F.C0;
@@ -4977,6 +5187,16 @@ public final class Arithmetic {
       }
       // exponent is integer
       IInteger exp = exponent.numerator();
+      if (isBeyondAnyBitLength(
+          Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()), exp)) {
+        // the powers of numerator and denominator are taken one by one: the larger one overflows,
+        // and only a numerator 1 or -1 to a positive power leaves a tiny quotient
+        return exactPowerOutOfRange(exp.isNegative() || !base.numerator().abs().isOne());
+      }
+      // the squarings of a huge power can't be interrupted: refuse it before they start
+      BigIntegerLimitExceeded.checkPower(
+          Math.max(base.toBigNumerator().bitLength(), base.toBigDenominator().bitLength()),
+          exp.toLongDefault(Long.MAX_VALUE));
       final int expInt = exp.toIntDefault();
       if (F.isPresent(expInt)) {
         return base.powerRational(expInt);
@@ -4989,7 +5209,7 @@ public final class Arithmetic {
       return F.Rational(base.numerator().power(exp), base.denominator().power(exp));
     }
 
-    private static IExpr integerInteger(final IInteger base, final IInteger exponent)
+    private static @AllowNIL IExpr integerInteger(final IInteger base, final IInteger exponent)
         throws ArithmeticException {
       if (base.isMinusOne()) {
         return (exponent.isEven()) ? F.C1 : F.CN1;
@@ -4998,9 +5218,61 @@ public final class Arithmetic {
         // all other cases see e2ObjArg
         return F.NIL;
       }
+      if (isBeyondAnyBitLength(base.bitLength(), exponent)) {
+        return exactPowerOutOfRange(exponent.isPositive());
+      }
       // may throw ArithmeticException
       long n = exponent.toLong();
+      BigIntegerLimitExceeded.checkPower(base.bitLength(), n);
       return base.power(n);
+    }
+
+    /**
+     * Is the bit length of <code>b^n</code>, for a base of <code>bits</code> bits, beyond the range
+     * of a <code>long</code>? No memory holds such a number.
+     */
+    private static boolean isBeyondAnyBitLength(long bits, IInteger n) {
+      return bits > 1L && n.toBigNumerator().abs().multiply(java.math.BigInteger.valueOf(bits - 1L))
+          .bitLength() >= Long.SIZE - 1;
+    }
+
+    /**
+     * An exact power whose bit length is beyond any number: the power of the base overflows
+     * (<code>General::ovfl</code>), and its reciprocal is <code>Underflow()</code>.
+     *
+     * @param huge <code>true</code> for <code>Overflow()</code>, <code>false</code> for the
+     *        reciprocal of an overflow
+     */
+    private static IExpr exactPowerOutOfRange(boolean huge) {
+      // Overflow occurred in computation.
+      Errors.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+      return huge ? F.Overflow() : F.Underflow();
+    }
+
+    /**
+     * The product of <code>Underflow()</code> and an inexact number: the zero of the number's
+     * precision, <code>0.0</code> for a machine number.
+     */
+    private static IExpr underflowTimes(INumber factor) {
+      if (factor instanceof Num || factor instanceof ComplexNum) {
+        return F.CD0;
+      }
+      return factor.subtract(factor);
+    }
+
+    /**
+     * <code>Overflow()</code> with the message <code>General::ovfl</code> for a huge power,
+     * <code>Underflow()</code> with <code>General::unfl</code> for a tiny one.
+     */
+    private static IExpr outOfRange(boolean huge) {
+      if (huge) {
+        // Overflow occurred in computation.
+        Errors.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+        return F.Overflow();
+      }
+      // Underflow occurred in computation.
+      Errors.printMessage(S.General, "unfl", F.List(), EvalEngine.get());
+      return F.Underflow();
     }
 
     /**
@@ -5026,7 +5298,7 @@ public final class Arithmetic {
           : x.isVariable() && isAssumedPositiveSymbolic(x);
     }
 
-    private static IExpr powerASTBase(final IAST base, final IExpr exponent) {
+    private static @AllowNIL IExpr powerASTBase(final IAST base, final IExpr exponent) {
       if (base.isTimes()) {
         final IAST baseTimes = base;
         if (exponent.isInteger() || exponent.isMinusOne()) {
@@ -5149,7 +5421,7 @@ public final class Arithmetic {
      * @param plus
      * @return
      */
-    private static IExpr powerEBase(final IExpr exponent) {
+    private static @AllowNIL IExpr powerEBase(final IExpr exponent) {
       // E^exponent_
       if (exponent.isLog()) {
         // E^Log(x_) := x
@@ -5326,7 +5598,7 @@ public final class Arithmetic {
      * @return the result of the symbolic power evaluation if it can be evaluated, otherwise returns
      *         {@link F#NIL}
      */
-    private static IExpr powerRationalBaseAndFractionExponent(IAST ast, final IRational base,
+    private static @AllowNIL IExpr powerRationalBaseAndFractionExponent(IAST ast, final IRational base,
         final IFraction exponent) {
       if (exponent.isGT(F.C1)) {
         // exponent > 1
@@ -5386,7 +5658,7 @@ public final class Arithmetic {
      *         {@link F#NIL}
      * 
      */
-    private static IExpr powerRealBaseOrRealExponent(final IExpr base, final IExpr exponent) {
+    private static @AllowNIL IExpr powerRealBaseOrRealExponent(final IExpr base, final IExpr exponent) {
       if (exponent.isReal()) {
         IReal realExponent = (IReal) exponent;
         if (base.isPower()) {
@@ -5495,7 +5767,7 @@ public final class Arithmetic {
      * @param exponent a product whose first factor is a fraction <code>n/q</code>
      * @return {@link F#NIL} if there is no such power
      */
-    private static IExpr powerRationalBaseRootExponent(IRational base, IAST exponent) {
+    private static @AllowNIL IExpr powerRationalBaseRootExponent(IRational base, IAST exponent) {
       IFraction fraction = (IFraction) exponent.first();
       IInteger q = fraction.denominator();
       IExpr rest = exponent.rest().oneIdentity1();
@@ -5522,7 +5794,7 @@ public final class Arithmetic {
       return F.Times(rootPart, remainder);
     }
 
-    public static IExpr powerSurd(final IExpr surdAST, final IExpr exponent) {
+    public static @AllowNIL IExpr powerSurd(final IExpr surdAST, final IExpr exponent) {
       IExpr surdArg1 = surdAST.first();
       IExpr surdArg2 = surdAST.second();
       if (surdArg2.isInteger() && exponent.isInteger()) {
@@ -5554,7 +5826,7 @@ public final class Arithmetic {
      * @param exponent
      * @return
      */
-    private static IExpr powerTimesFraction(IAST baseTimes, final IFraction exponent) {
+    private static @AllowNIL IExpr powerTimesFraction(IAST baseTimes, final IFraction exponent) {
       IAST positive = signIntoNegativeSum(baseTimes);
       if (positive.isPresent()) {
         return F.Power(positive.oneIdentity1(), exponent);
@@ -5765,7 +6037,7 @@ public final class Arithmetic {
      * @param arg2 equals <code>-1</code> or <code>-1.0</code>
      * @return {@link F#NIL} if the transformation isn't possible.
      */
-    private static IExpr powerTimesInverse(final IAST timesAST, final IReal arg2) {
+    private static @AllowNIL IExpr powerTimesInverse(final IAST timesAST, final IReal arg2) {
       IASTAppendable resultAST = F.NIL;
       for (int i = 1; i < timesAST.size(); i++) {
         final IExpr arg = timesAST.get(i);
@@ -5791,7 +6063,7 @@ public final class Arithmetic {
      * @param exponent
      * @return
      */
-    private static IExpr powerTimesN(IAST baseTimes, final IExpr exponent) {
+    private static @AllowNIL IExpr powerTimesN(IAST baseTimes, final IExpr exponent) {
       // for non-rational exponents
       IASTAppendable filterAST = baseTimes.copyHead();
       IASTAppendable restAST = baseTimes.copyHead();
@@ -5837,7 +6109,7 @@ public final class Arithmetic {
      * @param exponent the exponent of the 0-Power expression
      * @return
      */
-    private static IExpr powerZeroArg1(final IExpr exponent) {
+    private static @AllowNIL IExpr powerZeroArg1(final IExpr exponent) {
       EvalEngine engine = EvalEngine.get();
       if (exponent.isZeroResult()) {
         // 0^0
@@ -5922,7 +6194,7 @@ public final class Arithmetic {
      * @param arg2
      * @return <code>F.NIL</code> if no change could be applied
      */
-    public static IExpr sqrtDenest(IRational arg1, IExpr arg2) {
+    public static @AllowNIL IExpr sqrtDenest(IRational arg1, IExpr arg2) {
       if (arg1.isNegative()) {
         return sqrtDenest(arg1.negate(), //
             arg2.negate()).mapExpr(x -> F.Times(F.CI, x));
@@ -5965,7 +6237,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.hasFlag(POWER_EVALED)) {
         return F.NIL;
       }
@@ -5992,7 +6264,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isSqrt()) {
         IExpr base = ast.base();
         if (!base.isAST(S.Plus, 3)) {
@@ -6028,7 +6300,7 @@ public final class Arithmetic {
      *
      * @return {@link F#NIL} if <code>poly</code> doesn't factor into more than one factor
      */
-    private static IExpr sqrtFactorSplit(IExpr poly, EvalEngine engine) {
+    private static @AllowNIL IExpr sqrtFactorSplit(IExpr poly, EvalEngine engine) {
       if (!poly.isPlus() || new VariablesSet(poly).isEmpty()) {
         return F.NIL;
       }
@@ -6341,7 +6613,7 @@ public final class Arithmetic {
   private static final class Rational extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Rational) {
         if (!ast.isAST2()) {
           return Errors.printArgMessage(ast, ARGS_2_2, engine);
@@ -6437,7 +6709,7 @@ public final class Arithmetic {
      * @return <code>Infinity</code>, <code>-Infinity</code> or <code>0</code>; {@link F#NIL} if the
      *         sign of the part isn't known
      */
-    static IExpr infinitePart(IExpr directionPart, EvalEngine engine) {
+    static @AllowNIL IExpr infinitePart(IExpr directionPart, EvalEngine engine) {
       if (directionPart.isRealResult() && directionPart.isNumericFunction(false)) {
         final IExpr sign = engine.evaluate(F.Sign(directionPart));
         if (sign.isZero()) {
@@ -6453,7 +6725,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    public static IExpr evalRe(IExpr expr, EvalEngine engine) {
+    public static @AllowNIL IExpr evalRe(IExpr expr, EvalEngine engine) {
       if (expr.isDirectedInfinity()) {
         IAST directedInfininty = (IAST) expr;
         if (directedInfininty.isComplexInfinity()) {
@@ -6559,7 +6831,7 @@ public final class Arithmetic {
      * @param b the imaginary part of the exponent
      * @return
      */
-    private static IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
+    private static @AllowNIL IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
       if ((a.isNumber() || a.isRealResult()) && //
           (b.isNumber() || b.isRealResult())) {
         if (x.isE()) {
@@ -6587,7 +6859,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().re() : F.NIL;
     }
 
@@ -6652,7 +6924,7 @@ public final class Arithmetic {
 
     private static final class SignTimesFunction implements Function<IExpr, IExpr> {
       @Override
-      public IExpr apply(IExpr expr) {
+      public @AllowNIL IExpr apply(IExpr expr) {
         if (expr.isNumber()) {
           return numberSign((INumber) expr);
         }
@@ -6664,7 +6936,7 @@ public final class Arithmetic {
       }
     }
 
-    public static IExpr numberSign(INumber arg1) {
+    public static @AllowNIL IExpr numberSign(INumber arg1) {
       if (arg1.isReal()) {
         final int signum = ((IReal) arg1).complexSign();
         return F.ZZ(signum);
@@ -6680,10 +6952,17 @@ public final class Arithmetic {
      * <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign function</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr result = F.NIL;
       IExpr evaluated = engine.evaluateNIL(ast.arg1());
       IExpr arg1 = evaluated.isPresent() ? evaluated : ast.arg1();
+      if (arg1.isOverflow()) {
+        return F.C1;
+      }
+      if (arg1.isUnderflow()) {
+        // below the range of numbers: the sign is lost with the digits
+        return F.C0;
+      }
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude, and is dimensionless. Without this
         // the generic path reaches Quantity/Abs(Quantity), which is 0/0 for a zero magnitude.
@@ -6902,7 +7181,7 @@ public final class Arithmetic {
   private static final class SignCmp extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       INumber number = arg1.evalNumber();
       if (number != null) {
@@ -7028,7 +7307,7 @@ public final class Arithmetic {
   private static class Subtract extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg2().isList()
           && ast.arg1().argSize() != ast.arg2().argSize()) {
         // lists of different lengths, which threading could not pair: the difference stays as it
@@ -7171,7 +7450,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr root) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr base, final IExpr root) {
       if (base.isNumber() && root.isInteger()) {
         EvalEngine engine = EvalEngine.get();
         if (base.isNumber() && !base.isReal()) {
@@ -7433,7 +7712,7 @@ public final class Arithmetic {
      * @return the evaluated object or <code>noEvalExpression</code>, if the distribution of an
      *         integer factor isn't possible
      */
-    private static IExpr distributeLeadingFactorCN1(IExpr noEvalExpr, IAST times) {
+    private static @AllowNIL IExpr distributeLeadingFactorCN1(IExpr noEvalExpr, IAST times) {
       IASTAppendable result = F.NIL;
       for (int i = 2; i < times.size(); i++) {
         final IExpr arg = times.get(i);
@@ -7463,7 +7742,7 @@ public final class Arithmetic {
      * @return the evaluated object or <code>noEvalExpression</code>, if the distribution of an
      *         integer factor isn't possible
      */
-    private static IExpr distributeLeadingFactorModulus(IExpr noEvalExpression, IAST times,
+    private static @AllowNIL IExpr distributeLeadingFactorModulus(IExpr noEvalExpression, IAST times,
         IInteger leadingFactor) {
       boolean negative = false;
       if (leadingFactor.isNegative()) {
@@ -7509,7 +7788,16 @@ public final class Arithmetic {
       return noEvalExpression;
     }
 
-    private static IExpr eInfinity(IAST inf, IExpr o1) {
+    private static @AllowNIL IExpr eInfinity(IAST inf, IExpr o1) {
+      if (o1.isUnderflow()) {
+        // Indeterminate expression `1` encountered.
+        Errors.printMessage(S.Infinity, "indet", F.list(F.Times(inf, o1)), EvalEngine.get());
+        return S.Indeterminate;
+      }
+      if (o1.isOverflow()) {
+        // a magnitude beyond the range keeps the direction
+        return inf;
+      }
       if (inf.isComplexInfinity()) {
         if (o1.isZero()) {
           return S.Indeterminate;
@@ -7580,7 +7868,7 @@ public final class Arithmetic {
      *        <code>otherArg</code> are swapped in the original expression
      * @return
      */
-    private static IExpr evalZeroTimesX(final IExpr zeroArg, final IExpr otherArg,
+    private static @AllowNIL IExpr evalZeroTimesX(final IExpr zeroArg, final IExpr otherArg,
         boolean swappedArgs) {
       if (otherArg.isQuantity()) {
         return F.Quantity(F.C0, ((IAST) otherArg).arg2());
@@ -7947,7 +8235,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
+    public @AllowNIL IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
       // Fast path: handle zeros and ones
       if (arg1.isZero())
         return evalZeroTimesX(arg1, arg2, false);
@@ -7986,6 +8274,9 @@ public final class Arithmetic {
           case ID.Underflow:
             if (arg1.isUnderflow()) {
               if (arg2.isNumericFunction()) {
+                // a factor below the range of numbers: an inexact product is zero
+                if (arg2.isInexactNumber())
+                  return Arithmetic.Power.underflowTimes((INumber) arg2);
                 if (EvalEngine.get().isNumericMode())
                   return F.CD0;
                 return arg1;
@@ -8066,6 +8357,9 @@ public final class Arithmetic {
           case ID.Underflow:
             if (arg2.isUnderflow()) {
               if (arg1.isNumericFunction()) {
+                // a factor below the range of numbers: an inexact product is zero
+                if (arg1.isInexactNumber())
+                  return Arithmetic.Power.underflowTimes((INumber) arg1);
                 if (EvalEngine.get().isNumericMode())
                   return F.CD0;
                 return arg2;
@@ -8169,7 +8463,7 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final int size = ast.size();
       if (ast.head() != S.Times) {
         // Times has no operator form, so Times(a,b)[x,y] does not mean "multiply x and y".
@@ -8279,7 +8573,7 @@ public final class Arithmetic {
     }
 
     // public method for steps module
-    public IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int size = ast.size();
       if (size == 3) {
@@ -8419,7 +8713,7 @@ public final class Arithmetic {
      *
      * @return {@link F#NIL} if the rules don't decide the product
      */
-    private static IExpr zeroProduct(IAST ast) {
+    private static @AllowNIL IExpr zeroProduct(IAST ast) {
       boolean exactZero = false;
       boolean machineZero = false;
       boolean machine = false;
@@ -8482,7 +8776,7 @@ public final class Arithmetic {
      * @param exponent2
      * @return
      */
-    private IExpr timesArgPower(final IExpr arg1, IExpr base2, IExpr exponent2) {
+    private @AllowNIL IExpr timesArgPower(final IExpr arg1, IExpr base2, IExpr exponent2) {
       if (arg1.isNumber() && base2.isRational() && exponent2.isFraction()) {
         if (arg1.isExactNumber() && exponent2.isNegative()) {
           // arg1_ * base2_ ^exponent2_ /; expoennt2 negative fraction; base rational; arg1
@@ -8574,7 +8868,7 @@ public final class Arithmetic {
      * @param exponent2
      * @return
      */
-    private IExpr timesRationalPower(final IRational rationalArg1, IExpr base2, IExpr exponent2) {
+    private @AllowNIL IExpr timesRationalPower(final IRational rationalArg1, IExpr base2, IExpr exponent2) {
       EvalEngine engine = EvalEngine.get();
       if (engine.isTogetherMode()) {
         return F.NIL;
@@ -8659,10 +8953,9 @@ public final class Arithmetic {
     }
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (engine.isNumericMode()) {
-        return F.CD0;
-      }
+    public @AllowNIL IExpr numericEval(final IAST ast, EvalEngine engine) {
+      // a power with numeric arguments is evaluated numerically and may return this object:
+      // N replaces it by 0.0, products and sums with inexact numbers absorb it
       return F.NIL;
     }
 
@@ -8728,7 +9021,7 @@ public final class Arithmetic {
    *         is greater than max. Return {@link F#NIL} if the comparison against a bound cannot be
    *         decided.
    */
-  public static IExpr clip(IExpr x, IExpr min, IExpr max, IExpr vMin, IExpr vMax) {
+  public static @AllowNIL IExpr clip(IExpr x, IExpr min, IExpr max, IExpr vMin, IExpr vMax) {
     IReal xReal = x.evalReal();
     if (xReal != null) {
       IReal minReal = min.evalReal();
@@ -8773,7 +9066,7 @@ public final class Arithmetic {
    * @param head {@link S#Re} or {@link S#Im}
    * @return {@link F#NIL} if the argument isn't a sum
    */
-  private static IExpr reImFunctionExpand(IAST ast, ISymbol head) {
+  private static @AllowNIL IExpr reImFunctionExpand(IAST ast, ISymbol head) {
     if (ast.isAST1() && ast.arg1().isPlus()) {
       return ((IAST) ast.arg1()).mapThread(F.unaryAST1(head, F.Slot1), 1);
     }
@@ -8822,7 +9115,7 @@ public final class Arithmetic {
    *
    * @return {@link F#NIL} if evaluation wasn't possible
    */
-  public static IExpr rationalPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp) {
+  public static @AllowNIL IExpr rationalPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp) {
     boolean[] evaled = new boolean[] {false};
 
     OpenIntToIExprHashMap<IExpr> fn1Map = new OpenIntToIExprHashMap<IExpr>();
@@ -8862,7 +9155,7 @@ public final class Arithmetic {
    * @return {@link F#NIL} unless the coefficient of <code>a</code> cancels against
    *         <code>b^m</code>
    */
-  private static IExpr timesPowerQuotient(IExpr a, IFraction c, IExpr b, IFraction d) {
+  private static @AllowNIL IExpr timesPowerQuotient(IExpr a, IFraction c, IExpr b, IFraction d) {
     if (!isPositiveRationalBase(b)) {
       return F.NIL;
     }
@@ -8917,7 +9210,7 @@ public final class Arithmetic {
    *
    * @return {@link F#NIL} if <code>product</code> is no such product
    */
-  private static IExpr splitNumericProductBase(IExpr base, IExpr exponent, IExpr product,
+  private static @AllowNIL IExpr splitNumericProductBase(IExpr base, IExpr exponent, IExpr product,
       IExpr exponent2) {
     if (!product.isTimes() || !base.isNumericFunction(true) || !base.isPositiveResult()) {
       return F.NIL;
@@ -8931,7 +9224,7 @@ public final class Arithmetic {
         F.Power(base, F.Plus(exponent, exponent2)));
   }
 
-  private static IExpr timesPowerPower(IExpr base1, IExpr exponent1, IExpr base2, IExpr exponent2) {
+  private static @AllowNIL IExpr timesPowerPower(IExpr base1, IExpr exponent1, IExpr base2, IExpr exponent2) {
     if (exponent1.isNumber()) {
       if (exponent2.isNumber()) {
         if (base1.equals(base2)) {
@@ -9086,7 +9379,7 @@ public final class Arithmetic {
    *
    * @return {@link F#NIL} if evaluation wasn't possible
    */
-  private static IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IExpr p1Exp,
+  private static @AllowNIL IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IExpr p1Exp,
       IInteger p2Numer, IInteger p2Denom, IExpr p2Exp, boolean setEvaled) {
     boolean[] evaled = new boolean[] {false};
 

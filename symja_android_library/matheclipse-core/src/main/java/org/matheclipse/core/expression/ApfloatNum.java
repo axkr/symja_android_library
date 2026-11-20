@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -27,6 +28,7 @@ import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import org.matheclipse.external.apfloat.ApcomplexTrigMath;
 import org.matheclipse.external.apfloat.ApfloatTrigMath;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -193,7 +195,7 @@ public class ApfloatNum implements INum {
    * <code>value</code> is too large for a double or too small to be one which isn't zero.
    */
   public static INum machineOrPromoted(final Apfloat value) {
-    final double d = value.doubleValue();
+    final double d = nearestDouble(value);
     if (Double.isInfinite(d) || (d == 0.0 && value.signum() != 0)) {
       return valueOf(value.precision(ParserConfig.MACHINE_PRECISION));
     }
@@ -1251,17 +1253,62 @@ public class ApfloatNum implements INum {
   }
 
   /**
+   * The double nearest to <code>value</code>. {@link Apfloat#doubleValue()} drops the digits beyond
+   * the double, so that the exact <code>1*10^50</code> would become
+   * <code>9.999999999999999*10^49</code>.
+   */
+  public static double nearestDouble(final Apfloat value) {
+    if (value.signum() == 0) {
+      return 0.0;
+    }
+    // a number of a lower precision keeps more digits than it shows: they decide too
+    return Double.parseDouble(value.precision(MACHINE_ROUNDING_DIGITS).toString(false));
+  }
+
+  /** The decimal digits from which a machine number is rounded. */
+  static final long MACHINE_ROUNDING_DIGITS = 30;
+
+  /** <code>value</code> with {@link #MACHINE_ROUNDING_DIGITS} digits, its digits taken as exact. */
+  static Apfloat wide(final Apfloat value) {
+    return value.signum() == 0 ? value : value.precision(MACHINE_ROUNDING_DIGITS);
+  }
+
+  /** The machine number <code>d</code> with {@link #MACHINE_ROUNDING_DIGITS} digits. */
+  static Apfloat wide(final double d) {
+    return wide(apfloatOf(d, MACHINE_ROUNDING_DIGITS));
+  }
+
+  /**
+   * Test if the double <code>d</code> nearest to <code>value</code> is a machine number of it: a
+   * normal double, or a zero of a zero.
+   */
+  public static boolean isMachineValue(final double d, final Apfloat value) {
+    return Double.isFinite(d)
+        && (d == 0.0 ? value.signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL);
+  }
+
+  /**
    * The result of an operation of this number with a machine number: the lower precision governs,
    * so it is a machine number (<code>N[Pi,20]*2.</code>), or an arbitrary precision number of
    * machine precision if it lies beyond the double range (<code>N[10^400,20]*2.</code>).
    */
-  private IInexactNumber machineResult(INum result) {
+  public static IInexactNumber machineResult(INum result) {
+    return machineResult(result, result::apfloatValue);
+  }
+
+  /**
+   * See {@link #machineResult(INum)}: the machine number is rounded from <code>wide</code>, the
+   * value of a product with {@link #MACHINE_ROUNDING_DIGITS} digits, not from the result cut to
+   * machine precision. Not for sums: the digits of an arbitrary precision number are cut, not
+   * exact, and a sum which cancels them would get a wrong sign.
+   */
+  public static IInexactNumber machineResult(INum result, Supplier<Apfloat> wide) {
     if (EvalEngine.get().isArbitraryMode()) {
       return result;
     }
-    double d = result.doubleValue();
-    if (Double.isFinite(d)
-        && (d == 0.0 ? result.apfloatValue().signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL)) {
+    final Apfloat exact = wide.get();
+    final double d = nearestDouble(exact);
+    if (isMachineValue(d, exact)) {
       return Num.valueOf(d);
     }
     // beyond the double range: the arbitrary precision number of the 53 bits of a machine number,
@@ -1725,7 +1772,7 @@ public class ApfloatNum implements INum {
    * the working precision, with the argument as the exact number it reads -
    * <code>N(Gamma(10^6), 30)</code> had 24 digits.
    */
-  private static Apfloat gammaOfLarge(Apfloat x, FixedPrecisionApfloatHelper h) {
+  static Apfloat gammaOfLarge(Apfloat x, FixedPrecisionApfloatHelper h) {
     final long scale = x.scale();
     final long precision = h.precision();
     if (scale <= 1 || precision >= Apfloat.INFINITE - scale - 5) {
@@ -1744,7 +1791,8 @@ public class ApfloatNum implements INum {
       // CPD-OFF numeric special-function dispatch per number type
       return valueOf(gammaOfLarge(fApfloat, h()));
     } catch (OverflowException of) {
-      return F.Overflow();
+      // Gamma(x) = Pi/(Sin(Pi*x)*Gamma(1-x)): a negative x whose Gamma(1-x) overflows underflows
+      return fApfloat.signum() > 0 ? F.Overflow() : F.Underflow();
     } catch (ArithmeticException | NumericComputationException are) {
       return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
@@ -1769,6 +1817,9 @@ public class ApfloatNum implements INum {
     if (x instanceof INumber) {
       try {
         return F.complexNum(h().gamma(fApfloat, ((INumber) x).apcomplexValue()));
+      } catch (OverflowException oe) {
+        // an intermediate value beyond the exponent range: no value, no message
+        return F.NIL;
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
@@ -2584,8 +2635,8 @@ public class ApfloatNum implements INum {
         return ApcomplexNum.valueOf(this).add((ApcomplexNum) that);
       }
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(this)
-          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact());
+      return ApcomplexNum.machineResult(ApcomplexNum.valueOf(this)
+          .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact()));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -2649,6 +2700,14 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (fApfloat.isInteger() && fApfloat.signum() > 0 && fApfloat.scale() < 10) {
+        // the power series for |z| <= 3/4
+        Apcomplex series = ApcomplexZetaMath.polylogOfSmallArgument(fApfloat.longValue(),
+            ApcomplexNum.precisionOfParts(((INumber) arg2).apcomplexValue(), h().precision()));
+        if (series != null) {
+          return arg2 instanceof IReal ? valueOf(series.real()) : F.complexNum(series);
+        }
+      }
       if (arg2 instanceof IReal && ((IReal) arg2).isLE(F.C1)) {
         try {
           return valueOf(h().polylog(fApfloat, ((IReal) arg2).apfloatValue()));
@@ -2718,7 +2777,11 @@ public class ApfloatNum implements INum {
       if (fApfloat.compareTo(Apfloat.ZERO) < 0 && !(exponent.scale() <= 18 && exponent.isInteger())) {
         return F.complexNum(h().pow(fApfloat, ((INum) that).apcomplexValue()));
       }
-      return valueOf(pow(fApfloat, exponent, h()));
+      ApfloatNum result = valueOf(pow(fApfloat, exponent, h()));
+      // a machine exponent makes a machine number, as in Plus and Times
+      return that instanceof Num && precision() > ParserConfig.MACHINE_PRECISION
+          ? machineResult(result)
+          : result;
     }
     return INum.super.power(that);
   }
@@ -2813,7 +2876,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum sinh() {
-    return valueOf(h().sinh(fApfloat));
+    // the digits which exp(x)-exp(-x) cancels for a small x are calculated in addition
+    return valueOf(ApfloatTrigMath.sinh(fApfloat, h().precision()));
   }
 
   @Override
@@ -3025,7 +3089,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum tanh() {
-    return valueOf(h().tanh(fApfloat));
+    return valueOf(ApfloatTrigMath.tanh(fApfloat, h().precision()));
   }
 
   @Override
@@ -3042,15 +3106,18 @@ public class ApfloatNum implements INum {
       if (that instanceof ApfloatNum) {
         return multiply((ApfloatNum) that);
       }
-      return machineResult(multiply(ApfloatNum.valueOf(((Num) that).getRealPart())));
+      final double d = ((Num) that).getRealPart();
+      return machineResult(multiply(ApfloatNum.valueOf(d)), () -> wide(fApfloat).multiply(wide(d)));
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
         return ApcomplexNum.valueOf(this).multiply((ApcomplexNum) that);
       }
       ComplexNum cn = (ComplexNum) that;
-      return ApcomplexNum.valueOf(this)
-          .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact());
+      return ApcomplexNum.machineResult(
+          ApcomplexNum.valueOf(this)
+              .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()).asExact()),
+          () -> new Apcomplex(wide(fApfloat)).multiply(ApcomplexNum.wide(cn)));
     }
     throw new java.lang.ArithmeticException();
   }

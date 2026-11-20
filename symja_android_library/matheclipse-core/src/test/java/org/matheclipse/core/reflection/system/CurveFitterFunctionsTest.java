@@ -300,6 +300,56 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * A model <code>{form, cons}</code>: the parameters keep their bounds and the other
+   * inequalities, an equation or a condition on something else is not supported.
+   */
+  @Test
+  public void testFindFitWithConstraints() {
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, c*u + d, {c, d}, u)", //
+        "{c->1.07,d->0.735}");
+    // the bound d >= 1 is reached: c is fitted with d == 1
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, {c*u + d, d >= 1.0}, "
+        + "{c, d}, u)", //
+        "{c->0.969048,d->1.0}");
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, "
+        + "{c*u + d, 1.2 <= d <= 2 && c > 0}, {c, d}, u)", //
+        "{c->0.892857,d->1.2}");
+    // the minimum on the line c + d == 1.5
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, {c*u + d, c + d <= 1.5}, "
+        + "{c, d}, u)", //
+        "{c->1.20556,d->0.294444}");
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, {c*u + d, c + d == 1.5}, "
+        + "{c, d}, u)", //
+        "{c->1.20556,d->0.294444}");
+    // an equation eliminates a parameter
+    check("FindFit({{1, 2.2}, {2, 4.1}, {3, 5.9}, {4, 8.3}}, {a*t + b, a == 20*b}, {a, b}, t)", //
+        "{a->2.00984,b->0.100492}");
+    check("FindFit({{0.5, 1.3}, {1.5, 2.2}, {2.5, 3.6}, {3.5, 4.4}}, {c*u + d, e < 1}, {c, d}, u)", //
+        "FindFit({{0.5,1.3},{1.5,2.2},{2.5,3.6},{3.5,4.4}},{c*u+d,e<1},{c,d},u)");
+  }
+
+  /**
+   * A power u^n of points 0 < u < 1, which the fit drives to a large exponent where its column of
+   * the Jacobian vanishes, stays finite and without messages; with constraints too.
+   */
+  @Test
+  public void testNonlinearModelFitWithConstraints() {
+    check("nm = NonlinearModelFit({{0.1, 1.9}, {0.25, 3.1}, {0.4, 4.0}, {0.6, 4.9}}, "
+        + "k*(u^m + u^n), {{k, 5.0}, {m, 0.3}, {n, 3.0}}, u);"
+        + "{Round(10^3*({k, m} /. nm(\"BestFitParameters\"))), n > 20 /. nm(\"BestFitParameters\"),"
+        + " $MessageList}", //
+        "{{6437,527},True,{}}");
+    check("nm = NonlinearModelFit({{0.1, 1.9}, {0.25, 3.1}, {0.4, 4.0}, {0.6, 4.9}}, "
+        + "{k*(u^m + u^n), m <= 0.5}, {{k, 5.0}, {m, 0.3}, {n, 3.0}}, u);"
+        + "{Round(10^3*({k, m, n} /. nm(\"BestFitParameters\"))), $MessageList}", //
+        "{{6236,500,8727},{}}");
+    check("nm = NonlinearModelFit({{0.1, 1.9}, {0.25, 3.1}, {0.4, 4.0}}, {k*(u^m + u^n), m < 1}, "
+        + "{{k, 5.0}, {m, 0.5}, {n, 3.0}}, u);"
+        + "{Round(10^3*({k, m, n} /. nm(\"BestFitParameters\"))), Round(10^5*nm(\"RSquared\"))}", //
+        "{{6498,534,6514},100000}");
+  }
+
+  /**
    * A model given as a one element list, which is only defined for a numeric parameter: its
    * derivative by the parameter is a central difference.
    */

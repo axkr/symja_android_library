@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -46,7 +47,7 @@ public class AroundFunctions {
   private static final class Around extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
         if (arg1.isDistribution()) {
@@ -78,7 +79,7 @@ public class AroundFunctions {
      * <p>
      * An asymmetric uncertainty <code>{deltaMinus, deltaPlus}</code> is numericized elementwise.
      */
-    private static IExpr numeric(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr numeric(IExpr expr, EvalEngine engine) {
       IExpr numeric = engine.evalN(expr);
       return numeric.equals(expr) ? F.NIL : numeric;
     }
@@ -114,7 +115,7 @@ public class AroundFunctions {
   private static final class MeanAround extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!isFlatVector(arg1)) {
         return meanOfVectors(arg1, engine);
@@ -145,7 +146,7 @@ public class AroundFunctions {
      *
      * @return {@link F#NIL} unless the argument is a matrix of at least two rows
      */
-    private static IExpr meanOfVectors(IExpr data, EvalEngine engine) {
+    private static @AllowNIL IExpr meanOfVectors(IExpr data, EvalEngine engine) {
       int[] dimension = data.isMatrix();
       if (dimension == null || dimension[0] < 2 || dimension[1] < 1) {
         return F.NIL;
@@ -164,7 +165,7 @@ public class AroundFunctions {
      * The inverse-variance weighted mean of a list of {@link S#Around} values: a measurement with
      * a smaller uncertainty counts for more, in proportion to <code>1/delta^2</code>.
      */
-    private static IExpr weightedMean(IAST list, EvalEngine engine) {
+    private static @AllowNIL IExpr weightedMean(IAST list, EvalEngine engine) {
       IASTAppendable weights = F.PlusAlloc(list.size());
       IASTAppendable weightedValues = F.PlusAlloc(list.size());
       for (int i = 1; i < list.size(); i++) {
@@ -213,7 +214,7 @@ public class AroundFunctions {
   private static final class AroundReplace extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
       IAST rules = ast.arg2().isRuleAST() ? F.List(ast.arg2())
           : (ast.arg2().isListOfRules(false) ? (IAST) ast.arg2() : F.NIL);
@@ -291,7 +292,7 @@ public class AroundFunctions {
      *
      * @return {@link F#NIL} if there is not exactly one uncertain rule, or a derivative is unusable
      */
-    private static IExpr secondOrder(IExpr expr, IAST rules, EvalEngine engine) {
+    private static @AllowNIL IExpr secondOrder(IExpr expr, IAST rules, EvalEngine engine) {
       IAST uncertain = F.NIL;
       IASTAppendable substitutions = F.ListAlloc(rules.size());
       for (int i = 1; i < rules.size(); i++) {
@@ -366,7 +367,7 @@ public class AroundFunctions {
   private static final class VectorAround extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!isFlatVector(ast.arg1()) || !ast.arg2().isNonEmptyList()) {
         return F.NIL;
       }
@@ -501,7 +502,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if the sign of a partial derivative cannot be decided
    */
-  private static IExpr timesAsymmetric(IAST timesAST, EvalEngine engine) {
+  private static @AllowNIL IExpr timesAsymmetric(IAST timesAST, EvalEngine engine) {
     IASTAppendable values = F.TimesAlloc(timesAST.size());
     for (int i = 1; i < timesAST.size(); i++) {
       IExpr arg = timesAST.get(i);
@@ -552,7 +553,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if there is nothing to combine, or the operands do not agree
    */
-  public static IExpr plusVectorAround(IAST plusAST, EvalEngine engine) {
+  public static @AllowNIL IExpr plusVectorAround(IAST plusAST, EvalEngine engine) {
     IExpr firstUncertainty = F.NIL;
     int length = -1;
     for (int i = 1; i < plusAST.size(); i++) {
@@ -613,7 +614,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if there is not exactly one {@code VectorAround} factor
    */
-  public static IExpr timesVectorAround(IAST timesAST, EvalEngine engine) {
+  public static @AllowNIL IExpr timesVectorAround(IAST timesAST, EvalEngine engine) {
     IAST vectorAround = F.NIL;
     IASTAppendable scalars = F.TimesAlloc(timesAST.size());
     for (int i = 1; i < timesAST.size(); i++) {
@@ -652,7 +653,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if there is nothing to combine
    */
-  public static IExpr plus(IAST plusAST, EvalEngine engine) {
+  public static @AllowNIL IExpr plus(IAST plusAST, EvalEngine engine) {
     if (plusAST.exists(x -> isAsymmetric(x))) {
       return plusAsymmetric(plusAST, engine);
     }
@@ -686,7 +687,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if there is nothing to combine
    */
-  public static IExpr times(IAST timesAST, EvalEngine engine) {
+  public static @AllowNIL IExpr times(IAST timesAST, EvalEngine engine) {
     if (timesAST.exists(x -> isAsymmetric(x))) {
       return timesAsymmetric(timesAST, engine);
     }
@@ -756,7 +757,7 @@ public class AroundFunctions {
    *         cannot be found; a first argument which is a series is passed on to
    *         {@link ASTSeriesData#unaryFunction(IExpr, ASTSeriesData, EvalEngine)}
    */
-  public static IExpr mapUnaryAround(IAST ast, EvalEngine engine) {
+  public static @AllowNIL IExpr mapUnaryAround(IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (isAround(arg1)) {
       return mapFunction(ast.head(), (IAST) arg1, engine);
@@ -775,7 +776,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if neither argument is an {@code Around}, or the derivative is unusable
    */
-  public static IExpr power(IAST powerAST, EvalEngine engine) {
+  public static @AllowNIL IExpr power(IAST powerAST, EvalEngine engine) {
     IExpr base = powerAST.arg1();
     IExpr exponent = powerAST.arg2();
     ISymbol x = F.Dummy("x");
@@ -802,7 +803,7 @@ public class AroundFunctions {
    *
    * @return {@link F#NIL} if the derivative cannot be found or is not numeric at the value
    */
-  private static IExpr propagate(IExpr expression, IExpr slopeExpression, ISymbol x, IAST around,
+  private static @AllowNIL IExpr propagate(IExpr expression, IExpr slopeExpression, ISymbol x, IAST around,
       EvalEngine engine) {
     IExpr value = around.arg1();
     IExpr derivative = engine.evaluate(F.D(slopeExpression, x));

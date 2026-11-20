@@ -1,7 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.time.DateTimeException;
 import java.time.ZoneId;
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.data.GeoLocations;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,6 +16,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.FileSandbox;
@@ -30,6 +33,8 @@ public class GeodesyFunctions {
     private static void init() {
       S.GeodesyData.setEvaluator(new GeodesyData());
       S.GeoPosition.setEvaluator(new GeoPosition());
+      S.GeoPositionXYZ.setEvaluator(new GeoPositionXYZ());
+      S.GeoPositionENU.setEvaluator(new GeoPositionENU());
       S.FindGeoLocation.setEvaluator(new FindGeoLocation());
       S.DMSList.setEvaluator(new DMSList());
       S.FromDMS.setEvaluator(new FromDMS());
@@ -111,10 +116,11 @@ public class GeodesyFunctions {
   private static class GeoPosition extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        if (ast.arg1().isList()) {
-          double[] list1 = ast.arg1().toDoubleVector();
+        IExpr arg1 = ast.arg1();
+        if (arg1.isList()) {
+          double[] list1 = arg1.toDoubleVector();
           if (list1 != null) {
             if (list1.length == 2) {
               return GeoPositionExpr.newInstance(list1[0], list1[1]);
@@ -122,6 +128,179 @@ public class GeodesyFunctions {
               return GeoPositionExpr.newInstance(list1[0], list1[1], list1[2]);
             }
           }
+        } else if (arg1.isAST(S.GeoPositionXYZ) || arg1.isAST(S.GeoPositionENU)) {
+          double[] geodetic = toGeodetic(arg1, engine);
+          if (geodetic != null) {
+            return GeoPositionExpr.newInstance(geodetic[0], geodetic[1], geodetic[2]);
+          }
+        } else if (arg1.isAST(S.Entity, 3)) {
+          return entityPosition((IAST) arg1, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The <code>"Position"</code> of an entity, from the data function registered for its type.
+     * Modules register their own types, so core needs none of them: a satellite is answered by the
+     * astro module, now.
+     */
+    private static @AllowNIL IExpr entityPosition(IAST entity, EvalEngine engine) {
+      IBuiltInSymbol dataFunction = Entities.dataFunction(entity.arg1());
+      if (dataFunction == null) {
+        return F.NIL;
+      }
+      IExpr position = Entities.ask(dataFunction, engine, entity, F.stringx("Position"));
+      return position instanceof GeoPositionExpr ? position : F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /** The datum which a Cartesian position refers to when none is given. */
+  private static final String DEFAULT_DATUM = "ITRF00";
+
+  /**
+   * The ellipsoid of a <code>GeoPosition</code>, which carries no datum of its own and is taken to
+   * be in the default datum <code>"ITRF00"</code>, on the GRS80 ellipsoid.
+   */
+  private static final ReferenceEllipsoid GEO_POSITION_ELLIPSOID = ReferenceEllipsoid.GRS80;
+
+  /**
+   * The reference ellipsoid of a datum name, or <code>null</code> after printing the
+   * <code>invdtm</code> message.
+   */
+  private static ReferenceEllipsoid datumEllipsoid(ISymbol head, IExpr datum, EvalEngine engine) {
+    ReferenceEllipsoid ellipsoid = datum.isString() ? ReferenceEllipsoid.of(datum.toString()) : null;
+    if (ellipsoid == null) {
+      // Unknown geodetic datum `1`.
+      Errors.printMessage(head, "invdtm", F.List(datum), engine);
+    }
+    return ellipsoid;
+  }
+
+  /** The three machine numbers of a list <code>{a, b, c}</code>, or <code>null</code>. */
+  private static double[] triple(IExpr list) {
+    if (list.isList3()) {
+      return list.toDoubleVector();
+    }
+    return null;
+  }
+
+  /**
+   * The geodetic <code>{latitude, longitude, altitude}</code> of a <code>GeoPosition</code>,
+   * <code>GeoPositionXYZ</code> or <code>GeoPositionENU</code> expression, or <code>null</code> if
+   * it is none of them or not numeric.
+   */
+  private static double[] toGeodetic(IExpr position, EvalEngine engine) {
+    if (position instanceof GeoPositionExpr) {
+      GeoPositionExpr geo = (GeoPositionExpr) position;
+      return new double[] {geo.latitude(), geo.longitude(), geo.altitude()};
+    }
+    if (position.isAST(S.GeoPositionXYZ, 2, 3)) {
+      double[] xyz = triple(position.first());
+      if (xyz == null) {
+        return null;
+      }
+      IExpr datum = position.argSize() == 2 ? position.second() : F.stringx(DEFAULT_DATUM);
+      ReferenceEllipsoid ellipsoid = datumEllipsoid(S.GeoPositionXYZ, datum, engine);
+      return ellipsoid == null ? null : ellipsoid.toGeodetic(xyz[0], xyz[1], xyz[2]);
+    }
+    if (position.isAST(S.GeoPositionENU, 3)) {
+      double[] xyz = enuToCartesian(position, engine);
+      return xyz == null ? null : GEO_POSITION_ELLIPSOID.toGeodetic(xyz[0], xyz[1], xyz[2]);
+    }
+    return null;
+  }
+
+  /**
+   * The Earth-centred Cartesian coordinates of a position expression, on the ellipsoid of
+   * <code>ellipsoid</code> when the position is geodetic. A <code>GeoPositionXYZ</code> keeps its
+   * own coordinates whatever its datum, since ITRF and WGS 84 axes agree far below a millimetre.
+   */
+  private static double[] toCartesian(IExpr position, ReferenceEllipsoid ellipsoid,
+      EvalEngine engine) {
+    if (position.isAST(S.GeoPositionXYZ, 2, 3)) {
+      return triple(position.first());
+    }
+    if (position.isAST(S.GeoPositionENU, 3)) {
+      return enuToCartesian(position, engine);
+    }
+    double[] geodetic = toGeodetic(position, engine);
+    return geodetic == null ? null : ellipsoid.toCartesian(geodetic[0], geodetic[1], geodetic[2]);
+  }
+
+  /**
+   * The rows of the rotation from Earth-centred axes to the local east, north and up axes at the
+   * given geodetic latitude and longitude.
+   */
+  private static double[][] enuAxes(double latitude, double longitude) {
+    double phi = Math.toRadians(latitude);
+    double lambda = Math.toRadians(longitude);
+    double sinPhi = Math.sin(phi);
+    double cosPhi = Math.cos(phi);
+    double sinLambda = Math.sin(lambda);
+    double cosLambda = Math.cos(lambda);
+    return new double[][] { //
+        {-sinLambda, cosLambda, 0.0}, //
+        {-sinPhi * cosLambda, -sinPhi * sinLambda, cosPhi}, //
+        {cosPhi * cosLambda, cosPhi * sinLambda, sinPhi}};
+  }
+
+  /** Earth-centred coordinates of <code>GeoPositionENU({e, n, u}, reference)</code>. */
+  private static double[] enuToCartesian(IExpr enuPosition, EvalEngine engine) {
+    double[] enu = triple(enuPosition.first());
+    double[] reference = toGeodetic(enuPosition.second(), engine);
+    if (enu == null || reference == null) {
+      return null;
+    }
+    double[] origin = GEO_POSITION_ELLIPSOID.toCartesian(reference[0], reference[1], reference[2]);
+    double[][] axes = enuAxes(reference[0], reference[1]);
+    double[] result = origin.clone();
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        // transpose: local axes back to Earth-centred
+        result[i] += axes[j][i] * enu[j];
+      }
+    }
+    return result;
+  }
+
+  private static IAST realTriple(double[] values) {
+    return F.List(F.num(values[0]), F.num(values[1]), F.num(values[2]));
+  }
+
+  /**
+   * <code>GeoPositionXYZ({x, y, z})</code> or <code>GeoPositionXYZ({x, y, z}, datum)</code> - a
+   * position given by Earth-centred, Earth-fixed Cartesian coordinates in meters, in the datum
+   * <code>"ITRF00"</code> unless another is given. <code>GeoPositionXYZ(pos)</code> converts a
+   * <code>GeoPosition</code> or <code>GeoPositionENU</code>. A position is in the datum
+   * <code>"ITRF00"</code>, and a transformation to another datum is not available.
+   */
+  private static class GeoPositionXYZ extends AbstractEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof GeoPositionExpr || arg1.isAST(S.GeoPositionENU, 3)) {
+        if (ast.isAST2()) {
+          IExpr datum = ast.arg2();
+          if (datumEllipsoid(S.GeoPositionXYZ, datum, engine) == null) {
+            return F.NIL;
+          }
+          if (!datum.isString(DEFAULT_DATUM)) {
+            // No direct transformation between datums `1` and `2` is available.
+            return Errors.printMessage(S.GeoPositionXYZ, "datum",
+                F.List(F.stringx(DEFAULT_DATUM), datum), engine);
+          }
+        }
+        double[] xyz = toCartesian(arg1, GEO_POSITION_ELLIPSOID, engine);
+        if (xyz != null) {
+          return ast.isAST2() ? F.binaryAST2(S.GeoPositionXYZ, realTriple(xyz), ast.arg2())
+              : F.unaryAST1(S.GeoPositionXYZ, realTriple(xyz));
         }
       }
       return F.NIL;
@@ -129,7 +308,49 @@ public class GeodesyFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>GeoPositionENU({e, n, u}, ref)</code> - a position given by its east, north and up
+   * offsets in meters from the reference position <code>ref</code>.
+   * <code>GeoPositionENU(pos, ref)</code> converts a <code>GeoPosition</code> or
+   * <code>GeoPositionXYZ</code>.
+   */
+  private static class GeoPositionENU extends AbstractEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr ref = ast.arg2();
+      if (!(ref instanceof GeoPositionExpr) || arg1.isList()) {
+        return F.NIL;
+      }
+      if (arg1 instanceof GeoPositionExpr || arg1.isAST(S.GeoPositionXYZ, 2, 3)
+          || arg1.isAST(S.GeoPositionENU, 3)) {
+        double[] xyz = toCartesian(arg1, GEO_POSITION_ELLIPSOID, engine);
+        if (xyz == null) {
+          return F.NIL;
+        }
+        GeoPositionExpr reference = (GeoPositionExpr) ref;
+        double[] origin = GEO_POSITION_ELLIPSOID.toCartesian(reference.latitude(),
+            reference.longitude(), reference.altitude());
+        double[][] axes = enuAxes(reference.latitude(), reference.longitude());
+        double[] enu = new double[3];
+        for (int i = 0; i < 3; i++) {
+          for (int j = 0; j < 3; j++) {
+            enu[i] += axes[i][j] * (xyz[j] - origin[j]);
+          }
+        }
+        return F.binaryAST2(S.GeoPositionENU, realTriple(enu), ref);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
@@ -140,7 +361,7 @@ public class GeodesyFunctions {
   private static class GeodesyData extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isString()) {
         return F.NIL;
@@ -231,7 +452,7 @@ public class GeodesyFunctions {
    *
    * @return {@link F#NIL} if <code>arg</code> is no angle
    */
-  private static IExpr toDegrees(IExpr arg, EvalEngine engine) {
+  private static @AllowNIL IExpr toDegrees(IExpr arg, EvalEngine engine) {
     if (arg.isQuantity()) {
       IExpr degrees = arg;
       if (!degrees.second().isString(ANGULAR_DEGREES)) {
@@ -254,7 +475,7 @@ public class GeodesyFunctions {
   private static class DMSList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         IAST dms = parseDMS(arg1.toString());
@@ -297,7 +518,7 @@ public class GeodesyFunctions {
   private static class FromDMS extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
         arg1 = parseDMS(arg1.toString());

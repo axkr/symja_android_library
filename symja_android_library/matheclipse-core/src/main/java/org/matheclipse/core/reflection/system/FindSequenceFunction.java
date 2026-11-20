@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -79,6 +80,12 @@ public class FindSequenceFunction extends AbstractEvaluator {
   private final static int HOLONOMIC_MAX_DEGREE = 4;
   private final static int HOLONOMIC_MAX_INHOMOGENEOUS_DEGREE = 3;
   private final static int HOLONOMIC_MAX_ANSATZ = 16;
+
+  /** Largest degree of numerator and denominator of a hypergeometric term ratio. */
+  private final static int HYPERGEOMETRIC_MAX_DEGREE = 3;
+
+  /** Seconds for closing a recurrence with {@code RSolveValue}. */
+  private final static int RSOLVE_SECONDS = 3;
 
   /** Integer bases tried by the exponential de-scaling transform (M5). */
   private final static int[] TRANSFORM_BASES = {2, 3, 4, 5, 6, 7, 8, 9, 10, -2, -3};
@@ -290,6 +297,13 @@ public class FindSequenceFunction extends AbstractEvaluator {
     }
 
     ISymbol n = variable.isSymbol() ? (ISymbol) variable : F.Dummy("n");
+    IExpr pochhammer = pochhammerForm(sequence[0], ratioFunction, k, n, engine);
+    if (pochhammer.isPresent() && validateInVariable(pochhammer, n, sequence, engine)) {
+      if (variable.isPresent()) {
+        return pochhammer;
+      }
+      return engine.evaluate(F.Function(F.subst(pochhammer, n, F.Slot1)));
+    }
     IExpr product = F.Product(ratioFunction, F.List(k, F.C1, F.Subtract(n, F.C1)));
     IExpr closedForm = engine.evaluate(F.Times(sequence[0], product));
     if (closedForm.isFree(S.Product) && !closedForm.isIndeterminate()
@@ -303,6 +317,108 @@ public class FindSequenceFunction extends AbstractEvaluator {
   }
 
   /**
+   * If the term ratio <code>q(k) = r*Product(k+c_i)/Product(k+d_j)</code> has rational roots, the
+   * hypergeometric term <code>a(1)*Product(q(k), {k,1,n-1})</code> as
+   * <code>a(1)*r^(n-1)*Product(Pochhammer(1+c_i, n-1))/Product(Pochhammer(1+d_j, n-1))</code>. A
+   * numerator and a denominator parameter which differ by an integer cancel to a rational function
+   * of <code>n</code>.
+   *
+   * @return the closed form in <code>n</code> or {@link F#NIL}
+   */
+  private static IExpr pochhammerForm(IInteger a1, IExpr ratioFunction, ISymbol k, ISymbol n,
+      EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(ratioFunction));
+    java.util.List<IExpr> upper = new java.util.ArrayList<IExpr>();
+    java.util.List<IExpr> lower = new java.util.ArrayList<IExpr>();
+    IExpr numeratorScale = linearFactorParameters(engine.evaluate(F.Numerator(together)), k, upper,
+        engine);
+    IExpr denominatorScale = linearFactorParameters(engine.evaluate(F.Denominator(together)), k,
+        lower, engine);
+    if (numeratorScale.isNIL() || denominatorScale.isNIL() || upper.isEmpty() && lower.isEmpty()) {
+      return F.NIL;
+    }
+    IExpr m = F.Plus(F.CN1, n);
+    IASTAppendable result = F.TimesAlloc(upper.size() + lower.size() + 2);
+    result.append(a1);
+    result.append(F.Power(engine.evaluate(F.Divide(numeratorScale, denominatorScale)), m));
+    // cancel parameters differing by an integer
+    for (int i = 0; i < upper.size(); i++) {
+      IExpr alpha = upper.get(i);
+      for (int j = 0; j < lower.size(); j++) {
+        IExpr beta = lower.get(j);
+        IExpr shift = engine.evaluate(F.Subtract(beta, alpha));
+        int d = shift.isInteger() ? shift.toIntDefault() : Integer.MIN_VALUE;
+        if (d != Integer.MIN_VALUE && Math.abs(d) <= 16) {
+          // Pochhammer(alpha, m)/Pochhammer(alpha+d, m)
+          IExpr from = d >= 0 ? alpha : beta;
+          for (int s = 0; s < Math.abs(d); s++) {
+            IExpr a = F.Plus(from, F.ZZ(s));
+            IExpr b = F.Plus(from, m, F.ZZ(s));
+            result.append(d >= 0 ? F.Divide(a, b) : F.Divide(b, a));
+          }
+          upper.remove(i--);
+          lower.remove(j);
+          break;
+        }
+      }
+    }
+    for (IExpr alpha : upper) {
+      result.append(alpha.isOne() ? F.Factorial(m) : F.Pochhammer(alpha, m));
+    }
+    for (IExpr beta : lower) {
+      if (beta.isOne()) {
+        result.append(F.Power(F.Factorial(m), F.CN1));
+        continue;
+      }
+      result.append(F.Power(F.Pochhammer(beta, m), F.CN1));
+    }
+    return engine.evaluate(result);
+  }
+
+  /**
+   * Split the polynomial <code>p(k)</code> into <code>c*Product(k+c_i)</code> with rational
+   * <code>c_i</code>; append <code>1+c_i</code> (with multiplicity) to <code>parameters</code>.
+   *
+   * @return the scale <code>c</code> or {@link F#NIL} if <code>p</code> has a non-rational root
+   */
+  private static IExpr linearFactorParameters(IExpr p, ISymbol k, java.util.List<IExpr> parameters,
+      EvalEngine engine) {
+    IExpr factored = engine.evaluate(F.Factor(p));
+    IAST factors = factored.isTimes() ? (IAST) factored : F.Times(factored);
+    IExpr scale = F.C1;
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      int exponent = 1;
+      if (factor.isPower() && factor.exponent().isInteger()) {
+        exponent = factor.exponent().toIntDefault();
+        factor = factor.base();
+      }
+      if (exponent < 1) {
+        return F.NIL;
+      }
+      if (factor.isFree(k)) {
+        if (!factor.isRational()) {
+          return F.NIL;
+        }
+        scale = F.Times(scale, F.Power(factor, F.ZZ(exponent)));
+        continue;
+      }
+      IExpr a = engine.evaluate(F.Coefficient(factor, k, F.C1));
+      IExpr b = engine.evaluate(F.Coefficient(factor, k, F.C0));
+      if (!a.isRational() || a.isZero() || !b.isRational()
+          || !engine.evaluate(F.Exponent(factor, k)).isOne()) {
+        return F.NIL;
+      }
+      scale = F.Times(scale, F.Power(a, F.ZZ(exponent)));
+      IExpr parameter = engine.evaluate(F.Plus(F.C1, F.Divide(b, a)));
+      for (int e = 0; e < exponent; e++) {
+        parameters.add(parameter);
+      }
+    }
+    return engine.evaluate(scale);
+  }
+
+  /**
    * Attempts to express the sampled ratios {@code q[i]} (with {@code q[i]} taken at
    * {@code var=i+1}) as a single rational function {@code (a0+a1*var)/(b0+b1*var)}. Returns that
    * expression or {@link F#NIL} if the samples are not consistent with such a form.
@@ -312,6 +428,78 @@ public class FindSequenceFunction extends AbstractEvaluator {
     if (len < 3) {
       return F.NIL;
     }
+    IExpr linear = fitLinearRatio(q, var, engine);
+    if (linear.isPresent()) {
+      return linear;
+    }
+    for (int degree = 2; degree <= HYPERGEOMETRIC_MAX_DEGREE; degree++) {
+      // 2*degree+1 free coefficients up to scale; at least one more ratio confirms the fit
+      if (len < 2 * degree + 2) {
+        break;
+      }
+      IExpr candidate = fitRatio(q, degree, var, engine);
+      if (candidate.isPresent()) {
+        return candidate;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Fits {@code q(x) = P(x)/Q(x)} with {@code deg P, deg Q <= degree} to all sampled ratios by an
+   * exact null space computation of the linear system {@code P(x) - q(x)*Q(x) = 0}.
+   *
+   * @return the reduced rational function, or {@link F#NIL} if the null space isn't
+   *         one-dimensional
+   */
+  private static IExpr fitRatio(IExpr[] q, int degree, ISymbol var, EvalEngine engine) {
+    IASTAppendable matrix = F.ListAlloc(q.length);
+    for (int i = 0; i < q.length; i++) {
+      IInteger x = F.ZZ(i + 1);
+      IASTAppendable row = F.ListAlloc(2 * degree + 2);
+      IInteger power = F.C1;
+      for (int j = 0; j <= degree; j++) {
+        row.append(power);
+        power = power.multiply(x);
+      }
+      power = F.C1;
+      for (int j = 0; j <= degree; j++) {
+        row.append(engine.evaluate(F.Times(q[i], power)).negate());
+        power = power.multiply(x);
+      }
+      matrix.append(row);
+    }
+    IExpr nullSpace = engine.evaluate(F.NullSpace(matrix));
+    if (!nullSpace.isList() || nullSpace.size() != 2 || !nullSpace.first().isList()) {
+      return F.NIL;
+    }
+    IAST vector = (IAST) nullSpace.first();
+    IASTAppendable numerator = F.PlusAlloc(degree + 1);
+    IASTAppendable denominator = F.PlusAlloc(degree + 1);
+    for (int j = 0; j <= degree; j++) {
+      numerator.append(F.Times(vector.get(j + 1), F.Power(var, F.ZZ(j))));
+      denominator.append(F.Times(vector.get(degree + j + 2), F.Power(var, F.ZZ(j))));
+    }
+    IExpr den = engine.evaluate(denominator.oneIdentity0());
+    if (den.isZero()) {
+      return F.NIL;
+    }
+    IExpr candidate = engine.evaluate(F.Factor(F.Divide(numerator.oneIdentity0(), den)));
+    for (int i = 0; i < q.length; i++) {
+      IExpr value = engine.evaluate(F.subst(candidate, var, F.ZZ(i + 1)));
+      if (!value.equals(q[i])) {
+        return F.NIL;
+      }
+    }
+    return candidate;
+  }
+
+  /**
+   * Fits {@code q(x) = (a0+a1*x)/(b0+b1*x)} from the first three sampled ratios and checks it on
+   * the remaining ones.
+   */
+  private static IExpr fitLinearRatio(IExpr[] q, ISymbol var, EvalEngine engine) {
+    int len = q.length;
     // Build the linear system for [a0, a1, b0, b1] from q(x)*(b0+b1*x) = a0+a1*x, i.e.
     // a0 + a1*x - q*b0 - q*x*b1 = 0. Fix the scale by trying b1=1 first, then b0=1.
     for (int fixed = 0; fixed < 2; fixed++) {
@@ -428,11 +616,14 @@ public class FindSequenceFunction extends AbstractEvaluator {
 
     IExpr closedForm;
     try {
-      closedForm = engine.evaluate(F.ternaryAST3(S.RSolveValue, eqns, F.unaryAST1(a, n), n));
+      // the radicals of a characteristic polynomial of degree 3 or 4 can take very long; the
+      // holonomic recognizer still gives the DifferenceRoot then
+      closedForm = engine.evaluate(F.TimeConstrained(
+          F.ternaryAST3(S.RSolveValue, eqns, F.unaryAST1(a, n), n), F.ZZ(RSOLVE_SECONDS)));
     } catch (RuntimeException rex) {
       return F.NIL;
     }
-    if (closedForm.isFree(n) || !closedForm.isFree(a)) {
+    if (closedForm == S.$Aborted || closedForm.isFree(n) || !closedForm.isFree(a)) {
       return F.NIL;
     }
     if (!validateInVariable(closedForm, n, sequence, engine)) {
@@ -541,6 +732,8 @@ public class FindSequenceFunction extends AbstractEvaluator {
     // polynomial fit (M1)
     IExpr polynomial = findPolynomialFunction(sequence, engine);
     if (polynomial.isPresent()) {
+      // also a high-degree interpolation confirmed by a single term (the first ten Motzkin
+      // numbers give a degree 8 polynomial)
       return createFunction(F.Function(polynomial), variable, engine);
     }
 
@@ -556,12 +749,11 @@ public class FindSequenceFunction extends AbstractEvaluator {
       return result;
     }
 
-    // general holonomic / P-recursive guesser -> DifferenceRoot (M4)
+    // general holonomic / P-recursive guesser -> closed form or DifferenceRoot (M4)
     result = findHolonomicFunction(sequence, variable, engine);
     if (result.isPresent()) {
       return result;
     }
-
     return F.NIL;
   }
 
@@ -699,6 +891,19 @@ public class FindSequenceFunction extends AbstractEvaluator {
       return F.NIL;
     }
 
+    // a closed form of the recurrence, if Product or RSolveValue finds one
+    ISymbol nSymbol = variable.isSymbol() ? (ISymbol) variable : F.Dummy("n");
+    IExpr closedForm = closeRecurrence(seq, p, q, r, nSymbol, engine);
+    if (closedForm.isPresent()) {
+      if (variable.isSymbol()) {
+        return closedForm;
+      }
+      if (variable.isPresent()) {
+        return engine.evaluate(F.subst(closedForm, nSymbol, variable));
+      }
+      return engine.evaluate(F.Function(F.subst(closedForm, nSymbol, F.Slot1)));
+    }
+
     // materialize the 1-indexed DifferenceRoot: sum_i p_i(k)*y(k+i) - q(k) == 0, y(1..r) == seq
     ISymbol y = F.Dummy("y");
     ISymbol k = F.Dummy("k");
@@ -730,6 +935,91 @@ public class FindSequenceFunction extends AbstractEvaluator {
       return F.unaryAST1(diffRoot, variable);
     }
     return F.Function(F.unaryAST1(diffRoot, F.Slot1));
+  }
+
+  /**
+   * Tries to solve the recurrence {@code sum_i p_i(k)*a(k+i) = q(k)}, {@code a(1..r) = seq}: a
+   * homogeneous first order recurrence is a hypergeometric term {@code a(1)*Product(-p_0(k)/p_1(k),
+   * {k,1,n-1})}; any other recurrence is passed to {@code RSolveValue} under a time limit.
+   *
+   * @return a closed form in {@code n} which reproduces every term, or {@link F#NIL}
+   */
+  private static IExpr closeRecurrence(IRational[] seq, IExpr[][] p, IExpr[] q, int r,
+      ISymbol n, EvalEngine engine) {
+    try {
+      ISymbol k = F.Dummy("k");
+      if (r == 1 && q.length == 0) {
+        IExpr ratio = engine.evaluate(
+            F.Factor(F.Divide(F.Negate(buildPoly(p[0], k)), buildPoly(p[1], k))));
+        IExpr closedForm = engine.evaluate(
+            F.Times(seq[0], F.Product(ratio, F.List(k, F.C1, F.Subtract(n, F.C1)))));
+        if (isClosedForm(closedForm, n) && validateRational(closedForm, n, seq, engine)) {
+          return closedForm;
+        }
+      }
+      if (hasConstantCoefficients(p)) {
+        // the C-finite recognizer has already passed this recurrence to RSolveValue
+        return F.NIL;
+      }
+      ISymbol a = F.Dummy("a");
+      IASTAppendable lhs = F.PlusAlloc(r + 2);
+      for (int i = 0; i <= r; i++) {
+        IExpr pI = buildPoly(p[i], n);
+        if (!pI.isZero()) {
+          lhs.append(F.Times(pI, F.unaryAST1(a, i == 0 ? n : F.Plus(n, F.ZZ(i)))));
+        }
+      }
+      IASTAppendable equations = F.ListAlloc(r + 1);
+      equations.append(F.Equal(lhs.oneIdentity0(), q.length == 0 ? F.C0 : buildPoly(q, n)));
+      for (int i = 1; i <= r; i++) {
+        equations.append(F.Equal(F.unaryAST1(a, F.ZZ(i)), seq[i - 1]));
+      }
+      IExpr closedForm = engine.evaluate(F.TimeConstrained(
+          F.ternaryAST3(S.RSolveValue, equations, F.unaryAST1(a, n), n), F.ZZ(RSOLVE_SECONDS)));
+      if (closedForm.isFree(a) && closedForm.isFree(S.RSolveValue) && isClosedForm(closedForm, n)
+          && validateRational(closedForm, n, seq, engine)) {
+        return closedForm;
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /** True if no coefficient polynomial {@code p_i} depends on {@code k}. */
+  private static boolean hasConstantCoefficients(IExpr[][] p) {
+    for (IExpr[] polynomial : p) {
+      for (int j = 1; j < polynomial.length; j++) {
+        if (!polynomial[j].isZero()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** A result in {@code n} without unevaluated products, recurrences or an aborted computation. */
+  private static boolean isClosedForm(IExpr expr, ISymbol n) {
+    return !expr.isFree(n) && expr.isFree(S.Product) && expr.isFree(S.DifferenceRoot)
+        && expr.isFree(S.Sum) && expr.isFree(S.$Aborted) && !expr.isIndeterminate()
+        && !expr.isComplexInfinity();
+  }
+
+  /**
+   * Verifies that {@code expr} evaluates to the rational terms at {@code n = 1, 2, ...}. Like the
+   * C-finite recognizer it rejects a closed form whose values are unsimplified radical expressions,
+   * e.g. the Binet form of a recurrence with irrational characteristic roots; the
+   * {@code DifferenceRoot} is the more useful answer then.
+   */
+  private static boolean validateRational(IExpr expr, ISymbol n, IRational[] seq,
+      EvalEngine engine) {
+    for (int i = 0; i < seq.length; i++) {
+      IExpr value = engine.evaluate(F.subst(expr, n, F.ZZ(i + 1)));
+      if (!value.equals(seq[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -1118,11 +1408,26 @@ public class FindSequenceFunction extends AbstractEvaluator {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // a recognizer which doesn't apply evaluates poles and singular systems on its way, which is
+    // part of the search and not something to report
+    final boolean quietMode = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      return findFunction(ast, engine);
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
+  }
+
+  private static IExpr findFunction(final IAST ast, EvalEngine engine) {
     if (ast.arg1().isList()) {
       IAST list = (IAST) ast.arg1();
       IExpr variable = F.NIL;
       if (ast.isAST2()) {
         variable = ast.arg2();
+      }
+      if (list.argSize() > 2 && list.forAll(x -> x.isList2() && x.first().isInteger())) {
+        return findFromPairs(list, variable, engine);
       }
       IInteger[][] sequences;
       try {
@@ -1183,6 +1488,48 @@ public class FindSequenceFunction extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>FindSequenceFunction({{n1, a1}, {n2, a2}, ...}, n)</code>. Consecutive indices shift the
+   * sequence to start at <code>n=1</code>; indices with gaps stay unevaluated.
+   */
+  private static IExpr findFromPairs(IAST pairs, IExpr variable, EvalEngine engine) {
+    int size = pairs.argSize();
+    IInteger first = (IInteger) pairs.arg1().first();
+    boolean consecutive = true;
+    IASTAppendable values = F.ListAlloc(size);
+    for (int i = 1; i <= size; i++) {
+      IAST pair = (IAST) pairs.get(i);
+      if (!pair.first().equals(first.add(F.ZZ(i - 1)))) {
+        consecutive = false;
+      }
+      values.append(pair.second());
+    }
+    ISymbol n = variable.isSymbol() ? (ISymbol) variable : F.Dummy("n");
+    IExpr closedForm;
+    if (consecutive) {
+      ISymbol m = F.Dummy("m");
+      IExpr found = engine.evaluate(F.binaryAST2(S.FindSequenceFunction, values, m));
+      if (found.isAST(S.FindSequenceFunction)) {
+        return F.NIL;
+      }
+      // m = n - first + 1
+      closedForm = engine.evaluate(F.subst(found, m, F.Plus(n, F.C1, first.negate())));
+      if (engine.evaluate(F.PolynomialQ(closedForm, n)).isTrue()) {
+        closedForm = engine.evaluate(F.Factor(F.Expand(closedForm)));
+      }
+    } else {
+      // indices with gaps are not fitted
+      return F.NIL;
+    }
+    if (variable.isSymbol()) {
+      return closedForm;
+    }
+    if (variable.isPresent()) {
+      return engine.evaluate(F.subst(closedForm, n, variable));
+    }
+    return engine.evaluate(F.Function(F.subst(closedForm, n, F.Slot1)));
   }
 
   @Override

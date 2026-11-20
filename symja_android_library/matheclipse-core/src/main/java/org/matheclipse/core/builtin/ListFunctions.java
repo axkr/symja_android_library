@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -218,7 +219,7 @@ public final class ListFunctions {
      *
      * @return {@link F#NIL} if no iterator variable is a local of a nested scope
      */
-    private IExpr evaluateScoped(final ISymbol[] variables, final IExpr[] index) {
+    private @AllowNIL IExpr evaluateScoped(final ISymbol[] variables, final IExpr[] index) {
       if (fScopeLocals == null) {
         fScopeLocals = org.matheclipse.core.patternmatching.CaptureAvoidance.scopeLocals(fValue);
         collectIteratorVariables(fValue, fScopeLocals);
@@ -542,7 +543,7 @@ public final class ListFunctions {
      *        {@link NoEvalException} for an iterator that does not determine its values, instead of
      *        {@link IIterator#setUp()}
      */
-    private IExpr tableRecursive(boolean throwOnInvalidIterator) {
+    private @AllowNIL IExpr tableRecursive(boolean throwOnInvalidIterator) {
       if (fIndex >= fIterList.size()) {
         try {
           return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
@@ -683,7 +684,7 @@ public final class ListFunctions {
   private static final class Accumulate extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isSparseArray()) {
         // the running sums of a sparse array are dense
@@ -759,7 +760,7 @@ public final class ListFunctions {
   private static final class Append extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isDataset()) {
         // Append holds its arguments, so the dataset is only here once arg1 is evaluated - the
@@ -793,7 +794,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
-      return arg1AST.appendClone(arg2);
+      final IASTAppendable result = arg1AST.appendClone(arg2);
+      EvalEngine.markExtendedList(arg1AST, result, arg2);
+      return result;
     }
 
     @Override
@@ -871,7 +874,7 @@ public final class ListFunctions {
    *
    * @return {@link F#NIL} if <code>target</code> is no such list
    */
-  private static IExpr assignDefinitionListTo(IExpr target, Function<IExpr, IExpr> update,
+  private static @AllowNIL IExpr assignDefinitionListTo(IExpr target, Function<IExpr, IExpr> update,
       EvalEngine engine) {
     if (!target.isAST1() || !target.first().isSymbol()) {
       return F.NIL;
@@ -902,7 +905,7 @@ public final class ListFunctions {
    *
    * @return {@link F#NIL} if {@code target} is not an indexed expression with a value
    */
-  private static IExpr assignIndexedTo(IExpr target, Function<IExpr, IExpr> update,
+  private static @AllowNIL IExpr assignIndexedTo(IExpr target, Function<IExpr, IExpr> update,
       EvalEngine engine) {
     if (!target.isAST() || !target.head().isSymbol() || target.isBuiltInFunction()) {
       return F.NIL;
@@ -963,8 +966,11 @@ public final class ListFunctions {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(head, "normal", F.list(F.C1, ast), EvalEngine.get());
       }
-      return prepend ? ((IAST) symbolValue).appendAtClone(1, value)
-          : ((IAST) symbolValue).appendClone(value);
+      final IAST list = (IAST) symbolValue;
+      final IASTAppendable result =
+          prepend ? list.appendAtClone(1, value) : list.appendClone(value);
+      EvalEngine.markExtendedList(list, result, value);
+      return result;
     }
   }
 
@@ -972,7 +978,7 @@ public final class ListFunctions {
    * Evaluate <code>AppendTo(target, value)</code> or <code>PrependTo(target, value)</code>; the
    * value is evaluated once.
    */
-  private static IExpr appendPrependTo(final IAST ast, boolean prepend, EvalEngine engine) {
+  private static @AllowNIL IExpr appendPrependTo(final IAST ast, boolean prepend, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isASTSizeGE(S.Part, 3) && arg1.first().isSymbol()) {
       ISymbol sym = (ISymbol) arg1.first();
@@ -1184,7 +1190,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IAST prototypeList;
         IExpr head = S.List;
@@ -1341,7 +1347,7 @@ public final class ListFunctions {
   private static final class ArrayPad extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 3 && ast.arg3().isString("Extrapolated")) {
         return extrapolated(ast, engine);
       }
@@ -1388,7 +1394,7 @@ public final class ListFunctions {
      * vector on each side by the polynomial of degree <code>k</code> (default 1) through the
      * <code>k + 1</code> elements at that end. <code>k = Infinity</code> uses all elements.
      */
-    private static IExpr extrapolated(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr extrapolated(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isList() || arg1.argSize() == 0 || ((IAST) arg1).exists(x -> x.isList())) {
         return F.NIL;
@@ -1466,7 +1472,7 @@ public final class ListFunctions {
      *
      * @return {@link F#NIL} if the call is none of these or the margins are invalid
      */
-    private static IExpr padLevels(IAST ast, IAST array, EvalEngine engine) {
+    private static @AllowNIL IExpr padLevels(IAST ast, IAST array, EvalEngine engine) {
       IExpr padding = ast.argSize() > 2 ? ast.arg3() : F.C0;
       boolean named = padding.isString("Fixed") || padding.isString("Periodic")
           || padding.isString("Cyclic") || padding.isString("Reflected")
@@ -1549,7 +1555,7 @@ public final class ListFunctions {
      *
      * @param scheme the named scheme, or <code>null</code> to pad with <code>padding</code>
      */
-    private static IExpr padLevel(IExpr array, int[][] margins, int[] newDimensions, int level,
+    private static @AllowNIL IExpr padLevel(IExpr array, int[][] margins, int[] newDimensions, int level,
         String scheme, IExpr padding, EvalEngine engine) {
       if (level == margins.length) {
         return array;
@@ -1607,7 +1613,7 @@ public final class ListFunctions {
       }
     }
 
-    private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
+    private static @AllowNIL IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
       final int mPad = Math.max(0, m);
       final int nPad = Math.max(0, n);
       final int mTrim = Math.max(0, -m);
@@ -1639,7 +1645,7 @@ public final class ListFunctions {
       return result;
     }
 
-    private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
+    private static @AllowNIL IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
       final int argSize = ast.argSize();
       final int mPad = Math.max(0, m);
       final int nPad = Math.max(0, n);
@@ -1746,7 +1752,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) throws AbortException {
+      public @AllowNIL IExpr apply(final IExpr arg) throws AbortException {
         if (matcher.test(arg)) {
           resultCollection.append(arg);
           if (maximumResults >= 0) {
@@ -1779,7 +1785,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) throws AbortException {
+      public @AllowNIL IExpr apply(final IExpr arg) throws AbortException {
         IExpr temp = function.apply(arg);
         if (temp.isPresent()) {
           resultCollection.append(temp);
@@ -1796,7 +1802,7 @@ public final class ListFunctions {
 
 
     @Override
-    protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
+    protected @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
 
       try {
         boolean includeHeads = options[0].isTrue();
@@ -1951,7 +1957,7 @@ public final class ListFunctions {
   private static final class Catenate extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset is a collection of rows - see IASTDataset#normalizeDataset
       IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
       if (arg1.isList()) {
@@ -2045,7 +2051,7 @@ public final class ListFunctions {
   private static final class Commonest extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isRealVector() && ast.isAST1()) {
         double[] values = arg1.toDoubleVector();
@@ -2161,7 +2167,7 @@ public final class ListFunctions {
   private static final class Complement extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (ast.arg1().isASTOrAssociation() && ast.arg2().isASTOrAssociation()) {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
@@ -2257,7 +2263,7 @@ public final class ListFunctions {
   private static final class Curry extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Curry) {
         // the operator itself
         return F.NIL;
@@ -2335,17 +2341,12 @@ public final class ListFunctions {
   private static final class Composition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Composition) {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        IAST removed = ast.remove(x -> x == S.Identity);
-        IExpr composed = composeTransformationFunctions(removed.orElse(ast));
-        if (composed.isPresent()) {
-          return composed;
-        }
-        return removed;
+        return composition(ast, false);
       }
       if (ast.head().isAST()) {
 
@@ -2367,28 +2368,77 @@ public final class ListFunctions {
     }
 
     /**
+     * Simplify a <code>Composition(...)</code> or <code>RightComposition(...)</code> call:
+     * <code>Identity</code> drops out, a composition of one function is the function, and adjacent
+     * transformation functions are fused.
+     *
+     * @param ast the call with at least one argument
+     * @param rightComposition <code>true</code> for <code>RightComposition(...)</code>
+     * @return {@link F#NIL} if nothing changed
+     */
+    static IExpr composition(IAST ast, boolean rightComposition) {
+      IAST removed = ast.remove(x -> x == S.Identity);
+      IAST functions = removed.orElse(ast);
+      if (functions.isAST0()) {
+        return S.Identity;
+      }
+      if (functions.isAST1()) {
+        return functions.arg1();
+      }
+      IExpr composed = composeTransformationFunctions(functions, rightComposition);
+      if (composed.isPresent()) {
+        return composed;
+      }
+      return removed;
+    }
+
+    /**
      * Fuse runs of adjacent {@link S#TransformationFunction} arguments into a single
      * {@link S#TransformationFunction} of the matrix product of their matrices, because
      * <code>Composition(TransformationFunction(a), TransformationFunction(b))</code> is the
-     * transformation <code>TransformationFunction(a.b)</code>.
+     * transformation <code>TransformationFunction(a.b)</code>. In a
+     * <code>RightComposition(...)</code> the first function is applied first, so the product is
+     * taken in the reverse order: <code>RightComposition(TransformationFunction(a),
+     * TransformationFunction(b))</code> is <code>TransformationFunction(b.a)</code>.
      *
-     * @param composition a <code>Composition(...)</code> expression
+     * @param composition a <code>Composition(...)</code> or <code>RightComposition(...)</code>
+     *        expression
+     * @param rightComposition <code>true</code> if <code>composition</code> applies its arguments
+     *        from left to right
      * @return {@link F#NIL} if no two adjacent {@link S#TransformationFunction}s were found
      */
-    private static IExpr composeTransformationFunctions(IAST composition) {
+    private static @AllowNIL IExpr composeTransformationFunctions(IAST composition,
+        boolean rightComposition) {
       final int size = composition.size();
-      IASTAppendable result = F.ast(S.Composition, size);
+      IASTAppendable result = F.ast(composition.head(), size);
       boolean evaled = false;
       int i = 1;
       while (i < size) {
         int j = i;
-        while (j < size && composition.get(j).isAST(S.TransformationFunction, 2)) {
+        if (composition.get(i).isAST(S.TransformationFunction, 2)) {
+          // only transformations of the same dimension are fused
+          final int dimension = composition.get(i).first().argSize();
           j++;
+          while (j < size && composition.get(j).isAST(S.TransformationFunction, 2)) {
+            if (composition.get(j).first().argSize() != dimension) {
+              // `1` and `2` in Composition have incompatible dimensions.
+              Errors.printMessage(S.TransformationFunction, "comp",
+                  F.List(composition.get(j - 1), composition.get(j)), EvalEngine.get());
+              break;
+            }
+            j++;
+          }
         }
         if (j > i + 1) {
           IASTAppendable dot = F.ast(S.Dot, j - i);
-          for (int k = i; k < j; k++) {
-            dot.append(composition.get(k).first());
+          if (rightComposition) {
+            for (int k = j - 1; k >= i; k--) {
+              dot.append(composition.get(k).first());
+            }
+          } else {
+            for (int k = i; k < j; k++) {
+              dot.append(composition.get(k).first());
+            }
           }
           result.append(F.TransformationFunction(dot));
           evaled = true;
@@ -2438,7 +2488,7 @@ public final class ListFunctions {
       return evaluateComposeList(ast, F.ListAlloc(8));
     }
 
-    public static IExpr evaluateComposeList(final IAST ast, final IASTAppendable resultList) {
+    public static @AllowNIL IExpr evaluateComposeList(final IAST ast, final IASTAppendable resultList) {
       try {
         if ((ast.isAST2()) && (ast.arg1().isAST())) {
           // final EvalEngine engine = EvalEngine.get();
@@ -2488,7 +2538,7 @@ public final class ListFunctions {
   private static final class ConstantArray extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if ((ast.size() >= 3) && (ast.size() <= 5)) {
           int indx1, indx2;
@@ -2601,7 +2651,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) {
+      public @AllowNIL IExpr apply(final IExpr arg) {
         if (matcher.test(arg)) {
           counter++;
         }
@@ -2610,7 +2660,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       boolean includeHeads = option[0].isTrue();
@@ -2688,7 +2738,7 @@ public final class ListFunctions {
   private static final class CountDistinct extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isASTOrAssociation()) {
         final Set<IExpr> map = new HashSet<IExpr>();
@@ -2711,7 +2761,7 @@ public final class ListFunctions {
   private static final class CountDistinctBy extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
         final Set<IExpr> set = new HashSet<IExpr>();
@@ -2742,7 +2792,7 @@ public final class ListFunctions {
    * @param one the operation at one position; {@link F#NIL} leaves <code>ast1</code> unchanged
    * @return {@link F#NIL} if <code>spec</code> is no position specification
    */
-  static IExpr applyAtPositions(IAST ast, IAST ast1, IExpr spec, boolean keys,
+  static @AllowNIL IExpr applyAtPositions(IAST ast, IAST ast1, IExpr spec, boolean keys,
       boolean stopOnArgumentType, Function<IAST, IExpr> many, Function<IAST, IExpr> one,
       EvalEngine engine) {
     try {
@@ -2775,7 +2825,7 @@ public final class ListFunctions {
   private static class Delete extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -2856,7 +2906,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) {
+      public @AllowNIL IExpr apply(final IExpr arg) {
         if (matcher.test(arg)) {
           return S.Null;
         }
@@ -2865,7 +2915,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       if (isPlainAtom(arg1)) {
         // an atom has no parts to delete
@@ -2958,7 +3008,7 @@ public final class ListFunctions {
   private static final class DeleteDuplicates extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -3000,7 +3050,7 @@ public final class ListFunctions {
   private static final class DeleteDuplicatesBy extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         if (ast.arg1().isList() || ast.arg1().isAssociation()) {
           IExpr test = ast.arg2();
@@ -3046,7 +3096,7 @@ public final class ListFunctions {
   private static final class DeleteMissing extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -3128,7 +3178,7 @@ public final class ListFunctions {
   private static class Dispatch extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast instanceof DispatchExpr) {
         return F.NIL;
       }
@@ -3257,7 +3307,7 @@ public final class ListFunctions {
    * A WebSocket frame is read this way - the header is dropped and the payload is what remains - so
    * what comes back has to be a byte array, not the list it was worked out on.
    */
-  private static IExpr byteArrayPart(IAST ast, ByteArrayExpr bytes, EvalEngine engine) {
+  private static @AllowNIL IExpr byteArrayPart(IAST ast, ByteArrayExpr bytes, EvalEngine engine) {
     IASTAppendable onList = ast.copyAppendable();
     onList.set(1, bytes.normal(false));
     IExpr result = engine.evaluate(onList);
@@ -3279,7 +3329,7 @@ public final class ListFunctions {
   private static final class Drop extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -3441,7 +3491,7 @@ public final class ListFunctions {
   private static final class Entropy extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST list = F.NIL;
       if (ast.isAST1()) {
         IAST logAST = F.Log(F.Slot1);
@@ -3555,7 +3605,7 @@ public final class ListFunctions {
   private static final class First extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof org.matheclipse.core.expression.data.DateObjectExpr) {
         // the date list of DateObject(dateList, ...)
@@ -3601,7 +3651,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) throws AbortException {
+      public @AllowNIL IExpr apply(final IExpr arg) throws AbortException {
         if (matcher.test(arg)) {
           throw new ResultException(arg);
         }
@@ -3618,7 +3668,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public IExpr apply(final IExpr arg) throws AbortException {
+      public @AllowNIL IExpr apply(final IExpr arg) throws AbortException {
         IExpr temp = function.apply(arg);
         if (temp.isPresent()) {
           throw new ResultException(temp);
@@ -3628,7 +3678,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       boolean includeHeads = option[0].isTrue();
@@ -3683,7 +3733,7 @@ public final class ListFunctions {
       return ARGS_1_4_1;
     }
 
-    private static IExpr firstCase(final IAST list, final IExpr pattern, IExpr defaultValue,
+    private static @AllowNIL IExpr firstCase(final IAST list, final IExpr pattern, IExpr defaultValue,
         boolean heads, EvalEngine engine) {
       if (pattern.isRuleAST()) {
         Function<IExpr, IExpr> function = Functors.rules(pattern, engine);
@@ -3802,7 +3852,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       boolean includeHeads = option[0].isTrue();
@@ -3870,7 +3920,7 @@ public final class ListFunctions {
   private static final class Fold extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
@@ -3927,7 +3977,7 @@ public final class ListFunctions {
   private static final class FoldList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg2 = ast.arg2();
         if (ast.size() == 3) {
@@ -4002,7 +4052,7 @@ public final class ListFunctions {
     private static final int MAX_STATE_LENGTH = 1_000_000;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr rules = ast.arg1();
       IExpr state = ast.arg2();
       if (!(state.isString() || state.isList())
@@ -4043,7 +4093,7 @@ public final class ListFunctions {
     }
 
     /** One step of the system, or {@link F#NIL} if the state grows too long. */
-    private static IExpr substitute(IExpr rules, IExpr state, EvalEngine engine) {
+    private static @AllowNIL IExpr substitute(IExpr rules, IExpr state, EvalEngine engine) {
       if (state.isString()) {
         IExpr next = engine.evaluate(F.binaryAST2(S.StringReplace, state, rules));
         if (!next.isString() || next.toString().length() > MAX_STATE_LENGTH) {
@@ -4090,7 +4140,7 @@ public final class ListFunctions {
   private static final class SubsetMap extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST call = ast;
       if (ast.head().isAST(S.SubsetMap, 3)) {
         if (!ast.isAST1()) {
@@ -4114,7 +4164,7 @@ public final class ListFunctions {
       return evaluateSubsetMap(call, engine);
     }
 
-    private static IExpr evaluateSubsetMap(final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr evaluateSubsetMap(final IAST ast, EvalEngine engine) {
       final IExpr function = ast.arg1();
       final IExpr expr = ast.arg2();
       final IExpr spec = ast.arg3();
@@ -4216,7 +4266,7 @@ public final class ListFunctions {
     }
 
     /** A copy of <code>expr</code> with <code>value</code> at <code>position</code>. */
-    private static IExpr setPart(IExpr expr, IAST position, int index, IExpr value) {
+    private static @AllowNIL IExpr setPart(IExpr expr, IAST position, int index, IExpr value) {
       if (index >= position.size()) {
         return value;
       }
@@ -4251,7 +4301,7 @@ public final class ListFunctions {
   private static final class TakeDrop extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
       final IExpr take;
       if (arg1.isASTOrAssociation()) {
@@ -4291,7 +4341,7 @@ public final class ListFunctions {
   private static final class FoldPairList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg3 = ast.arg3();
       if (!arg3.isAST()) {
         // Nonatomic expression expected at position `1` in `2`.
@@ -4365,7 +4415,7 @@ public final class ListFunctions {
   private static final class Gather extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int size = ast.size();
       if (ast.arg1().isAST()) {
         IAST arg1AST = (IAST) ast.arg1();
@@ -4512,7 +4562,7 @@ public final class ListFunctions {
    * @param sameTest the comparator which identifies equal elements
    * @return {@link F#NIL} if <code>arg1</code> is no list or association
    */
-  private static IExpr sortedUnion1(IExpr arg1, SameTestComparator sameTest) {
+  private static @AllowNIL IExpr sortedUnion1(IExpr arg1, SameTestComparator sameTest) {
     if (arg1.isASTOrAssociation()) {
       IAST sorted = EvalAttributes.copySort((IAST) arg1);
       Set<IExpr> set = sorted.asSortedSet(sameTest);
@@ -4530,7 +4580,7 @@ public final class ListFunctions {
   private static final class GroupBy extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows - but only when the
       // grouping key is a function. A string names a *column*, and grouping a dataset on one of
       // its columns is something only matheclipse-dataset can do, through dataset[GroupBy[name]];
@@ -4569,7 +4619,7 @@ public final class ListFunctions {
      * @param engine
      * @return
      */
-    private IExpr recurseGroupBy(IAST list, IAST listOfHeads, int positionOfHeads, IAST ast,
+    private @AllowNIL IExpr recurseGroupBy(IAST list, IAST listOfHeads, int positionOfHeads, IAST ast,
         EvalEngine engine) {
       IExpr arg = listOfHeads.get(positionOfHeads);
       IExpr rule;
@@ -4664,7 +4714,7 @@ public final class ListFunctions {
   private static final class Intersection extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize > 0) {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
@@ -4719,7 +4769,7 @@ public final class ListFunctions {
   private static class Insert extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -4850,7 +4900,7 @@ public final class ListFunctions {
      * Byte arrays join into a byte array, the way lists join into a list. Reassembling a request
      * that arrived in several packets is written as <code>Join @@ pieces</code>.
      */
-    private static IExpr joinByteArrays(IAST ast) {
+    private static @AllowNIL IExpr joinByteArrays(IAST ast) {
       if (ast.argSize() == 0) {
         return F.NIL;
       }
@@ -4873,7 +4923,7 @@ public final class ListFunctions {
      *
      * @return {@link F#NIL} if the lists have different lengths above the level
      */
-    private static IExpr joinAtLevel(IAST arrays, int level, EvalEngine engine) {
+    private static @AllowNIL IExpr joinAtLevel(IAST arrays, int level, EvalEngine engine) {
       if (level == 1) {
         return engine.evaluate(arrays.setAtCopy(0, S.Join));
       }
@@ -4916,7 +4966,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr bytes = joinByteArrays(ast);
       if (bytes.isPresent()) {
         return bytes;
@@ -5114,7 +5164,7 @@ public final class ListFunctions {
   private static final class Last extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr last = arg1.size() > 1 ? arg1.last() : F.NIL;
       if (last.isPresent()) {
@@ -5235,7 +5285,7 @@ public final class ListFunctions {
   private static final class LengthWhile extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isASTOrAssociation()) {
@@ -5381,7 +5431,7 @@ public final class ListFunctions {
   private static final class Level extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       boolean includeHeads = option[0].isTrue();
@@ -5553,7 +5603,7 @@ public final class ListFunctions {
   private static final class NearestFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.head() == S.NearestFunction || !ast.head().isAST(S.NearestFunction)
           || ast.head().argSize() < 1) {
         return F.NIL;
@@ -5611,7 +5661,7 @@ public final class ListFunctions {
     private static final int ALL_NEAREST = -1;
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       if (ast.headID() != ID.Nearest) {
         // Nearest(data, options) is a NearestFunction, which is applied to the point
@@ -5870,7 +5920,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       if (ast.argSize() == 1) {
         IExpr head = ast.head();
@@ -6124,7 +6174,7 @@ public final class ListFunctions {
      * @return the elements of <code>list</code> those values in the corresponding position in
      *         <code>selection</code> match with <code>matcher</code>.
      */
-    private static IExpr pickRecursive(IAST list, IAST selection, IPatternMatcher matcher) {
+    private static @AllowNIL IExpr pickRecursive(IAST list, IAST selection, IPatternMatcher matcher) {
       final IAssociation association = list.isAssociation() ? (IAssociation) list : null;
       final IAssociation selectionAssociation =
           selection.isAssociation() ? (IAssociation) selection : null;
@@ -6337,7 +6387,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() < 3) {
         return F.NIL;
       }
@@ -6455,7 +6505,7 @@ public final class ListFunctions {
   private static final class Prepend extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1 instanceof ISparseArray) {
         // CPD-OFF Append and Prepend handle associations differently
@@ -6477,7 +6527,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "invdt", F.CEmptyList, EvalEngine.get());
         }
       }
-      return arg1AST.appendAtClone(1, arg2);
+      final IASTAppendable result = arg1AST.appendAtClone(1, arg2);
+      EvalEngine.markExtendedList(arg1AST, result, arg2);
+      return result;
     }
 
     @Override
@@ -6681,7 +6733,7 @@ public final class ListFunctions {
       return result;
     }
 
-    public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
+    public @AllowNIL IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
       List<IIterator<IExpr>> iterList = null;
       try {
         if ((ast.size() > 1) && (ast.size() <= 4)) {
@@ -6714,7 +6766,7 @@ public final class ListFunctions {
 
   private static class RankedMax extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -6759,7 +6811,7 @@ public final class ListFunctions {
 
   private static class RankedMin extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -6940,7 +6992,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize < 2 || argSize > 3) {
         return F.NIL;
@@ -7037,7 +7089,7 @@ public final class ListFunctions {
   private static class ReplaceAll extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
 
       if (ast.size() == 3) {
         IExpr arg1 = ast.arg1();
@@ -7159,7 +7211,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() == 2 && ast.head().isAST(S.ReplaceList, 2)) {
         return F.ReplaceList(ast.first(), ast.head().first());
       }
@@ -7200,7 +7252,7 @@ public final class ListFunctions {
   private static final class ReplacePart extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+    public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       IExpr result = ast.arg1();
       if (result.isSparseArray() && argSize == 2) {
@@ -7289,6 +7341,10 @@ public final class ListFunctions {
             return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
           }
         }
+        IExpr literal = replaceLiteralParts(result, F.list(F.Rule(lhs, rhs)));
+        if (literal.isPresent()) {
+          return literal;
+        }
         // Note: Rubi uses this kind of rule:
         return result.replacePart(lhs, rhs, heads).orElse(result);
       }
@@ -7296,12 +7352,20 @@ public final class ListFunctions {
       final IExpr arg2 = ast.arg2();
       if (arg2.isRuleAST()) {
         IAST ruleAST = (IAST) arg2;
+        IExpr literal = replaceLiteralParts(ast.arg1(), F.list(ruleAST));
+        if (literal.isPresent()) {
+          return literal;
+        }
         return ast.arg1().replacePart(ruleAST.arg1(), ruleAST.arg2(), heads).orElse(ast.arg1());
       }
 
       if (arg2.isList()) {
         IAST listAST = (IAST) arg2;
         if (ast.arg2().isListOfRules()) {
+          IExpr literal = replaceLiteralParts(result, listAST);
+          if (literal.isPresent()) {
+            return literal;
+          }
           IExpr expr = result.replacePart(listAST, heads);
           if (expr.isPresent()) {
             result = expr;
@@ -7319,6 +7383,102 @@ public final class ListFunctions {
       // The expression `1` cannot be used as a part specification
       Errors.printMessage(S.ReplacePart, "pkspec1", F.List(arg2), engine);
       return result;
+    }
+
+    /**
+     * Replace the parts of <code>expr</code> at the literal positions of the rules
+     * <code>{pos1 -> new1, pos2 -> new2, ...}</code> directly, copying only the expressions on the
+     * way to each part. A position is a non-zero integer or a list of them, a negative index
+     * counting from the end; positions which don't exist are skipped.
+     *
+     * A rule for a part inside a part which another rule replaces is dropped.
+     *
+     * @return {@link F#NIL} if a rule is no <code>Rule</code> with a literal position or if a part
+     *         lies inside an association; then the general matcher decides
+     */
+    private static @AllowNIL IExpr replaceLiteralParts(IExpr expr, IAST rules) {
+      if (!expr.isAST() || expr.isAssociation()) {
+        return F.NIL;
+      }
+      final int n = rules.argSize();
+      if (n == 0 || n > 64) {
+        return F.NIL;
+      }
+      int[][] positions = new int[n][];
+      for (int r = 0; r < n; r++) {
+        IExpr rule = rules.get(r + 1);
+        if (!rule.isAST(S.Rule, 3)) {
+          return F.NIL;
+        }
+        IExpr lhs = rule.first();
+        int[] position;
+        if (lhs.isInteger()) {
+          position = new int[] {lhs.toIntDefault()};
+        } else if (lhs.isList() && lhs.argSize() > 0 && ((IAST) lhs).forAll(x -> x.isInteger())) {
+          position = new int[lhs.argSize()];
+          for (int k = 0; k < position.length; k++) {
+            position[k] = lhs.getAt(k + 1).toIntDefault();
+          }
+        } else {
+          return F.NIL;
+        }
+        // resolve the negative indices against the expression
+        IExpr part = expr;
+        for (int k = 0; k < position.length && position != null; k++) {
+          int index = position[k];
+          if (index == 0 || F.isNotPresent(index)) {
+            return F.NIL;
+          }
+          if (!part.isAST() || part.isAssociation()) {
+            if (part.isAssociation()) {
+              return F.NIL;
+            }
+            position = null;
+            break;
+          }
+          int size = part.size();
+          if (index < 0) {
+            index += size;
+            if (index == 0) {
+              // the head: left to the general matcher
+              return F.NIL;
+            }
+          }
+          if (index <= 0 || index >= size) {
+            position = null;
+            break;
+          }
+          position[k] = index;
+          part = ((IAST) part).get(index);
+        }
+        positions[r] = position;
+      }
+      // a part which is replaced isn't visited, so a rule for a position inside it is dropped
+      for (int r = 0; r < n; r++) {
+        for (int q = 0; q < n; q++) {
+          if (r != q && positions[r] != null && positions[q] != null
+              && positions[r].length < positions[q].length
+              && java.util.Arrays.equals(positions[r], 0, positions[r].length, positions[q], 0,
+                  positions[r].length)) {
+            positions[q] = null;
+          }
+        }
+      }
+      IExpr result = expr;
+      // the first rule for a position wins, so the rules are applied from the last one
+      for (int r = n - 1; r >= 0; r--) {
+        if (positions[r] != null) {
+          result = setLiteralPart((IAST) result, positions[r], 0, rules.get(r + 1).second());
+        }
+      }
+      return result;
+    }
+
+    private static IAST setLiteralPart(IAST ast, int[] position, int k, IExpr value) {
+      final int index = position[k];
+      IExpr newPart = k == position.length - 1 ? value
+          : setLiteralPart((IAST) ast.get(index), position, k + 1, value);
+      return ast.setAtCopy(index, newPart);
     }
 
     /** Test if the integer <code>position</code> (a negative index counts from the end) exists. */
@@ -7349,7 +7509,7 @@ public final class ListFunctions {
   private static final class ReplaceRepeated extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isListOfLists() || isListOfRuleSets(arg2)) {
@@ -7563,12 +7723,12 @@ public final class ListFunctions {
   private static final class RightComposition extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.RightComposition) {
         if (ast.isAST0()) {
           return S.Identity;
         }
-        return ast.remove(x -> x == S.Identity);
+        return Composition.composition(ast, true);
       }
       if (ast.head().isAST()) {
 
@@ -7929,7 +8089,7 @@ public final class ListFunctions {
   private static final class Select extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       try {
         if (ast.arg1().isSparseArray()) {
           return engine.evaluate(ast.setAtCopy(1, ((ISparseArray) ast.arg1()).parts()));
@@ -7983,7 +8143,7 @@ public final class ListFunctions {
   private static final class Discard extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (!ast.arg1().isASTOrAssociation()) {
         return F.NIL;
       }
@@ -8017,7 +8177,7 @@ public final class ListFunctions {
   private static final class SelectFirst extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
 
       int argSize = ast.argSize();
       if (argSize > 1) {
@@ -8110,7 +8270,7 @@ public final class ListFunctions {
   private static final class Split extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
         IExpr predicateHead = S.Equal;
         if (ast.isAST2()) {
@@ -8182,7 +8342,7 @@ public final class ListFunctions {
   private static final class SplitBy extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
         return splitByFunction(ast.arg2().makeList(), 1, (IAST) ast.arg1(), engine);
       }
@@ -8194,7 +8354,7 @@ public final class ListFunctions {
       return ARGS_2_2;
     }
 
-    private IExpr splitByFunction(IAST functorList, int pos, IAST list, EvalEngine engine) {
+    private @AllowNIL IExpr splitByFunction(IAST functorList, int pos, IAST list, EvalEngine engine) {
       if (pos >= functorList.size()) {
         return F.NIL;
       }
@@ -8241,7 +8401,7 @@ public final class ListFunctions {
   private static final class Subdivide extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
@@ -8416,7 +8576,7 @@ public final class ListFunctions {
      *
      * @return {@link F#NIL}
      */
-    protected static IExpr recursionLimitMessage(ISymbol head, IAST expr, EvalEngine engine) {
+    protected static @AllowNIL IExpr recursionLimitMessage(ISymbol head, IAST expr, EvalEngine engine) {
       int recursionLimit = engine.getRecursionLimit();
       Errors.printMessage(head, "reclim2",
           F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
@@ -8432,7 +8592,7 @@ public final class ListFunctions {
      * @param engine the current evaluation engine
      * @return {@link F#NIL} if no evaluation is possible
      */
-    protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue,
+    protected static @AllowNIL IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue,
         EvalEngine engine) {
       if (ast.size() <= 2) {
         return F.NIL;
@@ -8449,7 +8609,7 @@ public final class ListFunctions {
      * @see Product
      * @see Sum
      */
-    protected static IExpr evaluateTableThrow(final IAST ast, final IAST resultList,
+    protected static @AllowNIL IExpr evaluateTableThrow(final IAST ast, final IAST resultList,
         IExpr defaultValue, EvalEngine engine) {
       if (ast.size() <= 2) {
         return F.NIL;
@@ -8471,7 +8631,7 @@ public final class ListFunctions {
      * @see Product
      * @see Sum
      */
-    protected static IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter,
+    protected static @AllowNIL IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter,
         final IAST resultList, IExpr defaultValue, ISymbol head) {
       final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
       iterList.add(iter);
@@ -8490,7 +8650,7 @@ public final class ListFunctions {
      * @param throwOnInvalidIterator abort on an iterator which does not determine its values
      * @return {@link F#NIL} if no evaluation is possible
      */
-    private static IExpr generate(ISymbol head, IAST ast, List<IIterator<IExpr>> iterList,
+    private static @AllowNIL IExpr generate(ISymbol head, IAST ast, List<IIterator<IExpr>> iterList,
         final IAST resultList, IExpr expr, IExpr defaultValue, boolean throwOnInvalidIterator,
         EvalEngine engine) {
       final TableGenerator generator =
@@ -8647,7 +8807,7 @@ public final class ListFunctions {
   private static final class Tally extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // a Dataset walks as rows, not as a structure - see IASTDataset#normalizeDataset
       final IExpr tallyArg1 = IASTDataset.normalizeDataset(ast.arg1());
       if (!tallyArg1.isListOrAssociation()) {
@@ -8775,7 +8935,7 @@ public final class ListFunctions {
   private static final class Take extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -9046,7 +9206,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows. Asked before anything
         // else because the cleaning below reads a dataset as a plain AST and hands N something it
@@ -9104,7 +9264,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows
       IExpr onRows = IASTDataset.onDatasetRows(ast, engine);
       if (onRows.isPresent()) {
@@ -9153,7 +9313,7 @@ public final class ListFunctions {
      * in the ordering <code>p</code>, the largest (or smallest) first. Elements with equal values
      * keep their order.
      */
-    private IExpr takeByOrdering(IAST list, IExpr values, int n, IExpr p, EvalEngine engine) {
+    private @AllowNIL IExpr takeByOrdering(IAST list, IExpr values, int n, IExpr p, EvalEngine engine) {
       if (!values.isListOrAssociation() || values.argSize() != list.argSize()) {
         return F.NIL;
       }
@@ -9183,7 +9343,7 @@ public final class ListFunctions {
   private static final class TakeList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return ast.arg1();
       }
@@ -9203,7 +9363,7 @@ public final class ListFunctions {
     /**
      * Maps the sequence partition process over `expr` at the required `mapLevel`.
      */
-    private static IExpr mapProcess(IExpr expr, IExpr seq, int depth, int mapLevel,
+    private static @AllowNIL IExpr mapProcess(IExpr expr, IExpr seq, int depth, int mapLevel,
         EvalEngine engine) {
       if (mapLevel == 0) {
         return process(expr, seq, depth, engine);
@@ -9236,7 +9396,7 @@ public final class ListFunctions {
      * Applies `seq` partitioning to the inner elements at `depth` and transposes the newly
      * generated chunks to the outside of the current evaluation block.
      */
-    private static IExpr process(IExpr expr, IExpr seq, int depth, EvalEngine engine) {
+    private static @AllowNIL IExpr process(IExpr expr, IExpr seq, int depth, EvalEngine engine) {
       if (depth == 0) {
         return splitList1D(expr, seq, engine);
       }
@@ -9316,7 +9476,7 @@ public final class ListFunctions {
       }
     }
 
-    private static IExpr splitList1D(IExpr listExpr, IExpr seqsExpr, EvalEngine engine) {
+    private static @AllowNIL IExpr splitList1D(IExpr listExpr, IExpr seqsExpr, EvalEngine engine) {
       if (!listExpr.isASTOrAssociation() && !listExpr.isSparseArray()) {
         return F.NIL;
       }
@@ -9391,7 +9551,7 @@ public final class ListFunctions {
   private static final class TakeWhile extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isASTOrAssociation()) {
@@ -9502,7 +9662,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       VisitorLevelSpecification level = null;
       Function<IExpr, IExpr> tf = x -> x.isASTOrAssociation() ? ((IAST) x).setAtCopy(0, S.Plus) : x;
@@ -9613,7 +9773,7 @@ public final class ListFunctions {
      * @return {@link F#NIL} if the list has less than two elements or one which is not a real
      *         machine number
      */
-    private static IExpr compensatedSum(IAST list) {
+    private static @AllowNIL IExpr compensatedSum(IAST list) {
       final int size = list.argSize();
       if (size < 2) {
         return F.NIL;
@@ -9688,7 +9848,7 @@ public final class ListFunctions {
   private static final class UpTo extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = Sequence.integerValuedReal(ast.arg1());
       return n == ast.arg1() ? F.NIL : ast.setAtCopy(1, n);
     }
@@ -9731,7 +9891,7 @@ public final class ListFunctions {
   private static final class Union extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize > 0) {
         // a Dataset gives a Dataset back - see IASTDataset#onDatasetRows, which takes the rows of
@@ -10005,7 +10165,7 @@ public final class ListFunctions {
     }
   }
 
-  private static IExpr padEvaluate(final IAST ast, EvalEngine engine, boolean isLeft) {
+  private static @AllowNIL IExpr padEvaluate(final IAST ast, EvalEngine engine, boolean isLeft) {
     IExpr list = ast.arg1();
     if (list.isSparseArray()) {
       return SparseArrayExpr.evalNormal(ast, true, engine);
@@ -10183,7 +10343,7 @@ public final class ListFunctions {
    * @param engine
    * @return {@link F#NIL} if not all elements are real
    */
-  private static IExpr rankedMin(IAST listOrAssociation, int n, final IAST ast, EvalEngine engine) {
+  private static @AllowNIL IExpr rankedMin(IAST listOrAssociation, int n, final IAST ast, EvalEngine engine) {
     // TODO choose better algorithm: https://www.baeldung.com/cs/k-smallest-numbers-array
 
     // check for non real elements (especially complex numbers)

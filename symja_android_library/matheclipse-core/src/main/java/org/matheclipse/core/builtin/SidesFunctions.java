@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.Function;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -69,7 +70,7 @@ public class SidesFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr assumptions = F.NIL;
       IExpr generateConditions = F.NIL;
       if (scaled && ast.argSize() >= 2 && ast.last().isRuleAST()
@@ -155,7 +156,7 @@ public class SidesFunctions {
      *
      * @return {@link F#NIL} if the option has another value
      */
-    private IExpr conditionalSides(IAST comparator, IExpr operand, IExpr assumptions,
+    private @AllowNIL IExpr conditionalSides(IAST comparator, IExpr operand, IExpr assumptions,
         IExpr generateConditions, EvalEngine engine) {
       Function<IExpr, IExpr> f = scaling(operand);
       if (f == null || !(generateConditions.isTrue() || generateConditions.isFalse()
@@ -266,7 +267,7 @@ public class SidesFunctions {
    *
    * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
    */
-  private static IExpr shiftSides(IAST comparator, Function<IExpr, IExpr> f) {
+  private static @AllowNIL IExpr shiftSides(IAST comparator, Function<IExpr, IExpr> f) {
     if (isInequalityChain(comparator)) {
       return mapChainValues(comparator, f);
     }
@@ -291,7 +292,7 @@ public class SidesFunctions {
    * @param assumptions the value of the option <code>Assumptions</code> or {@link F#NIL}
    * @return {@link F#NIL} if <code>comparator</code> is no equation or inequality
    */
-  private static IExpr scaleSides(IAST comparator, IExpr c, IExpr assumptions,
+  private static @AllowNIL IExpr scaleSides(IAST comparator, IExpr c, IExpr assumptions,
       Function<IExpr, IExpr> f, EvalEngine engine) {
     if (isInequalityChain(comparator)) {
       // a chain a < b <= c: a negative factor reverses it
@@ -368,7 +369,7 @@ public class SidesFunctions {
    *
    * @return {@link F#NIL} if a <code>ConditionalExpression</code> holds no equation or inequality
    */
-  private static IExpr rightHandSide(IExpr arg1) {
+  private static @AllowNIL IExpr rightHandSide(IExpr arg1) {
     if (arg1.isConditionalExpression()) {
       IExpr a1 = arg1.first();
       if (a1.isComparatorFunction()) {

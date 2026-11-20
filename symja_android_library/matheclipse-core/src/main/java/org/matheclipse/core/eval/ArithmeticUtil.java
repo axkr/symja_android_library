@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
@@ -29,7 +30,7 @@ public class ArithmeticUtil {
     return F.CComplexInfinity;
   }
 
-  public static IExpr powerComplexComplex(final IBigNumber base, final IComplex exponent,
+  public static @AllowNIL IExpr powerComplexComplex(final IBigNumber base, final IComplex exponent,
       EvalEngine engine) {
     if (base.getImaginaryPart().isZero()) {
       IRational a = base.getRealPart();

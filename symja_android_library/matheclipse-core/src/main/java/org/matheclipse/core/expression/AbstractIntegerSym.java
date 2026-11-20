@@ -1535,6 +1535,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
     }
 
+    BigIntegerLimitExceeded.checkPower(bitLength(), exponent);
     long exp = exponent;
     long b2pow = 0;
 

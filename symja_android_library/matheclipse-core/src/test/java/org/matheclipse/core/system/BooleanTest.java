@@ -229,6 +229,91 @@ public class BooleanTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBooleanConvertDecisionTree() {
+    // the Shannon decomposition on the variables in the order they appear; a variable the
+    // remaining function doesn't depend on is not tested
+    check("BooleanConvert(Implies(q, p), \"IF\")", //
+        "If(q,If(p,True,False),True)");
+    check("BooleanConvert(w && (v || u), \"IF\")", //
+        "If(w,If(v,True,If(u,True,False)),False)");
+    check("BooleanConvert(x > 0 && y, \"IF\")", //
+        "If(x>0,If(y,True,False),False)");
+    // "BDT" is the decision tree written with And and Or: If(c, a, b) is (c && a) || (!c && b),
+    // a branch True leaves the literal alone and a branch False is left out
+    check("BooleanConvert(p && (q || !r), \"BDT\")", //
+        "p&&(q||(!q&&!r))");
+    check("BooleanConvert((v || u) && w, \"BDT\")", //
+        "(v&&w)||(!v&&u&&w)");
+    check("BooleanConvert(Equivalent(p, q), \"BDT\")", //
+        "(p&&q)||(!p&&!q)");
+    check("TautologyQ(Equivalent(BooleanConvert(Majority(p, q, r), \"BDT\"), Majority(p, q, r)))", //
+        "True");
+    check("BooleanConvert(p || !p, \"BDT\")", //
+        "True");
+    check("BooleanConvert(p && !p, \"IF\")", //
+        "False");
+    check("BooleanTable(BooleanConvert(Xor(p, q, r, s), \"BDT\"), {p, q, r, s}) == BooleanTable(Xor(p, q, r, s), {p, q, r, s})", //
+        "True");
+    // a decision tree is read back as the boolean expression it is
+    check("TautologyQ(Equivalent(BooleanConvert(Majority(p, q, r), \"IF\"), Majority(p, q, r)))", //
+        "True");
+    check("BooleanConvert(If(p, q, !q))", //
+        "(p&&q)||(!p&&!q)");
+    check("BooleanConvert(Function(#1 && #2), \"IF\")", //
+        "If(#1,If(#2,True,False),False)&");
+    check("BooleanConvert(Function(#1 && #2), \"BDT\")", //
+        "#1&&#2&");
+  }
+
+  @Test
+  public void testBooleanConvertImplies() {
+    // the decision tree written with Implies and Not only
+    check("BooleanConvert(p || q || r, \"IMPLIES\")", //
+        "!p⇒(!q⇒r)");
+    check("BooleanConvert(a || !b, \"IMPLIES\")", //
+        "!a⇒!b");
+    check("BooleanConvert(!a && b, \"IMPLIES\")", //
+        "!(!a⇒!b)");
+    check("BooleanConvert(Implies(a, Implies(b, c)), \"IMPLIES\")", //
+        "a⇒(b⇒c)");
+    check("TautologyQ(Equivalent(BooleanConvert(Xor(p, q, r, s), \"IMPLIES\"), Xor(p, q, r, s)))", //
+        "True");
+    check("BooleanConvert(Function(#1 && #2), \"IMPLIES\")", //
+        "!(#1⇒!#2)&");
+    check("BooleanConvert(p || q || r, \"IMPLIES\") // FullForm", //
+        "Implies(Not(p), Implies(Not(q), r))");
+    check("BooleanConvert(p && q, \"IMPLIES\") // FullForm", //
+        "Not(Implies(p, Not(q)))");
+    check("BooleanConvert(p && q && !r, \"IMPLIES\") // FullForm", //
+        "Not(Implies(p, Implies(q, r)))");
+    check("FreeQ(BooleanConvert(Equivalent(p, q, r), \"IMPLIES\"), And|Or|Xor|Equivalent)", //
+        "True");
+    check("TautologyQ(Equivalent(BooleanConvert(Majority(p, q, r), \"IMPLIES\"), Majority(p, q, r)))", //
+        "True");
+    check("BooleanConvert(p || !p, \"IMPLIES\")", //
+        "True");
+  }
+
+  @Test
+  public void testBooleanConvertFunctionForm() {
+    // the function object applied to the variables in the order they appear
+    check("g = BooleanConvert(q || !p, \"BFF\"); Head(g)[False, False]", //
+        "True");
+    check("Apply(List, g)", //
+        "{q,p}");
+    check("g /. {p -> True, q -> False}", //
+        "False");
+    check("BooleanConvert(g)", //
+        "!p||q");
+    check("TautologyQ(Equivalent(BooleanConvert(BooleanConvert(Xor(p, q, r), \"BFF\")), Xor(p, q, r)))", //
+        "True");
+    check("BooleanConvert(BooleanConvert(p && q, \"BFF\"), \"IF\")", //
+        "If(p,If(q,True,False),False)");
+    check("BooleanConvert(False, \"BFF\")", //
+        "False");
+  }
+
+  @Test
   public void testBooleanCountingFunction() {
     // exactly k true (spec == {k}) -> sum of minterms
     check("BooleanCountingFunction({2}, {a, b, c})", //
@@ -331,11 +416,12 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("BooleanConvert(f)", //
         "!#1&&!#2&");
 
+    // the function object applied to the variables
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
-        "BooleanFunction(Index: 24 Number of variables: 3)");
-    check("f(True,True,False)", //
+        "BooleanFunction(Index: 24 Number of variables: 3)[x,y,z]");
+    check("Head(f)[True,True,False]", //
         "False");
-    check("f(False,True,False)", //
+    check("f /. {x->False, y->True, z->False}", //
         "True");
     check("BooleanConvert(Xor(x,y,z))", //
         "(x&&y&&z)||(x&&!y&&!z)||(!x&&y&&!z)||(!x&&!y&&z)");
@@ -361,7 +447,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "x||!y");
 
     check("f=BooleanConvert(Xor(x,y,z), \"BFF\")", //
-        "BooleanFunction(Index: 24 Number of variables: 3)");
+        "BooleanFunction(Index: 24 Number of variables: 3)[x,y,z]");
     check("BooleanConvert(f)", //
         "(x&&y&&z)||(x&&!y&&!z)||(!x&&y&&!z)||(!x&&!y&&z)");
     check("BooleanTable({f, Xor(x, y, z)}, {x, y, z})", //
@@ -901,7 +987,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("Implies(True, a)", //
         "a");
     check("Implies(a,Implies(b,Implies(True,c)))", //
-        "a⇒b⇒c");
+        "a⇒(b⇒c)");
 
     check("Implies(p,q)", //
         "p⇒q");

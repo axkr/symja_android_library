@@ -125,8 +125,8 @@ public class InsertPositions {
           }
         }
       }
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+      // Cannot insert at position `1` in `2`.
+      throw new ArgumentTypeException("ins", F.list(positions, originalAST));
     }
 
     int p = MapPositions.partIndex(position, positions, originalAST);
@@ -183,8 +183,8 @@ public class InsertPositions {
         }
       }
     }
-    // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+    // Cannot insert at position `1` in `2`.
+    throw new ArgumentTypeException("ins", F.list(positions, originalAST));
   }
 
   /**

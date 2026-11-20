@@ -1,6 +1,7 @@
 package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
@@ -22,6 +23,7 @@ import com.tngtech.archunit.lang.ArchRule;
  * <code>OutputFunctions</code>, <code>Export</code>, <code>ExportString</code>, the servlets and
  * the API server all work against the interface rather than the implementation.
  */
+@ArchTag("slow")
 @AnalyzeClasses(packages = "org.matheclipse")
 public class JGraphTDependencyTest {
 

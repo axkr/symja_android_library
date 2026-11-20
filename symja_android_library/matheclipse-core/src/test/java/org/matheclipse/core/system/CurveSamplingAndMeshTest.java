@@ -138,4 +138,62 @@ public class CurveSamplingAndMeshTest extends ExprEvaluatorTestCase {
         + "{k, 0, 600}))), \"SVG\"), \"evenodd\")", //
         "True");
   }
+
+  @Test
+  public void testParametricPlotBreaksAtPoles() {
+    // a coordinate which runs off to infinity breaks the curve, unless Exclusions -> None
+    check("Cases(ParametricPlot({2*Sec(s), Tan(s)}, {s, 0, 2*Pi}), Line(p_) :> Length(p) > 10, Infinity)", //
+        "{True,True,True}");
+    check("Cases(ParametricPlot({s, Cot(s)}, {s, 0.5, 6}), Line(p_) :> Length(p) > 10, Infinity)", //
+        "{True,True}");
+    check("Cases(ParametricPlot({s, Cot(s)}, {s, 0.5, 6}, Exclusions -> None), Line(p_) :> Length(p) > 10, Infinity)", //
+        "{True}");
+    // the zeros of a coordinate don't break it
+    check("Length(Cases(ParametricPlot({Sin(2*s), Cos(3*s)}, {s, 0, 2*Pi}), _Line, Infinity))", //
+        "1");
+  }
+
+  @Test
+  public void testAutomaticRangeLeavesOutPoles() {
+    // the automatic range is the body of the curve over its variable, not the samples crowded
+    // next to a pole
+    check("y = Last(PlotRange /. AbsoluteOptions(Plot(1/(x + 1/4)^2, {x, -1, 1}), PlotRange)); "
+        + "{First(y), 30 < Last(y) < 100}", //
+        "{0.0,True}");
+    check("y = Last(PlotRange /. AbsoluteOptions(Plot(2/(x - 1), {x, -2, 3}), PlotRange)); "
+        + "-20 < First(y) < -5 && 5 < Last(y) < 20", //
+        "True");
+    check("r = PlotRange /. AbsoluteOptions(ParametricPlot({s, Cot(s)}, {s, 0.5, 6}), PlotRange); "
+        + "{First(r), -10 < r[[2, 1]] < -3 && 3 < r[[2, 2]] < 10}", //
+        "{{0.5,6.0},True}");
+    // the steep end of a bounded curve over a small part of the variable is cut as well
+    check("y = Last(PlotRange /. AbsoluteOptions(Plot(Exp(x/2), {x, 0, 16}), PlotRange)); "
+        + "{First(y), 1000 < Last(y) < 2500}", //
+        "{0.0,True}");
+    check("y = Last(PlotRange /. AbsoluteOptions(Plot(1/(x^2 + 1/100), {x, -1, 1}), PlotRange)); "
+        + "{First(y), 40 < Last(y) < 80}", //
+        "{0.0,True}");
+    // a curve spread evenly over its range keeps all of it
+    check("Max(Abs(Flatten(PlotRange /. AbsoluteOptions(ParametricPlot({Cosh(s), Sinh(s)}, "
+        + "{s, -3, 3}), PlotRange)) - N({1, Cosh(3), -Sinh(3), Sinh(3)}))) < 10^-6", //
+        "True");
+    // mesh points on the curve count like the curve points they sit on
+    check("y = Last(PlotRange /. AbsoluteOptions(Plot(1/(x + 1/4)^2, {x, -1, 1}, Mesh -> All), "
+        + "PlotRange)); {First(y), 30 < Last(y) < 100}", //
+        "{0.0,True}");
+    // on a logarithmic axis an exponential is a straight line and keeps its range, a pole is cut
+    check("Last(PlotRange /. AbsoluteOptions(LogPlot(Exp(x/2), {x, 0, 16}), PlotRange))[[2]] "
+        + "> 0.99*E^8", //
+        "True");
+    check("Last(PlotRange /. AbsoluteOptions(LogPlot(1/(x - 2/5)^2, {x, 0, 1}), PlotRange))[[2]] "
+        + "< 10^6", //
+        "True");
+    check("Last(PlotRange /. AbsoluteOptions(ParametricPlot({s, Exp(s/2)}, {s, 0, 16}, "
+        + "ScalingFunctions -> {None, \"Log\"}), PlotRange))[[2]] > 0.99*E^8", //
+        "True");
+    // a range given in the call stays as it is
+    check("Last(PlotRange /. AbsoluteOptions(ParametricPlot({s, Cot(s)}, {s, 0.5, 6}, "
+        + "PlotRange -> All), PlotRange))[[2]] > 1000", //
+        "True");
+  }
 }

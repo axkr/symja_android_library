@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -189,7 +190,7 @@ public final class Combinatoric {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       List<IAST> la = new ArrayList<IAST>(ast.argSize());
       int resultSize = 1;
       for (int i = 1; i < ast.size(); i++) {
@@ -250,7 +251,7 @@ public final class Combinatoric {
 
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.Cycles) {
         if (ast.hasFlag(Flag.BUILT_IN_EVALED)) {
           return F.NIL;
@@ -331,7 +332,7 @@ public final class Combinatoric {
   private static final class DiceDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -420,7 +421,7 @@ public final class Combinatoric {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (!arg1.isAST()) {
         // Nonatomic expression expected at position `1` in `2`.
@@ -528,7 +529,7 @@ public final class Combinatoric {
   private static class JaccardDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -614,7 +615,7 @@ public final class Combinatoric {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int k = ast.arg2().toMachineInt();
       if (ast.arg1().isAST() && ast.arg1().size() > 1 && k > 0) {
         final IAST listArg0 = (IAST) ast.arg1();
@@ -663,7 +664,7 @@ public final class Combinatoric {
 
     /** {@inheritDoc} */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isAST() && ast.arg2().isInteger()) {
         final IAST listArg0 = (IAST) ast.arg1();
         final int k = ast.get(2).toMachineInt();
@@ -710,7 +711,7 @@ public final class Combinatoric {
   private static final class MatchingDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -771,7 +772,7 @@ public final class Combinatoric {
   private static final class PermutationCycles extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1() && arg1.isAST(S.Cycles, 2)) {
         return CombinatoricUtil.checkedCycles((IAST) arg1, false, engine);
@@ -895,7 +896,7 @@ public final class Combinatoric {
   private static final class PermutationList extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList() && CombinatoricUtil.isPermutationList((IAST) arg1, true) != null) {
         // a permutation list is its own permutation list, extended by fixed points to a length
@@ -1050,7 +1051,7 @@ public final class Combinatoric {
   public static final class PermutationReplace extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isList()) {
@@ -1133,7 +1134,7 @@ public final class Combinatoric {
    */
   private static final class Permute extends AbstractFunctionEvaluator {
 
-    private static IExpr permuteCycles(IAST list, IAST permutationList, final IAST ast) {
+    private static @AllowNIL IExpr permuteCycles(IAST list, IAST permutationList, final IAST ast) {
       IExpr temp = CombinatoricUtil.permutationCycles(permutationList);
       if (temp.isAST(S.Cycles, 2)) {
         IAST permutationMainList = (IAST) temp.first();
@@ -1143,7 +1144,7 @@ public final class Combinatoric {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
@@ -1243,7 +1244,7 @@ public final class Combinatoric {
   private static final class RogersTanimotoDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -1294,7 +1295,7 @@ public final class Combinatoric {
   private static final class RussellRaoDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -1357,7 +1358,7 @@ public final class Combinatoric {
   private static final class Signature extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isAST()) {
         // the arguments of any head, f(b, a) like {b, a}
         IAST list = (IAST) ast.arg1();
@@ -1413,7 +1414,7 @@ public final class Combinatoric {
   private static final class SokalSneathDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;
@@ -1526,7 +1527,7 @@ public final class Combinatoric {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1() && arg1.isList()) {
 
@@ -1650,7 +1651,7 @@ public final class Combinatoric {
   private static final class YuleDissimilarity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] counts = booleanPairCounts(ast);
       if (counts == null) {
         return F.NIL;

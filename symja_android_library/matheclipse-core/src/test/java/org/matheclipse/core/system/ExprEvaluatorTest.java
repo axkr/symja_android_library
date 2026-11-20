@@ -300,12 +300,12 @@ public class ExprEvaluatorTest {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     assertEquals(exprEvaluator.eval("N( 1/(1602176620898*10^(-31)) ,100)").toString(),
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422183`100*10^18");
-    // a literal of 13 digits is a machine number, also inside N(..., 100)
+    // a literal of 13 digits is a machine number, also inside N(..., 100), and stays one
     assertEquals(exprEvaluator.eval("1/(N(0.0000000000000000001602176620898, 100))").toString(),
-        "6.241509125501489`16*10^18");
+        "6.24151*10^18");
     assertEquals(
         exprEvaluator.eval("N[1/(N(0.0000000000000000001602176620898, 100)), 100]").toString(),
-        "6.241509125501489`16*10^18");
+        "6.24151*10^18");
   }
 
   @Test
@@ -322,7 +322,7 @@ public class ExprEvaluatorTest {
 
     assertEquals(
         evalEngine.evaluate("N(1/(N(0.0000000000000000001602176620898, 100)), 100)").toString(),
-        "6.24150912550148874773168803700661408631471451449807867043724545925905722855375699329325800159263815`100*10^18");
+        "6.241509125501489`16*10^18");
   }
 
   @Test

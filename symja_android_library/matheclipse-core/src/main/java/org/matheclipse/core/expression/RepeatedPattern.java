@@ -197,8 +197,8 @@ public class RepeatedPattern extends AbstractPatternSequence {
 
   @Override
   public String fullFormString() {
-    if (fSymbol != null) {
-      // "b:p.." is Pattern(b, Repeated(p))
+    if (fSymbol != null || !isUnbounded()) {
+      // "b:p.." is Pattern(b, Repeated(p)); a bounded repetition has its limits
       return toFullFormAST().fullFormString();
     }
     StringBuilder buf = new StringBuilder();
@@ -654,14 +654,53 @@ public class RepeatedPattern extends AbstractPatternSequence {
   public IAST toFullFormAST() {
 
     // "p.." is Repeated(p), "p..." is RepeatedNull(p)
-    IAST repeated =
-        F.unaryAST1(fZeroArgsAllowed ? S.RepeatedNull : S.Repeated, fRepeatedExpr);
+    final ISymbol head = fZeroArgsAllowed ? S.RepeatedNull : S.Repeated;
+    final IAST repeated;
+    if (isUnbounded()) {
+      repeated = F.unaryAST1(head, fRepeatedExpr);
+    } else if (fMin == fMax) {
+      // Repeated(p, {n})
+      repeated = F.binaryAST2(head, fRepeatedExpr, F.list(limit(fMin)));
+    } else if (fMin == defaultMin()) {
+      // Repeated(p, max)
+      repeated = F.binaryAST2(head, fRepeatedExpr, limit(fMax));
+    } else {
+      // Repeated(p, {min, max})
+      repeated = F.binaryAST2(head, fRepeatedExpr, F.list(limit(fMin), limit(fMax)));
+    }
     // "b:p.." is Pattern(b, Repeated(p))
     return fSymbol != null ? F.binaryAST2(S.Pattern, fSymbol, repeated) : repeated;
   }
 
+  /** The least number of repetitions of <code>p..</code> or <code>p...</code>. */
+  private int defaultMin() {
+    return fZeroArgsAllowed ? 0 : 1;
+  }
+
+  /**
+   * <code>true</code> if the repetition has the limits of <code>p..</code> or <code>p...</code>,
+   * i.e. it is written without a limit argument.
+   */
+  private boolean isUnbounded() {
+    return fMin == defaultMin() && fMax == Integer.MAX_VALUE;
+  }
+
+  /** A number of repetitions as an expression; the extreme int values are infinities. */
+  private static IExpr limit(int n) {
+    if (n == Integer.MAX_VALUE) {
+      return F.CInfinity;
+    }
+    if (n == Integer.MIN_VALUE + 1) {
+      return F.CNInfinity;
+    }
+    return F.ZZ(n);
+  }
+
   @Override
   public String toString() {
+    if (!isUnbounded()) {
+      return toFullFormAST().toString();
+    }
     final StringBuilder buffer = new StringBuilder();
     if (fSymbol != null) {
       buffer.append(fSymbol.toString());
@@ -678,6 +717,9 @@ public class RepeatedPattern extends AbstractPatternSequence {
 
   @Override
   public String toWolframString() {
+    if (!isUnbounded()) {
+      return WolframFormFactory.get().toString(toFullFormAST());
+    }
     final StringBuilder buffer = new StringBuilder();
     if (fSymbol != null) {
       buffer.append(WolframFormFactory.get().toString(fSymbol));

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.math.BigInteger;
@@ -7,6 +8,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -661,6 +663,17 @@ public final class BooleanFunctions {
                 return factory.not(expr2LogicNGFormula(dnf, substituteExpressions));
               }
               break;
+            case ID.If:
+              if (ast.isAST(S.If, 4)) {
+                // If(c, t, f), as the decision trees BooleanConvert writes: (c && t) || (!c && f)
+                final Formula condition = expr2LogicNGFormula(ast.arg1(), substituteExpressions);
+                return factory.or(
+                    factory.and(condition,
+                        expr2LogicNGFormula(ast.arg2(), substituteExpressions)),
+                    factory.and(factory.not(condition),
+                        expr2LogicNGFormula(ast.arg3(), substituteExpressions)));
+              }
+              break;
             case ID.Implies:
               if (ast.isAST(S.Implies, 3)) {
                 return factory.implication(expr2LogicNGFormula(ast.arg1(), substituteExpressions),
@@ -841,7 +854,7 @@ public final class BooleanFunctions {
 
   private static class AllTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isASTOrAssociation()) {
         IAST list = (IAST) arg1;
@@ -893,7 +906,7 @@ public final class BooleanFunctions {
 
   private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -1009,7 +1022,7 @@ public final class BooleanFunctions {
 
   private static class AnyTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
@@ -1038,7 +1051,7 @@ public final class BooleanFunctions {
 
   private static class Between extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isAST(S.CenteredInterval, 3) || arg2.isAST(S.CenteredInterval, 3)) {
@@ -1114,7 +1127,7 @@ public final class BooleanFunctions {
 
   private static class Boole extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isTrue()) {
         return F.C1;
@@ -1155,7 +1168,7 @@ public final class BooleanFunctions {
   private static class BooleanFunction extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BooleanFunction && (ast.argSize() < 1 || ast.argSize() > 4)) {
         return Errors.printMessage(S.BooleanFunction, "argb",
             F.List(S.BooleanFunction, F.ZZ(ast.argSize()), F.C1, F.C4), engine);
@@ -1437,7 +1450,7 @@ public final class BooleanFunctions {
     private static final int SPEC_MULTI = 2;
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr spec = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -1645,7 +1658,7 @@ public final class BooleanFunctions {
 
   private static class BooleanMinimize extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         LogicFormula lf = new LogicFormula();
         Formula formula = lf.expr2LogicNGFormula(ast.arg1(), true);
@@ -1709,7 +1722,7 @@ public final class BooleanFunctions {
      * @param isMinterm true if computing minterms, false for maxterms
      * @return the evaluated expression or F.NIL if evaluation is not possible
      */
-    protected static IExpr minMaxtermsEval(final IAST ast, EvalEngine engine, boolean isMinterm) {
+    protected static @AllowNIL IExpr minMaxtermsEval(final IAST ast, EvalEngine engine, boolean isMinterm) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.argSize() > 1 ? ast.arg2() : null;
 
@@ -2016,7 +2029,7 @@ public final class BooleanFunctions {
      *
      * @param rules the values of the variables of the outer levels
      */
-    private static IExpr substitutionTable(IExpr expr, IAST levels, int level, IAST rules,
+    private static @AllowNIL IExpr substitutionTable(IExpr expr, IAST levels, int level, IAST rules,
         EvalEngine engine) {
       IAST variables = (IAST) levels.get(level);
       int n = variables.argSize();
@@ -2099,7 +2112,7 @@ public final class BooleanFunctions {
       return F.binaryAST2(equalOrUnequalSymbol, lhsAST.rest(), rhs);
     }
 
-    protected static IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
+    protected static @AllowNIL IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
         IExpr a2) {
       IExpr lhs;
       INumber rhs;
@@ -2128,7 +2141,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
@@ -2176,13 +2189,18 @@ public final class BooleanFunctions {
      *        is not decided and may still be simplified; stays empty for two quantities
      * @return {@link S#True}, {@link S#False} or {@link F#NIL} if the equation is not decided
      */
-    static IExpr decideEqual(final IExpr a1, final IExpr a2, EvalEngine engine,
+    static @AllowNIL IExpr decideEqual(final IExpr a1, final IExpr a2, EvalEngine engine,
         IExpr[] expanded) {
       if (a1.isQuantity() && a2.isQuantity()) {
         return BooleanFunctions.quantityEquals((IAST) a1, (IAST) a2);
       }
       if ((a1.isExactNumber() || a1.isString()) && (a2.isExactNumber() || a2.isString())) {
         return a1.equals(a2) ? S.True : S.False;
+      }
+      if ((a1.isOutOfRange() && a2.isNumber()) || (a1.isNumber() && a2.isOutOfRange())
+          || (a1.isOverflow() && a2.isUnderflow()) || (a1.isUnderflow() && a2.isOverflow())) {
+        // a magnitude beyond the range of numbers differs from every number
+        return S.False;
       }
       final IExpr arg1 = a1.isNumber() ? a1 : engine.evaluate(F.expandAll(a1, true, true));
       final IExpr arg2 = a2.isNumber() ? a2 : engine.evaluate(F.expandAll(a2, true, true));
@@ -2225,7 +2243,7 @@ public final class BooleanFunctions {
      * @return {@link S#True} or {@link S#False} if the equation could be decided, {@link F#NIL}
      *         otherwise
      */
-    static IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    static @AllowNIL IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions == null) {
         return F.NIL;
@@ -2263,7 +2281,7 @@ public final class BooleanFunctions {
   private static final class Equivalent extends AbstractFunctionEvaluator
       implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -2338,7 +2356,7 @@ public final class BooleanFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing was evaluated
    */
-  private static IExpr evaluateQuantifier(final IAST ast, IBuiltInSymbol head,
+  private static @AllowNIL IExpr evaluateQuantifier(final IAST ast, IBuiltInSymbol head,
       EvalEngine engine) {
     boolean evaled = false;
     IExpr x = engine.evaluateNIL(ast.arg1());
@@ -2527,7 +2545,7 @@ public final class BooleanFunctions {
      * @return {@link S#True} or {@link S#False} if the relation can be decided, {@link F#NIL}
      *         otherwise
      */
-    protected static IExpr compareDifference(IExpr arg1, IExpr arg2, boolean strict) {
+    protected static @AllowNIL IExpr compareDifference(IExpr arg1, IExpr arg2, boolean strict) {
       if (arg1.isNumericFunction(true) && arg2.isNumericFunction(true)) {
         // a relation between two numbers is already decided by compareTernary()
         return F.NIL;
@@ -2743,7 +2761,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() <= 2) {
         if (ast.isAST1() && ast.arg1().isUndefined()) {
           return S.Undefined;
@@ -2864,6 +2882,13 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
+      if (a0.isOutOfRange() || a1.isOutOfRange()) {
+        int c = compareOutOfRange(a0, a1);
+        if (c != CompareUtil.NOT_COMPARABLE) {
+          return relation(isLessRelation() ? -c : c);
+        }
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
       // two real numeric operands: the one three-way comparison Equal uses too
       int c = CompareUtil.compareNumeric(a0, a1, engine);
       if (c != CompareUtil.NOT_COMPARABLE) {
@@ -2879,6 +2904,38 @@ public final class BooleanFunctions {
         }
         return compareTernary(a0, a1);
       }
+    }
+
+    /**
+     * Compare <code>Overflow()</code>, a magnitude above every number, or <code>Underflow()</code>,
+     * a magnitude between 0 and every positive number, with a real number or with each other.
+     *
+     * @return <code>-1, 1</code> or {@link CompareUtil#NOT_COMPARABLE}
+     */
+    private static int compareOutOfRange(IExpr a0, IExpr a1) {
+      if (a0.isOutOfRange() && a1.isOutOfRange()) {
+        if (a0.isOverflow() == a1.isOverflow()) {
+          return CompareUtil.NOT_COMPARABLE;
+        }
+        return a0.isOverflow() ? 1 : -1;
+      }
+      final boolean swapped = !a0.isOutOfRange();
+      final IExpr outOfRange = swapped ? a1 : a0;
+      final IExpr other = swapped ? a0 : a1;
+      final int c;
+      if (other.isInfinity()) {
+        c = -1;
+      } else if (other.isNegativeInfinity()) {
+        c = 1;
+      } else {
+        // a real number or a real numeric constant like Pi
+        final IReal real = other.isReal() ? (IReal) other : other.evalReal();
+        if (real == null) {
+          return CompareUtil.NOT_COMPARABLE;
+        }
+        c = outOfRange.isOverflow() || !real.isPositive() ? 1 : -1;
+      }
+      return swapped ? -c : c;
     }
 
     /** The answer for <code>c = -1, 0, 1</code> as the result of <code>first &gt; second</code>. */
@@ -2920,7 +2977,7 @@ public final class BooleanFunctions {
       return simplifyCompare(a1, a2, S.Greater, S.Less, true);
     }
 
-    protected final IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
+    protected final @AllowNIL IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
         IBuiltInSymbol oppositeHead, boolean setTrue) {
       if (a1.isInfinity() && a2.isInfinity()) {
         return S.False;
@@ -3092,7 +3149,7 @@ public final class BooleanFunctions {
   private static final class Implies extends AbstractCoreFunctionEvaluator
       implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
       IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
@@ -3175,7 +3232,7 @@ public final class BooleanFunctions {
      *
      * @return the conjunction of the parts, or {@link F#NIL} if every relation is a comparison
      */
-    private static IExpr splitAtUnknownRelations(final IAST ast) {
+    private static @AllowNIL IExpr splitAtUnknownRelations(final IAST ast) {
       int i = 2;
       while (i < ast.size() && getCompSign(ast.get(i)) != UNKNOWN) {
         i += 2;
@@ -3201,7 +3258,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
         return S.True;
       }
@@ -3463,7 +3520,7 @@ public final class BooleanFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr head = ast.head();
         if (head.isAST(operatorHead, 2)) {
@@ -3487,7 +3544,7 @@ public final class BooleanFunctions {
     private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$Max");
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
@@ -3539,7 +3596,7 @@ public final class BooleanFunctions {
       return ARGS_0_INFINITY;
     }
 
-    private static IExpr maximum(IAST list, boolean flattenedList, EvalEngine engine) {
+    private static @AllowNIL IExpr maximum(IAST list, boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
       if (f.isPresent()) {
@@ -3632,7 +3689,7 @@ public final class BooleanFunctions {
     private final static ISymbol MIN_DUMMY_SYMBOL = F.Dummy("$Min");
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       final IAST original = ast;
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluateNIL(copy);
@@ -3740,7 +3797,7 @@ public final class BooleanFunctions {
      * @param nonReal the arguments of <code>flattened</code> without an order, sorted
      * @return {@link F#NIL} if the call is unchanged
      */
-    protected static IExpr unorderedArguments(IAST original, IAST ast, IAST flattened,
+    protected static @AllowNIL IExpr unorderedArguments(IAST original, IAST ast, IAST flattened,
         IAST nonReal, EvalEngine engine) {
       final ISymbol head = ast.topHead();
       final boolean isMax = head == S.Max;
@@ -3891,7 +3948,7 @@ public final class BooleanFunctions {
       return zeros.exists(z -> z.equals(difference) || z.equals(negated));
     }
 
-    private static IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
+    private static @AllowNIL IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isInfinity());
       if (f.isPresent()) {
@@ -3989,7 +4046,7 @@ public final class BooleanFunctions {
 
   private static class MinMax extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isList() || arg1.isAssociation() || arg1.isSparseArray() || arg1.isInterval()
@@ -4063,7 +4120,7 @@ public final class BooleanFunctions {
 
   private static final class Nand extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4130,7 +4187,7 @@ public final class BooleanFunctions {
 
   private static class Negative extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4193,7 +4250,7 @@ public final class BooleanFunctions {
 
   private static class NoneTrue extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = normalSparse(ast.arg1());
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
@@ -4222,7 +4279,7 @@ public final class BooleanFunctions {
 
   private static final class NonNegative extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4285,7 +4342,7 @@ public final class BooleanFunctions {
 
   private static final class NonPositive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4346,7 +4403,7 @@ public final class BooleanFunctions {
 
   private static class Nor extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4391,7 +4448,7 @@ public final class BooleanFunctions {
 
   private static class Not extends AbstractArg1 implements IBooleanFormula {
     @Override
-    public IExpr e1ObjArg(final IExpr o) {
+    public @AllowNIL IExpr e1ObjArg(final IExpr o) {
       if (o.isTrue()) {
         return S.False;
       }
@@ -4442,7 +4499,7 @@ public final class BooleanFunctions {
 
   private static class Or extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -4518,7 +4575,7 @@ public final class BooleanFunctions {
 
   private static final class Positive extends AbstractEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
@@ -4639,7 +4696,7 @@ public final class BooleanFunctions {
 
   private static final class SatisfiabilityInstances extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST userDefinedVariables = F.NIL;
       IExpr arg1 = ast.arg1();
 
@@ -4768,7 +4825,7 @@ public final class BooleanFunctions {
       return ARGS_1_3;
     }
 
-    private static IExpr logicNGSatisfiableQ(IExpr arg1) {
+    private static @AllowNIL IExpr logicNGSatisfiableQ(IExpr arg1) {
       LogicFormula lf = new LogicFormula();
       final Formula formula = lf.expr2LogicNGFormula(arg1, true);
       final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
@@ -4819,7 +4876,7 @@ public final class BooleanFunctions {
       return ARGS_1_2;
     }
 
-    private static IExpr logicNGTautologyQ(IExpr arg1) {
+    private static @AllowNIL IExpr logicNGTautologyQ(IExpr arg1) {
       IExpr temp = SatisfiableQ.logicNGSatisfiableQ(F.Not(arg1));
       if (temp.isPresent()) {
         return temp.isTrue() ? S.False : S.True;
@@ -4846,7 +4903,7 @@ public final class BooleanFunctions {
 
   private static final class Unequal extends Equal {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.exists(x -> x == S.Undefined)) {
         return S.Undefined;
       }
@@ -4915,7 +4972,7 @@ public final class BooleanFunctions {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if nothing could be reduced
    */
-  private static IExpr parityReduce(final IAST ast, boolean negated, EvalEngine engine) {
+  private static @AllowNIL IExpr parityReduce(final IAST ast, boolean negated, EvalEngine engine) {
     if (ast.isEmpty()) {
       return negated ? S.True : S.False;
     }
@@ -4977,7 +5034,7 @@ public final class BooleanFunctions {
    */
   private static class Majority extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int n = ast.argSize();
       int trueCount = 0;
       int falseCount = 0;
@@ -5086,7 +5143,7 @@ public final class BooleanFunctions {
 
   private static class Xor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (isCurriedCall(ast)) {
         return F.NIL;
       }
@@ -5100,7 +5157,7 @@ public final class BooleanFunctions {
   }
 
 
-  private static IExpr quantityEquals(IAST q1, IAST q2) {
+  private static @AllowNIL IExpr quantityEquals(IAST q1, IAST q2) {
     try {
       return org.matheclipse.core.units.QuantityOps.equalsExpr(q1, q2, EvalEngine.get());
     } catch (RuntimeException rex) {
@@ -5121,7 +5178,7 @@ public final class BooleanFunctions {
     return Config.INVALID_INT;
   }
 
-  public static IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
+  public static @AllowNIL IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
     IExpr[] expanded = new IExpr[2];
     IExpr result = Equal.decideEqual(a1, a2, engine, expanded);
     if (result.isTrue()) {
@@ -5262,7 +5319,7 @@ public final class BooleanFunctions {
    * @return {@link F#NIL} if a symbol other than <code>True</code> and <code>False</code> isn't
    *         one of the <code>variables</code>
    */
-  public static IExpr booleanEquationsToFormula(IExpr expr, IAST variables) {
+  public static @AllowNIL IExpr booleanEquationsToFormula(IExpr expr, IAST variables) {
     if (expr.isSymbol()) {
       if (expr.isTrue() || expr.isFalse() || variables.indexOf(expr) > 0) {
         return expr;
@@ -5354,12 +5411,28 @@ public final class BooleanFunctions {
     return new DNFFactorization();
   }
 
-  public static IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
+  public static @AllowNIL IExpr booleanConvert(final IAST ast, EvalEngine engine) throws ValidateException {
     IExpr arg1 = ast.arg1();
     boolean isFunction = false;
     if (arg1.isAST(S.Function, 2)) {
       arg1 = arg1.first();
       isFunction = true;
+    }
+    final String method = ast.isAST2() && ast.arg2().isString() ? ast.arg2().toString() : "";
+    if (DECISION_TREE_FORMS.contains(method)) {
+      if (arg1.isAST() && arg1.argSize() > 0 && engine.evaluate(arg1.head()) instanceof BDDExpr) {
+        // a boolean function object applied to arguments: first written as a formula
+        arg1 = engine.evaluate(F.unaryAST1(S.BooleanConvert, arg1));
+      }
+      if (!(arg1 instanceof BDDExpr)) {
+        IExpr result = decisionTree(arg1, engine);
+        if (method.equals("BDT")) {
+          result = andOrForm(result, new IdentityHashMap<IExpr, IExpr>(), engine);
+        } else if (method.equals("IMPLIES")) {
+          result = impliesForm(result, new IdentityHashMap<IExpr, IExpr>(), engine);
+        }
+        return isFunction ? F.Function(result) : result;
+      }
     }
     if (arg1 instanceof BDDExpr) {
       return booleanConvertBDDExpr((BDDExpr) arg1, isFunction, arg1, ast, engine);
@@ -5372,13 +5445,19 @@ public final class BooleanFunctions {
       }
     }
     if (ast.isAST2() && ast.arg2().isString()) {
-      IStringX arg2 = (IStringX) ast.arg2();
-      String method = arg2.toString();
       if (method.equals("BFF") || method.equals("BooleanFunction")) {
         LogicFormula lf = new LogicFormula();
         Formula formula = lf.expr2LogicNGFormula(arg1, true);
-        BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), false);
-        return isFunction ? F.Function(bddExpr) : bddExpr;
+        if (isFunction) {
+          return F.Function(BDDExpr.newInstance(formula.bdd(), false));
+        }
+        // the function object applied to the variables in the order they appear in the expression
+        IAST variables = variablesInOrder(lf, formula, arg1);
+        if (variables.argSize() == 0) {
+          return formula instanceof CTrue ? S.True : formula instanceof CFalse ? S.False : F.NIL;
+        }
+        BDD bdd = orderedBDD(lf, formula, variables);
+        return variables.apply(BDDExpr.newInstance(bdd, false));
       }
     }
     final String form =
@@ -5395,11 +5474,257 @@ public final class BooleanFunctions {
         conjunctive, engine);
   }
 
-  private static IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
+  /**
+   * The forms which are written from the decision tree of nested <code>If</code>: the tree itself,
+   * its <code>And</code>/<code>Or</code> form and its <code>Implies</code> form.
+   */
+  private static final Set<String> DECISION_TREE_FORMS = Set.of("IF", "BDT", "IMPLIES");
+
+  /**
+   * The variables of a formula as expressions, in the order they first appear in
+   * <code>expr</code>, depth first and from left to right. A variable which doesn't appear as
+   * such, follows in canonical order.
+   */
+  private static IAST variablesInOrder(LogicFormula lf, Formula formula, IExpr expr) {
+    SortedSet<Variable> variables = formula.variables();
+    IASTAppendable list = F.ListAlloc(variables.size());
+    Set<Variable> seen = new HashSet<Variable>();
+    collectVariables(expr, lf, variables, seen, list);
+    if (seen.size() < variables.size()) {
+      IASTAppendable rest = F.ListAlloc(variables.size() - seen.size());
+      for (Variable variable : variables) {
+        if (!seen.contains(variable)) {
+          rest.append(lf.mapToSymbol(variable));
+        }
+      }
+      EvalAttributes.sort(rest);
+      list.appendArgs(rest);
+    }
+    return list;
+  }
+
+  private static void collectVariables(IExpr expr, LogicFormula lf, Set<Variable> variables,
+      Set<Variable> seen, IASTAppendable list) {
+    Variable variable = lf.symbol2variableMap.get(expr);
+    if (variable != null) {
+      if (variables.contains(variable) && seen.add(variable)) {
+        list.append(lf.mapToSymbol(variable));
+      }
+      return;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 1; i < ast.size(); i++) {
+        collectVariables(ast.get(i), lf, variables, seen, list);
+      }
+    }
+  }
+
+  /**
+   * The decision diagram of a formula which tests the variables in the order of the list
+   * <code>variables</code>.
+   */
+  private static BDD orderedBDD(LogicFormula lf, Formula formula, IAST variables) {
+    List<Variable> ordering = new ArrayList<Variable>(variables.argSize());
+    for (int i = 1; i < variables.size(); i++) {
+      ordering.add(lf.symbol2variableMap.get(variables.get(i)));
+    }
+    org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel kernel =
+        new org.logicng.knowledgecompilation.bdds.jbuddy.BDDKernel(lf.getFactory(), ordering, 1000,
+            1000);
+    return org.logicng.knowledgecompilation.bdds.BDDFactory.build(formula, kernel);
+  }
+
+  /**
+   * A boolean expression as a binary decision tree: the Shannon decomposition
+   * <code>If(v, f(v=True), f(v=False))</code> on the variables in the order they appear in
+   * <code>expr</code>, where a variable
+   * the remaining function does not depend on is not tested. The leaves are <code>True</code> and
+   * <code>False</code>.
+   */
+  private static IExpr decisionTree(IExpr expr, EvalEngine engine) {
+    LogicFormula lf = new LogicFormula();
+    Formula formula = lf.expr2LogicNGFormula(expr, true);
+    BDD bdd = orderedBDD(lf, formula, variablesInOrder(lf, formula, expr));
+    org.logicng.knowledgecompilation.bdds.datastructures.BDDNode root = bdd.toLngBdd();
+    Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, Long> sizes =
+        new HashMap<>();
+    long size = decisionTreeSize(root, sizes, engine);
+    if (size > Config.MAX_AST_SIZE) {
+      throw new ASTElementLimitExceeded(size);
+    }
+    return decisionTree(root, lf,
+        new HashMap<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, IExpr>(), engine);
+  }
+
+  /** The number of nodes of the tree which the decision diagram node unfolds into. */
+  private static long decisionTreeSize(
+      org.logicng.knowledgecompilation.bdds.datastructures.BDDNode node,
+      Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, Long> sizes,
+      EvalEngine engine) {
+    if (!node.isInnerNode()) {
+      return 1L;
+    }
+    Long size = sizes.get(node);
+    if (size == null) {
+      engine.checkTimeLimit();
+      long high = decisionTreeSize(node.high(), sizes, engine);
+      long low = decisionTreeSize(node.low(), sizes, engine);
+      size = Math.min(Long.MAX_VALUE / 2, high + low + 2L);
+      sizes.put(node, size);
+    }
+    return size;
+  }
+
+  private static IExpr decisionTree(org.logicng.knowledgecompilation.bdds.datastructures.BDDNode node,
+      LogicFormula lf,
+      Map<org.logicng.knowledgecompilation.bdds.datastructures.BDDNode, IExpr> trees,
+      EvalEngine engine) {
+    if (!node.isInnerNode()) {
+      return node.label() instanceof CTrue ? S.True : S.False;
+    }
+    IExpr tree = trees.get(node);
+    if (tree == null) {
+      engine.checkTimeLimit();
+      tree = F.If(lf.mapToSymbol((Variable) node.label()),
+          decisionTree(node.high(), lf, trees, engine),
+          decisionTree(node.low(), lf, trees, engine));
+      trees.put(node, tree);
+    }
+    return tree;
+  }
+
+  /**
+   * The decision tree <code>If(c, a, b)</code> written with <code>And</code>, <code>Or</code> and
+   * <code>Not</code>: <code>(c &amp;&amp; a) || (!c &amp;&amp; b)</code>, where a branch
+   * <code>True</code> leaves the literal <code>c</code> or <code>!c</code> alone and a branch
+   * <code>False</code> is left out.
+   *
+   * @param trees the forms of the subtrees already written; the tree shares its subtrees
+   */
+  private static IExpr andOrForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine) {
+    return treeForm(tree, trees, engine, (condition, high, low) -> {
+      final IExpr notCondition = negateLiteral(condition);
+      // null for a branch False, which is left out
+      IExpr highPart = high.isTrue() ? condition
+          : high.isFalse() ? null : flatAnd(condition, andOrForm(high, trees, engine));
+      IExpr lowPart = low.isTrue() ? notCondition
+          : low.isFalse() ? null : flatAnd(notCondition, andOrForm(low, trees, engine));
+      if (highPart == null) {
+        return lowPart != null ? lowPart : S.False;
+      }
+      return lowPart == null ? highPart : F.Or(highPart, lowPart);
+    });
+  }
+
+  /** The form of one node <code>If(condition, high, low)</code> of a decision tree. */
+  private interface NodeForm {
+    IExpr of(IExpr condition, IExpr high, IExpr low);
+  }
+
+  /**
+   * The form of a decision tree: a leaf stays as it is, the form of a node
+   * <code>If(c, a, b)</code> is computed once and remembered in <code>trees</code>.
+   */
+  private static IExpr treeForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine,
+      NodeForm nodeForm) {
+    if (!tree.isAST(S.If, 4)) {
+      return tree;
+    }
+    IExpr result = trees.get(tree);
+    if (result == null) {
+      engine.checkTimeLimit();
+      final IAST node = (IAST) tree;
+      result = nodeForm.of(node.arg1(), node.arg2(), node.arg3());
+      trees.put(tree, result);
+    }
+    return result;
+  }
+
+  /** <code>x &amp;&amp; y</code>, with the arguments of a conjunction <code>y</code> spliced in. */
+  private static IExpr flatAnd(IExpr x, IExpr y) {
+    if (y.isAnd()) {
+      IASTAppendable and = F.And();
+      and.append(x);
+      and.appendArgs((IAST) y);
+      return and;
+    }
+    return F.And(x, y);
+  }
+
+  /** The negation of a literal or a formula: a double negation cancels. */
+  private static IExpr negateLiteral(IExpr expr) {
+    if (expr.isNot()) {
+      return expr.first();
+    }
+    if (expr.isTrue()) {
+      return S.False;
+    }
+    if (expr.isFalse()) {
+      return S.True;
+    }
+    return F.Not(expr);
+  }
+
+  /**
+   * The decision tree <code>If(c, a, b)</code> written with <code>Implies</code> and
+   * <code>Not</code> only: <code>Implies(Implies(c, !a), !Implies(!c, !b))</code>, which is
+   * <code>(c &amp;&amp; a) || (!c &amp;&amp; b)</code>. A branch <code>True</code> or
+   * <code>False</code> gives a single implication, the branches <code>True, False</code> the
+   * literal <code>c</code> and <code>False, True</code> the literal <code>!c</code>. A double
+   * negation cancels.
+   *
+   * @param trees the forms of the subtrees already written; the tree shares its subtrees
+   */
+  private static IExpr impliesForm(IExpr tree, Map<IExpr, IExpr> trees, EvalEngine engine) {
+    return treeForm(tree, trees, engine, (condition, high, low) -> {
+      if (high.isTrue() && low.isFalse()) {
+        return condition;
+      }
+      if (high.isFalse() && low.isTrue()) {
+        return negateLiteral(condition);
+      }
+      if (high.isTrue()) {
+        // c || b
+        return F.Implies(negateLiteral(condition), impliesForm(low, trees, engine));
+      }
+      if (low.isTrue()) {
+        // !c || a
+        return F.Implies(condition, impliesForm(high, trees, engine));
+      }
+      if (low.isFalse()) {
+        // c && a
+        return negateLiteral(
+            F.Implies(condition, negateLiteral(impliesForm(high, trees, engine))));
+      }
+      if (high.isFalse()) {
+        // !c && b
+        return negateLiteral(F.Implies(negateLiteral(condition),
+            negateLiteral(impliesForm(low, trees, engine))));
+      }
+      return F.Implies(F.Implies(condition, negateLiteral(impliesForm(high, trees, engine))),
+          negateLiteral(F.Implies(negateLiteral(condition),
+              negateLiteral(impliesForm(low, trees, engine)))));
+    });
+  }
+
+  private static @AllowNIL IExpr booleanConvertBDDExpr(BDDExpr head, boolean isFunction, IExpr arg1,
       final IAST booleanConvertAST, EvalEngine engine) {
     IExpr temp = booleanConvert(head, isFunction, booleanConvertAST, engine);
     if (temp.isPresent()) {
       if (arg1.size() > 0) {
+        List<Variable> variableOrder = head.toData().getVariableOrder();
+        if (arg1.argSize() > 0 && arg1.argSize() == variableOrder.size()) {
+          // the function applied to arguments: the formula of the function with the arguments
+          // put in for its variables, all at once
+          IExpr formula = temp.isAST(S.Function, 2) ? temp.first() : temp;
+          IASTAppendable rules = F.ListAlloc(variableOrder.size());
+          for (int i = 0; i < variableOrder.size(); i++) {
+            rules.append(
+                F.Rule(LogicFormula.variableToExpr(variableOrder.get(i)), ((IAST) arg1).get(i + 1)));
+          }
+          return engine.evaluate(formula.replaceAll(rules).orElse(formula));
+        }
         return ((IAST) arg1).setAtCopy(0, temp);
       }
       return temp;
@@ -5407,7 +5732,7 @@ public final class BooleanFunctions {
     return F.NIL;
   }
 
-  private static IExpr booleanConvert(IExpr arg1, boolean isFunction, final IAST ast,
+  private static @AllowNIL IExpr booleanConvert(IExpr arg1, boolean isFunction, final IAST ast,
       EvalEngine engine) {
     FormulaTransformation transformation = transformation(ast, engine);
     if (transformation != null) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
@@ -153,7 +154,7 @@ public class HypergeometricFunctions {
       return appellF1(a, b1, b2, c, z1, z2).eval(engine);
     }
 
-    private static IExpr appellF1(IExpr a, IExpr b1, IExpr b2, IExpr c, IExpr z1, IExpr z2) {
+    private static @AllowNIL IExpr appellF1(IExpr a, IExpr b1, IExpr b2, IExpr c, IExpr z1, IExpr z2) {
       // // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/04/03/02/0001/
       // if (b1.compareTo(b2) > 0) {
       // // MMA doesn't swap args
@@ -210,7 +211,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() != 6 || !ast.forAll(x -> x.isInexactNumber())) {
         return F.NIL;
       }
@@ -286,7 +287,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr temp = basicRewrite(z);
       if (temp.isPresent()) {
@@ -295,7 +296,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
@@ -318,7 +319,7 @@ public class HypergeometricFunctions {
     // CPD-ON
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -355,7 +356,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr temp = basicRewrite(z);
       if (temp.isPresent()) {
@@ -391,7 +392,7 @@ public class HypergeometricFunctions {
     }
     // CPD-ON
 
-    private static IExpr basicRewrite(IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
@@ -422,7 +423,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -467,7 +468,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr v = ast.arg1();
         IExpr z = ast.arg2();
@@ -533,7 +534,7 @@ public class HypergeometricFunctions {
       return basicRewrite(n, z);
     }
 
-    private static IExpr basicRewrite(IExpr n, IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr n, IExpr z) {
       if (n.isZero()) {
         // 1/(E^z*z)
         return F.Power(F.Times(z, F.Power(S.E, z)), -1);
@@ -577,7 +578,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -615,7 +616,7 @@ public class HypergeometricFunctions {
       return basicRewrite(z);
     }
 
-    private static IExpr basicRewrite(IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
@@ -641,7 +642,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -672,7 +673,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         if (F.isExactZero(arg1)) {
@@ -732,7 +733,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         if (F.isExactZero(arg1)) {
@@ -845,7 +846,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
@@ -884,7 +885,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -1019,7 +1020,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
@@ -1099,7 +1100,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr z = ast.arg2();
@@ -1125,7 +1126,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber b = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -1191,7 +1192,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr b = ast.arg1();
         IExpr z = ast.arg2();
@@ -1215,7 +1216,7 @@ public class HypergeometricFunctions {
       return basicRewrite(b, z);
     }
 
-    private IExpr basicRewrite(IExpr b, IExpr z) {
+    private @AllowNIL IExpr basicRewrite(IExpr b, IExpr z) {
       if (z.isZero()) {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
@@ -1242,7 +1243,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -1309,7 +1310,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
@@ -1392,7 +1393,7 @@ public class HypergeometricFunctions {
       return functionExpand && !z.isNumber();
     }
 
-    private static IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine,
+    private static @AllowNIL IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine,
         boolean functionExpand) {
       int ai = a.toIntDefault();
       int bi = b.toIntDefault();
@@ -1545,7 +1546,7 @@ public class HypergeometricFunctions {
      * <code>a &gt;= b</code> ends the series before the pole, any other number <code>a</code> gives
      * <code>ComplexInfinity</code>, and a symbolic <code>a</code> leaves the function unevaluated.
      */
-    private static IExpr atLowerParameterPole(IExpr a, IExpr b, IExpr z) {
+    private static @AllowNIL IExpr atLowerParameterPole(IExpr a, IExpr b, IExpr z) {
       if (z.isZero()) {
         return b.isZero() ? S.Indeterminate : F.C1;
       }
@@ -1573,7 +1574,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
+    private static @AllowNIL IExpr basicRewrite(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
       if (a.isZero()) {
         return F.C1;
       }
@@ -1618,7 +1619,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
@@ -1668,7 +1669,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
@@ -1680,7 +1681,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
@@ -1699,7 +1700,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
       if (z.isZero() || a.isZero()) {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
@@ -1717,7 +1718,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
       // CPD-ON
         IInexactNumber a = (IInexactNumber) ast.arg1();
@@ -1770,7 +1771,7 @@ public class HypergeometricFunctions {
       return hypergeometric2F1Symbolic(a, b, c, z, engine);
     }
 
-    private static IExpr hypergeometric2F1Symbolic(IExpr a, IExpr b, IExpr c, IExpr z,
+    private static @AllowNIL IExpr hypergeometric2F1Symbolic(IExpr a, IExpr b, IExpr c, IExpr z,
         EvalEngine engine) {
       IExpr machine = machineTerminating(a, b, c, z);
       if (machine.isPresent()) {
@@ -1792,7 +1793,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z, EvalEngine engine) {
       // https://dlmf.nist.gov/15.4
       if (a.isZero() || b.isZero() || z.isZero()) {
         return F.C1;
@@ -2018,7 +2019,7 @@ public class HypergeometricFunctions {
      *
      * @return {@link F#NIL} if the series doesn't end before the pole
      */
-    private static IExpr terminatingBeforePole(IExpr a, IExpr b, IInteger c, IExpr z) {
+    private static @AllowNIL IExpr terminatingBeforePole(IExpr a, IExpr b, IInteger c, IExpr z) {
       int t = Integer.MIN_VALUE;
       for (IExpr x : new IExpr[] {a, b}) {
         if (x.isInteger() && !x.isPositive() && !((IInteger) x).isLT(c)) {
@@ -2066,7 +2067,7 @@ public class HypergeometricFunctions {
      *
      * @return {@link F#NIL} if the transformed series doesn't end
      */
-    private static IExpr eulerTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
+    private static @AllowNIL IExpr eulerTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
       if (!a.isRational() || !b.isRational() || !c.isRational() || z.isInexactNumber()
           || isNonPositiveInteger(a) || isNonPositiveInteger(b) || isNonPositiveInteger(c)) {
         return F.NIL;
@@ -2100,7 +2101,7 @@ public class HypergeometricFunctions {
      * @return {@link F#NIL} if the arguments are not machine and exact real numbers or the series
      *         doesn't end before a pole of its terms
      */
-    private static IExpr machineTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
+    private static @AllowNIL IExpr machineTerminating(IExpr a, IExpr b, IExpr c, IExpr z) {
       IExpr[] args = {a, b, c, z};
       IRational[] exact = new IRational[4];
       boolean machine = false;
@@ -2261,7 +2262,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 4) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
@@ -2304,7 +2305,7 @@ public class HypergeometricFunctions {
  {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
@@ -2324,7 +2325,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
       if (a.isZero() || b.isZero() || z.isZero()) {
         if (!c.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // 1/Gamma(c)
@@ -2355,7 +2356,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 4) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
@@ -2405,7 +2406,7 @@ public class HypergeometricFunctions {
      * <code>1+v</code>, and expand what remains.
      */
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.argSize() != 3 || !ast.arg1().isList() || !ast.arg2().isList()) {
         return F.NIL;
       }
@@ -2472,7 +2473,7 @@ public class HypergeometricFunctions {
       return hypergeometricPFQ(engine, a, b, z).eval(engine);
     }
 
-    private static IExpr hypergeometricPFQ(EvalEngine engine, IExpr a, IExpr b, IExpr z) {
+    private static @AllowNIL IExpr hypergeometricPFQ(EvalEngine engine, IExpr a, IExpr b, IExpr z) {
 
       if (a.isList() && b.isList()) {
         if (z.isZero()) {
@@ -2747,7 +2748,7 @@ public class HypergeometricFunctions {
      * @param z the argument of the hypergeometric function
      * @return {@link F#NIL} if no numerical result can be calculated
      */
-    private static IExpr onesTwosPFQ(int p, INumber z, EvalEngine engine) {
+    private static @AllowNIL IExpr onesTwosPFQ(int p, INumber z, EvalEngine engine) {
       Apcomplex zc = z.apcomplexValue();
       double absZ = ApcomplexMath.abs(zc).doubleValue();
       if (!Double.isFinite(absZ)) {
@@ -2784,7 +2785,7 @@ public class HypergeometricFunctions {
      * the precision of the engine; {@link F#NIL} where that gives no result, as next to the unit
      * circle for <code>p == q+1</code>.
      */
-    private static IExpr seriesHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
+    private static @AllowNIL IExpr seriesHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
       if (!c.isNumber() || !a.isList() || !b.isList() || !((IAST) a).forAll(x -> x.isNumber())
           || !((IAST) b).forAll(x -> x.isNumber())) {
         return F.NIL;
@@ -2817,7 +2818,7 @@ public class HypergeometricFunctions {
       }
     }
 
-    private static IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
+    private static @AllowNIL IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
       try {
         if (c.isNumber() && a.isList() && b.isList() && a.argSize() > 0
             && b.argSize() == a.argSize() && a.forAll(x -> x.isOne())
@@ -2876,7 +2877,7 @@ public class HypergeometricFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
@@ -2943,7 +2944,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
@@ -2958,7 +2959,7 @@ public class HypergeometricFunctions {
     /** Highest second parameter handed to the arbitrary precision routine. */
     private static final int MAX_HYPERGEOMETRICU_PARAMETER = 200000;
 
-    private static IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
+    private static @AllowNIL IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
       if (a.isZero()) {
         return F.C1;
       }
@@ -3147,7 +3148,7 @@ public class HypergeometricFunctions {
       return basicRewrite(z);
     }
 
-    private static IExpr basicRewrite(IExpr arg1) {
+    private static @AllowNIL IExpr basicRewrite(IExpr arg1) {
       if (F.isExactZero(arg1)) {
         return F.C0;
       }
@@ -3166,7 +3167,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -3200,7 +3201,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr temp = basicRewrite(z);
       if (temp.isPresent()) {
@@ -3221,7 +3222,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
         return F.C0;
       }
@@ -3244,7 +3245,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -3278,7 +3279,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr temp = basicRewrite(z);
       if (temp.isPresent()) {
@@ -3327,7 +3328,7 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    private static IExpr basicRewrite(IExpr z) {
+    private static @AllowNIL IExpr basicRewrite(IExpr z) {
       if (F.isExactZero(z)) {
         return F.C0;
       }
@@ -3350,7 +3351,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IExpr temp = basicRewrite(z).eval(engine);
@@ -3379,7 +3380,7 @@ public class HypergeometricFunctions {
   private static class WhittakerM extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         IInexactNumber k = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();
@@ -3410,7 +3411,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr k = ast.arg1();
       IExpr m = ast.arg2();
       if (isPole(k, m, engine)) {
@@ -3474,7 +3475,7 @@ public class HypergeometricFunctions {
 
   private static class WhittakerW extends AbstractFunctionEvaluator {
     @Override
-    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST3()) {
         IInexactNumber k = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();
@@ -3494,7 +3495,7 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg3().isZero()) {
         return atZero(ast.arg1(), ast.arg2(), engine);
       }
@@ -3520,7 +3521,7 @@ public class HypergeometricFunctions {
      * integer (a polynomial times <code>z^(1/2+|m|)</code>), else <code>ComplexInfinity</code> for a
      * numeric <code>k</code>.
      */
-    private static IExpr atZero(IExpr k, IExpr m, EvalEngine engine) {
+    private static @AllowNIL IExpr atZero(IExpr k, IExpr m, EvalEngine engine) {
       if (!m.isReal()) {
         return F.NIL;
       }
@@ -3570,7 +3571,7 @@ public class HypergeometricFunctions {
   }
 
   /** {@link #squareRoot(IExpr)}, or {@link F#NIL} if there is no square in <code>z</code>. */
-  private static IExpr squaresTakenOut(IExpr z) {
+  private static @AllowNIL IExpr squaresTakenOut(IExpr z) {
     if (isEvenPower(z)) {
       return F.Power(z.base(), ((IInteger) z.exponent()).shiftRight(1));
     }
@@ -3603,7 +3604,7 @@ public class HypergeometricFunctions {
     return expr.isPower() && expr.exponent().isInteger() && ((IInteger) expr.exponent()).isEven();
   }
 
-  public static IExpr hyperGeometric0F1Symbolic(IExpr b, IExpr z, EvalEngine engine) {
+  public static @AllowNIL IExpr hyperGeometric0F1Symbolic(IExpr b, IExpr z, EvalEngine engine) {
     if (z.isZero()) {
       return F.C1;
     }

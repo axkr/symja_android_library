@@ -78,7 +78,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       return processCoordinateList(listData, 0, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
           options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
           RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine), Plot3DTools
-              .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
+              .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine),
+          options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_BOUNDARY_STYLE], engine);
     } else if (listData.forAll(ListPlot3D::isCoordinateList)) {
       // several lists of {x, y, z} triples: one surface for each, in the styles of the datasets
       IASTAppendable surfaces = F.ListAlloc(listData.argSize());
@@ -88,7 +89,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
             plotRangeOpt, meshOpt, plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST,
             argSize, RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
             Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D,
-                engine));
+                engine),
+            options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_BOUNDARY_STYLE], engine);
         if (!surface.isAST(S.Graphics3D) || surface.argSize() == 0) {
           return F.NIL;
         }
@@ -119,7 +121,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
             plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
             RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
             options[Plot3DTools.X_BOUNDARY_STYLE], Plot3DTools
-                .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
+                .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine),
+            options[Plot3DTools.X_MESH_FUNCTIONS], engine);
       }
     }
 
@@ -180,14 +183,17 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * The scattered points are coloured and meshed as the height array is: the same
-   * <code>ColorFunction</code> colours each vertex by its position, and <code>Mesh</code> draws the
-   * edges of the triangles the points were joined into, since a triangulation has no grid lines
-   * to thin out.
+   * <code>ColorFunction</code> colours each vertex by its position. An automatic <code>Mesh</code>
+   * draws the edges of the triangles the points were joined into, since a triangulation has no grid
+   * lines to thin out; a count, levels or <code>MeshFunctions</code> draw level curves across the
+   * triangles, one line each. The outline of the surface is drawn unless
+   * <code>BoundaryStyle -&gt; None</code>.
    */
   private IExpr processCoordinateList(IAST data, int index, IExpr boxRatiosOpt,
       IExpr plotRangeOpt,
       IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST, int argSize,
-      RegionFunctionFilter region, PlotColorFunction.Builder colorBuilder) {
+      RegionFunctionFilter region, PlotColorFunction.Builder colorBuilder,
+      IExpr meshFunctionsOpt, IExpr boundaryStyleOpt, EvalEngine engine) {
     int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
@@ -241,8 +247,21 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     for (Triangle t : triangles) {
       builder.addPolygon(t.p1, t.p2, t.p3); // Triangulator retains builder indices
     }
-    if (Plot3DTools.showMesh(meshOpt)) {
+    // a count or a list of levels for each direction is drawn at levels of x and of y
+    IExpr meshFunctions = Plot3DTools.coordinateMeshFunctions(meshFunctionsOpt, meshOpt);
+    if (meshFunctions != S.Automatic && !meshFunctions.isNone()) {
+      if (!meshOpt.isNone() && !meshOpt.isFalse()) {
+        Plot3DTools.addMeshSegments(builder,
+            levelCurves(builder, triangles, meshFunctions, meshOpt, engine), meshStyleOpt);
+      }
+    } else if (Plot3DTools.showMesh(meshOpt)) {
       addTriangleEdges(builder, triangles, meshStyleOpt);
+    }
+    if (Plot3DTools.drawsBoundary(boundaryStyleOpt, true)) {
+      IExpr rim = builder.openEdgeLine();
+      if (rim.isPresent()) {
+        builder.addPrimitive(F.List(Plot3DTools.boundaryDirective(boundaryStyleOpt), rim));
+      }
     }
     addIntervalMarkers(builder, bars, originalAST);
 
@@ -269,6 +288,85 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     return new IExpr[] {F.Rule(S.PlotRange, plotRange),
         F.Rule(S.BoxRatios, boxRatios.isList() ? boxRatios : Plot3DTools.FLAT_BOX_RATIOS),
         F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)};
+  }
+
+  /**
+   * The mesh curves of a triangulated surface for {@code MeshFunctions}: each level of each
+   * function is traced across the triangles, and the segments are joined into one curve per
+   * connected piece.
+   *
+   * @param meshFunctions a function or a list of functions of {@code x, y, z}
+   * @param meshOption the {@code Mesh} option, which gives the levels, see
+   *        {@link Plot3DTools#meshLevels}
+   * @return the curves as lists of vertex numbers
+   */
+  private static IAST levelCurves(GraphicsComplexBuilder builder, List<Triangle> triangles,
+      IExpr meshFunctions, IExpr meshOption, EvalEngine engine) {
+    IAST functions = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
+    IASTAppendable curves = F.ListAlloc();
+    int count = builder.vertexCount();
+    for (int k = 1; k < functions.size(); k++) {
+      // the value at each vertex of the surface, by vertex number
+      double[] values = new double[count + 1];
+      java.util.Arrays.fill(values, Double.NaN);
+      for (Triangle t : triangles) {
+        for (PointXYZ p : new PointXYZ[] {t.a, t.b, t.c}) {
+          if (Double.isNaN(values[p.originalIndex])) {
+            IASTAppendable call = F.ast(functions.get(k), 3);
+            call.append(F.num(p.x));
+            call.append(F.num(p.y));
+            call.append(F.num(p.z));
+            double v = engine.evalN(call).evalfNaN();
+            values[p.originalIndex] = Double.isFinite(v) ? v : Double.POSITIVE_INFINITY;
+          }
+        }
+      }
+      double[] finite = java.util.Arrays.stream(values)
+          .filter(v -> Double.isFinite(v)).toArray();
+      double[] levels = Plot3DTools.meshLevels(meshOption, k - 1, new double[][] {finite});
+      for (double level : levels) {
+        engine.checkTimeLimit();
+        IASTAppendable segments = F.ListAlloc(triangles.size());
+        for (Triangle t : triangles) {
+          traceTriangle(builder, segments, new int[] {t.p1, t.p2, t.p3}, values, level);
+        }
+        Plot3DTools.appendCurves(curves, segments);
+      }
+    }
+    return curves;
+  }
+
+  /**
+   * The segment a level cuts through a triangle, as a pair of new vertex numbers on two of its
+   * edges; nothing when the level misses it.
+   */
+  private static void traceTriangle(GraphicsComplexBuilder builder, IASTAppendable segments,
+      int[] corners, double[] values, double level) {
+    int[] crossings = new int[3];
+    int found = 0;
+    for (int e = 0; e < 3; e++) {
+      // the corners of an edge in one order, so that both triangles sharing it place the
+      // crossing at the very same point and share its vertex
+      int a = Math.min(corners[e], corners[(e + 1) % 3]);
+      int b = Math.max(corners[e], corners[(e + 1) % 3]);
+      double va = values[a];
+      double vb = values[b];
+      if (!Double.isFinite(va) || !Double.isFinite(vb)) {
+        return;
+      }
+      if ((va < level) == (vb < level)) {
+        continue;
+      }
+      double t = (level - va) / (vb - va);
+      double[] pa = builder.coordinatesOf(a);
+      double[] pb = builder.coordinatesOf(b);
+      crossings[found++] = builder.addVertex(pa[0] + t * (pb[0] - pa[0]),
+          pa[1] + t * (pb[1] - pa[1]), pa[2] + t * (pb[2] - pa[2]), null,
+          builder.colorOf(t < 0.5 ? a : b));
+    }
+    if (found == 2 && crossings[0] != crossings[1]) {
+      segments.append(F.List(F.ZZ(crossings[0]), F.ZZ(crossings[1])));
+    }
   }
 
   /**
@@ -307,7 +405,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   private IExpr processHeightMap(IAST heightData, IExpr dataRangeOpt, IExpr boxRatiosOpt,
       IExpr plotRangeOpt, IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST,
       int argSize, RegionFunctionFilter region, IExpr boundaryStyle,
-      PlotColorFunction.Builder colorBuilder) {
+      PlotColorFunction.Builder colorBuilder, IExpr meshFunctionsOpt, EvalEngine engine) {
     int rows = heightData.argSize();
     IExpr firstRow = heightData.arg1();
     int cols = ((IAST) firstRow).argSize();
@@ -375,7 +473,15 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
-    Plot3DTools.addSurface(builder, grid, false, false, colors, true, meshOpt, meshStyleOpt);
+    // a count or a list of levels for each direction is drawn at levels of x and of y, as the
+    // explicit mesh functions are; they replace the lines along the grid of the data
+    IExpr meshFunctions = Plot3DTools.coordinateMeshFunctions(meshFunctionsOpt, meshOpt);
+    boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone();
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true,
+        byFunctions ? S.None : meshOpt, meshStyleOpt);
+    Plot3DTools.addMeshSegments(builder,
+        Plot3DTools.meshFunctionCurves(builder, grid, meshFunctions, meshOpt, engine),
+        meshStyleOpt);
     addIntervalMarkers(builder, bars, originalAST);
 
     // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a

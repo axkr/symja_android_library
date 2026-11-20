@@ -1,7 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
@@ -107,6 +110,16 @@ public class RootSum extends AbstractFunctionEvaluator {
       // larger than the RootSum, and Sum_i Log(x + r_i) is not equal to Log(Product_i (x + r_i)) on
       // the principal branch anyway. Use Normal(RootSum(...)) to expand over the roots on demand.
       return F.NIL;
+    }
+
+    if (!hasParameters(F.List(px, qx), r, engine)) {
+      // Variables doesn't count a kernel like E^x as a parameter, so the summand would go to the
+      // parameter free algorithm below, whose extended GCD expands the kernel without end. With a
+      // parameter that Variables sees, the coefficient algorithm below already takes care of it.
+      IAST kernels = parameterKernels(F.List(px, qx), r, engine);
+      if (kernels.argSize() > 0) {
+        return sumWithKernelsAsSymbols(px, qx, r, kernels, engine);
+      }
     }
 
     // Make the root polynomial monic; roots (and hence their power sums) are unchanged.
@@ -381,6 +394,68 @@ public class RootSum extends AbstractFunctionEvaluator {
     }
     IExpr s = ((IAST) cofactors).arg1(); // s*b + t*pMonic == gcd
     return engine.evaluate(F.Cancel(F.Divide(s, gcd)));
+  }
+
+  /**
+   * The kernels of the polynomials in <code>expr</code> which are free of the root variable and
+   * are neither symbols nor numeric, like <code>E^x</code> in the summand
+   * <code>E^x/(E^x-#)&amp;</code>: the factors of sums, products and integer powers which are
+   * none of these themselves.
+   */
+  private static IAST parameterKernels(IExpr expr, ISymbol r, EvalEngine engine) {
+    Set<IExpr> kernels = new LinkedHashSet<IExpr>();
+    collectKernels(expr, r, kernels);
+    IASTAppendable list = F.ListAlloc(kernels.size());
+    kernels.forEach(list::append);
+    return list;
+  }
+
+  private static void collectKernels(IExpr expr, ISymbol r, Set<IExpr> kernels) {
+    if (!expr.isAST()) {
+      return;
+    }
+    if (expr.isList() || expr.isPlus() || expr.isTimes()
+        || (expr.isPower() && expr.exponent().isInteger())) {
+      ((IAST) expr).forEach(x -> collectKernels(x, r, kernels));
+      return;
+    }
+    if (expr.isFree(r) && !expr.isNumericFunction(true)) {
+      kernels.add(expr);
+    }
+  }
+
+  /**
+   * The sum with every kernel of <code>kernels</code> replaced by a new symbol. For the root
+   * arithmetic a kernel like <code>E^x</code> is a parameter as a symbol is, but the polynomial
+   * algorithms would take its whole structure apart: the extended GCD of the summand's
+   * denominator with the root polynomial expanded the coefficients of <code>E^x</code> without
+   * end. The kernels are put back into the sum afterwards.
+   *
+   * @return <code>F.NIL</code> if the sum with the symbols stays unevaluated
+   */
+  private static @AllowNIL IExpr sumWithKernelsAsSymbols(IExpr px, IExpr qx, ISymbol r,
+      IAST kernels, EvalEngine engine) {
+    IASTAppendable toSymbols = F.ListAlloc(kernels.argSize());
+    IASTAppendable back = F.ListAlloc(kernels.argSize());
+    for (int i = 1; i < kernels.size(); i++) {
+      ISymbol k = F.Dummy("k" + i);
+      toSymbols.append(F.Rule(kernels.get(i), k));
+      back.append(F.Rule(k, kernels.get(i)));
+    }
+    // the evaluated polynomial, not the held body of the function: Exp(x) in it is E^x only here
+    IExpr polynomial = px.replaceAll(toSymbols).orElse(px);
+    IExpr body = qx.replaceAll(toSymbols).orElse(qx);
+    if (!polynomial.isFree(x -> kernels.contains(x), true)
+        || !body.isFree(x -> kernels.contains(x), true)) {
+      // a kernel which is left would be found again by the inner sum
+      return F.NIL;
+    }
+    IExpr sum = engine.evaluate(
+        F.RootSum(F.Function(F.List(r), polynomial), F.Function(F.List(r), body)));
+    if (sum.isAST(S.RootSum)) {
+      return F.NIL;
+    }
+    return engine.evaluate(sum.replaceAll(back).orElse(sum));
   }
 
   /**

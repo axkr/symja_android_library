@@ -38,7 +38,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <li>Then the higher powers of the factors which are symbols: <code>x sin(x) + sin(x)</code>.</li>
  * </ol>
  * A sum with a complex coefficient keeps its canonical order. The factors of a product which are
- * functions are written in the same order of functions: <code>sin(x) cos(y)</code>.
+ * functions are written in the same order of functions: <code>sin(x) cos(y)</code>. The variables
+ * of a product come before its functions, ordered by their symbols, a subscripted variable by its
+ * base: <code>c_2 w cos(z)</code>.
  */
 public final class TraditionalSumOrder {
 
@@ -138,37 +140,69 @@ public final class TraditionalSumOrder {
       return false;
     }
     IExpr base = factor.isPower() ? factor.base() : factor;
-    return !(base.isSymbol() && !base.isConstantAttribute()) && !isVariableFunction(base);
+    return !(base.isSymbol() && !base.isConstantAttribute()) && !isVariableFunction(base)
+        && variableSymbol(base) == null;
   }
 
   /**
-   * The product with its factors which are functions in the order <code>TraditionalForm</code>
-   * writes them; the other factors keep their places.
+   * The symbol by which a factor of a product which is a variable is ordered: <code>x</code> for
+   * <code>x</code> and <code>x^2</code>, and the base symbol <code>c</code> for a subscripted
+   * variable <code>c_2</code> or a power of one.
+   *
+   * @return <code>null</code> if the factor is no variable
+   */
+  private static IExpr variableSymbol(IExpr factor) {
+    if (factor.isNumber() || factor.isNumericFunction(true)) {
+      return null;
+    }
+    IExpr base = factor.isPower() ? factor.base() : factor;
+    if (base.isAST(S.Subscript) && base.argSize() >= 2) {
+      base = base.first();
+    }
+    return base.isSymbol() && !base.isConstantAttribute() ? base : null;
+  }
+
+  /**
+   * The product with its factors which are variables and functions in the order
+   * <code>TraditionalForm</code> writes them; the other factors, such as numbers, keep their places.
+   * The variables come before the functions and are ordered by their symbols, where a subscripted
+   * variable <code>c_2</code> counts as its base symbol <code>c</code> and a power
+   * <code>w^2</code> as its base <code>w</code>: <code>c_2 w</code>. Variables of the same symbol
+   * keep their canonical order.
    *
    * @param times a product
    * @return the product in that order, or the product itself if it is already in that order
    */
   public static IAST orderFactors(IAST times) {
     List<Integer> positions = new ArrayList<>();
+    List<IExpr> variables = new ArrayList<>();
     List<IExpr> functions = new ArrayList<>();
     for (int i = 1; i < times.size(); i++) {
-      if (isFunctionFactor(times.get(i))) {
+      IExpr factor = times.get(i);
+      if (variableSymbol(factor) != null) {
         positions.add(i);
-        functions.add(times.get(i));
+        variables.add(factor);
+      } else if (isFunctionFactor(factor)) {
+        positions.add(i);
+        functions.add(factor);
       }
     }
-    if (functions.size() < 2) {
+    if (positions.size() < 2) {
       return times;
     }
+    // a stable sort, which keeps the canonical order of the variables of one symbol
+    variables.sort((v1, v2) -> variableSymbol(v1).compareTo(variableSymbol(v2)));
     functions.sort(TraditionalSumOrder::compareFunctions);
+    List<IExpr> ordered = new ArrayList<>(variables);
+    ordered.addAll(functions);
     IASTAppendable result = null;
     for (int j = 0; j < positions.size(); j++) {
       int position = positions.get(j);
-      if (times.get(position) != functions.get(j)) {
+      if (times.get(position) != ordered.get(j)) {
         if (result == null) {
           result = times.copyAppendable();
         }
-        result.set(position, functions.get(j));
+        result.set(position, ordered.get(j));
       }
     }
     return result == null ? times : result;

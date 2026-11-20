@@ -731,6 +731,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * constant phase, which were reported as not zero.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQHugeTermsAndPhases() {
     check("PossibleZeroQ(Cosh(12)^24 - (1 - Tanh(12)^2)^(-12))", //
         "True");

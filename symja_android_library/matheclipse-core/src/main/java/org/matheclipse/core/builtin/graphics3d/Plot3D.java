@@ -280,6 +280,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         options[X_MESH]);
     // explicit mesh functions draw the mesh in place of the sampling grid's lines, not beside them
     IExpr meshFunctions = options[Plot3DTools.X_MESH_FUNCTIONS];
+    meshFunctions = Plot3DTools.coordinateMeshFunctions(meshFunctions, options[X_MESH]);
     boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone();
     Plot3DTools.addSurface(builder, grid, false, false, colors, true,
         byFunctions ? S.None : options[X_MESH], options[Plot3DTools.X_MESH_STYLE], unmasked,
@@ -287,8 +288,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     // the lines of the mesh functions, and the rim of the surface, belong to the complex as
     // Mathematica writes them; Automatic draws the rim. The exclusion lines below stay outside
     Plot3DTools.addMeshSegments(builder,
-        meshFunctionSegments(builder, grid, options[Plot3DTools.X_MESH_FUNCTIONS],
-            options[X_MESH], engine),
+        Plot3DTools.meshFunctionCurves(builder, grid, meshFunctions, options[X_MESH], engine),
         options[Plot3DTools.X_MESH_STYLE]);
     // A masked grid can only drop whole cells, which leaves the two lips of a cut as staircases a
     // cell apart. The cells along the cut are drawn here instead, each sheet up to where the jump
@@ -839,28 +839,6 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     return exclusion.isNumber() ? F.NIL : exclusion;
   }
 
-  /**
-   * The mesh segments {@code MeshFunctions} asks for, as levels of each function it names.
-   *
-   * <p>
-   * {@code Automatic} keeps the lines on the sampling grid, which the surface builder already
-   * draws, so only an explicit list produces anything here.
-   */
-  private static IAST meshFunctionSegments(GraphicsComplexBuilder builder, double[][][] grid,
-      IExpr meshFunctions, IExpr meshOption, EvalEngine engine) {
-    if (meshFunctions == S.Automatic || meshFunctions.isNone() || meshOption.isNone()) {
-      return F.CEmptyList;
-    }
-    IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
-    IASTAppendable all = F.ListAlloc(list.argSize() * 8);
-    for (int k = 1; k < list.size(); k++) {
-      double[][] values = Plot3DTools.meshFunctionValues(grid, list.get(k), null, null, engine);
-      all.appendArgs(Plot3DTools.meshSegments(builder, grid, values,
-          Plot3DTools.meshLevels(meshOption, k - 1, values)));
-    }
-    return all;
-  }
-
   private static double scale(double value, double min, double max) {
     return max > min ? (value - min) / (max - min) : 0.5;
   }
@@ -878,6 +856,19 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   @Override
   protected int dependentRangeOffset() {
     return 0;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is evaluated at the sample points: a function which iterates until its values
+    // agree never stops on symbolic coordinates
+    return true;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // D(f, x) or an expansion is still done once with symbolic coordinates, if it finishes
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override

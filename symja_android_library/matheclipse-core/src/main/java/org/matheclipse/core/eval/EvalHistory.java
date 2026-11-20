@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.Serializable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
@@ -114,7 +115,7 @@ public class EvalHistory implements Serializable {
     return fHistoryLength;
   }
 
-  public IExpr getIn(int index) {
+  public @AllowNIL IExpr getIn(int index) {
     int line = historyIndices[fIndex];
     if (index < 0) {
       line = line + index + 1;
@@ -143,7 +144,7 @@ public class EvalHistory implements Serializable {
    * @return <code>F.NIL</code> if the output history isn't available for the given <code>index
    *     </code>.
    */
-  public IExpr getOut(int index) {
+  public @AllowNIL IExpr getOut(int index) {
     if (index > fLine || index == 0) {
       return F.NIL;
     }

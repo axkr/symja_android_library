@@ -815,6 +815,18 @@ public class Characters {
         if ('\uF74B' == ch) {
           // CapitalDifferentialD
           newCh = '\u2145';
+        } else if ('\uF74C' == ch) {
+          // DifferentialD
+          newCh = '\u2146';
+        } else if ('\uF74D' == ch) {
+          // ExponentialE
+          newCh = '\u2147';
+        } else if ('\uF74E' == ch) {
+          // ImaginaryI
+          newCh = '\u2148';
+        } else if ('\uF74F' == ch) {
+          // ImaginaryJ
+          newCh = '\u2149';
         } else if ('\uF523' == ch) {
           // Implies
           newCh = '\u21D2';
@@ -826,9 +838,8 @@ public class Characters {
         if (Character.MIN_VALUE != newCh) {
           if (sb == null) {
             sb = new StringBuilder(operatorString.length());
-            if (i > 0) {
-              sb.append(operatorString.substring(0, i - 1));
-            }
+            // the characters before the first one which is mapped
+            sb.append(operatorString, 0, i);
           }
         }
       }

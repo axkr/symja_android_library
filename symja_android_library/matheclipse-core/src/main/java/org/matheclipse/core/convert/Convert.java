@@ -38,9 +38,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
@@ -1341,6 +1343,48 @@ public class Convert {
       }
     }
     return defaultColor;
+  }
+
+  /**
+   * Whether a machine number, or every entry of a vector or matrix of machine numbers, is finite.
+   * A double fast path whose result isn't finite overflowed in an intermediate step; the
+   * arithmetic of the expressions carries such a value over to arbitrary precision instead.
+   *
+   * @param result the result of a double computation, wrapped as a number, vector or matrix
+   * @return <code>false</code> if a value is infinite or not a number
+   */
+  public static boolean isFiniteResult(final IExpr result) {
+    if (result instanceof INum) {
+      return Double.isFinite(((INum) result).doubleValue());
+    }
+    if (result instanceof IComplexNum) {
+      IComplexNum c = (IComplexNum) result;
+      return Double.isFinite(c.reDoubleValue()) && Double.isFinite(c.imDoubleValue());
+    }
+    if (result.isRealVector()) {
+      double[] vector = result.toDoubleVector();
+      if (vector != null) {
+        for (double d : vector) {
+          if (!Double.isFinite(d)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    if (result.isRealMatrix()) {
+      double[][] matrix = result.toDoubleMatrix();
+      if (matrix != null) {
+        for (double[] row : matrix) {
+          for (double d : row) {
+            if (!Double.isFinite(d)) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 
   /**

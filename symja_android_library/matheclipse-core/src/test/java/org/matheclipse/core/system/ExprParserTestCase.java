@@ -49,6 +49,27 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
    * silently never made - which is what a script pasted into a web front end used to do.
    */
   @Test
+  public void testRepeatedPrefixNot() {
+    // in front of an operand the token !! is two negations, after an operand it is Factorial2
+    check("Hold(!!p) // FullForm", //
+        "Hold(Not(Not(p)))");
+    check("Hold(!!!q) // FullForm", //
+        "Hold(Not(Not(Not(q))))");
+    check("Hold(!!u > v) // FullForm", //
+        "Hold(Not(Not(Greater(u, v))))");
+    check("Hold(!!u || v) // FullForm", //
+        "Hold(Or(Not(Not(u)), v))");
+    check("Hold(!!k!!) // FullForm", //
+        "Hold(Not(Not(Factorial2(k))))");
+    check("Hold(m!!w) // FullForm", //
+        "Hold(Times(Factorial2(m), w))");
+    check("{!!p, !!!q, !!False}", //
+        "{p,!q,False}");
+    check("g(!!s, 7!!)", //
+        "g(s,105)");
+  }
+
+  @Test
   public void testScriptModeSeparatesLines() {
     assertEquals("Set[a, 1] | Set[b, 2]", scriptExpressions("a = 1\nb = 2"));
     assertEquals("SetDelayed[f[Pattern[x, Blank[]]], x] | SetDelayed[g[Pattern[x, Blank[]]], x]",

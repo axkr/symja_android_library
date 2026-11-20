@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
+import org.matheclipse.core.form.OperatorFormLayout;
 import org.matheclipse.core.form.OperatorMarkup;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IArraySymbol;
@@ -295,6 +296,67 @@ public class TeXFormFactory {
   }
 
   /**
+   * The display wrappers <code>Infix</code>, <code>Prefix</code> and <code>Postfix</code> as the row
+   * of operands and operators {@link OperatorFormLayout} lays out. A string operator is written as
+   * its characters if math mode reads them as they are, otherwise as text.
+   */
+  private static final class OperatorForm extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      OperatorFormLayout layout = OperatorFormLayout.of(f);
+      if (layout == null) {
+        return false;
+      }
+      final boolean parenthesized = layout.isParenthesized(precedence);
+      if (parenthesized) {
+        buffer.append("\\left(");
+      }
+      for (OperatorFormLayout.Piece piece : layout.pieces) {
+        switch (piece.kind) {
+          case SIGN:
+            buffer.append(layout.defaultSign.equals("~") ? "\\sim " : layout.defaultSign);
+            break;
+          case OPERATOR:
+            if (piece.isText()) {
+              String text = piece.expr.toString();
+              if (isMathModeText(text)) {
+                buffer.append(text);
+              } else {
+                fFactory.convertString(buffer, text);
+              }
+            } else {
+              fFactory.convertInternal(buffer, piece.expr, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+            }
+            break;
+          default:
+            fFactory.convertInternal(buffer, piece.expr,
+                piece.precedence == Integer.MIN_VALUE ? Precedence.NO_PRECEDENCE
+                    : piece.precedence,
+                NO_PLUS_CALL);
+            break;
+        }
+      }
+      if (parenthesized) {
+        buffer.append("\\right) ");
+      }
+      return true;
+    }
+
+    /** Whether math mode shows the characters of the string as they are. */
+    private static boolean isMathModeText(String text) {
+      for (int i = 0; i < text.length(); i++) {
+        char ch = text.charAt(i);
+        if ("\\^_%&#${}~".indexOf(ch) >= 0 || Character.isLetter(ch) || ch > 127) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  /**
    * Renders the <code>ScientificForm, EngineeringForm, NumberForm, AccountingForm, PaddedForm,
    * DecimalForm</code> display wrappers by installing a {@link NumberFormatter} for the wrapped
    * subtree.
@@ -338,6 +400,42 @@ public class TeXFormFactory {
         return true;
       }
       return false;
+    }
+  }
+
+  /**
+   * <code>SphericalHarmonicY(l, m, theta, phi)</code> is <code>Y_l^m(\theta,\phi)</code>, the degree
+   * and the order as subscript and superscript of the name. A script of more than one character is
+   * put in braces.
+   */
+  private static final class SphericalHarmonicY extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.argSize() != 4) {
+        return false;
+      }
+      buffer.append("Y_");
+      appendScript(buffer, f.arg1());
+      buffer.append('^');
+      appendScript(buffer, f.arg2());
+      buffer.append('(');
+      fFactory.convertInternal(buffer, f.arg3(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append(',');
+      fFactory.convertInternal(buffer, f.arg4(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append(')');
+      return true;
+    }
+
+    private void appendScript(final StringBuilder buffer, final IExpr script) {
+      StringBuilder text = new StringBuilder();
+      fFactory.convertInternal(text, script, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      if (text.length() == 1) {
+        buffer.append(text);
+      } else {
+        buffer.append('{').append(text).append('}');
+      }
     }
   }
 
@@ -1083,6 +1181,34 @@ public class TeXFormFactory {
       fFactory.convertInternal(buffer, f.arg2(), fPrecedence, NO_PLUS_CALL);
       buffer.append('}');
       precedenceClose(buffer, precedence);
+      return true;
+    }
+  }
+
+  /**
+   * <code>Row({e1, e2, ...})</code> and <code>Row({e1, e2, ...}, separator)</code>: the elements
+   * side by side, with the separator between them; style options at the end don't change the
+   * text.
+   */
+  private static final class Row extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      int args = f.argSize();
+      while (args > 1 && f.get(args).isRuleAST()) {
+        args--;
+      }
+      if (args < 1 || args > 2 || !f.arg1().isList()) {
+        return false;
+      }
+      IAST items = (IAST) f.arg1();
+      for (int i = 1; i < items.size(); i++) {
+        if (i > 1 && args == 2) {
+          fFactory.convertInternal(buffer, f.arg2(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+        }
+        fFactory.convertInternal(buffer, items.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      }
       return true;
     }
   }
@@ -2641,6 +2767,9 @@ public class TeXFormFactory {
     initTeXConverter(S.HarmonicNumber, new HarmonicNumber());
     initTeXConverter(S.HermiteH, new BinaryFunction("H_", "(", ")"));
     initTeXConverter(S.HoldForm, new HoldForm());
+    initTeXConverter(S.Infix, new OperatorForm());
+    initTeXConverter(S.Prefix, new OperatorForm());
+    initTeXConverter(S.Postfix, new OperatorForm());
     initTeXConverter(S.Text, new Text());
     initTeXConverter(S.Framed, new Framed());
     initTeXConverter(S.Pane, new Pane());
@@ -2694,7 +2823,9 @@ public class TeXFormFactory {
     initTeXConverter(S.SlotSequence, new UnaryFunction("\\text{$\\#\\#$", "}"));
     initTeXConverter(S.SphericalBesselJ, new BinaryFunction("j_", "(", ")"));
     initTeXConverter(S.SphericalBesselY, new BinaryFunction("y_", "(", ")"));
+    initTeXConverter(S.SphericalHarmonicY, new SphericalHarmonicY());
     initTeXConverter(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
+    initTeXConverter(S.Row, new Row());
     initTeXConverter(S.Style, new Style());
     initTeXConverter(S.Subscript, new Subscript());
     initTeXConverter(S.C, new C());

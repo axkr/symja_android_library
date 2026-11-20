@@ -54,7 +54,7 @@ public class EvalUtilities extends MathMLUtilities {
    * @param inputExpression the expression which should be evaluated.
    * @return <code>F.NIL</code>, if the inputExpression is <code>null</code>
    */
-  public IExpr evaluate(final String inputExpression) {
+  public @AllowNIL IExpr evaluate(final String inputExpression) {
     EvalEngine.setReset(fEvalEngine);
     if (inputExpression != null) {
       try {
@@ -123,7 +123,7 @@ public class EvalUtilities extends MathMLUtilities {
    * @return <code>F.NIL</code>, if the inputExpression is <code>null</code>
    * @throw org.matheclipse.parser.client.SyntaxError
    */
-  public static IExpr eval(final String inputExpression, final EvalEngine evalEngine) {
+  public static @AllowNIL IExpr eval(final String inputExpression, final EvalEngine evalEngine) {
     if (inputExpression != null) {
       EvalEngine.set(evalEngine);
       boolean SIMPLE_SYNTAX = true;
@@ -157,7 +157,7 @@ public class EvalUtilities extends MathMLUtilities {
    * @param parsedExpression the expression which should be evaluated.
    * @return
    */
-  public IExpr evaluate(final IExpr parsedExpression) {
+  public @AllowNIL IExpr evaluate(final IExpr parsedExpression) {
     if (parsedExpression != null) {
       try {
         // F.join();

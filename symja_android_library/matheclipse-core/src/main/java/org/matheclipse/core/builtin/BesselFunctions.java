@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -88,7 +89,7 @@ public class BesselFunctions {
   private static final class AngerJ extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
@@ -141,7 +142,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -176,7 +177,7 @@ public class BesselFunctions {
      * right half plane; the left one is its reflection <code>AngerJ(nu,-z) == AngerJ(-nu,z)</code>
      * and <code>WeberE(nu,-z) == -WeberE(-nu,z)</code>.
      */
-    static IExpr angerWeberLargeArgument(IInexactNumber n, IInexactNumber z, boolean weber) {
+    static @AllowNIL IExpr angerWeberLargeArgument(IInexactNumber n, IInexactNumber z, boolean weber) {
       double size = z.isReal() ? Math.abs(z.evalf()) : z.evalfc().norm();
       if (!(size >= MIN_ASYMPTOTIC_ARGUMENT) || Double.isInfinite(size)) {
         return F.NIL;
@@ -209,7 +210,7 @@ public class BesselFunctions {
      * arbitrary precision routine grows with the order and this does not, or {@link F#NIL} to leave
      * it to that routine.
      */
-    private static IExpr angerJLargeOrder(IInexactNumber n, IInexactNumber z) {
+    private static @AllowNIL IExpr angerJLargeOrder(IInexactNumber n, IInexactNumber z) {
       if (!n.isReal()) {
         return F.NIL;
       }
@@ -258,7 +259,7 @@ public class BesselFunctions {
       return angerJ3(n, m, z, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr angerJ3(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr angerJ3(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
       if (numericMode) {
         if (n.isNumber() && m.isNumber() && z.isNumber()) {
           return functionExpand3(n, m, z);
@@ -267,7 +268,7 @@ public class BesselFunctions {
       return F.NIL;
     }
 
-    private static IExpr angerJ2(final IExpr n, final IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr angerJ2(final IExpr n, final IExpr z, boolean numericMode) {
       if (z.isZero()) {
         // Sinc(n*Pi)
         return F.Sinc(F.Times(n, F.Pi));
@@ -327,7 +328,7 @@ public class BesselFunctions {
 
   private static final class AiryAi extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (F.isExactZero(z)) {
         // 1/(3^(2/3)*Gamma(2/3))
@@ -356,7 +357,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return checkAiryUnderflow(ast, ast.arg1().airyAi(), engine);
       }
@@ -381,7 +382,7 @@ public class BesselFunctions {
 
   private static final class AiryAiPrime extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isZero()) {
         // -(1/(3^(1/3)*Gamma(1/3)))
@@ -410,7 +411,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return checkAiryUnderflow(ast, ast.arg1().airyAiPrime(), engine);
       }
@@ -435,7 +436,7 @@ public class BesselFunctions {
 
   private static final class AiryBi extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isZero()) {
         // 1/(3^(1/6)*Gamma(2/3))
@@ -465,7 +466,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ast.arg1().airyBi();
       }
@@ -491,7 +492,7 @@ public class BesselFunctions {
 
   private static final class AiryBiPrime extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (z.isZero()) {
         // 3^(1/6)/Gamma(1/3)
@@ -520,7 +521,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ast.arg1().airyBiPrime();
       }
@@ -641,7 +642,7 @@ public class BesselFunctions {
       return besselJ(n, z, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
       if (F.isExactZero(z)) {
         if (n.isZero()) {
           // (0, 0)
@@ -782,7 +783,7 @@ public class BesselFunctions {
       return besselJZero(n, z, engine.isDoubleMode()).eval(engine);
     }
 
-    private IExpr besselJZero(IExpr n, IExpr z, boolean doubleMode) {
+    private @AllowNIL IExpr besselJZero(IExpr n, IExpr z, boolean doubleMode) {
       final int k = z.toIntDefault();
 
       if (k > 0 && doubleMode) {
@@ -859,7 +860,7 @@ public class BesselFunctions {
     }
 
 
-    private static IExpr besselI(IExpr n, IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr besselI(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
       if (F.isExactZero(z)) {
         if (n.isZero()) {
@@ -974,7 +975,7 @@ public class BesselFunctions {
     }
 
 
-    private static IExpr besselK(EvalEngine engine, IExpr n, IExpr z) {
+    private static @AllowNIL IExpr besselK(EvalEngine engine, IExpr n, IExpr z) {
       // final int order = n.toIntDefault();
       if (F.isExactZero(z)) {
         if (n.isZero()) {
@@ -1076,7 +1077,7 @@ public class BesselFunctions {
   private static final class BesselY extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (n.isReal() && Math.abs(n.evalf()) > MAX_INTEGER_BESSEL_ORDER) {
@@ -1088,7 +1089,7 @@ public class BesselFunctions {
     }
 
 
-    private static IExpr besselY(IExpr n, IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr besselY(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
 
       if (F.isExactZero(z)) {
@@ -1171,7 +1172,7 @@ public class BesselFunctions {
       return besselYZero(n, z, engine.isDoubleMode()).eval(engine);
     }
 
-    private IExpr besselYZero(IExpr n, IExpr z, boolean doubleMode) {
+    private @AllowNIL IExpr besselYZero(IExpr n, IExpr z, boolean doubleMode) {
       final int k = z.toIntDefault();
 
       if (k > 0 && doubleMode && n.isNumber()) {
@@ -1212,7 +1213,7 @@ public class BesselFunctions {
    *         or <code>BesselK</code> gives no number
    * @see <a href="https://dlmf.nist.gov/10.27#E8">DLMF 10.27.8</a>
    */
-  private static IExpr hankelOfBesselK(IExpr n, IExpr z, boolean second, EvalEngine engine) {
+  private static @AllowNIL IExpr hankelOfBesselK(IExpr n, IExpr z, boolean second, EvalEngine engine) {
     if (!n.isInexactNumber() || !z.isInexactNumber() || z.isReal()) {
       return F.NIL;
     }
@@ -1242,7 +1243,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
 
@@ -1338,7 +1339,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -1469,7 +1470,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -1567,7 +1568,7 @@ public class BesselFunctions {
       implements IFunctionExpand {
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         int ai = a.toIntDefault();
@@ -1604,7 +1605,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -1639,7 +1640,7 @@ public class BesselFunctions {
   private static final class SphericalHankelH2 extends AbstractFunctionEvaluator
       implements IFunctionExpand {
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         int ai = a.toIntDefault();
@@ -1679,7 +1680,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -1744,7 +1745,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
@@ -1802,7 +1803,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr k = ast.arg1();
       if (k.isNumber() && !(k.isInteger() && k.isPositive())) {
         if (k.isInexactNumber() && k.isReal() && k.isPositive() && ((IReal) k).isNumIntValue()) {
@@ -1814,7 +1815,7 @@ public class BesselFunctions {
       return F.NIL;
     }
 
-    private IExpr numericZero(int k, EvalEngine engine) {
+    private @AllowNIL IExpr numericZero(int k, EvalEngine engine) {
       if (k <= 0) {
         return F.NIL;
       }
@@ -1833,7 +1834,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isReal() && ((IReal) ast.arg1()).isNumIntValue()) {
         return numericZero(ast.arg1().toIntDefault(), engine);
       }
@@ -1959,7 +1960,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (kind == KER || kind == KEI) {
         // the formula with BesselI functions is only valid for a non-integer order
         if (ast.isAST1() || !ast.arg1().isNumber() || ast.arg1().isInteger()) {
@@ -1973,7 +1974,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
       IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
       if (kind == KER && z.isZero() && n.isNumber() && n.isNumIntValue() && !n.isZero()) {
@@ -1995,7 +1996,7 @@ public class BesselFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
       IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
       if (!n.isNumber() || !z.isNumber()) {
@@ -2046,7 +2047,7 @@ public class BesselFunctions {
     private static final double MAX_WEBERE_ARGUMENT = 1000.0;
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
@@ -2154,7 +2155,7 @@ public class BesselFunctions {
       return weber3Numeric(n, m, z, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr weber2Numeric(final IExpr n, final IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr weber2Numeric(final IExpr n, final IExpr z, boolean numericMode) {
       if (numericMode) {
         if (n.isNumber() && z.isNumber()) {
           try {
@@ -2170,7 +2171,7 @@ public class BesselFunctions {
       return F.NIL;
     }
 
-    private static IExpr weber3Numeric(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr weber3Numeric(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
       if (numericMode) {
         if (n.isNumber() && m.isNumber() && z.isNumber()) {
           try {
@@ -2186,7 +2187,7 @@ public class BesselFunctions {
       return F.NIL;
     }
 
-    private static IExpr weber2(final IExpr n, final IExpr z, boolean numericMode) {
+    private static @AllowNIL IExpr weber2(final IExpr n, final IExpr z, boolean numericMode) {
       if (n.isZero()) {
         if (z.isZero()) {
           return F.C0;
@@ -2275,7 +2276,7 @@ public class BesselFunctions {
    * numeric mode, from the Bessel function of the order <code>n+1/2</code> at machine precision or
    * the precision of the engine; {@link F#NIL} otherwise, or where that fails.
    */
-  private static IExpr sphericalBessel(IExpr n, IExpr z, boolean secondKind, EvalEngine engine) {
+  private static @AllowNIL IExpr sphericalBessel(IExpr n, IExpr z, boolean secondKind, EvalEngine engine) {
     if (!n.isNumber() || !z.isNumber() || z.isZero()
         || !(n.isInexactNumber() || z.isInexactNumber() || engine.isNumericMode())) {
       return F.NIL;
@@ -2312,7 +2313,7 @@ public class BesselFunctions {
    * precision of the engine: the machine precision zero, refined with Newton's method; or
    * {@link F#NIL}.
    */
-  private static IExpr besselZeroArbitrary(IExpr n, IExpr z, boolean secondKind,
+  private static @AllowNIL IExpr besselZeroArbitrary(IExpr n, IExpr z, boolean secondKind,
       EvalEngine engine) {
     final int k = z.toIntDefault();
     if (k <= 0 || !engine.isArbitraryMode() || !n.isReal()) {

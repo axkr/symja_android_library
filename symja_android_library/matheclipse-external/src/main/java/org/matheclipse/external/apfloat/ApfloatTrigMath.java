@@ -29,6 +29,76 @@ public class ApfloatTrigMath
     }
 
     /**
+     * Hyperbolic sine to the given precision, also for a tiny argument.<p>
+     *
+     * <code>ApfloatMath.sinh()</code> is (exp(<i>x</i>) - exp(-<i>x</i>)) / 2. For |<i>x</i>| &lt; 1
+     * the difference cancels the leading digits of the exponentials, as many as the argument has
+     * zeros after the decimal point, and a fixed precision helper gives the result its full
+     * precision all the same. These digits are calculated in addition here.
+     *
+     * @param x The argument.
+     * @param precision The precision of the result.
+     *
+     * @return sinh(<i>x</i>)
+     */
+
+    public static Apfloat sinh(Apfloat x, long precision)
+        throws ApfloatRuntimeException
+    {
+        if (precision == Apfloat.INFINITE)
+        {
+            return ApfloatMath.sinh(x);
+        }
+        if (x.signum() == 0 || -x.scale() >= precision)
+        {
+            // sinh(x) = x (1 + x^2/6 + ...)
+            return x.precision(precision);
+        }
+        Apfloat y = x.precision(ApfloatHelperShim.extendPrecision(precision + cancelledDigits(x)));
+        return ApfloatMath.sinh(y).precision(precision);
+    }
+
+    /**
+     * Hyperbolic tangent to the given precision, also for a tiny argument.<p>
+     *
+     * The numerator of (exp(2<i>x</i>) - 1) / (exp(2<i>x</i>) + 1) cancels as many leading digits
+     * as the argument has zeros after the decimal point; they are calculated in addition.
+     *
+     * @param x The argument.
+     * @param precision The precision of the result.
+     *
+     * @return tanh(<i>x</i>)
+     */
+
+    public static Apfloat tanh(Apfloat x, long precision)
+        throws ApfloatRuntimeException
+    {
+        if (precision == Apfloat.INFINITE)
+        {
+            return ApfloatMath.tanh(x);
+        }
+        if (x.signum() == 0 || -x.scale() >= precision)
+        {
+            // tanh(x) = x (1 - x^2/3 + ...)
+            return x.precision(precision);
+        }
+        Apfloat y = x.precision(ApfloatHelperShim.extendPrecision(precision + cancelledDigits(x)));
+        return ApfloatMath.tanh(y).precision(precision);
+    }
+
+    /**
+     * The digits lost in the exponentials: for |<i>x</i>| &lt; 1 the leading digits which
+     * exp(<i>x</i>) - 1 and similar differences cancel, the zeros after the decimal point; for a
+     * large |<i>x</i>| the digits in front of the decimal point, whose error exp(<i>x</i>) carries
+     * over to its own digits.
+     */
+
+    static long cancelledDigits(Apfloat x)
+    {
+        return Math.abs(x.scale()) + 1L;
+    }
+
+    /**
      * Cotangent, cos(<i>x</i>) / sin(<i>x</i>).
      *
      * @param x The argument.

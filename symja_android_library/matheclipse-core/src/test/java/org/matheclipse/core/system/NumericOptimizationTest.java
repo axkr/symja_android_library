@@ -117,6 +117,13 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
         "First(FindMinimum({x + y, 3*x + 2*y >= 7 && x >= 0 && y >= 0}, {x, y}, "
             + "Method -> \"InteriorPoint\"))", //
         "2.33333");
+    // with bounds {x, x0, xmin, xmax}, which are passed to the optimizer as SimpleBounds
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x - 3)^2 + (y + 1)^2, "
+        + "{{x, 0, -2, 3/2}, {y, 0, -1/2, 2}}, Method -> \"InteriorPoint\")], 10^-6)", //
+        "{5/2,{3/2,-1/2}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum({(x - 3)^2 + (y + 1)^2, x + y <= 0}, "
+        + "{{x, 0, -2, 3/2}, {y, 0}}, Method -> \"InteriorPoint\")], 10^-6)", //
+        "{5/2,{3/2,-3/2}}");
     check("Clear(rosen)", //
         "");
   }

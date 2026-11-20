@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.apfloat.ApfloatInterruptedException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -1086,6 +1087,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             return result;
           }
         }
+        if (Config.INTEGRATE_ALGORITHMS && RischNorman.isMixedTangentTower(fx, x)) {
+          // A tangent beside an exponential, a logarithm or a second tangent: the conditions of
+          // the rules simplify ever larger expressions for these until the deadline, while the
+          // parallel integration answers or gives up in a fraction of a second.
+          result = parallelIntegrationOfWhole(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         // A polynomial which is a perfect power is handed to the rules already written as one.
         // Their own rule for this (2007) builds the candidate root as Rt(a0,n) + Rt(an,n)*x, which
         // only ever has a *positive* middle term, so it recognizes (1+x)^2 in 1+2*x+x^2 but not
@@ -1170,9 +1180,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               // x*E^x/(1+E^x)^2 in the one of x*E^x/(1+E^x): the parallel integration takes the
               // integrand as a whole - over Log and Exp alone first, its ansatz is small, while
               // integrating each leftover again costs a budget per leftover
+              IExpr combined = combineUnevaluatedIntegrals(rubiResult, fx, x, engine);
+              if (combined.isFree(S.Integrate, true)) {
+                return combined;
+              }
               final boolean transcendental = RischNorman.isTranscendentalTower(fx, x);
               if (transcendental) {
                 IExpr whole = parallelIntegrationOfWhole(fx, x, engine);
+                if (whole.isPresent()) {
+                  return whole;
+                }
+                // E^(2*x)*(1+2*x)/(2*x+Log(x)) is E^u*u'/u for u=2*x+Log(x), an integral with no
+                // elementary pieces: the derivative of the whole divides it
+                whole = derivativeDividesWhole(fx, x, engine);
                 if (whole.isPresent()) {
                   return whole;
                 }
@@ -1265,6 +1285,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // E^(c+d*x)*Erf(a+b*x): by parts to a shifted Gaussian
+          result = quietStage(engine, fx, x, "an exponential times an error function",
+              () -> IntegralTable.exponentialTimesErrorFunction(fx, x, engine));
+          if (result.isPresent()) {
+            return result;
+          }
           // a single Bessel or Airy function times a power of x, which the rules did not answer
           if (HolonomicIntegration.hasKernel(fx, x)
               && !HolonomicIntegration.isProductOfKernels(fx, x)) {
@@ -1343,7 +1369,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (!fx.isTimes() || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
       return F.NIL;
     }
-    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)) {
+    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)
+        || hasTranscendentalArgument(fx, x)) {
       return F.NIL;
     }
     IExpr expanded = engine.evaluate(F.Expand(F.ExpToTrig(fx)));
@@ -1358,6 +1385,35 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The derivative-divides stage on the whole integrand of a partial answer, at the top level, for
+   * an exponential next to a logarithm, whose product the evaluation splits, and within a quarter of
+   * the budget of the rules, which ran out before.
+   */
+  private static IExpr derivativeDividesWhole(IAST fx, IExpr x, EvalEngine engine) {
+    if (EVAL_DEPTH.get() != 1 || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)
+        || fx.isFree(y -> y.isLog() && !y.isFree(x), true)) {
+      return F.NIL;
+    }
+    final long budget = rubiBudgetMillis(engine);
+    return quietStage(engine, fx, x, "recognising that the derivative divides the integrand",
+        () -> IntegrateTimeBudget.runWithin(() -> DerivativeDivides.integrate(fx, x, engine),
+            budget > 0 ? Math.max(1, budget / 4) : budget));
+  }
+
+  /**
+   * Has <code>fx</code> a trigonometric or hyperbolic function of a trigonometric, hyperbolic or
+   * exponential function of <code>x</code>? Written as exponentials, <code>Cosh(Tan(x))</code>
+   * becomes a tower of exponentials, on which the other stages grind; <code>Sinh(Log(x))</code> or
+   * <code>Sin(1/x)</code> do not.
+   */
+  private static boolean hasTranscendentalArgument(IExpr fx, IExpr x) {
+    return !fx.isFree(y -> (y.isTrigFunction() || y.isHyperbolicFunction()) && y.isAST1()
+        && !y.first().isFree(z -> (z.isTrigFunction() || z.isHyperbolicFunction() || z.isExp())
+            && !z.isFree(x, true), true),
+        true);
+  }
+
+  /**
    * The integral of a product of hyperbolic and trigonometric functions of <code>x</code>, or
    * {@link F#NIL}. The hyperbolic functions are written as exponentials, the expanded sum is
    * integrated term by term and every real exponential <code>E^u</code> of the result is written
@@ -1368,7 +1424,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (fx.isFree(y -> y.isHyperbolicFunction() && !y.isFree(x), true)
-        || fx.isFree(y -> y.isTrigFunction() && !y.isFree(x), true)) {
+        || fx.isFree(y -> y.isTrigFunction() && !y.isFree(x), true)
+        || hasTranscendentalArgument(fx, x)) {
       return F.NIL;
     }
     IExpr exponentials = fx.replaceAll(y -> y.isHyperbolicFunction() && !y.isFree(x)
@@ -3869,6 +3926,96 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       return !argument.isFree(x) && !argument.isPolynomial(x);
     }, true);
+  }
+
+  /**
+   * The sum of the integrals of the terms of an expanded sum, with the integrals which stay
+   * unevaluated taken together once more. The terms of an expansion need not be integrable one by
+   * one where their sum is: <code>E^u/(u+E^u*u)+E^(2*u)/(u+E^u*u)</code> is
+   * <code>E^u/u</code>.
+   *
+   * <p>
+   * Only a sum of the integrands which <code>Together</code> makes smaller and a single term is
+   * integrated, so that the expansion of the combined integrand can't split it into the same
+   * terms again; it must differ from the whole integrand, which is being integrated already; and
+   * only a result free of <code>Integrate</code> is taken.
+   *
+   * @param sum the evaluated sum of the integrals of the terms
+   * @param fx the whole integrand
+   */
+  private static IExpr combineUnevaluatedIntegrals(IExpr sum, IExpr fx, IExpr x,
+      EvalEngine engine) {
+    if (!sum.isPlus() || EVAL_DEPTH.get() != 1) {
+      // as for the leftovers of a partial answer: only the integral asked for, not the inner
+      // integrals of the stages
+      return sum;
+    }
+    IASTAppendable rest = F.PlusAlloc(sum.argSize());
+    IASTAppendable integrands = F.PlusAlloc(sum.argSize());
+    for (IExpr term : (IAST) sum) {
+      IExpr integrand = unevaluatedIntegrand(term, x);
+      if (integrand.isPresent()) {
+        integrands.append(integrand);
+      } else {
+        rest.append(term);
+      }
+    }
+    if (integrands.argSize() < 2) {
+      return sum;
+    }
+    IExpr combined = engine.evaluate(F.Together(integrands));
+    if (combined.leafCount() >= integrands.leafCount()
+        || F.expand(combined, false, false, false).isPlus() || combined.equals(fx)
+        || combined.equals(engine.evaluate(F.Together(fx)))) {
+      return sum;
+    }
+    // the budget and the checks of the leftovers of a partial answer, see finishPartialAnswer()
+    long budget = rubiBudgetMillis(engine);
+    IExpr integral = IntegrateTimeBudget.runWithin(
+        () -> engine.evaluate(F.Integrate(combined, x)), budget > 0 ? budget : 0);
+    if (integral.isNIL() || !integral.isFree(S.Integrate, true)
+        || !isFiniteAntiderivative(integral) || containsRubiInternals(integral)) {
+      return sum;
+    }
+    IExpr result = engine.evaluate(F.Plus(rest.oneIdentity0(), integral));
+    // taking the terms together is exact; a parameter leaves the check without sample points,
+    // so only a disagreeing point rejects the result
+    if (AntiderivativeCheck.differentiatesBack(result, fx, x, 2,
+        engine) == AntiderivativeCheck.Verdict.DISAGREES) {
+      return sum;
+    }
+    return result;
+  }
+
+  /**
+   * The integrand of <code>Integrate(f, x)</code> or of <code>c*Integrate(f, x)</code> with a
+   * factor <code>c</code> free of <code>x</code>, as <code>c*f</code>.
+   *
+   * @return <code>F.NIL</code> for another term
+   */
+  private static @AllowNIL IExpr unevaluatedIntegrand(IExpr term, IExpr x) {
+    if (term.isAST(S.Integrate, 3) && term.second().equals(x)) {
+      return term.first();
+    }
+    if (term.isTimes()) {
+      IAST times = (IAST) term;
+      int position = -1;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isAST(S.Integrate, 3) && factor.second().equals(x)) {
+          if (position > 0) {
+            return F.NIL;
+          }
+          position = i;
+        } else if (!factor.isFree(x)) {
+          return F.NIL;
+        }
+      }
+      if (position > 0) {
+        return times.setAtCopy(position, times.get(position).first());
+      }
+    }
+    return F.NIL;
   }
 
   private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {

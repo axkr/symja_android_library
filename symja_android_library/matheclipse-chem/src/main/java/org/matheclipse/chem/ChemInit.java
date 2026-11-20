@@ -5,6 +5,7 @@ import org.matheclipse.chem.builtin.DepictionFunctions;
 import org.matheclipse.chem.builtin.IsotopeDataFunctions;
 import org.matheclipse.chem.builtin.MoleculeFunctions;
 import org.matheclipse.chem.builtin.PeriodicTableFunctions;
+import org.matheclipse.chem.builtin.ProteinDataFunctions;
 import org.matheclipse.chem.builtin.ReactionFunctions;
 import org.matheclipse.chem.builtin.SubstructureFunctions;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -34,6 +35,7 @@ public class ChemInit {
     IsotopeDataFunctions.initialize();
     PeriodicTableFunctions.initialize();
     ChemicalDataFunctions.initialize();
+    ProteinDataFunctions.initialize();
   }
 
   private ChemInit() {}

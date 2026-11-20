@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -130,7 +131,7 @@ public class SimplifyFunctions {
      * <code>assumptions</code>, <code>x^3+x</code> is <code>4*x</code> for <code>x^2==3</code>, or
      * {@link F#NIL}.
      */
-    private static IExpr reduceByEquations(IExpr expr, IExpr assumptions, EvalEngine engine) {
+    private static @AllowNIL IExpr reduceByEquations(IExpr expr, IExpr assumptions, EvalEngine engine) {
       if (!expr.isAST()) {
         return F.NIL;
       }
@@ -174,7 +175,7 @@ public class SimplifyFunctions {
     }
 
     /** The remainder of the polynomial <code>p</code> modulo the Groebner <code>basis</code>. */
-    private static IExpr remainder(IExpr p, IAST basis, IAST variables, EvalEngine engine) {
+    private static @AllowNIL IExpr remainder(IExpr p, IAST basis, IAST variables, EvalEngine engine) {
       if (p.isNumber()) {
         return p;
       }
@@ -188,7 +189,7 @@ public class SimplifyFunctions {
      * positive integer factor, <code>(3*t)^(2*k)</code> is <code>9^k*t^(2*k)</code>; or
      * {@link F#NIL}.
      */
-    private static IExpr integerExponentIntoBase(IExpr expr, EvalEngine engine) {
+    private static @AllowNIL IExpr integerExponentIntoBase(IExpr expr, EvalEngine engine) {
       if (!expr.isAST()) {
         return F.NIL;
       }
@@ -238,7 +239,7 @@ public class SimplifyFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAtom() && ast.isAST1()) {
         return arg1;
@@ -450,7 +451,7 @@ public class SimplifyFunctions {
      * @param engine the evaluation engine
      * @return the decided or simpler relation, or {@link F#NIL} to leave it to the normal pipeline
      */
-    private static IExpr simplifyRelational(IAST relation, IAST ast,
+    private static @AllowNIL IExpr simplifyRelational(IAST relation, IAST ast,
         Function<IExpr, Long> complexityFunction, EvalEngine engine) {
       switch (relation.headID()) {
         case ID.Equal:
@@ -485,7 +486,7 @@ public class SimplifyFunctions {
      * @return {@link F#NIL} if there is no such inverse function or <code>u</code> isn't known to be
      *         in <code>[0, 1]</code>
      */
-    private static IExpr complementaryRoots(IExpr expr) {
+    private static @AllowNIL IExpr complementaryRoots(IExpr expr) {
       return expr.replaceAll(x -> {
         if (!x.isAST1() || !x.first().isPower()) {
           return F.NIL;
@@ -558,7 +559,7 @@ public class SimplifyFunctions {
      *
      * @return {@link F#NIL} if there is no such radicand
      */
-    private static IExpr halfAngleRadicands(IExpr expr) {
+    private static @AllowNIL IExpr halfAngleRadicands(IExpr expr) {
       return expr.replaceAll(x -> {
         if (x.isPower() && x.exponent().isFraction()
             && ((IFraction) x.exponent()).denominator().isEven() && x.base().isPlus()
@@ -659,7 +660,7 @@ public class SimplifyFunctions {
      * @param engine the evaluation engine
      * @return the simpler normalized <code>DirectedInfinity</code> or {@link F#NIL}
      */
-    private static IExpr normalizeDirectedInfinity(IAST directedInfinity,
+    private static @AllowNIL IExpr normalizeDirectedInfinity(IAST directedInfinity,
         Function<IExpr, Long> complexityFunction, long minCounter, EvalEngine engine) {
       IExpr dir = directedInfinity.arg1();
       try {

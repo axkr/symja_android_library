@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -73,7 +74,7 @@ public class JavaFunctions {
   private static class AddToClassPath extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!javaAllowed(ast, engine)) {
         return F.NIL;
       }
@@ -150,7 +151,7 @@ public class JavaFunctions {
   private static class InstanceOf extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!javaAllowed(ast, engine)) {
         return F.NIL;
       }
@@ -244,7 +245,7 @@ public class JavaFunctions {
   private static class JavaNew extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (javaAllowed(ast, engine)) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
@@ -350,7 +351,7 @@ public class JavaFunctions {
   private static class JavaObject extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.JavaObject) {
         return F.NIL;
       }
@@ -495,7 +496,7 @@ public class JavaFunctions {
   private static class LoadJavaClass extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (javaAllowed(ast, engine)) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {

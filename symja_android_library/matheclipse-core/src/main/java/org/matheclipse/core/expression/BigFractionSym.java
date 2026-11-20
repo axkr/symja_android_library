@@ -277,15 +277,23 @@ public class BigFractionSym extends AbstractFractionSym {
 
   @Override
   public double doubleValue() {
-    double d = fFraction.doubleValue();
-    if (!Double.isFinite(d) || Math.abs(d) < Double.MIN_NORMAL) {
-      // numerator or denominator left the double range, their quotient need not:
-      // 1/7^365 is 3.46*10^-309 and not 0.0. The quotient has far more digits than a double, so
-      // that the conversion to the nearest double is the only rounding which counts.
-      return new BigDecimal(toBigNumerator())
-          .divide(new BigDecimal(toBigDenominator()), QUOTIENT_DIGITS).doubleValue();
+    return quotient(toBigNumerator(), toBigDenominator());
+  }
+
+  /**
+   * The double nearest to <code>numerator / denominator</code>. Numerator and denominator of at
+   * most 53 bits are doubles without rounding, so that their quotient is rounded once. Larger ones
+   * are rounded twice as doubles: <code>1/10^30</code> became <code>9.999999999999999*10^-31</code>
+   * - or leave the double range, though their quotient need not: <code>1/7^365</code> is
+   * <code>3.46*10^-309</code>. Their quotient is taken with far more digits than a double has,
+   * so that the conversion to the nearest double is the only rounding which counts.
+   */
+  static double quotient(BigInteger numerator, BigInteger denominator) {
+    if (numerator.bitLength() <= 53 && denominator.bitLength() <= 53) {
+      return numerator.doubleValue() / denominator.doubleValue();
     }
-    return d;
+    return new BigDecimal(numerator).divide(new BigDecimal(denominator), QUOTIENT_DIGITS)
+        .doubleValue();
   }
 
   @Override

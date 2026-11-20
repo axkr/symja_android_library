@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.junit.jupiter.api.Tag;
 
 /** Tests for vector analysis functions */
 public class VectorAnalysisTest extends ExprEvaluatorTestCase {
@@ -397,6 +398,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testCoordinateTransformDataToCartesian() {
     check("CoordinateTransformData({{\"Toroidal\", {2}} -> \"Cartesian\", \"Euclidean\", 3}, "
         + "\"Mapping\", {Log(2), Pi/2, 0})", //

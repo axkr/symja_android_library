@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.expression.F;
@@ -114,7 +115,7 @@ public final class PiecewiseFold {
   }
 
   /** The value of <code>piecewise</code> at <code>at</code>, or {@link F#NIL} if it is unknown. */
-  private static IExpr select(IAST piecewise, IExpr variable, IExpr at, EvalEngine engine) {
+  private static @AllowNIL IExpr select(IAST piecewise, IExpr variable, IExpr at, EvalEngine engine) {
     for (IExpr piece : (IAST) piecewise.arg1()) {
       IExpr truth = engine.evalQuiet(F.subst(piece.second(), variable, at));
       if (truth.isTrue()) {
@@ -151,7 +152,7 @@ public final class PiecewiseFold {
    * @return {@link F#NIL} if <code>expr</code> is a <code>Piecewise</code> itself, has none in its
    *         arithmetic or a condition isn't a comparison of one variable with numbers
    */
-  public static IExpr fold(IExpr expr, boolean simplify, EvalEngine engine) {
+  public static @AllowNIL IExpr fold(IExpr expr, boolean simplify, EvalEngine engine) {
     if (!(expr.isPlus() || expr.isTimes() || expr.isPower()) || expr.isFree(S.Piecewise, true)) {
       return F.NIL;
     }

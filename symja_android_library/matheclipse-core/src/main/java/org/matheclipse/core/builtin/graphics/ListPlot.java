@@ -181,18 +181,81 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    */
   protected static IExpr withPlotRange(IExpr graphics, IAST originalAST, IExpr xRange,
       boolean xResolved, IExpr yRange, boolean yResolved) {
+    return withPlotRange(graphics, originalAST, xRange,
+        xResolved ? RESOLVED_AXIS_PADDING : S.Automatic, yRange,
+        yResolved ? RESOLVED_AXIS_PADDING : S.Automatic);
+  }
+
+  /**
+   * The plot with <code>PlotRange -&gt; {xRange, yRange}</code> and, unless the call gave a
+   * <code>PlotRangePadding</code>, the padding of each axis: <code>Automatic</code>, or for each
+   * end the plot settled on itself the padding of an automatic range.
+   */
+  protected static IExpr withPlotRange(IExpr graphics, IAST originalAST, IExpr xRange,
+      IExpr xPadding, IExpr yRange, IExpr yPadding) {
     IAST plot = innerGraphics(graphics);
     if (plot.isNIL()) {
       return graphics;
     }
     IAST resolved = withOption(plot, S.PlotRange, F.list(xRange, yRange));
     IExpr padding = GraphicsOptions.optionValue(originalAST, S.PlotRangePadding, S.Automatic);
-    if (padding.isAutomatic() && (xResolved || yResolved)) {
-      resolved = withOption(resolved, S.PlotRangePadding,
-          F.list(xResolved ? RESOLVED_AXIS_PADDING : S.Automatic,
-              yResolved ? RESOLVED_AXIS_PADDING : S.Automatic));
+    if (padding.isAutomatic() && (!xPadding.isAutomatic() || !yPadding.isAutomatic())) {
+      resolved = withOption(resolved, S.PlotRangePadding, F.list(xPadding, yPadding));
     }
     return graphics.isAST(S.Legended, 3) ? ((IAST) graphics).setAtCopy(1, resolved) : resolved;
+  }
+
+  /**
+   * The padding of an axis given as <code>spec</code> whose range the plot settled on as
+   * <code>range</code>: an end the call left open (<code>All</code>, <code>Automatic</code>,
+   * <code>Full</code>) gets the padding of an automatic range, an end given as a number none.
+   */
+  protected static IExpr resolvedAxisPadding(IExpr spec, IExpr range) {
+    if (!range.isList2() || range == spec) {
+      return S.Automatic;
+    }
+    if (!spec.isList2()) {
+      return RESOLVED_AXIS_PADDING;
+    }
+    boolean lowOpen = !Double.isFinite(spec.first().evalfNaN());
+    boolean highOpen = !Double.isFinite(spec.second().evalfNaN());
+    if (lowOpen && highOpen) {
+      return RESOLVED_AXIS_PADDING;
+    }
+    if (!lowOpen && !highOpen) {
+      return S.Automatic;
+    }
+    return F.list(lowOpen ? RESOLVED_AXIS_PADDING : S.Automatic,
+        highOpen ? RESOLVED_AXIS_PADDING : S.Automatic);
+  }
+
+  /**
+   * The range <code>{min, max}</code> of an axis given as the pair <code>spec</code>, whose ends
+   * are numbers or <code>All, Automatic, Full</code>: a number as a machine number, an open end
+   * from <code>automatic</code> (for <code>Automatic</code>) or <code>all</code> (for the others).
+   *
+   * @param automatic the automatic range of the axis, or <code>null</code>
+   * @param all the whole range of the content of the axis, or <code>null</code>
+   * @return the pair itself if it has no open end or an open end cannot be resolved
+   */
+  protected static IExpr resolveRangeEnds(IAST spec, double[] automatic, double[] all) {
+    if (Double.isFinite(spec.first().evalfNaN()) && Double.isFinite(spec.second().evalfNaN())) {
+      return spec;
+    }
+    double[] ends = new double[2];
+    for (int side = 0; side < 2; side++) {
+      IExpr end = spec.get(side + 1);
+      double value = end.evalfNaN();
+      if (!Double.isFinite(value)) {
+        double[] source = end == S.Automatic ? automatic : all;
+        if (source == null) {
+          return spec;
+        }
+        value = source[side];
+      }
+      ends[side] = value;
+    }
+    return F.list(F.num(ends[0]), F.num(ends[1]));
   }
 
   /**
@@ -270,11 +333,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plotRange == S.Automatic || plotRange == S.All) {
       xSpec = plotRange;
       ySpec = plotRange;
-    } else if (plotRange.isList2() && Double.isFinite(plotRange.first().evalfNaN())
-        && Double.isFinite(plotRange.second().evalfNaN())) {
-      // {ymin, ymax} constrains the y axis only
+    } else if (GraphicsOptions.isVerticalRangePair(plotRange)) {
+      // {ymin, ymax} constrains the y axis only; an All or Automatic end is resolved below
       xSpec = S.Automatic;
-      ySpec = F.list(F.num(plotRange.first().evalf()), F.num(plotRange.second().evalf()));
+      ySpec = GraphicsOptions.numericRangePair(plotRange);
     } else if (plotRange.isList2()) {
       xSpec = plotRange.first() == S.Full ? S.Automatic : plotRange.first();
       ySpec = plotRange.second() == S.Full ? S.Automatic : plotRange.second();
@@ -283,7 +345,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     boolean xAuto = xSpec == S.Automatic || xSpec == S.All;
     boolean yAuto = ySpec == S.Automatic || ySpec == S.All;
-    if (!xAuto && !yAuto) {
+    boolean xOpen = xSpec.isList2() && !isClosedRange(xSpec);
+    boolean yOpen = ySpec.isList2() && !isClosedRange(ySpec);
+    if (!xAuto && !yAuto && !xOpen && !yOpen) {
       return graphics;
     }
     // outliers of y are dropped from an automatic range only
@@ -301,7 +365,36 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     IExpr yRange =
         yAuto ? listAxisRange(drawn[1][0], drawn[1][1], 0.5, 1.0 / 18.0) : ySpec;
-    return withPlotRange(graphics, originalAST, xRange, xAuto, yRange, yAuto);
+    if (xOpen || yOpen) {
+      double[][] all = org.matheclipse.core.graphics.svg.SvgGraphics2D
+          .plotRange(withOption(plot, S.PlotRange, S.All));
+      if (all != null) {
+        if (xOpen) {
+          double[] automatic = rangeValues(valueData
+              ? F.list(F.num(Math.min(0.0, drawn[0][0])), F.num(drawn[0][1]))
+              : listAxisRange(drawn[0][0], drawn[0][1], 1.0 / 6.0, 1.0 / 48.0));
+          xRange = resolveRangeEnds((IAST) xSpec, automatic, all[0]);
+        }
+        if (yOpen) {
+          double[] automatic =
+              rangeValues(listAxisRange(drawn[1][0], drawn[1][1], 0.5, 1.0 / 18.0));
+          yRange = resolveRangeEnds((IAST) ySpec, automatic, all[1]);
+        }
+      }
+    }
+    return withPlotRange(graphics, originalAST, xRange,
+        xAuto ? RESOLVED_AXIS_PADDING : resolvedAxisPadding(xSpec, xRange), yRange,
+        yAuto ? RESOLVED_AXIS_PADDING : resolvedAxisPadding(ySpec, yRange));
+  }
+
+  /** Whether both ends of the pair <code>range</code> are numbers. */
+  private static boolean isClosedRange(IExpr range) {
+    return Double.isFinite(range.first().evalfNaN()) && Double.isFinite(range.second().evalfNaN());
+  }
+
+  /** The ends of the pair of numbers <code>range</code>. */
+  private static double[] rangeValues(IAST range) {
+    return new double[] {range.first().evalf(), range.second().evalf()};
   }
 
   /** Whether an axis scaling leaves the coordinates as they are. */
@@ -560,11 +653,29 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     }
     graphicsPrimitives = withoutHiddenCurves(graphicsPrimitives);
+    if (clipsCurvesToPlotRange()) {
+      // the fillings above were made from the whole curves; only the lines are cut
+      IAST callAST = graphicsOptions.callAST() != null ? graphicsOptions.callAST() : plotAST;
+      double[] bounds = org.matheclipse.core.graphics.CurveClipper
+          .verticalBounds(GraphicsOptions.optionValue(callAST, S.PlotRange, S.Automatic));
+      if (bounds != null) {
+        graphicsPrimitives = org.matheclipse.core.graphics.CurveClipper.clip(graphicsPrimitives,
+            bounds, GraphicsOptions.optionValue(callAST, S.ClippingStyle, S.None));
+      }
+    }
 
     IASTAppendable result = F.Graphics(labelledContent(graphicsPrimitives, plotAST));
     result.appendArgs(graphicsOptions.getGraphicsRules());
     // System.out.println(result);
     return GraphicsOptions.legended(result);
+  }
+
+  /**
+   * Whether the curves of this plot are cut at an explicit vertical <code>PlotRange</code> of the
+   * call, see {@link org.matheclipse.core.graphics.CurveClipper}.
+   */
+  protected boolean clipsCurvesToPlotRange() {
+    return false;
   }
 
   /**
@@ -1447,11 +1558,149 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr createPolygonBetween(IAST pts1, IAST pts2) {
+    IExpr split = polygonsBetweenCrossings(pts1, pts2);
+    if (split.isPresent()) {
+      return split;
+    }
     IASTAppendable polyPts = F.ListAlloc();
     polyPts.appendArgs(pts1);
     for (int i = pts2.size() - 1; i >= 1; i--)
       polyPts.append(pts2.get(i));
     return F.Polygon(polyPts);
+  }
+
+  /**
+   * The area between two curves over increasing x as one polygon for each stretch between the
+   * points where the curves cross, or {@link F#NIL} if they do not cross or are not both curves of
+   * real points with increasing x.
+   */
+  private static IExpr polygonsBetweenCrossings(IAST pts1, IAST pts2) {
+    double[][] c1 = increasingCurve(pts1);
+    double[][] c2 = increasingCurve(pts2);
+    if (c1 == null || c2 == null) {
+      return F.NIL;
+    }
+    double from = Math.max(c1[0][0], c2[0][0]);
+    double to = Math.min(c1[0][c1[0].length - 1], c2[0][c2[0].length - 1]);
+    if (!(from < to)) {
+      return F.NIL;
+    }
+    // the x of every point of either curve in the common range, in order
+    java.util.TreeSet<Double> grid = new java.util.TreeSet<Double>();
+    grid.add(from);
+    grid.add(to);
+    for (double[][] c : new double[][][] {c1, c2}) {
+      for (double x : c[0]) {
+        if (x > from && x < to) {
+          grid.add(x);
+        }
+      }
+    }
+    List<Double> cuts = new ArrayList<Double>();
+    int lastSign = 0;
+    double lastX = Double.NaN;
+    double lastD = Double.NaN;
+    double lastZeroX = Double.NaN;
+    for (double x : grid) {
+      double d = interpolate(c1, x) - interpolate(c2, x);
+      int sign = d > 0 ? 1 : (d < 0 ? -1 : 0);
+      if (sign == 0) {
+        if (Double.isNaN(lastZeroX)) {
+          lastZeroX = x;
+        }
+      } else {
+        if (lastSign != 0 && sign != lastSign) {
+          // where the difference of the curves changes its sign
+          cuts.add(Double.isNaN(lastZeroX) ? lastX + lastD / (lastD - d) * (x - lastX)
+              : lastZeroX);
+        }
+        lastSign = sign;
+        lastZeroX = Double.NaN;
+      }
+      lastX = x;
+      lastD = d;
+    }
+    if (cuts.isEmpty()) {
+      return F.NIL;
+    }
+    cuts.add(0, from);
+    cuts.add(to);
+    IASTAppendable polygons = F.ListAlloc(cuts.size());
+    for (int k = 0; k + 1 < cuts.size(); k++) {
+      double a = cuts.get(k);
+      double b = cuts.get(k + 1);
+      if (!(a < b)) {
+        continue;
+      }
+      IASTAppendable polyPts = F.ListAlloc();
+      appendStretch(polyPts, pts1, c1, a, b, false);
+      appendStretch(polyPts, pts2, c2, a, b, true);
+      polygons.append(F.Polygon(polyPts));
+    }
+    return polygons;
+  }
+
+  /** The x and y values of a curve of real points with strictly increasing x, or null. */
+  private static double[][] increasingCurve(IAST pts) {
+    int n = pts.argSize();
+    if (n < 2) {
+      return null;
+    }
+    double[][] c = new double[2][n];
+    for (int i = 0; i < n; i++) {
+      IExpr p = pts.get(i + 1);
+      if (!p.isList2()) {
+        return null;
+      }
+      c[0][i] = p.first().evalfNaN();
+      c[1][i] = p.second().evalfNaN();
+      if (!Double.isFinite(c[0][i]) || !Double.isFinite(c[1][i])
+          || (i > 0 && !(c[0][i] > c[0][i - 1]))) {
+        return null;
+      }
+    }
+    return c;
+  }
+
+  /** The value of a curve at <code>x</code>, linear between its points. */
+  private static double interpolate(double[][] c, double x) {
+    double[] xs = c[0];
+    int i = java.util.Arrays.binarySearch(xs, x);
+    if (i >= 0) {
+      return c[1][i];
+    }
+    int hi = -i - 1;
+    if (hi <= 0) {
+      return c[1][0];
+    }
+    if (hi >= xs.length) {
+      return c[1][xs.length - 1];
+    }
+    int lo = hi - 1;
+    return c[1][lo] + (x - xs[lo]) / (xs[hi] - xs[lo]) * (c[1][hi] - c[1][lo]);
+  }
+
+  /**
+   * Append the points of a curve from <code>a</code> to <code>b</code>: the interpolated ends and
+   * the points of the curve between them, backwards if <code>reverse</code>.
+   */
+  private static void appendStretch(IASTAppendable polyPts, IAST pts, double[][] c, double a,
+      double b, boolean reverse) {
+    IASTAppendable stretch = F.ListAlloc();
+    stretch.append(F.List(F.num(a), F.num(interpolate(c, a))));
+    for (int i = 0; i < c[0].length; i++) {
+      if (c[0][i] > a && c[0][i] < b) {
+        stretch.append(pts.get(i + 1));
+      }
+    }
+    stretch.append(F.List(F.num(b), F.num(interpolate(c, b))));
+    if (reverse) {
+      for (int i = stretch.argSize(); i >= 1; i--) {
+        polyPts.append(stretch.get(i));
+      }
+    } else {
+      polyPts.appendArgs(stretch);
+    }
   }
 
   /** True for the logarithmic y scalings the plot family uses. */
@@ -1651,6 +1900,12 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (filling.isList()) {
       for (IExpr rule : (IAST) filling)
         processSingleFillingRule(rule, curves, fillingPrimitives, defaultStyle, baseline, yRange);
+    } else if (filling.isTrue()) {
+      // each curve is filled to the next one; a single curve has nothing to be filled to
+      for (int i = 0; i + 1 < curves.size(); i++) {
+        processFillingAction(i, F.list(F.ZZ(i + 2)), curves, fillingPrimitives, defaultStyle,
+            baseline, yRange);
+      }
     } else {
       for (int i = 0; i < curves.size(); i++)
         processFillingAction(i, filling, curves, fillingPrimitives, defaultStyle, baseline,

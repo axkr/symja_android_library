@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +42,7 @@ public class ClusteringFunctions {
     public abstract IExpr distance(IExpr a, IExpr b, EvalEngine engine);
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
 
@@ -78,12 +79,12 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+    public @AllowNIL IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
       return F.NIL;
     }
 
@@ -328,7 +329,7 @@ public class ClusteringFunctions {
 
 
     @Override
-    public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    public @AllowNIL IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
       IExpr normV1 = F.Norm.of(engine, arg1);
       if (normV1.isZero()) {
         return F.C0;
@@ -549,7 +550,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       String method = "";
       DistanceMeasure measure = new EuclideanDistance();
       try {
@@ -674,7 +675,7 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+    public @AllowNIL IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
       IExpr arg1 = ast.arg1();
@@ -722,12 +723,12 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
+    public @AllowNIL IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
       return F.NIL;
     }
 
     @Override
-    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+    public @AllowNIL IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
       return F.NIL;
     }
 

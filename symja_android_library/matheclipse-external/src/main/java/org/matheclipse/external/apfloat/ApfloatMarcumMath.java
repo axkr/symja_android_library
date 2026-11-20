@@ -203,6 +203,12 @@ public class ApfloatMarcumMath
         // The terms below the mode of the Poisson distribution decrease at least like its weights: start where the
         // weights below sum to less than the precision of the weight at the mode
         double logEpsilon = -workingPrecision * Math.log(radix);
+        // The weights above the precision span about Sqrt(2 |log epsilon| lambda) on both sides of the mode:
+        // give up before summing if that is more than MAX_TERMS
+        if (2.0 * Math.sqrt(-2.0 * logEpsilon * lambdaD) > MAX_TERMS)
+        {
+            throw new ArithmeticException("Marcum Q needs more than " + MAX_TERMS + " terms");
+        }
         long start = (long) Math.floor(lambdaD),
              terms = 0;
         double logRatio = 0.0;  // log of w_(start-1) / w_mode
@@ -235,11 +241,27 @@ public class ApfloatMarcumMath
             q = helper.add(q, gammaTerm);
             gammaTerm = helper.divide(helper.multiply(gammaTerm, y), helper.add(m, new Apint(k + 1, radix)));
             weight = helper.divide(helper.multiply(weight, lambda), new Apint(k + 1, radix));
-            // Q(m + j, y) <= 1 and the weights w_j for j > k decrease faster than geometrically with the ratio lambda / (k + 2)
+            // The rest of the sum is sum_(i>=0) w_(k+1+i) Q(m+k+1+i, y). The weights decrease faster than geometrically
+            // with the ratio r = lambda / (k + 2), and Q(m+k+1+i, y) = q + G_0 + ... + G_(i-1), where the increments G_l
+            // decrease with the ratio g = y / (m + k + 2) from G_0 = gammaTerm. So the rest is at most
+            // w_(k+1) / (1 - r) * (q + G_0 r / (1 - g r)), and at most w_(k+1) / (1 - r) as Q <= 1.
             double ratio = lambdaD / (k + 2);
-            if (ratio < 1.0 && helper.multiply(weight, new Apfloat(1.0 / (1.0 - ratio), workingPrecision, radix)).compareTo(helper.multiply(sum, epsilon)) < 0)
+            if (ratio < 1.0)
             {
-                return sum;
+                double gammaRatio = ratio * yD / (m.doubleValue() + k + 2);
+                Apfloat bound = weight;
+                if (gammaRatio < 1.0)
+                {
+                    Apfloat qBound = helper.add(q, helper.multiply(gammaTerm, new Apfloat(ratio / (1.0 - gammaRatio), workingPrecision, radix)));
+                    if (qBound.compareTo(one) < 0)
+                    {
+                        bound = helper.multiply(weight, qBound);
+                    }
+                }
+                if (helper.multiply(bound, new Apfloat(1.0 / (1.0 - ratio), workingPrecision, radix)).compareTo(helper.multiply(sum, epsilon)) < 0)
+                {
+                    return sum;
+                }
             }
             checkTerms(++terms);
         }

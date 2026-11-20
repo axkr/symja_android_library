@@ -305,9 +305,56 @@ public class RegionPrimitives {
       if (!reg.arg3().isList2()) {
         return null;
       }
-      return new DiskSpec(reg.arg1(), r1, r2, reg.arg3().first(), reg.arg3().second());
+      IAST angles = orderedAngles((IAST) reg.arg3(), EvalEngine.get());
+      return new DiskSpec(reg.arg1(), r1, r2, angles.arg1(), angles.arg2());
     }
     return new DiskSpec(reg.arg1(), r1, r2, null, null);
+  }
+
+  /**
+   * The angle range <code>{t1, t2}</code> of a sector or an arc with the smaller angle first: a
+   * range which runs backwards covers the same sector as the range running forwards.
+   *
+   * @param angles a list of two angles
+   * @return the angles in increasing order, or <code>angles</code> itself if they are already in
+   *         that order or their order can't be decided
+   */
+  public static IAST orderedAngles(IAST angles, EvalEngine engine) {
+    IExpr t1 = angles.arg1();
+    IExpr t2 = angles.arg2();
+    if (engine.evaluate(F.Subtract(t2, t1)).isNegativeResult()) {
+      return F.list(t2, t1);
+    }
+    return angles;
+  }
+
+  /**
+   * The centroid of the sector <code>t1 &lt;= t &lt;= t2</code> of the ellipse or ring which is
+   * swept by <code>center + rho*{rx*Cos(t), ry*Sin(t)}</code>, where <code>rho</code> is distributed
+   * with the density <code>weight</code> along the radius. The centroid lies at <code>center +
+   * {rx*(Sin(t2) - Sin(t1)), ry*(Cos(t1) - Cos(t2))} * radialMean / (t2 - t1)</code>; the formula
+   * doesn't depend on the direction of the range.
+   *
+   * @param radialMean the mean of <code>rho</code> over the radial density: <code>2/3</code> for a
+   *        disk, <code>1</code> for an arc
+   * @return {@link F#NIL} if the range is empty or its extent can't be compared with a full turn;
+   *         the center if it covers a full turn
+   */
+  public static IExpr sectorCentroid(IExpr center, IExpr rx, IExpr ry, IExpr t1, IExpr t2,
+      IExpr radialMean, EvalEngine engine) {
+    IExpr extent = engine.evaluate(F.Subtract(t2, t1));
+    IExpr absExtent = engine.evaluate(F.Abs(extent));
+    if (engine.evaluate(F.GreaterEqual(absExtent, F.C2Pi)).isTrue()) {
+      // a full turn or more is the whole region
+      return center;
+    }
+    if (!engine.evaluate(F.Less(absExtent, F.C2Pi)).isTrue() || extent.isZero()) {
+      return F.NIL;
+    }
+    IExpr factor = F.Divide(radialMean, extent);
+    return engine.evaluate(F.Plus(center, F.list( //
+        F.Times(factor, rx, F.Subtract(F.Sin(t2), F.Sin(t1))), //
+        F.Times(factor, ry, F.Subtract(F.Cos(t1), F.Cos(t2))))));
   }
 
   /**
@@ -1572,6 +1619,10 @@ public class RegionPrimitives {
         return null;
       }
       angle = engine.evaluate(F.Abs(F.Subtract(reg.arg3().second(), reg.arg3().first())));
+      if (engine.evaluate(F.GreaterEqual(angle, F.C2Pi)).isTrue()) {
+        // a full turn or more is the whole annulus
+        angle = F.C2Pi;
+      }
     }
     if (reg.argSize() > 3) {
       return null;

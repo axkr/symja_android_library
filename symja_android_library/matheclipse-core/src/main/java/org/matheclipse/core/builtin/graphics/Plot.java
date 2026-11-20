@@ -87,6 +87,7 @@ public class Plot extends ListPlot {
     if (!isCurveRange(ast, argSize)) {
       return pllimMessage(ast, argSize, S.Plot, engine);
     }
+    originalAST = withScalarPlotRangeAsVertical(originalAST, options, engine);
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
     readSampledCurveOptions(graphicsOptions, originalAST, null);
@@ -154,6 +155,36 @@ public class Plot extends ListPlot {
   }
 
   /**
+   * A single number <code>r</code> as the <code>PlotRange</code> of a function plot is the vertical
+   * range <code>{-r, r}</code>; the horizontal axis keeps the iterator range. The call and its
+   * option values are rewritten so that the curves are cut, filled and ranged exactly as for
+   * <code>PlotRange -&gt; {-r, r}</code>.
+   *
+   * @param originalAST the plot call with its options
+   * @param options the option values of the call, updated in place
+   * @return the call with the rewritten option, or <code>originalAST</code> if it has no single
+   *         number as <code>PlotRange</code>
+   */
+  private static IAST withScalarPlotRangeAsVertical(IAST originalAST, IExpr[] options,
+      EvalEngine engine) {
+    IExpr plotRange = GraphicsOptions.optionValue(originalAST, S.PlotRange, F.NIL);
+    if (plotRange.isNIL() || plotRange.isList() || !plotRange.isNumericFunction(true)) {
+      return originalAST;
+    }
+    double r = plotRange.evalfNaN();
+    if (!Double.isFinite(r) || r == 0.0) {
+      return originalAST;
+    }
+    IExpr top = engine.evaluate(F.Abs(plotRange));
+    IExpr pair = F.list(engine.evaluate(F.Negate(top)), top);
+    if (options != null && options.length > GraphicsOptions.X_PLOTRANGE
+        && plotRange.equals(options[GraphicsOptions.X_PLOTRANGE])) {
+      options[GraphicsOptions.X_PLOTRANGE] = pair;
+    }
+    return withOption(originalAST, S.PlotRange, pair);
+  }
+
+  /**
    * The plot with the range it settled on written as its <code>PlotRange</code>, axis by axis:
    * <ul>
    * <li>x, by default and for <code>Full</code>: the iterator range as it was written; with a bare
@@ -191,11 +222,11 @@ public class Plot extends ListPlot {
       xSpec = S.All;
       ySpec = S.All;
       xRange = xSpec;
-    } else if (plotRange.isList2() && Double.isFinite(plotRange.first().evalfNaN())
-        && Double.isFinite(plotRange.second().evalfNaN())) {
-      // {ymin, ymax} constrains the y axis only, x keeps the iterator range
+    } else if (GraphicsOptions.isVerticalRangePair(plotRange)) {
+      // {ymin, ymax} constrains the y axis only, x keeps the iterator range; an All or Automatic
+      // end of y is resolved below
       xSpec = S.Full;
-      ySpec = F.list(F.num(plotRange.first().evalf()), F.num(plotRange.second().evalf()));
+      ySpec = GraphicsOptions.numericRangePair(plotRange);
       xRange = F.list(F.num(sampledX[2]), F.num(sampledX[3]));
     } else if (plotRange.isList2()) {
       xSpec = plotRange.first();
@@ -215,15 +246,27 @@ public class Plot extends ListPlot {
         GraphicsOptions.reachToZero(points);
       }
       xRange = F.list(F.num(points[0]), F.num(points[1]));
+    } else if (xRange.isList2()) {
+      // an open end of x: the sampled points for Automatic, else the iterator range
+      double[] points = sampledX[0] < sampledX[1] ? new double[] {sampledX[0], sampledX[1]}
+          : new double[] {sampledX[2], sampledX[3]};
+      xRange = resolveRangeEnds((IAST) xRange, points, new double[] {sampledX[2], sampledX[3]});
     }
     IExpr yRange = ySpec;
     if (ySpec == S.Automatic || ySpec == S.Full) {
       double[] y = org.matheclipse.core.graphics.svg.SvgGraphics2D
           .functionPlotYRange(withOption(plot, S.PlotRange, S.Automatic));
       yRange = y == null ? S.Automatic : F.list(F.num(y[0]), F.num(y[1]));
+    } else if (ySpec.isList2()) {
+      // the curves were cut at the numeric ends; an open end is the end of what is left
+      double[] automatic = org.matheclipse.core.graphics.svg.SvgGraphics2D
+          .functionPlotYRange(withOption(plot, S.PlotRange, S.Automatic));
+      double[][] all = org.matheclipse.core.graphics.svg.SvgGraphics2D
+          .plotRange(withOption(plot, S.PlotRange, S.All));
+      yRange = resolveRangeEnds((IAST) ySpec, automatic, all == null ? null : all[1]);
     }
-    return withPlotRange(graphics, originalAST, xRange, xRange.isList() && xRange != xSpec,
-        yRange, yRange.isList() && yRange != ySpec);
+    return withPlotRange(graphics, originalAST, xRange, resolvedAxisPadding(xSpec, xRange), yRange,
+        resolvedAxisPadding(ySpec, yRange));
   }
 
   /**
@@ -502,8 +545,9 @@ public class Plot extends ListPlot {
         continue;
       }
 
-      // Clipping
-      if (curY < yMinMax[0] || curY > yMinMax[1]) {
+      // Clipping: a curve leaving the range is broken there only while jumps are detected; with
+      // Exclusions -> None or an explicit list it runs on, and the range cuts it where it is drawn
+      if (detectJumps && (curY < yMinMax[0] || curY > yMinMax[1])) {
         if (lineList.isPresent()) {
           lineList.append(graphicsOptions.point(curX, curY));
           listOfLines.append(lineList);
@@ -584,6 +628,11 @@ public class Plot extends ListPlot {
   }
 
   @Override
+  protected boolean clipsCurvesToPlotRange() {
+    return true;
+  }
+
+  @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
   }
@@ -603,6 +652,18 @@ public class Plot extends ListPlot {
   protected boolean compoundIteratorVariables() {
     // a plot variable like x(1) is replaced by a unique symbol
     return true;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    // the function is what is sampled; it is evaluated once with a symbolic variable before
+    return true;
+  }
+
+  @Override
+  protected long symbolicFirstArgumentMillis() {
+    // the curves of Plot, ParametricPlot, PolarPlot and the logarithmic plots
+    return PLOT_SYMBOLIC_MILLIS;
   }
 
   @Override

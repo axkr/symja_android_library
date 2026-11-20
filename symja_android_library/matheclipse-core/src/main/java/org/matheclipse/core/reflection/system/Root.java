@@ -148,6 +148,17 @@ public class Root extends AbstractFunctionEvaluator {
     // The 3-argument form Root[f, k, 0] is canonical input form (real-root ordering);
     // Root[f, k, 1] selects an alternate complex ordering. Symja currently only
     // implements the real-first ordering, so both forms are treated equivalently to Root[f, k].
+    if (ast.isAST3() && ast.arg2().isVariable() && ast.arg3().isInteger()
+        && !ast.arg1().isFunction() && !ast.arg1().isList()) {
+      // Root(poly, x, k): the k-th root of the polynomial poly in x, if poly has one
+      IExpr variable = ast.arg2();
+      int k = ast.arg3().toIntDefault();
+      if (k >= 1 && ast.arg1().isPolynomial(variable)
+          && engine.evaluate(F.Exponent(ast.arg1(), variable)).toIntDefault() >= k) {
+        return F.Root(F.Function(F.subst(ast.arg1(), variable, F.Slot1)), ast.arg3());
+      }
+      return F.NIL;
+    }
     if ((ast.isAST2() || ast.isAST3()) && ast.arg2().isInteger()) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Function, 3)) {

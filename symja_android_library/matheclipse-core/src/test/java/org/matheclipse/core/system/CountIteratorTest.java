@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Iterators which are a count <code>{c}</code> in <code>Sum</code> and <code>Product</code>, and
@@ -69,6 +70,7 @@ public class CountIteratorTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSumStep() {
     check("NSum(1/k^3, {k, 2, 20, 3})", //
         "0.136397");

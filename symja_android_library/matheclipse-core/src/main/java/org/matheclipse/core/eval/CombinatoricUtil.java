@@ -302,7 +302,7 @@ public class CombinatoricUtil {
    * @param engine
    * @return
    */
-  public static IExpr permutationCycles(IAST permList, IExpr head) {
+  public static @AllowNIL IExpr permutationCycles(IAST permList, IExpr head) {
     if (permList.isEmptyList()) {
       return F.Cycles(F.CEmptyList);
     }
@@ -390,7 +390,7 @@ public class CombinatoricUtil {
     return null;
   }
 
-  public static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast) {
+  public static @AllowNIL IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast) {
     IASTMutable result = list1.copy();
     boolean changed = false;
 

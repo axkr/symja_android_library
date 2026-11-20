@@ -2,6 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.ArrayList;
 import org.hipparchus.analysis.MultivariateFunction;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -50,6 +51,24 @@ public class MultiVariateNumerical implements MultivariateFunction {
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;
+    }
+  }
+
+  /**
+   * The value at <code>point</code> as a complex machine number, for a function with complex
+   * values.
+   *
+   * @return {@link Complex#NaN} if the value isn't numeric
+   */
+  public Complex complexValue(double[] point) {
+    try {
+      for (int i = 0; i < fDummyVariables.size(); i++) {
+        fDummyVariables.get(i).assignValue(F.num(point[i]));
+      }
+      return fFunction.evalfc();
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return Complex.NaN;
     }
   }
 

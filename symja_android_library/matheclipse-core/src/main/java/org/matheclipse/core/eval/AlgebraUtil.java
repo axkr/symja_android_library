@@ -149,7 +149,7 @@ public class AlgebraUtil {
       return timesOp.getProduct();
     }
 
-    private static IExpr expandSimpleTimesPlus(final IExpr expr0, final IExpr plusAST1) {
+    private static @AllowNIL IExpr expandSimpleTimesPlus(final IExpr expr0, final IExpr plusAST1) {
       if (plusAST1.isPlus2()) {
         IExpr p10 = plusAST1.first();
         IExpr p11 = plusAST1.second();
@@ -332,7 +332,7 @@ public class AlgebraUtil {
      *        {@link #expandPowerNIL(IAST, boolean)}
      * @return F.NIL if no evaluation is possible
      */
-    private IExpr expandAST(final IAST ast, boolean termOfSum) {
+    private @AllowNIL IExpr expandAST(final IAST ast, boolean termOfSum) {
       if (isPatternFree(ast)) {
         return F.NIL;
       }
@@ -458,7 +458,7 @@ public class AlgebraUtil {
      * @param ast
      * @return {@link F#NIL} if no evaluation is possible
      */
-    private IExpr expandPlus(final IAST ast) {
+    private @AllowNIL IExpr expandPlus(final IAST ast) {
       IASTAppendable result = F.NIL;
       for (int i = 1; i < ast.size(); i++) {
         final IExpr arg = ast.get(i);
@@ -490,7 +490,7 @@ public class AlgebraUtil {
      * @param plusAST1
      * @return
      */
-    private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
+    private @AllowNIL IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
       final EvalEngine engine = EvalEngine.get();
       if (isPatternFree(plusAST0)) {
         if (isPatternFree(plusAST1)) {
@@ -505,7 +505,10 @@ public class AlgebraUtil {
         PlusOp plusOp = new PlusOp(plusAST0.argSize());
         final IExpr t =
             plusAST1.isPlusTimesPower() ? expandAST(plusAST1).orElse(plusAST1) : plusAST1;
-        plusAST0.forEach(x -> evalAndExpandAST(x, true, t, false, plusOp, engine));
+        plusAST0.forEach(x -> {
+          engine.checkTimeLimit();
+          evalAndExpandAST(x, true, t, false, plusOp, engine);
+        });
         return plusOp.getSum();
       }
       IExpr expanded = expandSimpleTimesPlus(plusAST0, plusAST1);
@@ -520,6 +523,9 @@ public class AlgebraUtil {
       plusAST0.forEach(x -> {
         final IExpr t = x.isPlusTimesPower() ? expandAST((IAST) x).orElse(x) : x;
         plusAST1.forEach(y -> {
+          // the product of two large sums runs without the evaluation loop, which would see a
+          // time limit
+          engine.checkTimeLimit();
           // evaluate to flatten out Times() expressions
           evalAndExpandAST(t, false, y, true, plusOp, engine);
         });
@@ -536,7 +542,7 @@ public class AlgebraUtil {
      * @param n <code>n &ge; 0</code> the exponent of the power
      * @return
      */
-    private IExpr expandPower(final IAST plusAST, final int n) {
+    private @AllowNIL IExpr expandPower(final IAST plusAST, final int n) {
       if (n == 1) {
         return expandPlus(plusAST).orElseGet(() -> addExpanded(plusAST));
       }
@@ -589,7 +595,7 @@ public class AlgebraUtil {
      *        split form grows into a big sum, and <code>Together</code> puts the base over one
      *        denominator on its own.
      */
-    private IExpr expandPowerNIL(final IAST powerAST, boolean termOfSum) {
+    private @AllowNIL IExpr expandPowerNIL(final IAST powerAST, boolean termOfSum) {
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
       IExpr temp = F.NIL;
@@ -620,8 +626,10 @@ public class AlgebraUtil {
         if (exp < 0) {
           if (expandNegativePowers
               && !(keepPolynomialDenominators && isPolynomialInItsVariables(plusAST))) {
-            exp *= (-1);
-            return F.Power(expandPower(plusAST, exp), F.CN1);
+            IExpr expanded = expandPower(plusAST, -exp);
+            if (expanded.isPresent()) {
+              return F.Power(expanded, F.CN1);
+            }
           }
           addExpanded(powerAST);
           return F.NIL;
@@ -637,7 +645,7 @@ public class AlgebraUtil {
       return F.NIL;
     }
 
-    private IExpr expandTimes(final IAST timesAST, EvalEngine engine) {
+    private @AllowNIL IExpr expandTimes(final IAST timesAST, EvalEngine engine) {
       IExpr result = timesAST.arg1();
       if (result.isPlusTimesPower()) {
         result = expandAST((IAST) result).orElse(result);
@@ -1372,7 +1380,7 @@ public class AlgebraUtil {
    * @return {@link F#NIL} is no evaluation was possible
    * @throws JASConversionException
    */
-  public static IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
+  public static @AllowNIL IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
     Optional<IExpr[]> parts = fractionalParts(powerTimesAST, false);
     IExpr cancelResult = F.NIL;
     if (parts.isPresent()) {
@@ -1775,7 +1783,7 @@ public class AlgebraUtil {
    * @return {@link F#NIL} if <code>trig</code> is false or no form is found; may return
    *         <code>1</code> if no denominator form is available (Example Cos[]).
    */
-  public static IExpr denominatorTrigForm(IAST function, boolean trig) {
+  public static @AllowNIL IExpr denominatorTrigForm(IAST function, boolean trig) {
     if (trig) {
       if (function.isAST1()) {
         for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
@@ -1925,7 +1933,7 @@ public class AlgebraUtil {
    *        expanded in all its parts
    * @return {@link F#NIL} if the expression couldn't be expanded.
    */
-  private static IExpr expandAll(final IAST ast, Predicate<IExpr> patt,
+  private static @AllowNIL IExpr expandAll(final IAST ast, Predicate<IExpr> patt,
       boolean expandNegativePowers, boolean distributePlus, boolean factorTerms,
       boolean keepPolynomialDenominators, EvalEngine engine) {
     // the flag for an expression expanded in all its parts means that its denominators are too
@@ -2074,7 +2082,7 @@ public class AlgebraUtil {
     return arg1;
   }
 
-  public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
+  public static @AllowNIL IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean trig, EvalEngine engine) throws JASConversionException {
     if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT && !isLargeRationalPolynomial(expr, eVar)) {
       if (!squareFree && withHomogenization && new PolynomialHomogenization(engine, true)
@@ -2282,7 +2290,7 @@ public class AlgebraUtil {
     return factorComplex(expr, varList, head, false, gaussianIntegers, engine);
   }
 
-  public static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean squareFree,
+  public static @AllowNIL IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean trig, EvalEngine engine) {
     if (expr.isAST()) {
       IExpr temp;
@@ -2538,7 +2546,7 @@ public class AlgebraUtil {
    * @param engine the evaluation engine
    * @return the factored expression or {@link F#NIL} if nothing polynomial could be factored
    */
-  public static IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
+  public static @AllowNIL IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
     IRational[] content = new IRational[] {F.C1};
     Map<IExpr, Long> factorMap = squareFreeFactorMap(arg1, eVar, content, engine);
     if (factorMap == null) {
@@ -2708,7 +2716,7 @@ public class AlgebraUtil {
    * @param engine
    * @return {@link F#NIL} if the factor couldn't be found
    */
-  /* package private */ public static IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
+  /* package private */ public static @AllowNIL IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
     Optional<IRational> gcd1 = factorTermsGCD(plusAST, engine);
     if (gcd1.isPresent()) {
       IRational rationalGCD = gcd1.get();
@@ -2877,7 +2885,7 @@ public class AlgebraUtil {
     return factorHomogenized(expr, eVar, true, engine);
   }
 
-  private static IExpr factorHomogenized(IAST expr, VariablesSet eVar, boolean trigRewriting,
+  private static @AllowNIL IExpr factorHomogenized(IAST expr, VariablesSet eVar, boolean trigRewriting,
       EvalEngine engine) {
     boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
     PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trigRewriting);
@@ -3327,7 +3335,7 @@ public class AlgebraUtil {
    *        formula is always returned (used by {@code RSolve}, which canonicalizes special
    *        sequences in a later pass).
    */
-  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
+  public static @AllowNIL IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
       boolean useCanonicalForms) {
     if (a == null || b == null || n == null) {
       return F.NIL;
@@ -3372,7 +3380,7 @@ public class AlgebraUtil {
    * @param engine
    * @return
    */
-  public static IExpr heuristicXP2XPOne(GenPolynomial<edu.jas.arith.BigInteger> poly, IAST expr,
+  public static @AllowNIL IExpr heuristicXP2XPOne(GenPolynomial<edu.jas.arith.BigInteger> poly, IAST expr,
       IExpr variable, EvalEngine engine) {
     if (poly.length() == 3 && poly.ring.tord == TermOrderByName.INVLEX && poly.ring.nvar == 1) {
       edu.jas.arith.BigInteger a = edu.jas.arith.BigInteger.ZERO;
@@ -3432,7 +3440,7 @@ public class AlgebraUtil {
    * @param variable the variable to solve for
    * @return the solution, or {@link F#NIL} if a part is not linear or <code>a1 == b1*c</code>
    */
-  public static IExpr linearFractionSolve(IExpr[] numerDenom, IExpr rhs, IExpr variable) {
+  public static @AllowNIL IExpr linearFractionSolve(IExpr[] numerDenom, IExpr rhs, IExpr variable) {
     IExpr[] numerLinear = numerDenom[0].linear(variable);
     if (numerLinear != null) {
       IExpr[] denomLinear = numerDenom[1].linear(variable);
@@ -3484,7 +3492,7 @@ public class AlgebraUtil {
    *     </code>
    * @param trig
    */
-  public static IExpr numeratorTrigForm(IAST function, boolean trig) {
+  public static @AllowNIL IExpr numeratorTrigForm(IAST function, boolean trig) {
     if (trig) {
       if (function.isAST1()) {
         for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
@@ -3513,7 +3521,7 @@ public class AlgebraUtil {
    * @param engine the evaluation engine
    * @return the partial fraction decomposition if possible, otherwise F.NIL
    */
-  public static IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes,
+  public static @AllowNIL IExpr partialFractionDecomposition(IExpr numerator, IExpr denominatorTimes,
       IExpr variable, EvalEngine engine) {
     if (!denominatorTimes.isTimes()) {
       return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
@@ -3604,7 +3612,7 @@ public class AlgebraUtil {
    * @param variableList a list of variable
    * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
    */
-  public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
+  public static @AllowNIL IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf,
       IExpr[] parts, IAST variableList) {
     try {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
@@ -3757,7 +3765,7 @@ public class AlgebraUtil {
    * @param variableList a list of variable
    * @return {@link F#NIL} if the partial fraction decomposition wasn't constructed
    */
-  public static IExpr partialFractionDecompositionComplexRational(IExpr[] parts,
+  public static @AllowNIL IExpr partialFractionDecompositionComplexRational(IExpr[] parts,
       IAST variableList) {
     try {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
@@ -3894,7 +3902,7 @@ public class AlgebraUtil {
    * @return {@link F#NIL} if a factor is not linear or a power of one, or the fraction is not
    *         proper
    */
-  private static IExpr linearFactorsApart(IExpr numerator, IAST denominator, IExpr variable,
+  private static @AllowNIL IExpr linearFactorsApart(IExpr numerator, IAST denominator, IExpr variable,
       EvalEngine engine) {
     if (!numerator.isPolynomial(variable)) {
       return F.NIL;
@@ -4092,7 +4100,7 @@ public class AlgebraUtil {
    * denominator. Each such term is written in the powers of <code>d</code>:
    * <code>(c0+c1*x)/x^2</code> is <code>c0/x^2+c1/x</code>.
    */
-  private static IExpr splitRepeatedFactors(IExpr decomposition, IExpr variable,
+  private static @AllowNIL IExpr splitRepeatedFactors(IExpr decomposition, IExpr variable,
       EvalEngine engine) {
     if (!decomposition.isPlus()) {
       return decomposition;
@@ -4150,7 +4158,7 @@ public class AlgebraUtil {
    *
    * @return {@link F#NIL} if the fraction is one such term already
    */
-  private static IExpr singleFactorApart(IExpr numerator, IExpr denominator, IExpr variable,
+  private static @AllowNIL IExpr singleFactorApart(IExpr numerator, IExpr denominator, IExpr variable,
       EvalEngine engine) {
     IExpr d = denominator;
     int k = 1;
@@ -4186,7 +4194,7 @@ public class AlgebraUtil {
     return sum.isIndeterminate() || !sum.isSpecialsFree() ? F.NIL : sum;
   }
 
-  public static IExpr polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
+  public static @AllowNIL IExpr polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
       int expDenominator) {
     try {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
@@ -4696,7 +4704,7 @@ public class AlgebraUtil {
    *
    * @return {@link F#NIL} if the product is no such fraction
    */
-  public static IExpr reducedFraction(IExpr times, EvalEngine engine) {
+  public static @AllowNIL IExpr reducedFraction(IExpr times, EvalEngine engine) {
     Optional<IExpr[]> fraction = fractionalParts(times, false);
     if (!fraction.isPresent()) {
       return F.NIL;
@@ -4939,6 +4947,9 @@ public class AlgebraUtil {
   public static IASTMutable togetherForEach(final IAST ast, EvalEngine engine) {
     IASTMutable result = F.NIL;
     for (int i = 1; i < ast.size(); i++) {
+      // the recursion over the arguments runs without the evaluation loop, which would see a
+      // time limit
+      engine.checkTimeLimit();
       final IExpr arg = ast.get(i);
       if (arg.isAST()) {
         final IExpr temp = togetherNull((IAST) arg, engine);
@@ -4960,7 +4971,8 @@ public class AlgebraUtil {
    * @param ast
    * @return F.NIL couldn't be transformed by ExpandAll() or togetherAST()
    */
-  public static IExpr togetherNull(IAST ast, EvalEngine engine) {
+  public static @AllowNIL IExpr togetherNull(IAST ast, EvalEngine engine) {
+    engine.checkTimeLimit();
     boolean evaled = false;
     IExpr temp = F.NIL;
     if (ast.isPlus()) {
@@ -5034,7 +5046,7 @@ public class AlgebraUtil {
    * <code>ExpandAll</code> multiplies them out: WMA keeps <code>(-1+x)*(2+x)</code> in
    * <code>Together(1/((x-1)*(x+2))+1/(x^2+x-2))</code>.
    */
-  private static IExpr togetherUnexpanded(IAST plusAST, EvalEngine engine) {
+  private static @AllowNIL IExpr togetherUnexpanded(IAST plusAST, EvalEngine engine) {
     if (plusAST.argSize() < 2 || !isUnivariateRationalSum(plusAST)
         || plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
       return F.NIL;
@@ -5057,7 +5069,7 @@ public class AlgebraUtil {
     }
   }
 
-  public static IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
+  public static @AllowNIL IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
     if (plusAST.argSize() <= 1) {
       return F.NIL;
     }
@@ -5134,7 +5146,10 @@ public class AlgebraUtil {
     IASTAppendable denominatorList = F.TimesAlloc(plusArgSize);
     boolean[] evaled = new boolean[1];
 
-    plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominatorList, evaled));
+    plusAST.forEach((IExpr x, int i) -> {
+      engine.checkTimeLimit();
+      togetherPlusArg(x, i, numerator, denominatorList, evaled);
+    });
     if (!evaled[0]) {
       return F.NIL;
     }
@@ -5148,8 +5163,11 @@ public class AlgebraUtil {
       return overCommonDenominator;
     }
 
-    numerator.forEach(
-        (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
+    // every numerator times all other denominators: quadratic in the number of terms
+    numerator.forEach((IExpr x, int i) -> {
+      engine.checkTimeLimit();
+      togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST);
+    });
 
     int i = 1;
     while (denominatorList.size() > i) {
@@ -5329,7 +5347,7 @@ public class AlgebraUtil {
    * @return {@link F#NIL} if a denominator has a factor which is not a polynomial or a positive
    *         integer power of one, or no denominator has a non-numeric factor
    */
-  private static IExpr togetherOverCommonDenominator(IAST numerators, IAST denominators,
+  private static @AllowNIL IExpr togetherOverCommonDenominator(IAST numerators, IAST denominators,
       EvalEngine engine) {
     final int n = denominators.argSize();
     java.util.List<DenominatorFactor> factors = new java.util.ArrayList<DenominatorFactor>();
@@ -5500,7 +5518,7 @@ public class AlgebraUtil {
    *
    * @return {@link F#NIL} if something of <code>g</code> is left which is not a number
    */
-  private static IExpr attributeToFactors(IExpr reduced, IExpr denominator,
+  private static @AllowNIL IExpr attributeToFactors(IExpr reduced, IExpr denominator,
       java.util.List<DenominatorFactor> factors, IRational numericPart, EvalEngine engine) {
     if (reduced.isNumber()) {
       IRational numeric = reduced.isRational() ? (IRational) reduced : null;
@@ -5582,7 +5600,7 @@ public class AlgebraUtil {
    * The quotient of the polynomials <code>p</code> and <code>q</code> if <code>q</code> divides
    * <code>p</code>, else {@link F#NIL}.
    */
-  private static IExpr exactQuotient(IExpr p, IExpr q, EvalEngine engine) {
+  private static @AllowNIL IExpr exactQuotient(IExpr p, IExpr q, EvalEngine engine) {
     if (q.isNumber()) {
       return q.isZero() ? F.NIL : engine.evaluate(F.Divide(p, q));
     }
@@ -5649,7 +5667,7 @@ public class AlgebraUtil {
     numerator.set(position, ni.oneIdentity1());
   }
 
-  public static IExpr togetherPlusTimesPower(final IAST ast, EvalEngine engine) {
+  public static @AllowNIL IExpr togetherPlusTimesPower(final IAST ast, EvalEngine engine) {
     if (ast.isPlus()) {
       IAST result = togetherForEach(ast, engine);
       if (result.isPresent()) {
@@ -5715,21 +5733,26 @@ public class AlgebraUtil {
    * Proactively find and merge fractional roots like c1*X^p + c2*Y^p where X * Y == 1. Rewrites to:
    * (c1 * X^(2p) + c2) / X^p
    */
-  private static IExpr tryMergeFractionalRoots(IAST plusAST, EvalEngine engine) {
+  private static @AllowNIL IExpr tryMergeFractionalRoots(IAST plusAST, EvalEngine engine) {
     int size = plusAST.argSize();
     if (size < 2)
       return F.NIL;
 
+    // the parts of each term once, not once for each pair
+    IExpr[][] parts = new IExpr[size + 1][];
     for (int i = 1; i <= size; i++) {
+      parts[i] = extractFractionalPower(plusAST.get(i));
+    }
+    for (int i = 1; i <= size; i++) {
+      // quadratic in the number of terms, and without the evaluation loop which would see a time
+      // limit
+      engine.checkTimeLimit();
+      IExpr[] part1 = parts[i];
+      if (part1 == null) {
+        continue;
+      }
       for (int j = i + 1; j <= size; j++) {
-        IExpr arg1 = plusAST.get(i);
-        IExpr arg2 = plusAST.get(j);
-
-        IExpr[] part1 = extractFractionalPower(arg1);
-        if (part1 == null)
-          continue;
-
-        IExpr[] part2 = extractFractionalPower(arg2);
+        IExpr[] part2 = parts[j];
         if (part2 == null)
           continue;
 

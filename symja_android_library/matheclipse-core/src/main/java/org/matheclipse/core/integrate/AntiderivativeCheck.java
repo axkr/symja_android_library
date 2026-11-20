@@ -182,6 +182,34 @@ public final class AntiderivativeCheck {
     return compared >= 2;
   }
 
+  /**
+   * Does <code>D(antiderivative, x)</code> differ from <code>integrand</code> at one of the points
+   * of {@link #agreesOffTheRealLine} in the right half plane, one above and one below the real
+   * line? Rewrites like <code>Log(x^2) -&gt; 2*Log(x)</code> hold there, a branch which is right on
+   * one side of the positive reals only, like <code>Log(-x) -&gt; Log(x)+I*Pi</code>, fails on the
+   * other side. A point where either side is no number decides nothing, so an antiderivative of
+   * functions which are only defined on the real line passes.
+   */
+  public static boolean contradictedOffTheRealLine(IExpr antiderivative, IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    IExpr derivative = engine.evaluate(F.D(antiderivative, x));
+    for (int[] point : OFF_LINE_POINTS) {
+      if (point[0] <= 0) {
+        continue;
+      }
+      IExpr machine = F.complexNum(point[0] / 100.0, point[1] / 100.0);
+      IExpr.COMPARE_TERNARY agrees = compareAt(derivative, integrand, x, machine, 0, 1e-8, engine);
+      if (agrees == IExpr.COMPARE_TERNARY.FALSE) {
+        IExpr exact = F.CC(F.QQ(point[0], 100), F.QQ(point[1], 100));
+        agrees = compareAt(derivative, integrand, x, exact, OFF_LINE_DIGITS, 1e-15, engine);
+        if (agrees == IExpr.COMPARE_TERNARY.FALSE) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /** The values at <code>z</code>, with <code>digits</code> digits or machine values for 0. */
   private static IExpr.COMPARE_TERNARY compareAt(IExpr derivative, IExpr integrand, IExpr x, IExpr z,
       int digits, double tolerance, EvalEngine engine) {

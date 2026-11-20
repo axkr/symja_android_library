@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +54,134 @@ public class PermutationGroupFunctions {
       S.GroupSupport.setEvaluator(new GroupFunction(GroupFunction.SUPPORT));
       S.GroupElementQ.setEvaluator(new GroupFunction(GroupFunction.ELEMENTQ));
       S.GroupMultiplicationTable.setEvaluator(new GroupFunction(GroupFunction.TABLE));
+      S.CycleIndexPolynomial.setEvaluator(new CycleIndexPolynomial());
+    }
+  }
+
+  /** Largest degree of a symmetric or alternating group whose cycle index is built. */
+  private static final int MAX_CYCLE_INDEX_DEGREE = 60;
+
+  /**
+   * <code>CycleIndexPolynomial(group, {x1, x2, ..., xn})</code> - the average over the elements of
+   * the group of the products <code>x1^c1*x2^c2*...</code>, where <code>ck</code> is the number of
+   * cycles of length <code>k</code> of the element acting on the points <code>1..n</code>.
+   */
+  private static final class CycleIndexPolynomial extends AbstractFunctionEvaluator {
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr groupExpr = ast.arg1();
+      if (!ast.arg2().isList()) {
+        return F.NIL;
+      }
+      IAST vars = (IAST) ast.arg2();
+      if (groupExpr.isAST1()
+          && (groupExpr.head() == S.SymmetricGroup || groupExpr.head() == S.AlternatingGroup)) {
+        int n = groupExpr.first().toIntDefault();
+        if (n >= 1 && n <= MAX_CYCLE_INDEX_DEGREE) {
+          // A(1) is the trivial group S(1)
+          boolean alternating = groupExpr.head() == S.AlternatingGroup && n >= 2;
+          IASTAppendable sum = F.PlusAlloc(16);
+          int[] counts = new int[n + 1];
+          symmetricCycleIndex(n, n, counts, alternating, vars, sum, engine);
+          return sum.oneIdentity0();
+        }
+      }
+      PermGroups group = toGroup(groupExpr, engine);
+      if (group == null) {
+        return F.NIL;
+      }
+      int degree = group.degree();
+      List<int[]> elements = group.elements(MAX_ELEMENTS);
+      if (elements == null) {
+        return F.NIL;
+      }
+      java.util.Map<String, int[]> types = new java.util.TreeMap<String, int[]>();
+      java.util.Map<String, Integer> multiplicity = new java.util.HashMap<String, Integer>();
+      boolean[] seen = new boolean[degree];
+      for (int[] element : elements) {
+        int[] counts = new int[degree + 1];
+        Arrays.fill(seen, false);
+        for (int i = 0; i < degree; i++) {
+          if (!seen[i]) {
+            int length = 0;
+            int j = i;
+            while (!seen[j]) {
+              seen[j] = true;
+              j = element[j];
+              length++;
+            }
+            counts[length]++;
+          }
+        }
+        String key = Arrays.toString(counts);
+        types.putIfAbsent(key, counts);
+        multiplicity.merge(key, 1, Integer::sum);
+      }
+      IASTAppendable sum = F.PlusAlloc(types.size());
+      for (java.util.Map.Entry<String, int[]> entry : types.entrySet()) {
+        sum.append(F.Times(F.QQ(multiplicity.get(entry.getKey()), elements.size()),
+            monomial(entry.getValue(), vars)));
+      }
+      return sum.oneIdentity0();
+    }
+
+    /**
+     * Append the terms <code>x1^c1*...*xn^cn/(1^c1*c1!*...*n^cn*cn!)</code> of all partitions of
+     * <code>n</code> into parts at most <code>max</code>; an alternating group keeps only the even
+     * cycle types with twice the weight.
+     */
+    private static void symmetricCycleIndex(int remaining, int max, int[] counts,
+        boolean alternating, IAST vars, IASTAppendable sum, EvalEngine engine) {
+      if (remaining == 0) {
+        int evenParts = 0;
+        java.math.BigInteger denominator = java.math.BigInteger.ONE;
+        for (int k = 1; k < counts.length; k++) {
+          if (counts[k] > 0) {
+            denominator = denominator.multiply(java.math.BigInteger.valueOf(k).pow(counts[k]))
+                .multiply(org.matheclipse.core.expression.AbstractIntegerSym
+                    .factorial(counts[k]).toBigNumerator());
+            if ((k & 1) == 0) {
+              evenParts += counts[k];
+            }
+          }
+        }
+        if (alternating) {
+          if ((evenParts & 1) != 0) {
+            return;
+          }
+          sum.append(F.Times(F.QQ(java.math.BigInteger.TWO, denominator), monomial(counts, vars)));
+        } else {
+          sum.append(F.Times(F.QQ(java.math.BigInteger.ONE, denominator), monomial(counts, vars)));
+        }
+        return;
+      }
+      engine.checkTimeLimit();
+      for (int part = Math.min(remaining, max); part >= 1; part--) {
+        counts[part]++;
+        symmetricCycleIndex(remaining - part, part, counts, alternating, vars, sum, engine);
+        counts[part]--;
+      }
+    }
+
+    private static IExpr monomial(int[] counts, IAST vars) {
+      IASTAppendable product = F.TimesAlloc(counts.length);
+      for (int k = 1; k < counts.length; k++) {
+        // a cycle length without a variable counts as 1
+        if (counts[k] > 0 && k < vars.size()) {
+          product.append(F.Power(vars.get(k), F.ZZ(counts[k])));
+        }
+      }
+      return product.oneIdentity1();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -73,7 +202,7 @@ public class PermutationGroupFunctions {
   private static final class PermutationMatrix extends LinearAlgebra.AbstractMatrixGenerator {
 
     @Override
-    protected IExpr generate(final IAST ast, EvalEngine engine) {
+    protected @AllowNIL IExpr generate(final IAST ast, EvalEngine engine) {
       final int[] permutation = toPermutation(ast.arg1(), engine);
       if (permutation == null) {
         return F.NIL;
@@ -225,7 +354,7 @@ public class PermutationGroupFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.PermutationGroup, 2) && arg1.first().isList()
           && (kind == SUPPORT || kind == MAX || kind == MIN)) {
@@ -319,7 +448,7 @@ public class PermutationGroupFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       PermGroups group = toGroup(ast.arg1(), engine);
       if (group == null) {
         return kind == ELEMENTQ && ast.arg1().isAST(S.PermutationGroup) ? S.False : F.NIL;
@@ -433,7 +562,7 @@ public class PermutationGroupFunctions {
       return list;
     }
 
-    private static IExpr orbits(final IAST ast, PermGroups group) {
+    private static @AllowNIL IExpr orbits(final IAST ast, PermGroups group) {
       if (ast.isAST2()) {
         if (!ast.arg2().isList()) {
           return F.NIL;
@@ -492,7 +621,7 @@ public class PermutationGroupFunctions {
       return result;
     }
 
-    private static IExpr stabilizer(final IAST ast, PermGroups group, EvalEngine engine) {
+    private static @AllowNIL IExpr stabilizer(final IAST ast, PermGroups group, EvalEngine engine) {
       IAST points = ast.arg2().isList() ? (IAST) ast.arg2() : F.List(ast.arg2());
       for (int i = 1; i < points.size(); i++) {
         int point = points.get(i).toIntDefault();
@@ -533,7 +662,7 @@ public class PermutationGroupFunctions {
    */
   private static final class CayleyGraph extends AbstractFunctionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, ast.arg1()));
       IExpr generators = engine.evaluate(F.unaryAST1(S.GroupGenerators, ast.arg1()));
       if (!elements.isList() || !generators.isList()) {

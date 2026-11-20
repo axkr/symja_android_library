@@ -66,7 +66,7 @@ public class ArrayDerivative {
    * @param engine the evaluation engine
    * @return {@link F#NIL} if no rule applies, so that the derivative stays unevaluated
    */
-  public static IExpr arrayD(IExpr fx, IArraySymbol x, EvalEngine engine) {
+  public static @AllowNIL IExpr arrayD(IExpr fx, IArraySymbol x, EvalEngine engine) {
     final IAST variableDimensions = x.getDimensions();
 
     if (fx.isFree(x, true)) {
@@ -158,7 +158,7 @@ public class ArrayDerivative {
    * The derivatives of the array operations whose rule does not depend on the rank of the
    * variable <code>x</code>.
    */
-  private static IExpr anyRankD(IAST fx, IArraySymbol x, EvalEngine engine) {
+  private static @AllowNIL IExpr anyRankD(IAST fx, IArraySymbol x, EvalEngine engine) {
     if (fx.argSize() < 1 || fx.argSize() > 2 || !fx.arg1().equals(x)) {
       return F.NIL;
     }
@@ -272,7 +272,7 @@ public class ArrayDerivative {
   }
 
   /** The derivative of a {@link S#Times} with respect to a symbolic array variable. */
-  private static IExpr timesD(IAST times, IArraySymbol x, EvalEngine engine) {
+  private static @AllowNIL IExpr timesD(IAST times, IArraySymbol x, EvalEngine engine) {
     IASTAppendable constantFactors = F.TimesAlloc(times.argSize());
     IASTAppendable dependentFactors = F.TimesAlloc(times.argSize());
     for (int i = 1; i < times.size(); i++) {
@@ -310,7 +310,7 @@ public class ArrayDerivative {
   }
 
   /** The derivative of an array expression with respect to a symbolic vector variable. */
-  private static IExpr vectorD(IAST fx, IArraySymbol x, EvalEngine engine) {
+  private static @AllowNIL IExpr vectorD(IAST fx, IArraySymbol x, EvalEngine engine) {
     final IExpr length = x.getDimensions().arg1();
     if (fx.isAST(S.Dot)) {
       return dotD(fx, x, engine);
@@ -377,7 +377,7 @@ public class ArrayDerivative {
    * {@link #dotDTerm(IAST, int, IArraySymbol, IExpr, EvalEngine)}.
    * </p>
    */
-  private static IExpr dotD(IAST dot, IArraySymbol x, EvalEngine engine) {
+  private static @AllowNIL IExpr dotD(IAST dot, IArraySymbol x, EvalEngine engine) {
     IExpr identity = F.SymbolicIdentityArray(x.getDimensions());
     IASTAppendable sum = F.PlusAlloc(dot.argSize());
     for (int i = 1; i < dot.size(); i++) {
@@ -450,7 +450,7 @@ public class ArrayDerivative {
   }
 
   /** The derivative of an array expression with respect to a symbolic matrix variable. */
-  private static IExpr matrixD(IAST fx, IArraySymbol x, EvalEngine engine) {
+  private static @AllowNIL IExpr matrixD(IAST fx, IArraySymbol x, EvalEngine engine) {
     if (fx.argSize() < 1 || !fx.arg1().equals(x)) {
       return F.NIL;
     }
@@ -490,7 +490,7 @@ public class ArrayDerivative {
    * @return the sum of the products with one factor differentiated or {@link F#NIL} if all
    *         factors are free of <code>x</code>
    */
-  private static IExpr orderedProductRule(IAST fx, IExpr x) {
+  private static @AllowNIL IExpr orderedProductRule(IAST fx, IExpr x) {
     IASTAppendable sum = F.PlusAlloc(fx.argSize());
     for (int i = 1; i < fx.size(); i++) {
       if (fx.get(i).isFree(x, true)) {
@@ -515,7 +515,7 @@ public class ArrayDerivative {
    *
    * @return {@link F#NIL} if no rule applies
    */
-  public static IExpr dArrayValuedInScalar(IAST fx, IExpr x, EvalEngine engine) {
+  public static @AllowNIL IExpr dArrayValuedInScalar(IAST fx, IExpr x, EvalEngine engine) {
     switch (fx.headID()) {
       case ID.Dot:
         return orderedProductRule(fx, x);
