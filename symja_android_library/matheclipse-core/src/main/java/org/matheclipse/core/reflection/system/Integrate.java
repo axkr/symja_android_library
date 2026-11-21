@@ -2283,7 +2283,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr atBreakPoint = engine.evaluate(F.subst(antiderivative, x, breakPoint));
-    if (!atBreakPoint.isFree(e -> e.isIndeterminate() || e.isDirectedInfinity(), true)) {
+    if (!atBreakPoint.isFreeOfInfinityOrIndeterminate()) {
       return F.NIL;
     }
     return engine.evaluate(F.Times(step, F.Subtract(antiderivative, atBreakPoint)));
@@ -3101,7 +3101,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     int infiniteTerms = 0;
     for (IExpr term : (IAST) limit) {
-      if (!term.isFree(t -> t.isDirectedInfinity() || t.isIndeterminate(), true)
+      if (!term.isFreeOfInfinityOrIndeterminate()
           && ++infiniteTerms > 1) {
         return true;
       }

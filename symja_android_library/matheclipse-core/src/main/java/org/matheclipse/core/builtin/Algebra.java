@@ -4212,7 +4212,7 @@ public class Algebra {
     if (radicals) {
       boolean everyArgument = true;
       for (int i = 1; i <= argSize && everyArgument; i++) {
-        everyArgument = !ast.get(i).isFree(Algebra::isRationalRadical, true);
+        everyArgument = !ast.get(i).isFree(IExpr::isRationalRadical, true);
       }
       radicals = !everyArgument;
     }
@@ -4221,7 +4221,7 @@ public class Algebra {
     IASTAppendable masked = F.ast(ast.topHead(), argSize);
     for (int i = 1; i <= argSize; i++) {
       masked.append(F.subst(ast.get(i), x -> {
-        if (x.isAST(S.AlgebraicNumber, 3) || (maskRadicals && isRationalRadical(x))) {
+        if (x.isAST(S.AlgebraicNumber, 3) || (maskRadicals && x.isRationalRadical())) {
           return generators.computeIfAbsent(x, k -> F.Dummy("algebraic" + generators.size()));
         }
         return F.NIL;
@@ -4319,13 +4319,7 @@ public class Algebra {
    * <code>(-1)^(1/3)</code>.
    */
   private static boolean isPositiveRadical(IExpr x) {
-    return isRationalRadical(x) && x.base().isPositive();
-  }
-
-  /** A radical of a rational number: <code>Sqrt(2)</code>, <code>3^(-1/3)</code>. */
-  private static boolean isRationalRadical(IExpr x) {
-    return x.isPower() && x.base().isRational() && x.exponent().isRational()
-        && !x.exponent().isInteger();
+    return x.isRationalRadical() && x.base().isPositive();
   }
 
   /**

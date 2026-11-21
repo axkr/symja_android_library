@@ -276,8 +276,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   /** Whether <code>expr</code> is a non-empty list of <code>{x, y, z}</code> number triples. */
   private static boolean isCoordinateList(IExpr expr) {
-    return expr.isList() && expr.argSize() > 0 && ((IAST) expr).forAll(
-        p -> p.isList() && p.argSize() == 3 && ((IAST) p).forAll(x -> x.isNumber()));
+    return expr.isList(p -> p.isList3() && p.isList(IExpr::isNumber));
   }
 
   /**

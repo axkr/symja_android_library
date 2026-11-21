@@ -1681,12 +1681,8 @@ public class SimplifyUtil extends VisitorExpr {
 
   /** A square root whose radicand has a square root. */
   private static boolean hasNestedSquareRoot(IExpr expr) {
-    return expr.has(x -> isSquareRoot(x) && x.base().has(SimplifyUtil::isSquareRoot, true), true);
-  }
-
-  private static boolean isSquareRoot(IExpr x) {
-    return x.isPower() && x.exponent().isRational()
-        && ((IRational) x.exponent()).denominator().equals(F.C2);
+    return expr.has(
+        x -> x.isHalfIntegerPower() && x.base().has(IExpr::isHalfIntegerPower, true), true);
   }
 
   /**

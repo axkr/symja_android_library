@@ -361,13 +361,7 @@ public final class DiffUnderIntegral {
       }
       term = found;
     }
-    if (term.equals(x)) {
-      return F.C1;
-    }
-    if (term.isPower() && term.base().equals(x) && term.exponent().isFree(x, true)) {
-      return term.exponent();
-    }
-    return F.NIL;
+    return term.powerExponentOf(x);
   }
 
   /**

@@ -2487,13 +2487,8 @@ public final class PrimitiveCollector {
 
   /** The value of an option rule among the arguments of {@code ast}, or {@code null}. */
   static IExpr optionValue(IAST ast, ISymbol name) {
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (arg.isRuleAST() && arg.first().equals(name)) {
-        return ((IAST) arg).second();
-      }
-    }
-    return null;
+    IAST rule = ast.getRule(name);
+    return rule.isPresent() ? rule.second() : null;
   }
 
   static String unquote(String s) {

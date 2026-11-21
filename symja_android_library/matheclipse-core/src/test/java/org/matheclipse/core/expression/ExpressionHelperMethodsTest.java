@@ -15,8 +15,10 @@ import org.matheclipse.core.interfaces.IRational;
 /**
  * {@link IExpr#splitFreeFactors(IExpr)}, {@link IExpr#isPolynomialShape(Predicate)},
  * {@link IExpr#isRationalFunctionShape(Predicate)}, {@link IExpr#hasRadicalIn(IExpr)},
- * {@link IExpr#hasEvenRootIn(IExpr)}, {@link IAST#chainToAnd()}, {@link IInteger#perfectPower()}
- * and {@link IRational#modularResidue(IInteger)}.
+ * {@link IExpr#hasEvenRootIn(IExpr)}, {@link IExpr#isFreeOfInfinityOrIndeterminate()},
+ * {@link IExpr#isHalfIntegerPower()}, {@link IExpr#isRationalRadical()},
+ * {@link IExpr#powerExponentOf(IExpr)}, {@link IAST#chainToAnd()}, {@link IAST#ruleValue(IExpr)},
+ * {@link IInteger#perfectPower()} and {@link IRational#modularResidue(IInteger)}.
  */
 class ExpressionHelperMethodsTest {
 
@@ -123,5 +125,48 @@ class ExpressionHelperMethodsTest {
     assertEquals(F.ZZ(7), F.QQ(1, 3).modularResidue(F.ZZ(10)));
     assertNull(F.QQ(1, 4).modularResidue(F.ZZ(10)));
     assertNull(F.QQ(2, 7).modularResidue(seven));
+  }
+
+  @Test
+  void testIsFreeOfInfinityOrIndeterminate() {
+    assertTrue(F.Plus(F.x, F.Sin(F.C2)).isFreeOfInfinityOrIndeterminate());
+    assertFalse(F.CInfinity.isFreeOfInfinityOrIndeterminate());
+    assertFalse(F.Times(F.C3, F.CComplexInfinity).isFreeOfInfinityOrIndeterminate());
+    assertFalse(F.list(F.C1, S.Indeterminate).isFreeOfInfinityOrIndeterminate());
+    // a machine NaN counts as indeterminate
+    assertFalse(F.Plus(F.x, Num.valueOf(Double.NaN)).isFreeOfInfinityOrIndeterminate());
+  }
+
+  @Test
+  void testIsHalfIntegerPowerAndIsRationalRadical() {
+    assertTrue(F.Sqrt(F.x).isHalfIntegerPower());
+    assertTrue(F.Power(F.y, F.QQ(-3, 2)).isHalfIntegerPower());
+    assertFalse(F.Power(F.x, F.QQ(1, 3)).isHalfIntegerPower());
+    assertFalse(F.Power(F.x, F.C2).isHalfIntegerPower());
+    assertTrue(F.Sqrt(F.C2).isRationalRadical());
+    assertTrue(F.Power(F.QQ(3, 5), F.QQ(-1, 3)).isRationalRadical());
+    assertFalse(F.Sqrt(F.x).isRationalRadical());
+    assertFalse(F.Power(F.C2, F.C3).isRationalRadical());
+  }
+
+  @Test
+  void testPowerExponentOf() {
+    assertEquals(F.C1, F.x.powerExponentOf(F.x));
+    assertEquals(F.CN3, F.Power(F.x, F.CN3).powerExponentOf(F.x));
+    assertEquals(F.Plus(F.a, F.C1), F.Power(F.x, F.Plus(F.a, F.C1)).powerExponentOf(F.x));
+    // an exponent depending on x, another base, or a free expression give NIL
+    assertTrue(F.Power(F.x, F.x).powerExponentOf(F.x).isNIL());
+    assertTrue(F.Power(F.y, F.C2).powerExponentOf(F.x).isNIL());
+    assertTrue(F.C5.powerExponentOf(F.x).isNIL());
+  }
+
+  @Test
+  void testRuleValue() {
+    IAST rules = F.list(F.Rule(F.x, F.C1),
+        new IExpr[] {F.RuleDelayed(F.y, F.C2), F.Rule(F.y, F.C3), F.Rule(F.x, F.C4)});
+    // the first Rule wins, a RuleDelayed isn't looked at
+    assertEquals(F.C1, rules.ruleValue(F.x));
+    assertEquals(F.C3, rules.ruleValue(F.y));
+    assertTrue(rules.ruleValue(F.z).isNIL());
   }
 }

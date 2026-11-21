@@ -734,7 +734,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   /** Whether the value of a tangent or cotangent isn't a pole. */
   private static boolean isFiniteValue(IExpr value) {
     IExpr v = value.isTan() || value.isAST(S.Cot, 2) ? EvalEngine.get().evalQuiet(value) : value;
-    return v.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate(), true);
+    return v.isFreeOfInfinityOrIndeterminate();
   }
 
   public static IExpr tr13(IExpr expr) {

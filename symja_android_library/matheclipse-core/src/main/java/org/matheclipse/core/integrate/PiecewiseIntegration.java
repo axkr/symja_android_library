@@ -964,13 +964,7 @@ public final class PiecewiseIntegration {
       if (!solution.isList()) {
         return false;
       }
-      IExpr point = F.NIL;
-      for (IExpr rule : (IAST) solution) {
-        if (rule.isRule() && rule.first().equals(x)) {
-          point = rule.second();
-          break;
-        }
-      }
+      IExpr point = ((IAST) solution).ruleValue(x);
       if (point.isNIL() || !point.isFree(x) || !point.isNumericFunction(true)) {
         return false;
       }

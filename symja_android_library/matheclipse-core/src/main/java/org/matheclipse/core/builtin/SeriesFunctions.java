@@ -560,7 +560,7 @@ public class SeriesFunctions {
         // Fast-Path: Try direct evaluation via our optimized SeriesCoefficient
         IExpr coeff = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.CN1)));
         if (coeff.isPresent() && coeff.isFree(S.SeriesCoefficient, true)) {
-          if (!coeff.isFree(f -> f.isIndeterminate() || f.isDirectedInfinity(), true)) {
+          if (!coeff.isFreeOfInfinityOrIndeterminate()) {
             // the -1 coefficient isn't determined - a residue is finite by definition, so don't
             // guess with the series fallback either
             return F.NIL;

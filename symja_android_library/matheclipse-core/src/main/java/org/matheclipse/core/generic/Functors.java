@@ -20,7 +20,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
@@ -1132,14 +1131,9 @@ public class Functors {
    * @return
    */
   private static IExpr evalOneIdentity(IExpr expr) {
-    if (expr.isAST()) {
-      IAST arg2AST = (IAST) expr;
-      // only built-ins like Times(x) are x as values; f(x) of a package stays f(x)
-      if (arg2AST.isAST1() && arg2AST.head().isBuiltInSymbol()) {
-        if (((ISymbol) arg2AST.head()).hasOneIdentityAttribute()) {
-          expr = arg2AST.arg1();
-        }
-      }
+    // only built-ins like Times(x) are x as values; f(x) of a package stays f(x)
+    if (expr.isOneIdentityAST() && expr.head().isBuiltInSymbol()) {
+      return expr.first();
     }
     return expr;
   }

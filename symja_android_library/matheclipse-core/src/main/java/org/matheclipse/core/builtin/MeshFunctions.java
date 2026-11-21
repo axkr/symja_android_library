@@ -642,19 +642,7 @@ public class MeshFunctions {
   }
 
   private static boolean isOptionArgument(IExpr arg) {
-    if (arg.isRuleAST()) {
-      return true;
-    }
-    if (arg.isList() && arg.argSize() > 0) {
-      IAST list = (IAST) arg;
-      for (int i = 1; i < list.size(); i++) {
-        if (!list.get(i).isRuleAST()) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
+    return arg.isRuleAST() || (arg.isListOfRules(false) && arg.argSize() > 0);
   }
 
   /**

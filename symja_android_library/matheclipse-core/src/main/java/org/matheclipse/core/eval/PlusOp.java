@@ -292,7 +292,7 @@ public final class PlusOp {
   /** A constant like <code>I*Pi</code>: a finite number, possibly complex. */
   private static boolean isFiniteConstant(IExpr arg) {
     return !arg.isNumber() && arg.isNumericFunction(true)
-        && arg.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)
+        && arg.isFreeOfInfinityOrIndeterminate()
         && arg.evalNumber() != null;
   }
 

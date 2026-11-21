@@ -275,7 +275,11 @@ public class ControlObject {
     return expr.isRule() || expr.isRuleDelayed();
   }
 
-  private static IExpr optionOf(IAST call, ISymbol name) {
+  /**
+   * The value of the option <code>name</code> among the arguments from the second on, or
+   * {@link F#NIL}.
+   */
+  static IExpr optionOf(IAST call, ISymbol name) {
     for (int i = 2; i < call.size(); i++) {
       IExpr arg = call.get(i);
       if (isOption(arg) && ((IAST) arg).arg1() == name) {

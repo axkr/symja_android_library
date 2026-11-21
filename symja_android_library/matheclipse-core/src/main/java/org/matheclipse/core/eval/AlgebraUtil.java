@@ -874,8 +874,7 @@ public class AlgebraUtil {
    * the GCD over the number field finds those.
    */
   private static boolean isRadicalFree(IExpr expr) {
-    return expr.isFree(x -> x.isPower() && x.base().isRational() && x.exponent().isFraction(),
-        false) || new VariablesSet(expr).size() == 0;
+    return expr.isFree(x -> x.isRationalRadical(), false) || new VariablesSet(expr).size() == 0;
   }
 
   private static boolean isSumOrPowerOfSum(IExpr expr) {

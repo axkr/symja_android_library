@@ -69,12 +69,7 @@ public final class RadicalNormalForm {
   }
 
   private static boolean isSymbolicSquareRoot(IExpr x) {
-    return isSquareRoot(x) && !x.base().isNumericFunction(true);
-  }
-
-  private static boolean isSquareRoot(IExpr x) {
-    return x.isPower() && x.exponent().isFraction()
-        && ((IFraction) x.exponent()).denominator().equals(F.C2);
+    return x.isHalfIntegerPower() && !x.base().isNumericFunction(true);
   }
 
   /**
@@ -126,7 +121,7 @@ public final class RadicalNormalForm {
       return F.NIL;
     }
     IExpr result = engine.evaluate(F.ReplaceAll(cancelled, backRules));
-    if (!result.isFree(x -> x.isIndeterminate() || x.isDirectedInfinity(), true)) {
+    if (!result.isFreeOfInfinityOrIndeterminate()) {
       return F.NIL;
     }
     return result;
@@ -200,7 +195,7 @@ public final class RadicalNormalForm {
       if (exponent.isInteger()) {
         return F.Power(abstractExpr(expr.base()), exponent);
       }
-      if (isSquareRoot(expr)) {
+      if (expr.isHalfIntegerPower()) {
         IExpr radicand = engine.evaluate(abstractExpr(expr.base()));
         if (!failed && isPolynomial(radicand)) {
           ISymbol r = radical(radicand, expr.base());

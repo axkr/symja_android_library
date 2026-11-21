@@ -3236,7 +3236,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // a finite value or a bounded interval like Interval({-1,1}) of Sin(x)
     IExpr restLimit = evalLimitQuiet(rest.oneIdentity0(), data);
     if (restLimit.isPresent() && restLimit.isFree(x) && restLimit.isFree(S.Limit, true)
-        && restLimit.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)) {
+        && restLimit.isFreeOfInfinityOrIndeterminate()) {
       return polynomialLimit;
     }
     return F.NIL;

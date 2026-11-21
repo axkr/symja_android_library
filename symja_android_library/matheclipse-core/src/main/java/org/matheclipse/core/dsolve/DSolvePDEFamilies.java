@@ -409,7 +409,7 @@ final class DSolvePDEFamilies {
         if (isZero(value)) {
           continue;
         }
-        if (value.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)
+        if (value.isFreeOfInfinityOrIndeterminate()
             || !limitAtCondition(residual, body)) {
           return false;
         }
@@ -736,7 +736,7 @@ final class DSolvePDEFamilies {
     }
     for (IExpr point : new IExpr[] {F.C0, F.C1}) {
       IExpr value = p.simplify(F.subst(expr, initial.space, point));
-      if (value.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)
+      if (value.isFreeOfInfinityOrIndeterminate()
           && initial.isSpaceFree(value)) {
         return value;
       }

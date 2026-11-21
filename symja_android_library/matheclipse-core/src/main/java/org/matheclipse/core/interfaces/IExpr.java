@@ -3540,6 +3540,52 @@ public interface IExpr
   }
 
   /**
+   * Test if neither a <code>DirectedInfinity()</code> nor <code>Indeterminate</code>, also as a
+   * machine <code>NaN</code>, occurs in this expression, heads included: a result which is a value
+   * rather than a way of saying there is none.
+   *
+   * @return <code>true</code> if no infinity and nothing indeterminate occurs
+   */
+  default boolean isFreeOfInfinityOrIndeterminate() {
+    return isFree(x -> x.isIndeterminate() || x.isDirectedInfinity(), true);
+  }
+
+  /**
+   * Test if this expression is a power with a half-integer exponent <code>b^(k/2)</code>, an odd
+   * <code>k</code>: <code>Sqrt(b)</code>, <code>1/Sqrt(b)</code> or <code>b^(3/2)</code>.
+   *
+   * @return <code>true</code> if this is a power with a half-integer exponent
+   */
+  default boolean isHalfIntegerPower() {
+    return isPower() && exponent().isFraction()
+        && ((IFraction) exponent()).denominator().equals(F.C2);
+  }
+
+  /**
+   * Test if this expression is a radical of a rational number, a power with a rational base and a
+   * non-integer rational exponent: <code>Sqrt(2)</code> or <code>3^(-1/3)</code>.
+   *
+   * @return <code>true</code> if this is a radical of a rational number
+   */
+  default boolean isRationalRadical() {
+    return isPowerFraction() && base().isRational();
+  }
+
+  /**
+   * The exponent <code>e</code> if this expression is a power <code>x^e</code> of the variable with
+   * an exponent free of <code>x</code>, <code>1</code> if this is <code>x</code> itself.
+   *
+   * @param x the variable
+   * @return the exponent, or {@link F#NIL} if this is no such power of <code>x</code>
+   */
+  default IExpr powerExponentOf(IExpr x) {
+    if (equals(x)) {
+      return F.C1;
+    }
+    return isPower() && base().equals(x) && exponent().isFree(x, true) ? exponent() : F.NIL;
+  }
+
+  /**
    * Split this expression into the product of its factors which are free of <code>variable</code>
    * and the product of the other factors. An expression which isn't a <code>Times()</code> is a
    * single factor.

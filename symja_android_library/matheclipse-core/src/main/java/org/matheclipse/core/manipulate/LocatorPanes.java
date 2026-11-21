@@ -116,7 +116,7 @@ public class LocatorPanes {
 
     IASTAppendable primitives = F.ListAlloc(points.size() + 1);
     primitives.append(graphics.arg1());
-    IExpr appearance = optionOf(pane, S.Appearance);
+    IExpr appearance = ControlObject.optionOf(pane, S.Appearance);
     double span = span(graphics, points);
     for (int i = 0; i < points.size(); i++) {
       IExpr marker = marker(appearance, i, points.get(i), span);
@@ -182,7 +182,7 @@ public class LocatorPanes {
    * coordinates does not get a marker too small to see.
    */
   private static double span(IAST graphics, List<double[]> points) {
-    IExpr plotRange = optionOf(graphics, S.PlotRange);
+    IExpr plotRange = ControlObject.optionOf(graphics, S.PlotRange);
     if (plotRange.isList2() && plotRange.first().isList2()) {
       IAST axes = (IAST) plotRange;
       double x = extent(axes.arg1());
@@ -253,7 +253,7 @@ public class LocatorPanes {
     if (!Dynamics.isSettable(dynamic)) {
       control.setReadOnly(true);
     }
-    IExpr autoCreate = optionOf(pane, S.LocatorAutoCreate);
+    IExpr autoCreate = ControlObject.optionOf(pane, S.LocatorAutoCreate);
     if (autoCreate.isPresent()) {
       control.setAutoCreate(!autoCreate.isFalse());
     }
@@ -262,7 +262,7 @@ public class LocatorPanes {
 
   /** The <code>{xmin, xmax, ymin, ymax}</code> of a graphic's plot range, or <code>null</code>. */
   private static double[] plotRange(IExpr composed) {
-    IExpr plotRange = composed.isAST() ? optionOf((IAST) composed, S.PlotRange) : F.NIL;
+    IExpr plotRange = composed.isAST() ? ControlObject.optionOf((IAST) composed, S.PlotRange) : F.NIL;
     if (plotRange.isList2() && plotRange.first().isList2()
         && ((IAST) plotRange).arg2().isList2()) {
       IAST axes = (IAST) plotRange;
@@ -273,15 +273,5 @@ public class LocatorPanes {
           ManipulateControl.toDouble(y.arg2(), 1.0)};
     }
     return null;
-  }
-
-  private static IExpr optionOf(IAST ast, IExpr name) {
-    for (int i = 2; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if ((arg.isRule() || arg.isRuleDelayed()) && ((IAST) arg).arg1() == name) {
-        return ((IAST) arg).arg2();
-      }
-    }
-    return F.NIL;
   }
 }

@@ -11,7 +11,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -288,18 +287,12 @@ final class RadicalEquations {
     return !expr.isFree(x -> isSquareRoot(x, variables), true);
   }
 
-  /** Whether <code>expr</code> is <code>b^(k/2)</code> with an odd <code>k</code>. */
-  private static boolean isHalfPower(IExpr expr) {
-    return expr.isPower() && expr.exponent().isFraction()
-        && ((IFraction) expr.exponent()).denominator().equals(F.C2);
-  }
-
   private static boolean isSquareRoot(IExpr expr, IAST variables) {
-    return isHalfPower(expr) && !expr.base().isFree(x -> variables.contains(x), true);
+    return expr.isHalfIntegerPower() && !expr.base().isFree(x -> variables.contains(x), true);
   }
 
   private static boolean isSquareRootOf(IExpr expr, IExpr radicand) {
-    return isHalfPower(expr) && expr.base().equals(radicand);
+    return expr.isHalfIntegerPower() && expr.base().equals(radicand);
   }
 
   /**
@@ -313,7 +306,7 @@ final class RadicalEquations {
     if (expr.isPlus() || expr.isTimes()) {
       return ((IAST) expr).forAll(x -> isRadicalExpression(x, variables));
     }
-    if (expr.isPower() && (expr.exponent().isInteger() || isHalfPower(expr))) {
+    if (expr.isPower() && (expr.exponent().isInteger() || expr.isHalfIntegerPower())) {
       return isRadicalExpression(expr.base(), variables);
     }
     return false;

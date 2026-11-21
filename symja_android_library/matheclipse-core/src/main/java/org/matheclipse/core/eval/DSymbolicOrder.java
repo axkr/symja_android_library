@@ -203,12 +203,8 @@ public class DSymbolicOrder {
       if (linear == null) {
         continue;
       }
-      IExpr m;
-      if (other.equals(x)) {
-        m = F.C1;
-      } else if (other.isPower() && other.base().equals(x) && other.exponent().isFree(x, true)) {
-        m = other.exponent();
-      } else {
+      IExpr m = other.powerExponentOf(x);
+      if (m.isNIL()) {
         continue;
       }
       if (m.isInteger() && !m.isNegative()) {

@@ -1039,7 +1039,7 @@ final class DSolveSpecialFunctions {
   /** Whether the limit came out as a number rather than as a way of saying there is none. */
   private static boolean isFinite(IExpr expr) {
     return expr.isPresent() && !expr.isIndeterminate() && !expr.isDirectedInfinity()
-        && expr.isFree(x -> x.isIndeterminate() || x.isDirectedInfinity(), true);
+        && expr.isFreeOfInfinityOrIndeterminate();
   }
 
   /** How big the potential of the reduced equation may be before it is left alone. */

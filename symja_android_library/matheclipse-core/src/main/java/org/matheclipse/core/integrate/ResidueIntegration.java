@@ -1692,12 +1692,11 @@ public final class ResidueIntegration {
     IASTAppendable constant = F.TimesAlloc(factors.argSize());
     for (int i = 1; i <= factors.argSize(); i++) {
       IExpr factor = factors.get(i);
+      IExpr exponent = factor.powerExponentOf(x);
       if (factor.isFree(x)) {
         constant.append(factor);
-      } else if (factor.equals(x)) {
-        p = F.Plus(p, F.C1);
-      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
-        p = F.Plus(p, factor.exponent());
+      } else if (exponent.isPresent()) {
+        p = F.Plus(p, exponent);
       } else if (factor.isPower() && factor.base().isPlus() && factor.base().argSize() == 2
           && factor.exponent().isFree(x) && base.isNIL()) {
         base = factor.base();

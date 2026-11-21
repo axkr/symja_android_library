@@ -465,7 +465,7 @@ public class ChocoConvert {
    * @return the rewritten relation, {@link S#True}, {@link S#False} or <code>expr</code> itself
    */
   private static IExpr integralRelation(IExpr expr) {
-    if (!expr.isAST2() || !isRelation(expr) || expr.isFree(x -> x.isFraction(), false)) {
+    if (!expr.isRelationalBinary() || expr.isFree(x -> x.isFraction(), false)) {
       return expr;
     }
     IAST relation = (IAST) expr;
@@ -509,11 +509,6 @@ public class ChocoConvert {
     EvalEngine engine = EvalEngine.get();
     return F.binaryAST2(head, engine.evaluate(F.Expand(F.Times(denominator[0], lhs))),
         engine.evaluate(F.Expand(F.Times(denominator[0], rhs))));
-  }
-
-  private static boolean isRelation(IExpr expr) {
-    return expr.isEqual() || expr.isAST(S.Unequal) || expr.isAST(S.Greater)
-        || expr.isAST(S.GreaterEqual) || expr.isAST(S.Less) || expr.isAST(S.LessEqual);
   }
 
   private static ReExpression relationalIntegerExpression(Model net, IAST temp,

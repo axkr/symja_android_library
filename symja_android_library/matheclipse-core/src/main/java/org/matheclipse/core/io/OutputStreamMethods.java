@@ -176,12 +176,7 @@ public final class OutputStreamMethods {
 
   /** The function a method gives for one of the keys, or {@link F#NIL}. */
   private static IExpr function(IAST definitions, String key) {
-    for (int i = 1; i < definitions.size(); i++) {
-      IExpr rule = definitions.get(i);
-      if (rule.isRuleAST() && rule.first().isString(key)) {
-        return rule.second();
-      }
-    }
-    return F.NIL;
+    IAST rule = definitions.getRule(key);
+    return rule.isPresent() ? rule.second() : F.NIL;
   }
 }

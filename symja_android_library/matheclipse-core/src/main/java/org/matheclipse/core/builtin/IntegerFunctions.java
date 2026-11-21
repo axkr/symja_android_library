@@ -2211,14 +2211,7 @@ public class IntegerFunctions {
       if (expr.isInteger()) {
         return new GaussianInteger((IInteger) expr, F.C0);
       }
-      if (expr.isComplex()) {
-        IExpr r = expr.re();
-        IExpr i = expr.im();
-        if (r.isInteger() && i.isInteger()) {
-          return new GaussianInteger((IInteger) r, (IInteger) i);
-        }
-      }
-      return null;
+      return expr.gaussianInteger().orElse(null);
     }
 
     // Conversion: GaussianInteger to IExpr

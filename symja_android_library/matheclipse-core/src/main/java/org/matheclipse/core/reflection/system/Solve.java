@@ -1765,7 +1765,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           res = engine.evalQuiet(F.FindRoot(termEqualZero, F.list(firstVariable, F.C0)));
         }
       }
-      if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+      if (!res.isList() || !res.isFreeOfInfinityOrIndeterminate()) {
         return F.NIL;
       }
       if (res.isListOfLists()) {
@@ -2810,7 +2810,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 }
               }
               if (!res.isList()
-                  || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+                  || !res.isFreeOfInfinityOrIndeterminate()) {
                 continue;
               }
               IAST subResult = (IAST) res;

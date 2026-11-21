@@ -986,6 +986,24 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
+   * The right-hand side of the first <code>Rule(lhs, value)</code> among the arguments, as in a
+   * list of solution rules <code>{x-&gt;1, y-&gt;2}</code>. A <code>RuleDelayed</code> isn't
+   * looked at.
+   *
+   * @param lhs the left-hand side to look for
+   * @return the value, or {@link F#NIL} if no such rule is an argument
+   */
+  default IExpr ruleValue(IExpr lhs) {
+    for (int i = 1; i < size(); i++) {
+      IExpr rule = get(i);
+      if (rule.isRule() && rule.first().equals(lhs)) {
+        return rule.second();
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Select all elements by applying the <code>function</code> to each argument in this <code>AST
    * </code> and append the result elements for which the function returns non <code>F.NIL</code>
    * elements to the <code>0th element</code> of the result array, or otherwise append it to the

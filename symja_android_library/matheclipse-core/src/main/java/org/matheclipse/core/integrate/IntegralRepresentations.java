@@ -96,7 +96,7 @@ final class IntegralRepresentations {
       IAST factors = distributed.isTimes() ? (IAST) distributed : F.Times(distributed);
       for (int i = 1; i <= factors.argSize(); i++) {
         IExpr factor = factors.get(i);
-        IExpr power = powerOfX(factor, x);
+        IExpr power = factor.powerExponentOf(x);
         if (factor.isFree(x)) {
           shape.constant.append(factor);
         } else if (power.isPresent()) {
@@ -145,20 +145,6 @@ final class IntegralRepresentations {
     IExpr rate(Context ctx, IExpr degree) {
       return ctx.eval(F.Negate(exponent.get(degree)));
     }
-  }
-
-  /**
-   * The exponent <code>e</code> of a factor <code>x^e</code> with an <code>x</code>-free
-   * <code>e</code>: <code>1</code> for <code>x</code> itself, otherwise {@link F#NIL}.
-   */
-  static IExpr powerOfX(IExpr factor, IExpr x) {
-    if (factor.equals(x)) {
-      return F.C1;
-    }
-    if (factor.isPower() && factor.base().equals(x) && factor.exponent().isFree(x)) {
-      return factor.exponent();
-    }
-    return F.NIL;
   }
 
   /** The summands of the expanded exponent of a power <code>E^(...)</code>. */

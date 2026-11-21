@@ -1060,7 +1060,7 @@ final class DSolveODE {
       right = engine.evaluate(F.subst(F.subst(level, x, point[0]), yVar, point[1]));
       if (!right.isFree(x, true) || !right.isFree(yVar, true) || right.isIndeterminate()
           || right.isDirectedInfinity()
-          || !right.isFree(x2 -> x2.isIndeterminate() || x2.isDirectedInfinity(), true)) {
+          || !right.isFreeOfInfinityOrIndeterminate()) {
         return F.NIL;
       }
     }

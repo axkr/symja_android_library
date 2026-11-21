@@ -968,8 +968,8 @@ final class DSolveSystem {
     // The rules are matched by what they are for; Solve does not promise the order they were
     // asked for.
     IAST solution = (IAST) ((IAST) solved).arg1();
-    IExpr firstField = ruleFor(solution, firstRate);
-    IExpr secondField = ruleFor(solution, secondRate);
+    IExpr firstField = solution.ruleValue(firstRate);
+    IExpr secondField = solution.ruleValue(secondRate);
     if (firstField.isNIL() || secondField.isNIL()) {
       return F.NIL;
     }
@@ -1037,17 +1037,6 @@ final class DSolveSystem {
     } finally {
       engine.setConstantCounter(savedCounter);
     }
-  }
-
-  /** The right hand side of the rule for the given left hand side. */
-  private static IExpr ruleFor(IAST rules, IExpr lhs) {
-    for (int i = 1; i <= rules.argSize(); i++) {
-      IExpr rule = rules.get(i);
-      if (rule.isRule() && rule.first().equals(lhs)) {
-        return rule.second();
-      }
-    }
-    return F.NIL;
   }
 
   /** Whether a root of something which depends on the variable was left behind. */
@@ -1143,14 +1132,7 @@ final class DSolveSystem {
     IASTAppendable rules = F.ListAlloc(n);
     for (int i = 1; i <= n; i++) {
       IExpr v = dependentFunctions.get(i);
-      IExpr rawResult = F.NIL;
-      for (int j = 1; j <= ((IAST) systemRoots).argSize(); j++) {
-        IExpr rule = ((IAST) systemRoots).get(j);
-        if (rule.isRule() && rule.first().equals(v)) {
-          rawResult = rule.second();
-          break;
-        }
-      }
+      IExpr rawResult = ((IAST) systemRoots).ruleValue(v);
       if (rawResult.isNIL()) {
         return F.NIL;
       }

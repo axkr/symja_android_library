@@ -116,7 +116,7 @@ final class MeijerConvolution {
     List<Kernel> kernels = new ArrayList<Kernel>();
     for (int i = 1; i <= factors.argSize(); i++) {
       IExpr factor = factors.get(i);
-      IExpr power = IntegralRepresentations.powerOfX(factor, x);
+      IExpr power = factor.powerExponentOf(x);
       if (factor.isFree(x)) {
         constant.append(factor);
       } else if (power.isPresent()) {
@@ -402,7 +402,7 @@ final class MeijerConvolution {
       Kernel kernel = null;
       for (int i = 1; i <= factors.argSize(); i++) {
         IExpr factor = factors.get(i);
-        IExpr power = IntegralRepresentations.powerOfX(factor, x);
+        IExpr power = factor.powerExponentOf(x);
         if (factor.isFree(x)) {
           constant.append(factor);
         } else if (power.isPresent()) {
