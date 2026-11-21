@@ -6123,7 +6123,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     final IExpr variable = variables.arg1();
-    if (equation.isFree(x -> x.isPower() && !x.exponent().isFree(variable), true)) {
+    if (!equation.hasVariableExponent(variable)) {
       // an algebraic equation has no families of solutions
       return F.NIL;
     }
@@ -6361,8 +6361,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     IAST variables = ast.arg2().makeList();
     IExpr system = ast.arg1();
     IExpr rewritten = system.replaceAll(x -> {
-      if (x.isPower() && x.base().isAbs() && x.exponent().isInteger()
-          && ((IInteger) x.exponent()).isEven()
+      if (x.isEvenIntegerPower() && x.base().isAbs()
           && !x.base().first().isFree(v -> variables.contains(v), true)) {
         return F.Power(x.base().first(), x.exponent());
       }

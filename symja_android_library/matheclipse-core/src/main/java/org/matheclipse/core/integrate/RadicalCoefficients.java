@@ -204,7 +204,7 @@ public class RadicalCoefficients {
       return false;
     }
     IAST ast = (IAST) expr;
-    if (isFractionalPower(ast) && containsFractionalPower(ast.base())) {
+    if (ast.isPowerFraction() && containsFractionalPower(ast.base())) {
       return true;
     }
     for (int i = 1; i < ast.size(); i++) {
@@ -220,7 +220,7 @@ public class RadicalCoefficients {
       return false;
     }
     IAST ast = (IAST) expr;
-    if (isFractionalPower(ast)) {
+    if (ast.isPowerFraction()) {
       return true;
     }
     for (int i = 1; i < ast.size(); i++) {
@@ -231,7 +231,4 @@ public class RadicalCoefficients {
     return false;
   }
 
-  private static boolean isFractionalPower(IAST ast) {
-    return ast.isPower() && ast.exponent().isRational() && !ast.exponent().isInteger();
-  }
 }

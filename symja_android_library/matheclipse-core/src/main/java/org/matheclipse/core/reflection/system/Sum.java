@@ -603,7 +603,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     boolean indexed = false;
     for (int i = 2; i < ast.size() && !indexed; i++) {
       final IExpr variable = ast.get(i).first();
-      indexed = !summand.isFree(x -> x.isAST() && x.head().isSymbol() && !x.head().isBuiltInSymbol()
+      indexed = !summand.isFree(x -> x.isUserSymbolFunction()
           && ((ISymbol) x.head()).getRulesData() == null && !x.isFree(variable), false);
     }
     if (!indexed) {
@@ -1782,8 +1782,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     IExpr r = F.NIL;
     IASTAppendable rest = F.TimesAlloc(2);
     for (IExpr factor : expr.isTimes() ? (IAST) expr : F.List(expr)) {
-      if (factor.isPower() && factor.base().isFree(k) && !factor.exponent().isFree(k)
-          && r.isNIL()) {
+      if (factor.isExponentialIn(k) && r.isNIL()) {
         // b^(e0 + e1*k) == b^e0*(b^e1)^k
         IExpr exponent = factor.exponent();
         if (!exponent.isPolynomial(F.list(k))
@@ -2023,8 +2022,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       generating = F.Times(F.Zeta(s), F.unaryAST1(S.PrimeZetaP, s));
     } else if ((arithmetic.isAST(S.Abs, 2) && arithmetic.first().isAST(S.MoebiusMu, 2)
         && arithmetic.first().first().equals(n))
-        || (arithmetic.isPower() && arithmetic.exponent().isInteger()
-            && ((IInteger) arithmetic.exponent()).isEven() && arithmetic.exponent().isPositive()
+        || (arithmetic.isEvenIntegerPower() && arithmetic.exponent().isPositive()
             && arithmetic.base().isAST(S.MoebiusMu, 2) && arithmetic.base().first().equals(n))) {
       generating = F.Divide(F.Zeta(s), F.Zeta(F.Times(F.C2, s)));
     } else if (arithmetic.isPower() && arithmetic.exponent().isNumEqualInteger(F.C2)

@@ -984,8 +984,7 @@ public class QuarticSolver {
           return F.NIL;
         }
         root.append(numberRoot);
-      } else if (factor.isPower() && factor.exponent().isInteger()
-          && ((IInteger) factor.exponent()).isEven() && factor.exponent().isPositive()) {
+      } else if (factor.isEvenIntegerPower() && factor.exponent().isPositive()) {
         root.append(F.Power(factor.base(), ((IInteger) factor.exponent()).div(F.C2)));
       } else {
         return F.NIL;

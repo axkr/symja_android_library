@@ -3426,14 +3426,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   /** The value which the rules of <code>solution</code> give <code>x</code>, or {@link F#NIL}. */
   private static IExpr valueOf(IExpr solution, IExpr x) {
-    if (solution.isList()) {
-      for (IExpr rule : (IAST) solution) {
-        if (rule.isRule() && rule.first().equals(x)) {
-          return rule.second();
-        }
-      }
-    }
-    return F.NIL;
+    return solution.isList() ? ((IAST) solution).ruleValue(x) : F.NIL;
   }
 
   /** The finite real value of <code>expr</code>, or NaN. */

@@ -199,7 +199,7 @@ public final class NestedRootEuler {
     for (int i = 1; i < copy.size(); i++) {
       copy.set(i, togetherRootBases(copy.get(i), t, engine));
     }
-    if (isRoot(copy) && !copy.base().isFree(t, true)) {
+    if (copy.isPowerFraction() && !copy.base().isFree(t, true)) {
       copy.set(1, engine.evaluate(F.Together(copy.base())));
     }
     return engine.evaluate(copy);
@@ -243,7 +243,8 @@ public final class NestedRootEuler {
    */
   private static IExpr squareRoot(IExpr c, EvalEngine engine) {
     IExpr root = engine.evaluate(F.PowerExpand(F.Sqrt(c)));
-    boolean rootFree = root.isFree(e -> isRoot(e) || (e.isNumber() && !e.isRational()), true);
+    boolean rootFree =
+        root.isFree(e -> e.isPowerFraction() || (e.isNumber() && !e.isRational()), true);
     return rootFree ? root : F.NIL;
   }
 
@@ -252,7 +253,7 @@ public final class NestedRootEuler {
     if (!expr.isAST() || expr.isFree(x, true)) {
       return F.NIL;
     }
-    if (isRoot(expr)) {
+    if (expr.isPowerFraction()) {
       IExpr conic = conic(expr.base(), x, engine);
       if (conic.isPresent()) {
         return conic;
@@ -272,7 +273,7 @@ public final class NestedRootEuler {
     if (!expr.isAST() || expr.isFree(x, true)) {
       return F.NIL;
     }
-    if (isRoot(expr) && ((IRational) expr.exponent()).denominator().equals(F.C2)
+    if (expr.isPowerFraction() && ((IRational) expr.exponent()).denominator().equals(F.C2)
         && expr.base().isPolynomialOfMaxDegree(x, 2)
         && engine.evaluate(F.Exponent(expr.base(), x)).equals(F.C2)) {
       return expr.base();
@@ -287,7 +288,4 @@ public final class NestedRootEuler {
     return F.NIL;
   }
 
-  private static boolean isRoot(IExpr expr) {
-    return expr.isPower() && expr.exponent().isRational() && !expr.exponent().isInteger();
-  }
 }

@@ -181,7 +181,7 @@ final class DSolveVerify {
   private static IExpr replaceQuadratures(IExpr expr, IExpr xVar, java.util.Map<IExpr, IExpr> functions,
       java.util.List<IExpr> integrands) {
     IExpr replaced = expr.replaceAll(t -> {
-      if (DSolveODE.isInertIntegral(t) && t.argSize() == 2 && t.second().isList3()
+      if (t.isInactiveFunction(S.Integrate) && t.argSize() == 2 && t.second().isList3()
           && t.second().getAt(3).equals(xVar)) {
         IExpr function = functions.get(t);
         if (function == null) {

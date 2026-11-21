@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -19,15 +18,12 @@ final class DSolveUtil {
 
   private DSolveUtil() {}
 
-  private static final int[] CIRCULAR = {ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc};
-
   /**
    * Whether <code>expr</code> applies a circular function, <code>Sin</code> to <code>Csc</code>, to
    * something containing the variable.
    */
   static boolean hasCircular(IExpr expr, IExpr xVar) {
-    return !expr.isFree(x -> x.isAST1() && x.isFunctionID(CIRCULAR) && !x.first().isFree(xVar),
-        true);
+    return !expr.isFree(x -> x.isCircularFunction() && !x.first().isFree(xVar), true);
   }
 
   /**
@@ -618,9 +614,8 @@ final class DSolveUtil {
    * looked for among polynomials and whose quadratures would not close.
    */
   static boolean hasUndefinedFunction(IExpr expr) {
-    return !expr.isFree(x -> x.isAST()
-        && (x.head().isAST(S.Derivative) || (x.head().isSymbol() && !x.head().isBuiltInSymbol())),
-        true);
+    return !expr.isFree(
+        x -> x.isUserSymbolFunction() || (x.isAST() && x.head().isAST(S.Derivative)), true);
   }
 
   /** Whether a root of something appears anywhere, rather than a whole power. */

@@ -3586,6 +3586,88 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is one of the circular functions <code>Sin, Cos, Tan, Cot, Sec</code>
+   * or <code>Csc</code> with one argument.
+   *
+   * @return <code>true</code> if this is a circular function of one argument
+   */
+  default boolean isCircularFunction() {
+    return isAST1() && isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc);
+  }
+
+  /**
+   * Test if a power whose exponent depends on <code>x</code>, like <code>2^x</code> or
+   * <code>x^x</code>, occurs in this expression, heads included.
+   *
+   * @param x the variable
+   * @return <code>true</code> if such a power occurs
+   */
+  default boolean hasVariableExponent(IExpr x) {
+    return has(e -> e.isPower() && !e.exponent().isFree(x, true), true);
+  }
+
+  /**
+   * Test if this expression is a power <code>b^f</code> with a base free of <code>x</code> and an
+   * exponent which depends on <code>x</code>, like <code>2^x</code> or <code>E^(x^2)</code>.
+   *
+   * @param x the variable
+   * @return <code>true</code> if this is an exponential in <code>x</code>
+   */
+  default boolean isExponentialIn(IExpr x) {
+    return isPower() && base().isFree(x, true) && !exponent().isFree(x, true);
+  }
+
+  /**
+   * Test if this expression is a power with a negative number as exponent, like <code>1/x</code>
+   * or <code>x^(-3/2)</code>.
+   *
+   * @return <code>true</code> if this is such a power
+   */
+  default boolean isNegativeNumberPower() {
+    return isPower() && exponent().isNumber() && exponent().isNegative();
+  }
+
+  /**
+   * Test if this expression is a power with an even integer exponent, like <code>x^2</code> or
+   * <code>x^(-4)</code>.
+   *
+   * @return <code>true</code> if this is such a power
+   */
+  default boolean isEvenIntegerPower() {
+    return isPowerInteger() && ((IInteger) exponent()).isEven();
+  }
+
+  /**
+   * Test if this expression is an inactive call of <code>symbol</code>,
+   * <code>Inactive(symbol)[...]</code>.
+   *
+   * @param symbol the function symbol
+   * @return <code>true</code> if this is an inactive call of <code>symbol</code>
+   */
+  default boolean isInactiveFunction(ISymbol symbol) {
+    return isAST() && head().isAST(S.Inactive, 2) && head().first() == symbol;
+  }
+
+  /**
+   * Test if this expression is a call of a symbol which isn't built in, like <code>f(x)</code>.
+   *
+   * @return <code>true</code> if the head is a symbol which isn't built in
+   */
+  default boolean isUserSymbolFunction() {
+    return isAST() && head().isSymbol() && !head().isBuiltInSymbol();
+  }
+
+  /**
+   * Test if this expression is a rule, or a list of rules with at least one rule: an option
+   * specification.
+   *
+   * @return <code>true</code> if this is a rule or a non-empty list of rules
+   */
+  default boolean isRuleOrNonEmptyListOfRules() {
+    return isRuleAST() || (isListOfRules(false) && argSize() > 0);
+  }
+
+  /**
    * Split this expression into the product of its factors which are free of <code>variable</code>
    * and the product of the other factors. An expression which isn't a <code>Times()</code> is a
    * single factor.

@@ -134,7 +134,7 @@ public final class LabelText {
       }
       return text.toString();
     }
-    if (expr.isPower() && expr.exponent().isNumber() && expr.exponent().isNegative()) {
+    if (expr.isNegativeNumberPower()) {
       // 1/x
       return product(org.matheclipse.core.expression.F.Times(expr));
     }
@@ -470,7 +470,7 @@ public final class LabelText {
         denominators++;
         continue;
       }
-      if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
+      if (factor.isNegativeNumberPower()) {
         IExpr power = factor.exponent().negate();
         IExpr below = power.isOne() ? factor.base()
             : org.matheclipse.core.expression.F.Power(factor.base(), power);

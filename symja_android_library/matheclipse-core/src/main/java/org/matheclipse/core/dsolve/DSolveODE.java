@@ -2800,7 +2800,7 @@ final class DSolveODE {
       boolean before = ctx.setInertIntegrals(true);
       try {
         IExpr solution = solveLinearConstantCoefficients(lf, xVar, C_1, ctx);
-        if (solution.isNIL() || solution.isFree(x -> isInertIntegral(x), true)) {
+        if (solution.isNIL() || solution.isFree(x -> x.isInactiveFunction(S.Integrate), true)) {
           return F.NIL;
         }
         return consecutiveConstants(solution, C_1, engine);
@@ -2892,12 +2892,6 @@ final class DSolveODE {
       return true;
     }
     return false;
-  }
-
-  /** Whether <code>expr</code> is an inert integral <code>Inactive(Integrate)[...]</code>. */
-  static boolean isInertIntegral(IExpr expr) {
-    return expr.isAST() && expr.head().isAST(S.Inactive, 2)
-        && expr.head().first() == S.Integrate;
   }
 
   /**
@@ -3015,7 +3009,7 @@ final class DSolveODE {
 
   /** The inert integrals over an empty interval, <code>{K(k), a, a}</code>, replaced by 0. */
   private static IExpr emptyIntegralsToZero(IExpr expr, EvalEngine engine) {
-    IExpr replaced = expr.replaceAll(x -> isInertIntegral(x) && x.second().isList3()
+    IExpr replaced = expr.replaceAll(x -> x.isInactiveFunction(S.Integrate) && x.second().isList3()
         && engine.evaluate(F.Subtract(((IAST) x.second()).arg2(), ((IAST) x.second()).arg3()))
             .isZero() ? F.C0 : F.NIL);
     return replaced.isPresent() ? engine.evaluate(replaced) : expr;
@@ -3041,7 +3035,7 @@ final class DSolveODE {
     }
     IExpr general =
         solveWithInertIntegrals(equation, xVar, uFunction1Arg, c_n, point[0], ctx);
-    if (general.isNIL() || general.isFree(x -> isInertIntegral(x), true)) {
+    if (general.isNIL() || general.isFree(x -> x.isInactiveFunction(S.Integrate), true)) {
       return F.NIL;
     }
     IAST branches = general.makeList();

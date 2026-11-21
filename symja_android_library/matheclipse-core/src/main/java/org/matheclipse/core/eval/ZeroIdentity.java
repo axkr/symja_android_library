@@ -270,7 +270,7 @@ public final class ZeroIdentity {
     // I == z^(n/2), n is even
     final IExpr imaginaryUnit = F.Power(z, F.ZZ(n / 2));
     IExpr rational = F.subst(sum, t -> {
-      if (t.isAST1() && isCircular(t)) {
+      if (t.isCircularFunction()) {
         IExpr turn = engine.evaluate(F.Times(F.ZZ(n), F.Divide(t.first(), S.Pi)));
         IExpr plus = F.Power(z, turn);
         IExpr minus = F.Power(z, turn.negate());
@@ -329,18 +329,13 @@ public final class ZeroIdentity {
     return isMultipleOf(a, cyclotomic, z, engine) && isMultipleOf(b, cyclotomic, z, engine);
   }
 
-  private static boolean isCircular(IExpr t) {
-    return t.isSin() || t.isCos() || t.isTan() || t.isAST(S.Cot, 2) || t.isAST(S.Sec, 2)
-        || t.isAST(S.Csc, 2);
-  }
-
   /** Collect the denominators of the angles and the one radicand; anything else is declined. */
   private static void scan(IExpr expr, IInteger[] order, IExpr[] radicand, boolean[] supported,
       boolean[] trigonometric) {
     if (expr.isRational()) {
       return;
     }
-    if (expr.isAST1() && isCircular(expr)) {
+    if (expr.isCircularFunction()) {
       IExpr turn = EvalEngine.get().evaluate(F.Divide(expr.first(), S.Pi));
       if (!turn.isRational()) {
         supported[0] = false;

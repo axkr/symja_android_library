@@ -399,8 +399,7 @@ public final class ResidueIntegration {
       return piecewise;
     }
     // Abs(p)^2 is p^2
-    combined = ctx.eval(F.subst(combined, t -> t.isPower() && t.base().equals(F.Abs(p))
-        && t.exponent().isInteger() && ((org.matheclipse.core.interfaces.IInteger) t.exponent()).isEven()
+    combined = ctx.eval(F.subst(combined, t -> t.isEvenIntegerPower() && t.base().equals(F.Abs(p))
             ? F.Power(p, t.exponent())
             : F.NIL));
     // The point p == 0 belongs to neither case. The closed form is taken if the assumptions

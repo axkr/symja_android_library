@@ -662,7 +662,7 @@ public class BoxesFunctions {
         return true;
       }
       if (expr.isPower()) {
-        return expr.exponent().isNumber() && expr.exponent().isNegative();
+        return expr.isNegativeNumberPower();
       }
       return expr.isTimes() && ((IAST) expr).exists(x -> isQuotient(x));
     }
@@ -1507,7 +1507,7 @@ public class BoxesFunctions {
       IExpr coefficientDenominator = F.NIL;
       for (int i = 1; i < times.size(); i++) {
         IExpr factor = times.get(i);
-        if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
+        if (factor.isNegativeNumberPower()) {
           denominator.append(factor);
         } else if (i == 1 && factor.isRational() && !factor.isInteger()) {
           // a rational coefficient is split over the line: b/2 rather than (1/2) b
@@ -1563,22 +1563,17 @@ public class BoxesFunctions {
       boolean fractionInSum = false;
       for (int i = 2; i < times.size(); i++) {
         IExpr factor = times.get(i);
-        if (isReciprocal(factor)) {
+        if (factor.isNegativeNumberPower()) {
           return false;
         }
         if (factor.isPlus() || (factor.isPower() && factor.base().isPlus())) {
           sum = true;
           if (!fractionInSum) {
-            fractionInSum = factor.has(x -> x.isFraction() || isReciprocal(x), false);
+            fractionInSum = factor.has(x -> x.isFraction() || x.isNegativeNumberPower(), false);
           }
         }
       }
       return sum && (fractionInSum || times.arg1().isNegative());
-    }
-
-    /** Whether the expression is a power with a negative number as exponent. */
-    private static boolean isReciprocal(IExpr expr) {
-      return expr.isPower() && expr.exponent().isNumber() && expr.exponent().isNegative();
     }
 
     /**
@@ -1682,7 +1677,7 @@ public class BoxesFunctions {
       }
       for (int i = 2; i < times.size(); i++) {
         IExpr factor = times.get(i);
-        if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
+        if (factor.isNegativeNumberPower()) {
           return false;
         }
       }

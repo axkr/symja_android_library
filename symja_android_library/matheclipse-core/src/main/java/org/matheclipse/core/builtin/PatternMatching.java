@@ -1852,7 +1852,7 @@ public final class PatternMatching {
      */
     private static IAST trailingOptionRun(IAST expr) {
       int start = expr.size();
-      while (start > 2 && isOptionSpecification(expr.get(start - 1))) {
+      while (start > 2 && expr.get(start - 1).isRuleOrNonEmptyListOfRules()) {
         start--;
       }
       IASTAppendable options = F.ListAlloc(expr.size());
@@ -1873,21 +1873,15 @@ public final class PatternMatching {
      * <code>f(1, a -&gt; 2, b :&gt; 3)</code>, the expression has no options.
      */
     private static IAST lastArgumentOptions(IAST expr) {
-      if (expr.argSize() == 0 || !isOptionSpecification(expr.last())) {
+      if (expr.argSize() == 0 || !expr.last().isRuleOrNonEmptyListOfRules()) {
         return F.CEmptyList;
       }
       for (int i = 1; i < expr.argSize(); i++) {
-        if (isOptionSpecification(expr.get(i))) {
+        if (expr.get(i).isRuleOrNonEmptyListOfRules()) {
           return F.CEmptyList;
         }
       }
       return expr.last().isList() ? (IAST) expr.last() : F.list(expr.last());
-    }
-
-    /** A rule, or a non-empty list of rules. */
-    private static boolean isOptionSpecification(IExpr expr) {
-      return expr.isRuleAST()
-          || (expr.isList() && expr.argSize() > 0 && ((IAST) expr).forAll(x -> x.isRuleAST()));
     }
 
     @Override

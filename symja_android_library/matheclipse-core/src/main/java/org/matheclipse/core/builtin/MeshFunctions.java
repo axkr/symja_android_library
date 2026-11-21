@@ -634,15 +634,11 @@ public class MeshFunctions {
    */
   private static int optionsStartIndex(IAST meshRegion) {
     for (int i = 2; i < meshRegion.size(); i++) {
-      if (isOptionArgument(meshRegion.get(i))) {
+      if (meshRegion.get(i).isRuleOrNonEmptyListOfRules()) {
         return i;
       }
     }
     return meshRegion.size();
-  }
-
-  private static boolean isOptionArgument(IExpr arg) {
-    return arg.isRuleAST() || (arg.isListOfRules(false) && arg.argSize() > 0);
   }
 
   /**

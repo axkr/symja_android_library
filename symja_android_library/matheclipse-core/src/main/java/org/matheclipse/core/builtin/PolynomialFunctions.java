@@ -1649,11 +1649,6 @@ public class PolynomialFunctions {
    */
   private static class Exponent extends AbstractFunctionEvaluator {
 
-    /** Test if <code>expr</code> is an exponential <code>b^f(x)</code> of <code>form</code>. */
-    private static boolean isExponential(IExpr expr, IExpr form) {
-      return expr.isPower() && expr.base().isFree(form) && !expr.exponent().isFree(form);
-    }
-
     /**
      * Test if a term depends on <code>form</code> through exponentials only, like
      * <code>3^x</code>: it has no degree. Next to a power of <code>form</code> an exponential
@@ -1663,7 +1658,7 @@ public class PolynomialFunctions {
       if (term.isTimes()) {
         boolean exponential = false;
         for (IExpr factor : (IAST) term) {
-          if (isExponential(factor, form)) {
+          if (factor.isExponentialIn(form)) {
             exponential = true;
           } else if (!factor.isFree(form)) {
             return false;
@@ -1671,7 +1666,7 @@ public class PolynomialFunctions {
         }
         return exponential;
       }
-      return isExponential(term, form);
+      return term.isExponentialIn(form);
     }
 
     private static IExpr powerExponent(IAST powerAST, final IExpr form,

@@ -1909,7 +1909,7 @@ public class SeriesFunctions {
           currentExpr = expanded;
           continue;
         }
-        if (isInfinity && isUndefinedFunction(currentExpr)) {
+        if (isInfinity && currentExpr.isUserSymbolFunction()) {
           // WMA: Series(f(x),{x,Infinity,n}) returns f(x), an undefined function has no known
           // behaviour at infinity
           continue;
@@ -1962,14 +1962,6 @@ public class SeriesFunctions {
         }
       }
       return true;
-    }
-
-    /**
-     * <code>true</code> for an application of a symbol without a built-in definition, like
-     * <code>f(x)</code>.
-     */
-    private static boolean isUndefinedFunction(IExpr expr) {
-      return expr.isAST() && expr.head().isSymbol() && !expr.head().isBuiltInSymbol();
     }
 
     /**

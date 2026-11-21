@@ -17,7 +17,8 @@ import org.matheclipse.core.interfaces.IRational;
  * {@link IExpr#isRationalFunctionShape(Predicate)}, {@link IExpr#hasRadicalIn(IExpr)},
  * {@link IExpr#hasEvenRootIn(IExpr)}, {@link IExpr#isFreeOfInfinityOrIndeterminate()},
  * {@link IExpr#isHalfIntegerPower()}, {@link IExpr#isRationalRadical()},
- * {@link IExpr#powerExponentOf(IExpr)}, {@link IAST#chainToAnd()}, {@link IAST#ruleValue(IExpr)},
+ * {@link IExpr#powerExponentOf(IExpr)}, the type predicates of {@link #testTypePredicates()},
+ * {@link IAST#chainToAnd()}, {@link IAST#ruleValue(IExpr)},
  * {@link IInteger#perfectPower()} and {@link IRational#modularResidue(IInteger)}.
  */
 class ExpressionHelperMethodsTest {
@@ -168,5 +169,52 @@ class ExpressionHelperMethodsTest {
     assertEquals(F.C1, rules.ruleValue(F.x));
     assertEquals(F.C3, rules.ruleValue(F.y));
     assertTrue(rules.ruleValue(F.z).isNIL());
+  }
+
+  /**
+   * isCircularFunction, isNegativeNumberPower, isEvenIntegerPower, isInactiveFunction,
+   * isUserSymbolFunction and isRuleOrNonEmptyListOfRules.
+   */
+  @Test
+  void testTypePredicates() {
+    assertTrue(F.Sec(F.x).isCircularFunction());
+    assertFalse(F.Sinh(F.x).isCircularFunction());
+    assertFalse(F.binaryAST2(S.Sin, F.x, F.y).isCircularFunction());
+
+    assertTrue(F.Power(F.x, F.CN1).isNegativeNumberPower());
+    assertTrue(F.Power(F.x, F.num(-0.5)).isNegativeNumberPower());
+    assertFalse(F.Power(F.x, F.Negate(F.y)).isNegativeNumberPower());
+
+    assertTrue(F.Power(F.x, F.C4).isEvenIntegerPower());
+    assertTrue(F.Power(F.x, F.ZZ(-2)).isEvenIntegerPower());
+    assertFalse(F.Power(F.x, F.C3).isEvenIntegerPower());
+    assertFalse(F.Power(F.x, F.C1D2).isEvenIntegerPower());
+
+    IExpr inactive = F.binaryAST2(F.Inactive(S.Integrate), F.Sin(F.x), F.x);
+    assertTrue(inactive.isInactiveFunction(S.Integrate));
+    assertFalse(inactive.isInactiveFunction(S.Sum));
+    assertFalse(F.Integrate(F.Sin(F.x), F.x).isInactiveFunction(S.Integrate));
+
+    assertTrue(F.unaryAST1(F.f, F.x).isUserSymbolFunction());
+    assertFalse(F.Sin(F.x).isUserSymbolFunction());
+    assertFalse(F.f.isUserSymbolFunction());
+
+    assertTrue(F.Rule(F.a, F.C1).isRuleOrNonEmptyListOfRules());
+    assertTrue(F.list(F.Rule(F.a, F.C1), F.RuleDelayed(F.b, F.C2)).isRuleOrNonEmptyListOfRules());
+    assertFalse(F.CEmptyList.isRuleOrNonEmptyListOfRules());
+    assertFalse(F.list(F.Rule(F.a, F.C1), F.C2).isRuleOrNonEmptyListOfRules());
+  }
+
+  @Test
+  void testVariableExponents() {
+    assertTrue(F.Plus(F.C1, F.Power(F.C2, F.x)).hasVariableExponent(F.x));
+    assertTrue(F.Sin(F.Power(F.x, F.x)).hasVariableExponent(F.x));
+    assertFalse(F.Power(F.x, F.C3).hasVariableExponent(F.x));
+
+    assertTrue(F.Power(F.C2, F.x).isExponentialIn(F.x));
+    assertTrue(F.Power(F.E, F.Sqr(F.x)).isExponentialIn(F.x));
+    // the base has to be free of x
+    assertFalse(F.Power(F.x, F.x).isExponentialIn(F.x));
+    assertFalse(F.Power(F.C2, F.y).isExponentialIn(F.x));
   }
 }

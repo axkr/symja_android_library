@@ -45,7 +45,6 @@ final class DSolveLinearizable {
   private static final ISymbol[] PSI = {S.Exp, S.Log, S.ArcSin, S.ArcCos, S.ArcTan};
 
   /** The circular functions, each of which one of the substitutions can undo. */
-  private static final int[] CIRCULAR = {ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc};
 
   /** The functions of the unknown which one of the substitutions can undo. */
   private static final int[] TRANSCENDENTAL = {ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc,
@@ -197,7 +196,7 @@ final class DSolveLinearizable {
         return !expr.isFree(
             x -> x.isPower() && x.base().equals(S.E) && !x.exponent().isFree(yDummy, true), true);
       default: // The circular substitutions need a circular function of the unknown.
-        return !expr.isFree(x -> x.isAST1() && x.isFunctionID(CIRCULAR)
+        return !expr.isFree(x -> x.isCircularFunction()
             && !x.first().isFree(yDummy, true), true);
     }
   }

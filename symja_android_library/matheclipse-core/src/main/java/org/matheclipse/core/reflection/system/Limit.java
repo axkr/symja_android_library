@@ -1861,7 +1861,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // e.g. Limit(x*f(x)^2/(x^2+f(x)^4), x->0) depends on f (f=Sqrt gives 1/2, not 0) and
     // must stay unevaluated, exactly as the substitution x->0 would wrongly suggest 0.
     final ISymbol variable = data.variable();
-    if (expression.has(e -> e.isAST() && e.head().isSymbol() && !e.head().isBuiltInSymbol()
+    if (expression.has(e -> e.isUserSymbolFunction()
         && !e.isFree(variable, true), true)) {
       return F.NIL;
     }
@@ -2211,7 +2211,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if ((limit.isInfinity() || limit.isNegativeInfinity()) && DOMINANT_TERM_DEPTH.get() < 2
           && function.isPower() && function.base() == S.E && function.exponent().isPlus()
           && function.exponent().argSize() == 2 && ((IAST) function.exponent()).count(
-              t -> t.has(p -> p.isPower() && !p.exponent().isFree(symbol, true), true)) >= 2) {
+              t -> t.hasVariableExponent(symbol)) >= 2) {
         int towerDepth = DOMINANT_TERM_DEPTH.get();
         DOMINANT_TERM_DEPTH.set(towerDepth + 1);
         try {
@@ -2242,8 +2242,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // Stirling for a Gamma inside an exponent turns it into an exponential of an exponential,
       // and E^(Gamma(x)-x) then grinds indefinitely - even though its exponent Gamma(x)-x resolves
       // to Infinity on its own in milliseconds.
-      if ((limit.isInfinity() || limit.isNegativeInfinity()) && function.isPower()
-          && function.base().isFree(symbol) && !function.exponent().isFree(symbol)) {
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && function.isExponentialIn(symbol)) {
         IExpr base = function.base();
         if (base.equals(S.E) || (base.isReal() && base.isPositiveResult())) {
           IExpr exponentLimit = evalLimitQuiet(function.exponent(), //

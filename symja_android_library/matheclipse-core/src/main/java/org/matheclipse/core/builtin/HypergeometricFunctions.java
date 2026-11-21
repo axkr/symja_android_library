@@ -3572,7 +3572,7 @@ public class HypergeometricFunctions {
 
   /** {@link #squareRoot(IExpr)}, or {@link F#NIL} if there is no square in <code>z</code>. */
   private static @AllowNIL IExpr squaresTakenOut(IExpr z) {
-    if (isEvenPower(z)) {
+    if (z.isEvenIntegerPower()) {
       return F.Power(z.base(), ((IInteger) z.exponent()).shiftRight(1));
     }
     if (z.isTimes()) {
@@ -3581,7 +3581,7 @@ public class HypergeometricFunctions {
       boolean square = false;
       for (int i = 1; i < z.size(); i++) {
         IExpr factor = z.get(i);
-        if (isEvenPower(factor)) {
+        if (factor.isEvenIntegerPower()) {
           roots.append(F.Power(factor.base(), ((IInteger) factor.exponent()).shiftRight(1)));
           square = true;
         } else if (factor.isRational() && factor.isPositive()) {
@@ -3598,10 +3598,6 @@ public class HypergeometricFunctions {
       }
     }
     return F.NIL;
-  }
-
-  private static boolean isEvenPower(IExpr expr) {
-    return expr.isPower() && expr.exponent().isInteger() && ((IInteger) expr.exponent()).isEven();
   }
 
   public static @AllowNIL IExpr hyperGeometric0F1Symbolic(IExpr b, IExpr z, EvalEngine engine) {

@@ -495,8 +495,7 @@ public class D extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
 
-      if (fx.isAST() && fx.head().isAST(S.Inactive, 2) && fx.head().first() == S.Integrate
-          && fx.argSize() >= 2 && isDerivativeVariable(x)) {
+      if (fx.isInactiveFunction(S.Integrate) && fx.argSize() >= 2 && isDerivativeVariable(x)) {
         return inactiveIntegrate((IAST) fx, x, engine);
       }
 

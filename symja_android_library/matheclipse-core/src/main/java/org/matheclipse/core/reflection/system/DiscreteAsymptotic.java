@@ -895,7 +895,7 @@ public class DiscreteAsymptotic extends AbstractFunctionOptionEvaluator {
         result = eval(constant);
       } else {
         // an undefined function of the index is its own asymptotic form
-        if (expr.isAST() && expr.head().isSymbol() && !expr.head().isBuiltInSymbol()
+        if (expr.isUserSymbolFunction()
             && !((IAST) expr).forAll(a -> a.isFree(n))
             && !((ISymbol) expr.head()).hasAssignedSymbolValue()
             && ((ISymbol) expr.head()).getRulesData() == null) {
