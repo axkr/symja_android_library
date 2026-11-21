@@ -18564,6 +18564,15 @@ public class S {
   public final static IBuiltInSymbol Monday = S.initFinalSymbol("Monday", ID.Monday);
 
   /**
+   * Monitor(x) - TODO describe `Monitor`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Monitor.md">Monitor
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Monitor = S.initFinalSymbol("Monitor", ID.Monitor);
+
+  /**
    * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial`
    * expression, with respect to the `list-of-variables`.
    * 
