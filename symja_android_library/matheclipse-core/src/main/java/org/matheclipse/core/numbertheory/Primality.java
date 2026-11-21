@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -930,7 +931,11 @@ public class Primality implements IPrimality {
     BigInteger root = val;
     long exponent = 1;
     int e = 2;
+    final EvalEngine engine = EvalEngine.get();
     while ((root.bitLength() - 1) / minRootBits >= e) {
+      // a root of a number with millions of bits is expensive; there are as many candidates as
+      // primes below its bit length
+      engine.checkTimeLimit();
       BigInteger r = nthRootFloor(root, e);
       if (r.pow(e).equals(root)) {
         // test the same exponent again for the root

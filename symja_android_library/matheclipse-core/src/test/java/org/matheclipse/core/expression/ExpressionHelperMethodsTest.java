@@ -80,6 +80,14 @@ class ExpressionHelperMethodsTest {
     assertNull(F.C1.perfectPower());
     assertNull(F.C0.perfectPower());
     assertNull(F.ZZ(-8).perfectPower());
+    // small primes: the multiplicities 4 and 2 of 2 and 1031 allow a square only
+    assertArrayEquals(new IInteger[] {F.ZZ(4124), F.C2}, F.ZZ(17007376).perfectPower());
+    // a prime above the small primes, alone and together with a small one
+    IInteger large = F.ZZ(1000003);
+    assertArrayEquals(new IInteger[] {large, F.C3}, large.powerRational(3).perfectPower());
+    assertArrayEquals(new IInteger[] {F.ZZ(4000012), F.C3},
+        F.ZZ(64).multiply(large.powerRational(3)).perfectPower());
+    assertNull(F.C4.multiply(large).perfectPower());
   }
 
   @Test

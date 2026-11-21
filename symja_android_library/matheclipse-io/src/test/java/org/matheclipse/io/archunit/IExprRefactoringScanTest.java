@@ -106,7 +106,7 @@ public class IExprRefactoringScanTest {
       "a small helper whose calls go mostly to its IExpr/IAST parameter: candidate default method"};
 
   private static final Pattern ROW = Pattern
-      .compile("^- \\[([ xX-])\\] (C-[0-9a-f]{6}) (.*?)( · gone \\d{4}-\\d{2}-\\d{2})? · note:(.*)$");
+      .compile("^- \\[([ xX-])\\] (C-[0-9a-f]{6,10}) (.*?)( · gone \\d{4}-\\d{2}-\\d{2})? · note:(.*)$");
 
   private record Candidate(String category, String id, double score, String text) {}
 
@@ -381,12 +381,18 @@ public class IExprRefactoringScanTest {
         + method.getSourceCodeLocation().getLineNumber();
   }
 
+  /** Bytes of the SHA-1 in an id: 10 hex digits, so that 1,500 candidates don't collide. */
+  private static final int ID_BYTES = 5;
+
+  /** The ids of the first runs had 6 hex digits, the start of today's id. */
+  private static final int LEGACY_ID_LENGTH = "C-".length() + 6;
+
   private static String id(String category, String key) {
     try {
       byte[] hash = MessageDigest.getInstance("SHA-1")
           .digest((category + "|" + key).getBytes(StandardCharsets.UTF_8));
       StringBuilder buf = new StringBuilder("C-");
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < ID_BYTES; i++) {
         buf.append(String.format("%02x", hash[i] & 0xff));
       }
       return buf.toString();
@@ -433,8 +439,19 @@ public class IExprRefactoringScanTest {
         if (!candidate.category().equals(section)) {
           continue;
         }
-        found.add(candidate.id());
+        if (!found.add(candidate.id())) {
+          throw new IllegalStateException("two candidates have the id " + candidate.id()
+              + ", widen ID_BYTES: " + candidate.text());
+        }
         Mark mark = previous.get(candidate.id());
+        if (mark == null) {
+          // a mark of a checklist written with the shorter ids
+          String legacyId = candidate.id().substring(0, LEGACY_ID_LENGTH);
+          mark = previous.get(legacyId);
+          if (mark != null) {
+            found.add(legacyId);
+          }
+        }
         char m = mark == null ? ' ' : mark.mark();
         String note = mark == null ? "" : mark.note();
         String row = row(m, candidate.id(), candidate.text(), note);
@@ -494,7 +511,7 @@ public class IExprRefactoringScanTest {
     }
     Files.writeString(out, head.append(body).toString(), StandardCharsets.UTF_8);
     System.out.printf("IExpr refactoring scan: %d candidates, %d selected, %d gone -> %s%n",
-        found.size(), selected, gone.size(), out.toAbsolutePath());
+        candidates.size(), selected, gone.size(), out.toAbsolutePath());
   }
 
   private static String row(char mark, String id, String text, String note) {

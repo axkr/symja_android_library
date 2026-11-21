@@ -1,10 +1,14 @@
 package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
+import java.util.Map;
+import java.util.TreeMap;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.numbertheory.Primality;
+import com.google.common.math.IntMath;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
@@ -105,8 +109,13 @@ public interface IInteger extends IRational {
 
   /**
    * Write this integer as <code>base^exponent</code> with the largest possible exponent, e.g.
-   * <code>16</code> as <code>2^4</code> and <code>1296</code> as <code>6^4</code>. No factorization
-   * is needed.
+   * <code>16</code> as <code>2^4</code> and <code>1296</code> as <code>6^4</code>.
+   *
+   * <p>
+   * The exponent divides the multiplicity of every prime factor, so the primes below
+   * <code>32749</code> are divided out first: a number with two of them of coprime multiplicities
+   * is no perfect power, and only the rest which is left is searched for roots, from roots of at
+   * least 15 bits on. The search checks the time limit of the {@link EvalEngine}.
    *
    * @return <code>{base, exponent}</code> with <code>exponent &gt;= 2</code>, or <code>null</code>
    *         if this integer is less than <code>2</code> or not a perfect power
@@ -116,11 +125,24 @@ public interface IInteger extends IRational {
     if (value.compareTo(BigInteger.TWO) < 0) {
       return null;
     }
-    BigInteger[] rootAndExponent = Primality.perfectPower(value, 2);
-    if (rootAndExponent[1].equals(BigInteger.ONE)) {
+    Map<Integer, Integer> smallPrimes = new TreeMap<Integer, Integer>();
+    BigInteger rest = Primality.countPrimes32749(value, smallPrimes);
+    int exponent = 0;
+    for (int multiplicity : smallPrimes.values()) {
+      exponent = IntMath.gcd(exponent, multiplicity);
+      if (exponent == 1) {
+        return null;
+      }
+    }
+    if (rest.compareTo(BigInteger.ONE) > 0) {
+      // the rest has no prime factor below 32749, so each of its roots has at least 15 bits
+      BigInteger[] restPower = Primality.perfectPower(rest, 15);
+      exponent = IntMath.gcd(exponent, restPower[1].intValueExact());
+    }
+    if (exponent < 2) {
       return null;
     }
-    return new IInteger[] {F.ZZ(rootAndExponent[0]), F.ZZ(rootAndExponent[1])};
+    return new IInteger[] {F.ZZ(Primality.nthRootFloor(value, exponent)), F.ZZ(exponent)};
   }
 
   default IInteger div(final int that) {
