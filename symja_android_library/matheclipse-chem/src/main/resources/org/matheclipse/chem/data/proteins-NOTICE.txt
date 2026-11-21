@@ -1,0 +1,22 @@
+proteins.tsv.gz - data notice
+
+The table proteins.tsv.gz, used by ProteinData, is derived from UniProtKB
+(The UniProt Consortium, https://www.uniprot.org), release 2026_04 of
+04 November 2026, licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
+
+Contents: the reviewed (Swiss-Prot) human entries (organism 9606) annotated
+with the Gene Ontology term GO:0003779 "actin binding" or one of its
+descendants: the primary gene name, the recommended protein name, the
+canonical sequence and the Gene Ontology annotations with their term names
+as UniProt gives them. The Gene Ontology term names come from the Gene
+Ontology (http://geneontology.org), CC BY 4.0.
+
+Downloaded on 15 November 2026 from the UniProt REST API:
+
+  https://rest.uniprot.org/uniprotkb/stream?query=(organism_id:9606)+AND+(reviewed:true)+AND+(go:0003779)&fields=accession,gene_primary,protein_name,length,sequence,go_f,go_p,go_c&format=tsv
+  https://rest.uniprot.org/uniprotkb/stream?query=(organism_id:9606)+AND+(reviewed:true)+AND+(go:0003779)&fields=accession,gene_primary,protein_name,xref_hgnc&format=json
+
+Changes: the records were reduced to the fields above, the GO annotations
+stored as indexes into a term table and the class names (camel-cased term
+names) added. The table is written by matheclipse-chem/tools/gen_protein_data.py.
