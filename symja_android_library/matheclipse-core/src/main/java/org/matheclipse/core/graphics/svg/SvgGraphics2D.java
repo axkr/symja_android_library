@@ -933,21 +933,21 @@ public class SvgGraphics2D {
   private IExpr[] labelParts(IExpr expr) {
     IExpr[] out = new IExpr[2];
     if (expr.isList2() && expr.first().isList2() && expr.second().isList2()) {
-      if (!unlabelled(expr.second().first())) {
+      if (!GraphicsOptions.isUnlabelled(expr.second().first())) {
         out[0] = expr.second().first();
       }
-      if (!unlabelled(expr.first().first())) {
+      if (!GraphicsOptions.isUnlabelled(expr.first().first())) {
         out[1] = expr.first().first();
       }
     } else if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
-      if (!unlabelled(list.arg1())) {
+      if (!GraphicsOptions.isUnlabelled(list.arg1())) {
         out[0] = list.arg1();
       }
-      if (!unlabelled(list.arg2())) {
+      if (!GraphicsOptions.isUnlabelled(list.arg2())) {
         out[1] = list.arg2();
       }
-    } else if (!unlabelled(expr)) {
+    } else if (!GraphicsOptions.isUnlabelled(expr)) {
       out[0] = expr;
     }
     return out;
@@ -1003,18 +1003,6 @@ public class SvgGraphics2D {
         .with(rawHtml(layer.contents));
   }
 
-  /**
-   * Whether a label setting asks for no label at all.
-   *
-   * <p>
-   * {@code Automatic} counts, for the same reason it does in three dimensions: only the plot knows
-   * the names of its own variables, so it resolves the option before the picture is built. What
-   * reaches here still holding {@code Automatic} has nothing to derive a name from, and drawing the
-   * symbol put the word "Automatic" on the axis.
-   */
-  private static boolean unlabelled(IExpr expr) {
-    return expr.isNone() || expr.isAutomatic();
-  }
 
   // ------------------------------------------------------------ range work
 

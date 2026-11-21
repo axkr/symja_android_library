@@ -156,6 +156,29 @@ final class BooleanRegions {
     return centroid.isList() ? engine.evaluate(F.Map(S.Together, centroid)) : F.NIL;
   }
 
+  /**
+   * The parts of a <code>RegionIntersection</code> or <code>RegionUnion</code>, with a
+   * <code>Region</code> wrapper removed. Both operations are associative, so a nested
+   * <code>head</code> is taken apart, and so is a <code>BooleanRegion</code> junction of the same
+   * operation <code>op</code> (<code>And</code> or <code>Or</code>) which already carries one,
+   * rather than being nested.
+   */
+  static void flatten(IAST ast, ISymbol head, ISymbol op, List<IExpr> regions) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr region = ast.get(i);
+      if (region.isAST(S.Region, 2)) {
+        region = region.first();
+      }
+      if (region.isAST(head)) {
+        flatten((IAST) region, head, op, regions);
+      } else if (isJunction(region, op)) {
+        flatten((IAST) region.second(), head, op, regions);
+      } else {
+        regions.add(region);
+      }
+    }
+  }
+
   /** Whether the region is a <code>BooleanRegion</code> with a pure function over its parts. */
   static boolean isBooleanRegion(IExpr region) {
     return region.isAST(S.BooleanRegion, 3) && region.second().isList()

@@ -37,7 +37,7 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     List<IExpr> regions = new ArrayList<IExpr>();
-    flatten(ast, regions);
+    BooleanRegions.flatten(ast, S.RegionIntersection, S.And, regions);
 
     IExpr intervals = intervals(regions, engine);
     if (intervals.isPresent()) {
@@ -348,37 +348,6 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     return false;
   }
 
-  /**
-   * The regions to intersect, with a nested <code>RegionIntersection</code> taken apart and a
-   * <code>Region</code> wrapper removed.
-   *
-   * @return whether anything was unwrapped
-   */
-  private static boolean flatten(IAST ast, List<IExpr> regions) {
-    boolean changed = false;
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr region = ast.get(i);
-      if (region.isAST(S.Region, 2)) {
-        region = region.first();
-        changed = true;
-      }
-      if (region.isAST(S.RegionIntersection)) {
-        // intersecting is associative, so the parts of a part are parts
-        changed |= flatten((IAST) region, regions);
-        changed = true;
-        continue;
-      }
-      if (BooleanRegions.isJunction(region, S.And)) {
-        // an intersection that was already carried as a BooleanRegion asks for all of its parts,
-        // so it is taken apart here rather than nested
-        flatten((IAST) region.second(), regions);
-        changed = true;
-        continue;
-      }
-      regions.add(region);
-    }
-    return changed;
-  }
 
   /**
    * The overlap of axis aligned boxes, which is the box between the largest of their lower corners

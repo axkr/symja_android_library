@@ -1154,7 +1154,8 @@ final class DSolveSpecialFunctions {
    */
   private static IExpr[] poschlTeller(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
       EvalEngine engine) {
-    if (!p.isZero() || q.leafCount() > MAX_POTENTIAL_LEAF_COUNT || !hasCircular(q, xVar)) {
+    if (!p.isZero() || q.leafCount() > MAX_POTENTIAL_LEAF_COUNT
+        || !DSolveUtil.hasCircular(q, xVar)) {
       return null;
     }
     // The sine and the cosine become plain unknowns before anything is multiplied out. Left as
@@ -1238,29 +1239,18 @@ final class DSolveSpecialFunctions {
   }
 
   /**
-   * Whether the coefficient is trigonometric in the variable at all.
-   *
-   * <p>
-   * Without this the row claims equations it has no business with. A coefficient which is a plain
-   * constant is free of the variable, so it survives the substitution below and comes out as a
-   * potential with both exponents equal to one - <code>y'' - y == 0</code> answered with a
-   * hypergeometric pair. That pair is not wrong, but it is not the answer that equation is known
-   * by, and the constant coefficient row is the one which owns it.
-   */
-  private static boolean hasCircular(IExpr expr, IExpr xVar) {
-    return !expr
-        .isFree(x -> x.isAST1() && x.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc)
-            && !x.first().isFree(xVar), true);
-  }
-
-  /**
    * <code>y'' + (A + B*Cos(w*x+c))*y == 0</code> is Mathieu's equation in the variable
    * <code>z == (w*x+c)/2</code>, with the characteristic value <code>4*A/w^2</code> and the
    * parameter <code>-2*B/w^2</code>. A sine is a cosine whose phase is smaller by
    * <code>Pi/2</code>.
    */
   private static IExpr[] mathieu(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
-    if (!p.isZero() || !hasCircular(q, xVar)) {
+    // Without the circular test the row claims equations it has no business with. A coefficient
+    // which is a plain constant is free of the variable, so it survives the substitution below and
+    // comes out as a potential with both exponents equal to one - y'' - y == 0 answered with a
+    // hypergeometric pair. That pair is not wrong, but it is not the answer that equation is known
+    // by, and the constant coefficient row is the one which owns it.
+    if (!p.isZero() || !DSolveUtil.hasCircular(q, xVar)) {
       return null;
     }
     IExpr[] circular = new IExpr[1];

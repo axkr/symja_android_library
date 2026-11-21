@@ -894,7 +894,7 @@ public final class BoxNotation {
     IAST ast = (IAST) box;
     if (head.equals("rowbox")) {
       if (ast.argSize() >= 1 && ast.arg1().isList()) {
-        return rowSource(elements((IAST) ast.arg1()));
+        return rowSource(((IAST) ast.arg1()).copyTo());
       }
       throw new Unreadable();
     }
@@ -1012,14 +1012,6 @@ public final class BoxNotation {
     throw new Unreadable();
   }
 
-  private static List<IExpr> elements(IAST list) {
-    List<IExpr> elements = new ArrayList<IExpr>(list.argSize());
-    for (int i = 1; i < list.size(); i++) {
-      elements.add(list.get(i));
-    }
-    return elements;
-  }
-
   /** The number of primes if the script is prime marks only, else <code>0</code>. */
   private static int primeMarks(IExpr script) {
     if (!script.isString()) {
@@ -1131,7 +1123,7 @@ public final class BoxNotation {
     if (args.size() < 2 || !args.get(0).isList()) {
       throw new Unreadable();
     }
-    List<IExpr> parts = elements((IAST) args.get(0));
+    List<IExpr> parts = ((IAST) args.get(0)).copyTo();
     IExpr tagExpr = args.get(args.size() - 1);
     String tag = tagExpr.toString();
     if ((tag.equals("Quantity") || tag.equals("QuantityPrefix")) && parts.size() >= 4) {
@@ -1376,7 +1368,7 @@ public final class BoxNotation {
   private String[] integralBody(List<IExpr> parts) {
     if (parts.size() == 1 && isHead(parts.get(0), "rowbox")
         && ((IAST) parts.get(0)).argSize() >= 1 && parts.get(0).first().isList()) {
-      return integralBody(elements((IAST) parts.get(0).first()));
+      return integralBody(((IAST) parts.get(0).first()).copyTo());
     }
     if (parts.size() < 2) {
       return null;
@@ -1386,7 +1378,7 @@ public final class BoxNotation {
     if (!isHead(last, "rowbox") || ((IAST) last).argSize() < 1 || !last.first().isList()) {
       return null;
     }
-    List<IExpr> differential = elements((IAST) last.first());
+    List<IExpr> differential = ((IAST) last.first()).copyTo();
     if (differential.size() == 3 && differential.get(1).isString()
         && differential.get(1).toString().trim().isEmpty()) {
       differential.remove(1);
@@ -1405,7 +1397,7 @@ public final class BoxNotation {
     if (!isHead(part, "rowbox") || ((IAST) part).argSize() < 1 || !part.first().isList()) {
       return null;
     }
-    List<IExpr> elements = elements((IAST) part.first());
+    List<IExpr> elements = ((IAST) part.first()).copyTo();
     boolean comma = false;
     for (IExpr element : elements) {
       comma |= isText(element, ",");

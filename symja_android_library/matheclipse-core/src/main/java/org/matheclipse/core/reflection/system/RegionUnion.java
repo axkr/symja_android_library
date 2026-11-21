@@ -27,7 +27,7 @@ public class RegionUnion extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     List<IExpr> regions = new ArrayList<IExpr>();
-    flatten(ast, regions);
+    BooleanRegions.flatten(ast, S.RegionUnion, S.Or, regions);
 
     boolean intervals = true;
     for (IExpr region : regions) {
@@ -61,22 +61,6 @@ public class RegionUnion extends AbstractFunctionEvaluator {
     return BooleanRegions.of(regions, bodies -> BooleanRegions.junction(S.Or, bodies));
   }
 
-  /** The regions to unite, a nested union taken apart and a <code>Region</code> wrapper removed. */
-  private static void flatten(IAST ast, List<IExpr> regions) {
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr region = ast.get(i);
-      if (region.isAST(S.Region, 2)) {
-        region = region.first();
-      }
-      if (region.isAST(S.RegionUnion)) {
-        flatten((IAST) region, regions);
-      } else if (BooleanRegions.isJunction(region, S.Or)) {
-        flatten((IAST) region.second(), regions);
-      } else {
-        regions.add(region);
-      }
-    }
-  }
 
   @Override
   public int status() {

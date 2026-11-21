@@ -1147,8 +1147,8 @@ public final class StringFunctions {
         if (!strings && !(a.isList() && b.isList())) {
           return F.NIL;
         }
-        List<IExpr> x = strings ? characters(a.toString()) : SequenceAlignment.elements((IAST) a);
-        List<IExpr> y = strings ? characters(b.toString()) : SequenceAlignment.elements((IAST) b);
+        List<IExpr> x = strings ? characters(a.toString()) : ((IAST) a).copyTo();
+        List<IExpr> y = strings ? characters(b.toString()) : ((IAST) b).copyTo();
         int[] run = longestRun(x, y, engine);
         if (run[2] == 0) {
           return F.CEmptyList;
@@ -1290,8 +1290,10 @@ public final class StringFunctions {
       if (!strings && !(a.isList() && b.isList())) {
         return F.NIL;
       }
-      List<IExpr> x = strings ? LongestCommonSequence.characters(a.toString()) : elements((IAST) a);
-      List<IExpr> y = strings ? LongestCommonSequence.characters(b.toString()) : elements((IAST) b);
+      List<IExpr> x =
+          strings ? LongestCommonSequence.characters(a.toString()) : ((IAST) a).copyTo();
+      List<IExpr> y =
+          strings ? LongestCommonSequence.characters(b.toString()) : ((IAST) b).copyTo();
       final int n = x.size();
       final int m = y.size();
       final long cells = (long) n * m;
@@ -1355,14 +1357,6 @@ public final class StringFunctions {
       }
       appendCommon(result, common, strings);
       appendDifference(result, partOfA, partOfB, strings);
-      return result;
-    }
-
-    private static List<IExpr> elements(IAST list) {
-      List<IExpr> result = new java.util.ArrayList<>(list.argSize());
-      for (int i = 1; i < list.size(); i++) {
-        result.add(list.get(i));
-      }
       return result;
     }
 

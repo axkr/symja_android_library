@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotRangePaddingSpec;
 import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.svg.ColorUtil;
@@ -247,7 +248,7 @@ public final class GraphicsOptions3D {
           prolog = value.isNone() ? null : value;
           break;
         case ID.PlotLabel:
-          if (!unlabelled(value)) {
+          if (!GraphicsOptions.isUnlabelled(value)) {
             plotLabel = text(value);
           }
           break;
@@ -401,14 +402,14 @@ public final class GraphicsOptions3D {
   }
 
   private void parseAxesLabel(IExpr value) {
-    if (unlabelled(value)) {
+    if (GraphicsOptions.isUnlabelled(value)) {
       return;
     }
     if (value.isList()) {
       IAST list = (IAST) value;
       for (int i = 0; i < 3 && i < list.argSize(); i++) {
         IExpr label = list.get(i + 1);
-        if (!unlabelled(label)) {
+        if (!GraphicsOptions.isUnlabelled(label)) {
           axesLabel[i] = text(label);
         }
       }
@@ -417,19 +418,6 @@ public final class GraphicsOptions3D {
     axesLabel[2] = text(value);
   }
 
-  /**
-   * Whether a label setting asks for no label at all.
-   *
-   * <p>
-   * {@code Automatic} counts: it asks for a label to be chosen, and the only thing that can choose
-   * one is the plot that knows its own variables - it resolves the option before the picture is
-   * built. Anything still holding {@code Automatic} by the time it reaches here, such as a hand
-   * written {@code Graphics3D}, has nothing to derive a name from. Drawing the symbol itself, which
-   * is what used to happen, put the word "Automatic" along the z axis.
-   */
-  private static boolean unlabelled(IExpr value) {
-    return value.isNone() || value.isAutomatic();
-  }
 
   private void parseAxesEdge(IExpr value) {
     if (!value.isList()) {

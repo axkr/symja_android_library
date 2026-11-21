@@ -245,6 +245,20 @@ public class SvgPrimitiveTest {
     assertEquals(20.0, t.style.fontSize, 1e-9);
   }
 
+  @Test
+  public void testNamedFontSizes() {
+    String[] names = {"Tiny", "Small", "Medium", "Large"};
+    double[] sizes = {6.0, 9.0, 12.0, 18.0};
+    for (int i = 0; i < names.length; i++) {
+      Prim2D.TextPrim t = (Prim2D.TextPrim) collect(
+          "Graphics[Text[Style[\"x\", FontSize -> " + names[i] + "], {0, 0}]]").get(0);
+      assertEquals(sizes[i], t.style.fontSize, 1e-9, names[i]);
+    }
+    Prim2D.TextPrim t = (Prim2D.TextPrim) collect(
+        "Graphics[Text[Style[\"x\", FontSize -> Offset[7]], {0, 0}]]").get(0);
+    assertEquals(7.0, t.style.fontSize, 1e-9, "Offset gives the size in points");
+  }
+
   // --------------------------------------------------------------- colours
 
   @Test

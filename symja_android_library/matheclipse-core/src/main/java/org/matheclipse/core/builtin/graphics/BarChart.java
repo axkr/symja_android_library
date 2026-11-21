@@ -147,7 +147,8 @@ public class BarChart extends AbstractChart {
           }
           double scaled = percentile ? (total > 0 ? v / total : 0.0) : v;
           bars.add(new Bar(center - barWidth / 2.0, center + barWidth / 2.0, base, base + scaled,
-              j - 1, j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
+              j - 1, j - 1, styleOf(item), labelOf(item), tooltipOf(item),
+              PlotWrapper.strip(item)));
           base += scaled;
         }
       }
@@ -172,7 +173,7 @@ public class BarChart extends AbstractChart {
           // datasets colour by position
           int colorIndex = datasetCount == 1 ? 0 : j - 1;
           bars.add(new Bar(cursor - barWidth / 2.0, cursor + barWidth / 2.0, 0.0, v, colorIndex,
-              j - 1, styleOf(item), labelOf(item), tooltipOf(item), datum(item)));
+              j - 1, styleOf(item), labelOf(item), tooltipOf(item), PlotWrapper.strip(item)));
         }
         if (d < datasetCount) {
           cursor += GROUP_GAP;
@@ -422,18 +423,12 @@ public class BarChart extends AbstractChart {
   }
 
   /**
-   * The datum itself, with every display wrapper taken off.
-   *
-   * <p>
-   * A wrapper this did not recognise used to reach {@code evalDouble} and fail there, and the bar
-   * was then simply missing from the chart with nothing said about it.
+   * The numeric value of a datum, every display wrapper taken off first: a wrapper this did not
+   * recognise used to reach {@code evalDouble} and fail there, and the bar was then simply missing
+   * from the chart with nothing said about it.
    */
-  private static IExpr datum(IExpr item) {
-    return PlotWrapper.strip(item);
-  }
-
   private static double value(IExpr item) {
-    IExpr expr = datum(item);
+    IExpr expr = PlotWrapper.strip(item);
     try {
       if (expr instanceof INumber) {
         return ((INumber) expr).reDoubleValue();

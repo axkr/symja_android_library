@@ -238,7 +238,7 @@ public class PieChart extends ListPlot {
           }
 
           // the value written on the sector, which LabelingFunction asks for
-          IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, datum(item), engine);
+          IExpr valueLabel = GraphicsOptions.labelingText(labelingFunction, PlotWrapper.strip(item), engine);
           if (valueLabel.isPresent()) {
             double radius = ringInner
                 + labelRadius(GraphicsOptions.labelingPlacement(labelingFunction)) * RING_THICKNESS;
@@ -289,10 +289,6 @@ public class PieChart extends ListPlot {
     }
   }
 
-  /** The datum itself, with every display wrapper taken off. */
-  private static IExpr datum(IExpr item) {
-    return PlotWrapper.strip(item);
-  }
 
   private double getDoubleVal(IExpr expr) {
     try {

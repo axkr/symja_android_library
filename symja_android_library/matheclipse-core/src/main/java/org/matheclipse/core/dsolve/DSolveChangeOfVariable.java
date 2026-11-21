@@ -2,7 +2,6 @@ package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -40,8 +39,6 @@ final class DSolveChangeOfVariable {
   private static final ISymbol[] INVERSE = {S.ArcCos, S.ArcSin, S.ArcTan};
 
   /** The functions whose presence means the coefficients are not rational. */
-  private static final int[] CIRCULAR = {ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc};
-
   /** How deep in the cascade this is still attempted. */
   private static final int MAX_DEPTH = 2;
 
@@ -66,7 +63,7 @@ final class DSolveChangeOfVariable {
     }
     IExpr p = lf.monicCoefficient(1, engine);
     IExpr q = lf.monicCoefficient(0, engine);
-    boolean circular = hasCircular(p, xVar) || hasCircular(q, xVar);
+    boolean circular = DSolveUtil.hasCircular(p, xVar) || DSolveUtil.hasCircular(q, xVar);
     if (p.leafCount() + q.leafCount() > MAX_LEAF_COUNT) {
       return F.NIL;
     }
@@ -219,9 +216,4 @@ final class DSolveChangeOfVariable {
     return true;
   }
 
-  /** Whether the coefficient applies a circular function to something containing the variable. */
-  private static boolean hasCircular(IExpr expr, IExpr xVar) {
-    return !expr.isFree(x -> x.isAST1() && x.isFunctionID(CIRCULAR) && !x.first().isFree(xVar),
-        true);
-  }
 }

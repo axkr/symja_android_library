@@ -2151,6 +2151,13 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "BooleanRegion(#1||#2&,{Disk({0,0}),Disk({3,0},1)})");
     check("RegionUnion(Disk(), RegionUnion(Disk({3,0},1), Disk({6,0},1)))", //
         "BooleanRegion(#1||#2||#3&,{Disk({0,0}),Disk({3,0},1),Disk({6,0},1)})");
+    // a Region wrapper is taken off, a union already carried as a BooleanRegion is taken apart
+    check("RegionUnion(Region(Disk()), Disk({3,0},1))", //
+        "BooleanRegion(#1||#2&,{Disk({0,0}),Disk({3,0},1)})");
+    check("RegionUnion(BooleanRegion(#1||#2&,{Disk(),Disk({3,0},1)}), Disk({6,0},1))", //
+        "BooleanRegion(#1||#2||#3&,{Disk({0,0}),Disk({3,0},1),Disk({6,0},1)})");
+    check("RegionIntersection(Region(Disk({0,0},2)), Disk({0,0},1))", //
+        "Disk({0,0},1)");
     check("RegionIntersection(RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})), Cube())", //
         "BooleanRegion((#1||#2)&&#3&,{Ball(),ImplicitRegion(x==0,{x,y,z}),Cube()})");
     check("RegionDifference(Cube(), RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})))", //

@@ -463,6 +463,14 @@ public class WebGLGraphics3DTest {
     assertEquals("italic", text.get("fontStyle").asText());
   }
 
+  @Test
+  public void textTakesTheNamedFontSizes() {
+    assertEquals(6.0, element(scene("Graphics3D[Style[Text[\"a\",{0,0,0}],FontSize->Tiny]]"),
+        "Text").get("fontSize").asDouble());
+    assertEquals(18.0, element(scene("Graphics3D[Style[Text[\"a\",{0,0,0}],FontSize->Large]]"),
+        "Text").get("fontSize").asDouble());
+  }
+
   // ---------------------------------------------------------- transformations
 
   @Test

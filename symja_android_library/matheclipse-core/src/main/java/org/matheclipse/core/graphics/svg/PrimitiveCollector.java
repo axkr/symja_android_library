@@ -9,6 +9,7 @@ import java.util.Set;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.UncertainValue;
@@ -549,21 +550,7 @@ public final class PrimitiveCollector {
     if (value.isAST(S.Offset, 2)) {
       return ColorUtil.dbl(((IAST) value).arg1(), current);
     }
-    if (value.isBuiltInSymbol()) {
-      switch (((IBuiltInSymbol) value).ordinal()) {
-        case ID.Tiny:
-          return 6.0;
-        case ID.Small:
-          return 9.0;
-        case ID.Medium:
-          return 12.0;
-        case ID.Large:
-          return 18.0;
-        default:
-          return current;
-      }
-    }
-    return ColorUtil.dbl(value, current);
+    return GraphicsOptions.fontSizeOf(value, current);
   }
 
   private void applyDashing(IAST ast, Style2D style, double factor) {

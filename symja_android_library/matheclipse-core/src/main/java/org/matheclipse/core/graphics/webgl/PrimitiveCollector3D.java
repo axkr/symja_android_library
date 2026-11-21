@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.UncertainValue;
@@ -443,7 +444,7 @@ public final class PrimitiveCollector3D {
         return true;
       }
       case ID.FontSize:
-        style.fontSize = fontSizeOf(value, style.fontSize);
+        style.fontSize = GraphicsOptions.fontSizeOf(value, style.fontSize);
         return true;
       case ID.FontFamily:
         style.fontFamily = unquote(value);
@@ -485,23 +486,6 @@ public final class PrimitiveCollector3D {
     return ColorUtil.dbl(value, defaultValue);
   }
 
-  private static double fontSizeOf(IExpr value, double current) {
-    if (value.isBuiltInSymbol()) {
-      switch (((IBuiltInSymbol) value).ordinal()) {
-        case ID.Tiny:
-          return 6.0;
-        case ID.Small:
-          return 9.0;
-        case ID.Medium:
-          return 12.0;
-        case ID.Large:
-          return 18.0;
-        default:
-          return current;
-      }
-    }
-    return ColorUtil.dbl(value, current);
-  }
 
   private static String unquote(IExpr value) {
     return value.toString().replace("\"", "");

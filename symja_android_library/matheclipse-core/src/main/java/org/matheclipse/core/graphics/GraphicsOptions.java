@@ -283,6 +283,42 @@ public class GraphicsOptions {
   public static int MEDIUM_FONTSIZE = 12;
   public static int LARGE_FONTSIZE = 24;
 
+  /**
+   * The point size of a {@code FontSize} value in a {@code Style} of a text primitive: the named
+   * sizes {@code Tiny} to {@code Large}, or a number. Anything else keeps {@code current}.
+   */
+  public static double fontSizeOf(IExpr value, double current) {
+    if (value.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) value).ordinal()) {
+        case ID.Tiny:
+          return 6.0;
+        case ID.Small:
+          return 9.0;
+        case ID.Medium:
+          return 12.0;
+        case ID.Large:
+          return 18.0;
+        default:
+          return current;
+      }
+    }
+    return ColorUtil.dbl(value, current);
+  }
+
+  /**
+   * Whether a label setting asks for no label at all.
+   *
+   * <p>
+   * {@code Automatic} counts: it asks for a label to be chosen, and the only thing that can choose
+   * one is the plot that knows its own variables - it resolves the option before the picture is
+   * built. Anything still holding {@code Automatic} by the time it reaches a renderer, such as a
+   * hand written {@code Graphics} or {@code Graphics3D}, has nothing to derive a name from. Drawing
+   * the symbol itself, which is what used to happen, put the word "Automatic" along the axis.
+   */
+  public static boolean isUnlabelled(IExpr value) {
+    return value.isNone() || value.isAutomatic();
+  }
+
   public static double TINY_THICKNESS = 0.005;
   public static double SMALL_THICKNESS = 0.01;
   public static double MEDIUM_THICKNESS = 0.02;
