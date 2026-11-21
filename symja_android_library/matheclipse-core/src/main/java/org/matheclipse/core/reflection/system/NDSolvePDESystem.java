@@ -185,20 +185,27 @@ final class NDSolvePDESystem {
       if (evolving.rate.isPresent()) {
         return F.NIL;
       }
-      // the equation, linear in the time derivative with a numeric factor, solved for it
+      // the equation, linear in the time derivative with a factor that keeps its sign on the
+      // domain, solved for it
       IExpr tau = engine.evaluate(F.D(difference, evolving.ut));
-      if (!tau.isNumber() || tau.isZero()) {
+      if (!tau.isFree(evolving.ut) || !NDSolvePDE.keepsSign(tau, ranges, engine)) {
         return F.NIL;
       }
       IExpr rate = engine.evaluate(F.Expand(
           F.Times(F.CN1, F.Divide(F.subst(difference, F.Rule(evolving.ut, F.C0)), tau))));
+      if (NDSolvePDE.hasPoleOnDomain(rate, ranges, engine)) {
+        // a coefficient like 1/x through x == 0 has no value on the whole domain
+        return F.NIL;
+      }
       for (IExpr[] term : neumann) {
-        IExpr factor = engine.evaluate(F.D(rate, term[0]));
-        if (!factor.isNumber()) {
-          return F.NIL;
-        }
         int end = end(term[2], x, x0, x1);
         if (end < 0) {
+          return F.NIL;
+        }
+        // the factor of the flux, at its end
+        IExpr factor = engine.evaluate(
+            F.subst(F.D(rate, term[0]), F.Rule(x, F.num(end == 0 ? x0 : x1))));
+        if (!factor.isNumber()) {
           return F.NIL;
         }
         // the value of the flux at its end, in the values of the unknowns there

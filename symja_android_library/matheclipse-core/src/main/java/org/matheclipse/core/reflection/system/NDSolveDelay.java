@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
+import org.matheclipse.core.expression.data.StepTimesOutputModel;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -276,7 +277,7 @@ final class NDSolveDelay {
         }
         DormandPrince853Integrator integrator =
             new DormandPrince853Integrator(1.0e-12, to - from, TOLERANCE, TOLERANCE);
-        DenseOutputModel pieceModel = new DenseOutputModel();
+        DenseOutputModel pieceModel = new StepTimesOutputModel();
         integrator.addStepHandler(pieceModel);
         OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
           @Override

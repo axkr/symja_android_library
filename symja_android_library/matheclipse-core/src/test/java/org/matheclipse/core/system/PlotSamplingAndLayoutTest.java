@@ -500,6 +500,29 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHeldDefinitionAndNumberFormLabels() {
+    // a held definition is a relation in a label, its functions in traditional notation
+    check("StringCases(ExportString(Plot(u,{u,0,1},PlotLabel->HoldForm(w = Cos(3*u))),\"SVG\"),"
+        + "RegularExpression(\">w = [^<>]*<\"))", //
+        "{>w = cos(3 u)<}");
+    // a number form around an expression formats the numbers in it
+    check("StringCases(ExportString(Plot(u,{u,0,1},PlotLabel->NumberForm(HoldForm(h = 2.71828*Tan(u)),"
+        + "{3,2})),\"SVG\"),RegularExpression(\">h = [^<>]*<\"))", //
+        "{>h = 2.72 tan(u)<}");
+    // exact numbers are left as they are
+    check("StringCases(ExportString(Plot(u,{u,0,1},PlotLabel->NumberForm(HoldForm(h = 2/7*u+0.123456),"
+        + "{3,2})),\"SVG\"),RegularExpression(\">h = [^<>]*<\"))", //
+        "{>h = 2/7 u + 0.12<}");
+    // a relation between the parts of a row is set with space around it
+    check("StringCases(ExportString(Graphics(Text(Row({v,7},\"=\"),{0,0})),\"SVG\"),"
+        + "RegularExpression(\">v[^<>]*<\"))", //
+        "{>v = 7<}");
+    // ItemStyle styles the items of a Column
+    check("StringContainsQ(MathMLForm(Column({\"top\",\"low\"},ItemStyle->Blue)),\"color\")", //
+        "True");
+  }
+
+  @Test
   public void testClickableWrappedPictureAndStackedLegends() {
     // a picture with a legend is clickable too
     check("StringContainsQ(MathMLForm(ClickPane(Legended(Graphics(Disk(),ImageSize->40),"
@@ -640,5 +663,22 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
     check("Union(StringCases(ExportString(Plot(x, {x, 0, 1}, AxesStyle -> 17, LabelStyle -> 9, "
         + "AxesLabel -> {\"x\", \"y\"}), \"SVG\"), RegularExpression(\"font-size[=:]\\\"?[0-9.]+\")))", //
         "{font-size=\"9,font-size:9}");
+  }
+
+  /** A value range as PlotRange leaves the parts of the plot outside it blank. */
+  @Test
+  public void testContourPlotValueRangeIsClipped() {
+    check("g=ContourPlot(x*y, {x,-1,1}, {y,-1,1}, PlotRange->{-1/4,1/4});"
+        + "m=Max(Cases(Normal(g), Polygon(p_) :> Max(Abs(Times @@@ p)), Infinity));"
+        + "{0.24<m<0.2501, Options(g, PlotRange)}", //
+        "{True,{PlotRange->{{-1.0,1.0},{-1.0,1.0}}}}");
+    // the curve of an equation is not a value the window applies to
+    check("Length(Cases(Normal(ContourPlot(x^2+y^2==1, {x,-2,2}, {y,-2,2}, PlotRange->{1,3})),"
+        + "_Line, Infinity))>0", //
+        "True");
+    // without a value range the corners are drawn
+    check("g=ContourPlot(x*y, {x,-1,1}, {y,-1,1});"
+        + "Max(Cases(Normal(g), Polygon(p_) :> Max(Abs(Times @@@ p)), Infinity))>0.99", //
+        "True");
   }
 }

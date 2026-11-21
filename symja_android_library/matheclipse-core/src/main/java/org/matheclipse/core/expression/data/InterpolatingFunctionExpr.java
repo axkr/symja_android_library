@@ -388,6 +388,36 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
           : model.getInterpolatedState(t).getPrimaryState());
     }
 
+    /**
+     * The times the integrator stepped to, ascending, as <code>{{t1}, {t2}, ...}</code>, or
+     * {@link F#NIL} if the models didn't record them.
+     */
+    IExpr grid() {
+      DenseOutputModel[] models = toData();
+      java.util.TreeSet<Double> times = new java.util.TreeSet<Double>();
+      for (DenseOutputModel model : models) {
+        if (model == null) {
+          continue;
+        }
+        if (!(model instanceof StepTimesOutputModel)) {
+          return F.NIL;
+        }
+        for (double t : ((StepTimesOutputModel) model).getTimes()) {
+          if (t >= min && t <= max) {
+            times.add(t);
+          }
+        }
+      }
+      if (times.isEmpty()) {
+        times.add(t0);
+      }
+      IASTAppendable grid = F.ListAlloc(times.size());
+      for (double t : times) {
+        grid.append(F.list(F.num(t)));
+      }
+      return grid;
+    }
+
     /** This function's component of the state vector <code>state</code>. */
     private IExpr read(double[] state) {
       return layout == null ? F.num(state[component]) : layout.read(state, component);
@@ -842,6 +872,9 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
           if (grid.xs != null && grid.ys != null) {
             return F.list(F.List(grid.xs), F.List(grid.ys));
           }
+        }
+        if (property.equals("Grid") && function instanceof ODEFunctionExpr) {
+          return ((ODEFunctionExpr) function).grid();
         }
         if (property.equals("InterpolationOrder") && function instanceof ASTFunctionExpr) {
           return F.list(F.ZZ(function.order));

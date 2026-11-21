@@ -714,6 +714,8 @@ function postManipulate(widget, buttonIndex, bodyButtonIndex, bodyControl, refre
 				applyManipulateEnabled(widget, response.enabled);
 			if (response.visible)
 				applyManipulateVisible(widget, response.visible);
+			if (response.ranges)
+				applyManipulateRanges(widget, response.ranges);
 			if (response.displays)
 				applyManipulateDisplays(widget, response.displays);
 			widget.bodyControls = response.bodyControls || [];
@@ -809,6 +811,27 @@ function applyManipulateEnabled(widget, flags) {
 			control.widgetElement.select('input, select, button').each(function(input) {
 				input.disabled = !on;
 			});
+	});
+}
+
+/**
+ * Give the sliders whose bounds follow other controls their new ranges. The variable keeps its
+ * value; a slider whose range no longer holds it only shows it at the nearer end.
+ */
+function applyManipulateRanges(widget, ranges) {
+	widget.controls.each(function(control, index) {
+		var range = ranges[index];
+		if (!range || (control.min === range[0] && control.max === range[1]))
+			return;
+		control.min = range[0];
+		control.max = range[1];
+		if (control.input) {
+			control.input.min = range[0];
+			control.input.max = range[1];
+			var value = widget.bindings[control.name];
+			if (typeof value == 'number')
+				control.input.value = value;
+		}
 	});
 }
 

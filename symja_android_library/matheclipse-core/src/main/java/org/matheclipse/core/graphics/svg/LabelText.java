@@ -65,6 +65,20 @@ public final class LabelText {
       if (number != null) {
         return number;
       }
+      if (expr.argSize() >= 1 && !expr.first().isNumber()) {
+        // a number form around an expression formats the numbers in it
+        final IAST form = (IAST) expr;
+        IExpr formatted = form.arg1().replaceAll(x -> {
+          // exact numbers stay as they are written, as in the number form itself
+          if (!x.isReal() || !x.isInexactNumber()) {
+            return org.matheclipse.core.expression.F.NIL;
+          }
+          String text = formattedNumber(form.setAtCopy(1, x));
+          return text == null ? org.matheclipse.core.expression.F.NIL
+              : org.matheclipse.core.expression.F.stringx(text);
+        });
+        return of(formatted.orElse(form.arg1()));
+      }
     }
     String derivative = derivative(expr);
     if (derivative != null) {
@@ -124,6 +138,10 @@ public final class LabelText {
     }
     if (expr.isAST(S.Row) && expr.argSize() >= 1 && expr.first().isList()) {
       String separator = expr.argSize() >= 2 ? of(expr.second()) : "";
+      if (RELATION_SEPARATORS.contains(separator)) {
+        // x = 2: a relation between the parts is set with space around it
+        separator = " " + separator + " ";
+      }
       StringBuilder text = new StringBuilder();
       IAST parts = (IAST) expr.first();
       for (int i = 1; i < parts.size(); i++) {
@@ -317,6 +335,13 @@ public final class LabelText {
     if (head == S.Rule) {
       return " \u2192 ";
     }
+    if (head == S.Set) {
+      // z = sin(2 x), the way a held definition is written in a label
+      return " = ";
+    }
+    if (head == S.SetDelayed) {
+      return " := ";
+    }
     return null;
   }
 
@@ -403,6 +428,10 @@ public final class LabelText {
         return null;
     }
   }
+
+  /** The separators of a Row which are relations, set with space around them. */
+  private static final java.util.Set<String> RELATION_SEPARATORS = java.util.Set.of("=", "==",
+      "\u2260", "<", ">", "\u2264", "\u2265", "<=", ">=", "\u2192", "->", ":=");
 
   /** The superscript -1 of an inverse function. */
   private static final String INVERSE = "\u207B\u00B9";

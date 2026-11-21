@@ -111,6 +111,12 @@ public class ManipulateControl {
   // continuous controls
   private double min = 0.0;
   private double max = 1.0;
+  /**
+   * The bounds written as <code>Dynamic[...]</code>, released, or {@link F#NIL}: they follow the
+   * other controls, so each frame works them out again with the current values.
+   */
+  private IExpr dynamicMin = F.NIL;
+  private IExpr dynamicMax = F.NIL;
   private double step = Double.NaN;
   private IExpr initial = F.NIL;
 
@@ -273,6 +279,31 @@ public class ManipulateControl {
 
   public IExpr getEnabledCondition() {
     return enabled;
+  }
+
+  /** The lower bound written as <code>Dynamic[...]</code>, released, or {@link F#NIL}. */
+  public IExpr getDynamicMin() {
+    return dynamicMin;
+  }
+
+  /** The upper bound written as <code>Dynamic[...]</code>, released, or {@link F#NIL}. */
+  public IExpr getDynamicMax() {
+    return dynamicMax;
+  }
+
+  /** The lower bound as it stands, the one the specification was read with. */
+  public double getMin() {
+    return min;
+  }
+
+  /** The upper bound as it stands, the one the specification was read with. */
+  public double getMax() {
+    return max;
+  }
+
+  void setDynamicBounds(IExpr dynamicMin, IExpr dynamicMax) {
+    this.dynamicMin = dynamicMin;
+    this.dynamicMax = dynamicMax;
   }
 
   /** The condition under which this row is on screen, or {@link F#NIL} when it always is. */

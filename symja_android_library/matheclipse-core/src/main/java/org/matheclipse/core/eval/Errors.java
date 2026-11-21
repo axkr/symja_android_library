@@ -557,6 +557,7 @@ public class Errors {
       "nrescnv",
       "Failed to converge to the requested accuracy on the contour of radius `1` around `2` after `3` sample points; the result may be inaccurate.", //
       "nresnum", "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
+      "nres", "Insufficient results generated to return the `1` term in `2`.", //
       "nresopt", "Value of option `1` -> `2` is not valid; the default value is used.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nspecnl",

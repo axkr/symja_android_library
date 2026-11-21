@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.apache.commons.io.output.StringBuilderWriter;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -666,6 +667,59 @@ public class ManipulateSession {
       }
     }
     return flags;
+  }
+
+  /**
+   * The ranges of the sliders whose bounds are written as <code>Dynamic[...]</code>, worked out
+   * with the values the browser holds: <code>{{q, 1}, 0, Dynamic[3 p]}</code> reaches 12 once
+   * <code>p</code> is 4.
+   *
+   * @return one <code>[min, max]</code> per control, <code>null</code> for a control with fixed
+   *         bounds, or <code>null</code> when no control has a moving bound
+   */
+  static ArrayNode resolveRanges(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    List<ManipulateControl> controls = spec.getControls();
+    boolean any = false;
+    for (ManipulateControl control : controls) {
+      if (control.getDynamicMin().isPresent() || control.getDynamicMax().isPresent()) {
+        any = true;
+        break;
+      }
+    }
+    if (!any) {
+      return null;
+    }
+    IASTAppendable locals = bindingList(engine, spec, bindings);
+    ArrayNode ranges = JSONBuilder.JSON_OBJECT_MAPPER.createArrayNode();
+    for (ManipulateControl control : controls) {
+      IExpr lower = control.getDynamicMin();
+      IExpr upper = control.getDynamicMax();
+      if (lower.isNIL() && upper.isNIL()) {
+        ranges.addNull();
+        continue;
+      }
+      double min = boundOf(engine, locals, lower, control.getMin());
+      double max = boundOf(engine, locals, upper, control.getMax());
+      // an empty range pins the slider to its lower bound
+      ArrayNode range = ranges.addArray();
+      range.add(min);
+      range.add(Math.max(min, max));
+    }
+    return ranges;
+  }
+
+  /** A bound evaluated with the frame's values, or <code>fixed</code> if it isn't a number. */
+  private static double boundOf(EvalEngine engine, IAST locals, IExpr bound, double fixed) {
+    if (bound.isNIL()) {
+      return fixed;
+    }
+    try {
+      double value = engine.evalN(F.Block(locals, bound)).evalfNaN();
+      return Double.isFinite(value) ? value : fixed;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return fixed;
+    }
   }
 
   private static IExpr conditionOf(ManipulateControl control, boolean enabled) {

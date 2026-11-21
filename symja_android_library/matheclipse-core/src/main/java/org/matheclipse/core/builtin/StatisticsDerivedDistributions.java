@@ -1318,12 +1318,24 @@ public class StatisticsDerivedDistributions {
       int n = data.argSize();
       Integer[] order = new Integer[n];
       boolean inexact = false;
+      // the probabilities get the least precision of the inexact numbers: machine numbers, or
+      // the fewest digits of the arbitrary precision ones
+      boolean machine = false;
+      long leastDigits = Long.MAX_VALUE;
       for (int i = 1; i < data.size(); i++) {
         if (!data.get(i).isReal()) {
           return F.NIL;
         }
-        if (weights.isPresent()) {
-          inexact |= weights.get(i).isInexactNumber();
+        for (IExpr z : new IExpr[] {data.get(i), weights.isPresent() ? weights.get(i) : F.C0}) {
+          if (z.isInexactNumber()) {
+            inexact = true;
+            if (z instanceof org.matheclipse.core.expression.ApfloatNum) {
+              leastDigits =
+                  Math.min(leastDigits, ((org.matheclipse.core.expression.ApfloatNum) z).precision());
+            } else {
+              machine = true;
+            }
+          }
         }
         order[i - 1] = i;
       }
@@ -1351,12 +1363,18 @@ public class StatisticsDerivedDistributions {
       if (totalWeight.isZero()) {
         return F.NIL;
       }
-      // the probabilities are machine numbers for inexact weights; the counts of inexact values
-      // stay exact, so the CDF at a point above all values is 1
+      // the probabilities are machine numbers for inexact values or weights; the CDF at or above
+      // the largest value is still the exact 1
       final boolean numeric = inexact;
+      final boolean machineProbabilities = machine || leastDigits == Long.MAX_VALUE;
+      final long digits = leastDigits;
       IASTAppendable probabilities = F.mapRange(1, sums.size(), j -> {
         IExpr probability = engine.evaluate(F.Divide(sums.get(j), totalWeight));
-        return numeric ? engine.evalN(probability) : probability;
+        if (!numeric) {
+          return probability;
+        }
+        return machineProbabilities ? engine.evalN(probability)
+            : engine.evaluate(F.N(probability, F.ZZ(digits)));
       });
       return F.quaternary(S.DataDistribution, S.Empirical, F.list(probabilities, distinct, S.False),
           F.C1, F.ZZ(n));

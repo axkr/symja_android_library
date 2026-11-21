@@ -2259,7 +2259,7 @@ public final class Programming {
         }
         n = tmpInt;
       }
-      return nestWhileList(expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n,
+      return nestWhileList(ast, expr, engine.evaluate(test), x -> F.unaryAST1(f, x), m, max, n,
           lastOnly, engine);
     }
 
@@ -2270,6 +2270,7 @@ public final class Programming {
 
     /**
      * 
+     * @param ast the call, for the message on too few values
      * @param expr
      * @param test
      * @param function
@@ -2279,7 +2280,8 @@ public final class Programming {
      * @param engine
      * @return
      */
-    private static @AllowNIL IExpr nestWhileList(final IExpr expr, final IExpr test,
+    private static @AllowNIL IExpr nestWhileList(final IAST ast, final IExpr expr,
+        final IExpr test,
         final Function<IExpr, IExpr> function, int m, int max, int n, boolean lastOnly,
         EvalEngine engine) {
       IExpr temp = expr;
@@ -2352,6 +2354,11 @@ public final class Programming {
         }
       }
 
+      if (n < 0 && resultList.count <= -n) {
+        // Insufficient results generated to return the `1` term in `2`.
+        Errors.printMessage(ast.topHead(), "nres", F.List(F.ZZ(n), ast), engine);
+        return lastOnly ? expr : F.CEmptyList;
+      }
       return resultList.result(n);
     }
 
@@ -2401,7 +2408,7 @@ public final class Programming {
         }
         if (n < 0) {
           // the last element of the list without the last -n values
-          return count < 1 - n ? F.NIL : last.peekFirst();
+          return last.peekFirst();
         }
         return last.peekLast();
       }

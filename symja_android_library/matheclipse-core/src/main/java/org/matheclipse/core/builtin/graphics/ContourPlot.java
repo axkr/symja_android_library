@@ -163,6 +163,13 @@ public class ContourPlot extends ListPlot {
 
     RegionFunctionFilter region = RegionFunctionFilter.of(
         GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
+    // PlotRange -> {zmin, zmax} leaves the parts whose values lie outside it blank, cut along the
+    // level of the bound the way a region is cut
+    // an equation is drawn where its two sides are equal; the window is not about its values
+    double[] clipRange =
+        DensityPlot.valueRange(GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic));
+    RegionFunctionFilter valueRegion = clipRange == null ? region
+        : RegionFunctionFilter.withValueWindow(region, 2, clipRange[0], clipRange[1], engine);
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
 
     // f(x, y) with a value of {u v, u + v} is two functions, which only its value can say. A single
@@ -205,7 +212,8 @@ public class ContourPlot extends ListPlot {
         generateContours(primitives, func, xRange, yRange, xVar, yVar, cells, null,
             numberOfContours,
             style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
-            contourLines, contourLabels, region, boundaryStyle, valueRange);
+            contourLines, contourLabels, func.isAST(S.Equal, 3) ? region : valueRegion,
+            boundaryStyle, valueRange);
         count++;
       }
     } else {
@@ -213,7 +221,8 @@ public class ContourPlot extends ListPlot {
       shaded = isShaded(functionArg, contourShading);
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, cells, middle,
           numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
-          engine, false, contourLines, contourLabels, region, boundaryStyle, valueRange);
+          engine, false, contourLines, contourLabels,
+          functionArg.isAST(S.Equal, 3) ? region : valueRegion, boundaryStyle, valueRange);
     }
 
     // the contours share one table of points; the mesh, which is not traced from the data, is
@@ -233,6 +242,11 @@ public class ContourPlot extends ListPlot {
     }
 
     IExpr graphics = createGraphicsFunction(content, graphicsOptions, wrappedAST);
+    if (clipRange != null) {
+      // the range of the values isn't the range of the picture, which is the box of x and y
+      graphics = DensityPlot.withPlotRange(graphics, F.List(F.List(F.num(xRange[0]), F.num(xRange[1])),
+          F.List(F.num(yRange[0]), F.num(yRange[1]))));
+    }
     if (!shaded
         && GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic).isAutomatic()) {
       // only curves are drawn, which need not reach the edges of the box of x and y they were

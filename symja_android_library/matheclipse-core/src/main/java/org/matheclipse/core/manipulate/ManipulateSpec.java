@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -191,10 +192,104 @@ public class ManipulateSpec {
       addLayoutOfControls(arg, engine);
       return;
     }
-    ManipulateControl control = parseControl(arg, engine, unknownControlOptions);
-    if (control != null) {
-      controls.add(control);
+    ManipulateControl control =
+        parseControl(withEarlierValues(arg), engine, unknownControlOptions);
+    if (control == null) {
+      return;
     }
+    if (arg.isList() && arg.argSize() >= 3
+        && (ManipulateControl.SLIDER.equals(control.getKind())
+            || ManipulateControl.TRIGGER.equals(control.getKind()))) {
+      // {{q, 1}, 0, Dynamic[3 p]}: the range was read with the starting values, and follows p
+      IExpr lower = arg.getAt(2);
+      IExpr upper = arg.getAt(3);
+      boolean dynamicLower = !isOptionRule(lower) && Dynamics.containsDynamic(lower);
+      boolean dynamicUpper = !isOptionRule(upper) && Dynamics.containsDynamic(upper);
+      if (dynamicLower || dynamicUpper) {
+        control.setDynamicBounds(dynamicLower ? Dynamics.release(lower) : F.NIL,
+            dynamicUpper ? Dynamics.release(upper) : F.NIL);
+      }
+    }
+    ManipulateControl earlier = earlierControlOf(control);
+    if (earlier != null) {
+      if (ManipulateControl.NONE.equals(control.getKind())) {
+        // a hidden specification after it must not take the variable over
+        return;
+      }
+      if (earlier.getInitial().isPresent() && startsAlike(earlier, control)) {
+        // a second visible control of the variable starts where the first one does
+        control.setInitial(earlier.getInitial());
+      }
+    }
+    controls.add(control);
+  }
+
+  /**
+   * Whether <code>later</code> can start with the value <code>earlier</code> starts with: a control
+   * of the same kind, or a slider after a control which starts at a real number. A checkbox's
+   * <code>True</code> is no value for a slider.
+   */
+  private static boolean startsAlike(ManipulateControl earlier, ManipulateControl later) {
+    String kind = later.getKind();
+    if (ManipulateControl.DISCRETE.equals(kind)) {
+      // a choice starts at an index into its own list
+      return false;
+    }
+    if (kind.equals(earlier.getKind())) {
+      return true;
+    }
+    return (ManipulateControl.SLIDER.equals(kind) || ManipulateControl.TRIGGER.equals(kind))
+        && earlier.getInitial().isReal();
+  }
+
+  /**
+   * The earlier control that binds the same variable as <code>control</code>, or
+   * <code>null</code>: the first specification of a variable states its starting value.
+   */
+  private ManipulateControl earlierControlOf(ManipulateControl control) {
+    if (!control.bindsVariable()) {
+      return null;
+    }
+    for (ManipulateControl earlier : controls) {
+      if (earlier.bindsVariable() && earlier.getName().equals(control.getName())) {
+        return earlier;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * A control specification with the variables of the earlier controls inside its
+   * <code>Dynamic[...]</code> parts replaced by their starting values:
+   * <code>{{b, 1}, 0, Dynamic[5 - a]}</code> after <code>{{a, -3}, -3, 2}</code> has the range
+   * <code>0</code> to <code>8</code>. The variable the specification declares is left alone.
+   */
+  private IExpr withEarlierValues(IExpr arg) {
+    if (!arg.isList() || arg.argSize() < 2 || controls.isEmpty()) {
+      return arg;
+    }
+    IASTAppendable values = F.ListAlloc(controls.size());
+    for (ManipulateControl earlier : controls) {
+      if (earlier.bindsVariable() && earlier.getInitial().isPresent()) {
+        values.append(F.Rule(earlier.getVariable(), earlier.getInitial()));
+      }
+    }
+    if (values.argSize() == 0) {
+      return arg;
+    }
+    IASTMutable result = ((IAST) arg).copy();
+    boolean changed = false;
+    for (int i = 2; i < result.size(); i++) {
+      IExpr part = result.get(i);
+      IExpr replaced = part.replaceAll(x -> x.isAST(S.Dynamic) && x.argSize() >= 1
+          ? ((IAST) x).setAtCopy(1, F.subst(x.first(), values))
+          : F.NIL);
+      if (replaced.isPresent()) {
+        result.set(i, replaced);
+        changed = true;
+      }
+    }
+    return changed ? result : arg;
   }
 
   /**
@@ -566,7 +661,9 @@ public class ManipulateSpec {
   private static final String[] POSITIONAL_CONTROL_TYPES = {"Locator", "Slider", "Slider2D",
       "IntervalSlider", "VerticalSlider", "Manipulator", "Checkbox", "Toggler", "TogglerBar",
       "SetterBar", "RadioButtonBar", "PopupMenu", "Setter", "RadioButton", "Trigger", "Animator",
-      "InputField", "ColorSetter", "ColorSlider", "ProgressIndicator"};
+      "InputField", "ColorSetter", "ColorSlider", "ProgressIndicator",
+      // {{c, 2}, None}: a variable of the widget without a control
+      "None"};
 
   /**
    * Take a bare control head out of the positional arguments, as in

@@ -44,6 +44,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
+import org.matheclipse.core.expression.data.StepTimesOutputModel;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -3041,7 +3042,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     final int budget = method.evaluationBudget(ode);
     while (true) {
       integrator.setMaxEvaluations(Math.max(1, budget - evaluations));
-      DenseOutputModel model = new DenseOutputModel();
+      DenseOutputModel model = new StepTimesOutputModel();
       integrator.addStepHandler(model);
       LastStepRecorder recorder = new LastStepRecorder();
       integrator.addStepHandler(recorder);
@@ -3243,7 +3244,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       engine.checkTimeLimit();
       AbstractIntegrator integrator = method.createIntegrator();
       integrator.setMaxEvaluations(Math.max(1, method.maxEvaluations - evaluations));
-      DenseOutputModel model = new DenseOutputModel();
+      DenseOutputModel model = new StepTimesOutputModel();
       integrator.addStepHandler(model);
       LastStepRecorder recorder = new LastStepRecorder();
       integrator.addStepHandler(recorder);

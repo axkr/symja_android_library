@@ -39,6 +39,46 @@ public class ManipulateSpecTest {
     return new ObjectMapper();
   }
 
+  /**
+   * A variable stated twice keeps its first starting value: a hidden specification after a
+   * control does not take it over, and a bound written as Dynamic reads the starting values of the
+   * controls before it.
+   */
+  @Test
+  public void testRepeatedVariableAndDynamicBound() {
+    ManipulateSpec spec = parse("Manipulate({p, q, r}, {{p, 2, \"p\"}, 0, 4, 1},"
+        + " {{q, 1}, 0, Dynamic(3 * p)}, {{r, 5}, None}, {{p, 7}, ControlType -> None},"
+        + " {{r, 9}, ControlType -> None})");
+    assertNotNull(spec);
+    List<ManipulateControl> controls = spec.getControls();
+    assertEquals(3, controls.size());
+    assertEquals("p", controls.get(0).getName());
+    assertEquals(ManipulateControl.SLIDER, controls.get(0).getKind());
+    assertEquals("2", controls.get(0).getInitial().toString());
+    assertEquals(6.0, mapper().valueToTree(controls.get(1).toJSON(mapper())).get("max").asDouble());
+    assertEquals(ManipulateControl.NONE, controls.get(2).getKind());
+    assertEquals("5", controls.get(2).getInitial().toString());
+    // the bound is worked out again in each frame
+    assertEquals("3*p", controls.get(1).getDynamicMax().toString());
+    assertTrue(controls.get(1).getDynamicMin().isNIL());
+  }
+
+  @Test
+  public void testSecondVisibleControlStartsWithTheFirst() {
+    ManipulateSpec spec = parse(
+        "Manipulate({k, s}, {{k, 1}, 0, 5}, {{k, 4}, 0, 8}, {{s, 2}, None})");
+    assertNotNull(spec);
+    List<ManipulateControl> controls = spec.getControls();
+    assertEquals(3, controls.size());
+    assertEquals("1", controls.get(0).getInitial().toString());
+    assertEquals("1", controls.get(1).getInitial().toString());
+    assertEquals(8.0, mapper().valueToTree(controls.get(1).toJSON(mapper())).get("max").asDouble());
+    // a checkbox's start is no start for a slider
+    ManipulateSpec mixed =
+        parse("Manipulate(g(k), {{k, True}, {True, False}}, {{k, 3}, 0, 5})");
+    assertEquals("3", mixed.getControls().get(1).getInitial().toString());
+  }
+
   @Test
   public void testSliderRange() {
     ManipulateControl control = singleControl("Manipulate(x^2, {a, 0, 10})");

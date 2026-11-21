@@ -27,12 +27,39 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public final class RegionFunctionFilter {
 
+  /** The predicate, or {@code null} when only the value window decides. */
   private final IExpr predicate;
   private final EvalEngine engine;
+  /** The position of the value in a point, or {@code -1} without a value window. */
+  private final int valueIndex;
+  private final double valueMin;
+  private final double valueMax;
 
   private RegionFunctionFilter(IExpr predicate, EvalEngine engine) {
+    this(predicate, engine, -1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+  }
+
+  private RegionFunctionFilter(IExpr predicate, EvalEngine engine, int valueIndex,
+      double valueMin, double valueMax) {
     this.predicate = predicate;
     this.engine = engine;
+    this.valueIndex = valueIndex;
+    this.valueMin = valueMin;
+    this.valueMax = valueMax;
+  }
+
+  /**
+   * The filter that also leaves out the points whose value, the coordinate at
+   * {@code valueIndex}, lies outside {@code [min, max]}: the value range a plot was given as its
+   * {@code PlotRange}. The window is tested before the predicate, which is not applied to a point
+   * the window already rejects.
+   *
+   * @param base the filter of the {@code RegionFunction}, or {@code null} for none
+   */
+  public static RegionFunctionFilter withValueWindow(RegionFunctionFilter base, int valueIndex,
+      double min, double max, EvalEngine engine) {
+    return new RegionFunctionFilter(base == null ? null : base.predicate, engine, valueIndex, min,
+        max);
   }
 
   /**
@@ -75,6 +102,10 @@ public final class RegionFunctionFilter {
       }
       args[i] = F.num(coordinates[i]);
     }
+    if (valueIndex >= 0 && valueIndex < coordinates.length
+        && !(coordinates[valueIndex] >= valueMin && coordinates[valueIndex] <= valueMax)) {
+      return false;
+    }
     return apply(args);
   }
 
@@ -96,10 +127,19 @@ public final class RegionFunctionFilter {
         return false;
       }
     }
+    if (valueIndex >= 0 && valueIndex < arguments.length) {
+      double value = arguments[valueIndex].evalfNaN();
+      if (!(value >= valueMin && value <= valueMax)) {
+        return false;
+      }
+    }
     return apply(arguments);
   }
 
   private boolean apply(IExpr[] arguments) {
+    if (predicate == null) {
+      return true;
+    }
     try {
       return engine.evaluate(F.ast(arguments, predicate)).isTrue();
     } catch (RuntimeException rex) {

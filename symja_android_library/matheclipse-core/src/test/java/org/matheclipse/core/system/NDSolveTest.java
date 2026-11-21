@@ -305,6 +305,67 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  // a factor of the time derivative that depends on x or t and keeps its sign: the equation is
+  // divided by it; w = t + Sin(Pi x) and w = Sin(Pi x)/(1+t)^(Pi^2)
+  @Test
+  public void testNDSolvePDEVariableTimeFactor() {
+    check("u=NDSolveValue({(3-x)*D(w(t,x),t)==D(w(t,x),x,x)+(3-x)+Pi^2*Sin(Pi*x), "
+        + "w(0,x)==Sin(Pi*x), w(t,0)==t, w(t,1)==t}, w, {t,0,1/2}, {x,0,1});"
+        + "Abs(u(1/2,1/3)-1/2-Sin(Pi/3))<10^-5", //
+        "True");
+    check("u=NDSolveValue({-(3-x)*D(w(t,x),t)==-D(w(t,x),x,x)-(3-x)-Pi^2*Sin(Pi*x), "
+        + "w(0,x)==Sin(Pi*x), w(t,0)==t, w(t,1)==t}, w, {t,0,1/2}, {x,0,1});"
+        + "Abs(u(1/2,1/3)-1/2-Sin(Pi/3))<10^-5", //
+        "True");
+    check("u=NDSolveValue({(1+t)*D(w(t,x),t)==D(w(t,x),x,x), w(0,x)==Sin(Pi*x), "
+        + "w(t,0)==0, w(t,1)==0}, w, {t,0,1/2}, {x,0,1});"
+        + "Abs(u(1/2,1/2)-(3/2)^(-Pi^2))<10^-6", //
+        "True");
+    // a flux through an end is divided by the factor there; w = t + Cos(Pi x) + x^2/2
+    check("u=NDSolveValue({(2+x)*D(w(t,x),t)==D(w(t,x),x,x)+1+x+Pi^2*Cos(Pi*x)"
+        + "+NeumannValue(1,x==1), w(0,x)==Cos(Pi*x)+x^2/2}, w, {t,0,1/2}, {x,0,1});"
+        + "{Abs(u(1/2,0.4)-1/2-Cos(0.4*Pi)-0.08)<10^-3, Abs(u(1/2,1))<10^-3}", //
+        "{True,True}");
+    // a factor that vanishes on the domain is not divided by
+    check("NDSolveValue({x*D(w(t,x),t)==D(w(t,x),x,x), w(0,x)==Sin(Pi*x), w(t,0)==0, "
+        + "w(t,1)==0}, w, {t,0,1}, {x,0,1})//Head", //
+        "NDSolveValue");
+    check("NDSolveValue({(1/3-x)*D(w(t,x),t)==D(w(t,x),x,x), w(0,x)==Sin(Pi*x), w(t,0)==0, "
+        + "w(t,1)==0}, w, {t,0,1}, {x,0,1})//Head", //
+        "NDSolveValue");
+  }
+
+  // the "Grid" of a solution lists the times the integrator stepped to, ascending
+  @Test
+  public void testNDSolveSolutionGrid() {
+    check("g=NDSolveValue({y'(t)==-2*y(t), y(0)==3}, y, {t,-1,2})[\"Grid\"];"
+        + "{First(g), Last(g), OrderedQ(g), 5<Length(g)<200, Dimensions(g)[[2]]}", //
+        "{{-1.0},{2.0},True,True,1}");
+    // a switch located once takes few steps
+    check("Length(NDSolveValue({y'(t)==If(y(t)<10^-2, 10^5, (2-y(t))/20), y(0)==0}, y, "
+        + "{t,0,500})[\"Grid\"])<300", //
+        "True");
+  }
+
+  // a coefficient without a value at a grid point, 1/r through r == 0, leaves the problem unsolved
+  @Test
+  public void testNDSolvePDESingularCoefficient() {
+    check("NDSolveValue({D(w(t,r),t)==1/r*D(r*D(w(t,r),r),r), w(0,r)==Cos(Pi*r/2), "
+        + "w(t,-1)==0, w(t,1)==0}, w, {t,0,1/10}, {r,-1,1})//Head", //
+        "NDSolveValue");
+    // the pole between the grid points is found too
+    check("NDSolveValue({D(w(t,r),t)==1/r*D(r*D(w(t,r),r),r), w(0,r)==Cos(Pi*r/2.02), "
+        + "w(t,-1)==0, w(t,1.01)==0}, w, {t,0,1/10}, {r,-1,1.01})//Head", //
+        "NDSolveValue");
+    check("NDSolveValue({D(w(t,x),t)==D(w(t,x),x,x)+D(w(t,x),x)/(x-0.3337), w(0,x)==Sin(Pi*x), "
+        + "w(t,0)==0, w(t,1)==0}, w, {t,0,1/10}, {x,0,1})//Head", //
+        "NDSolveValue");
+    // away from the axis the radial operator has its values
+    check("u=NDSolveValue({D(w(t,r),t)==1/r*D(r*D(w(t,r),r),r), w(0,r)==1, "
+        + "w(t,1/2)==1, w(t,1)==1}, w, {t,0,1/10}, {r,1/2,1});Abs(u(1/10,3/4)-1)<10^-8", //
+        "True");
+  }
+
   // a NeumannValue is the flux into the bar through its end: the total grows by it
   @Test
   public void testNDSolvePDENeumannValue() {

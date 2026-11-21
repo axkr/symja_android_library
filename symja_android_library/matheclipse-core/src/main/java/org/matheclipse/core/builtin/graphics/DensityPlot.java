@@ -263,7 +263,7 @@ public class DensityPlot extends ListPlot {
    *
    * @return <code>null</code> for <code>Automatic</code>, <code>All</code> and the other forms
    */
-  private static double[] valueRange(IExpr plotRange) {
+  static double[] valueRange(IExpr plotRange) {
     IExpr range = plotRange;
     if (range.isList() && range.argSize() == 3 && range.first().isList()) {
       range = range.getAt(3);
@@ -279,7 +279,7 @@ public class DensityPlot extends ListPlot {
   }
 
   /** The graphics, or the graphics of a <code>Legended</code>, with <code>PlotRange -> box</code>. */
-  private static IExpr withPlotRange(IExpr result, IExpr box) {
+  static IExpr withPlotRange(IExpr result, IExpr box) {
     if (result.isAST(S.Legended, 3)) {
       return ((IAST) result).setAtCopy(1, withPlotRange(result.first(), box));
     }

@@ -241,11 +241,19 @@ public class AJAXManipulateServlet extends HttpServlet {
             widgetId, frame.result);
         String[] rendered =
             AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
+        // the rows' conditions and ranges follow the values the body left, as its controls do
+        JsonNode after = effective;
+        if (!moved.isEmpty() && effective instanceof ObjectNode) {
+          ObjectNode merged = ((ObjectNode) effective).deepCopy();
+          merged.setAll(moved);
+          after = merged;
+        }
         return withExtras(rendered[1], updated,
-            ManipulateSession.resolveEnabled(engine, spec, effective),
-            ManipulateSession.resolveVisible(engine, spec, effective),
+            ManipulateSession.resolveEnabled(engine, spec, after),
+            ManipulateSession.resolveVisible(engine, spec, after),
             ManipulateSession.renderDisplays(engine, spec, frame.locals, outWriter, errorWriter),
-            ManipulateSession.bodyControlsJSON(widgetId), frame.updateInterval);
+            ManipulateSession.bodyControlsJSON(widgetId), frame.updateInterval,
+            ManipulateSession.resolveRanges(engine, spec, after));
       } catch (AbortException ae) {
         String[] aborted =
             AJAXQueryServlet.renderResult(engine, S.$Aborted, outWriter, errorWriter);
@@ -274,11 +282,12 @@ public class AJAXManipulateServlet extends HttpServlet {
   private static String withExtras(String resultJSON, ObjectNode updated,
       com.fasterxml.jackson.databind.node.ArrayNode enabled,
       com.fasterxml.jackson.databind.node.ArrayNode visible, ObjectNode displays,
-      com.fasterxml.jackson.databind.node.ArrayNode bodyControls, double updateInterval) {
+      com.fasterxml.jackson.databind.node.ArrayNode bodyControls, double updateInterval,
+      com.fasterxml.jackson.databind.node.ArrayNode ranges) {
     boolean hasBindings = updated != null && !updated.isEmpty();
     boolean timed = Double.isFinite(updateInterval);
     if (!hasBindings && enabled == null && visible == null && displays == null
-        && bodyControls == null && !timed) {
+        && bodyControls == null && !timed && ranges == null) {
       return resultJSON;
     }
     try {
@@ -298,6 +307,10 @@ public class AJAXManipulateServlet extends HttpServlet {
         }
         if (bodyControls != null) {
           ((ObjectNode) tree).set("bodyControls", bodyControls);
+        }
+        if (ranges != null) {
+          // the sliders whose bounds follow other controls
+          ((ObjectNode) tree).set("ranges", ranges);
         }
         if (timed) {
           // the browser asks for the next frame by itself after this many seconds

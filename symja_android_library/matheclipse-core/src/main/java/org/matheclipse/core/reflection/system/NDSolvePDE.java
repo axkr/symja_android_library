@@ -168,7 +168,8 @@ final class NDSolvePDE {
           return F.NIL;
         }
         IExpr coefficient = engine.evaluate(F.D(difference, highest));
-        if (!coefficient.isFree(highest) || !coefficient.isNumber() || coefficient.isZero()) {
+        if (!coefficient.isFree(v -> v == utt || v == ut || v == u0 || v == ux || v == uxx, true)
+            || !keepsSign(coefficient, ranges, engine)) {
           return F.NIL;
         }
         rhs = engine.evaluate(F.Together(F.Times(F.CN1,
@@ -242,6 +243,11 @@ final class NDSolvePDE {
     if (!rest.isFree(uxx) || !rest.isFree(ux)) {
       return F.NIL;
     }
+    if (hasPoleOnDomain(a, ranges, engine) || hasPoleOnDomain(b, ranges, engine)
+        || hasPoleOnDomain(rest, ranges, engine)) {
+      // a coefficient like 1/x through x == 0 has no value on the whole domain
+      return F.NIL;
+    }
 
     Grid grid = new Grid(x0, x1, periodic);
     Coefficient fa = new Coefficient(a, t, x, engine);
@@ -272,11 +278,13 @@ final class NDSolvePDE {
         Grid fine = new Grid(x0, x1, periodic, 2 * SPACE_POINTS - 1);
         double[][] fineValues =
             parabolic(fine, 2 * TIME_STEPS, t0, t1, fa, fb, fc, fd, ff, fg0, fg1);
-        if (fineValues != null) {
-          for (int k = 0; k <= TIME_STEPS; k++) {
-            for (int i = 0; i < grid.n; i++) {
-              values[k][i] = (4.0 * fineValues[2 * k][2 * i] - values[k][i]) / 3.0;
-            }
+        if (fineValues == null) {
+          // the finer grid met what the coarse one stepped over
+          return F.NIL;
+        }
+        for (int k = 0; k <= TIME_STEPS; k++) {
+          for (int i = 0; i < grid.n; i++) {
+            values[k][i] = (4.0 * fineValues[2 * k][2 * i] - values[k][i]) / 3.0;
           }
         }
       }
@@ -300,6 +308,62 @@ final class NDSolvePDE {
     IExpr rule =
         unknown.isSymbol() ? F.Rule(u, function) : F.Rule(unknown, F.binaryAST2(function, t, x));
     return F.List(F.List(rule));
+  }
+
+  /** The samples per direction of {@link #keepsSign(IExpr, Ranges, EvalEngine)}. */
+  private static final int SIGN_SAMPLES = 64;
+
+  /**
+   * Whether the factor of the time derivative is a nonzero number, or a function of
+   * <code>t</code> and <code>x</code> that keeps its sign on the closed domain, so the equation can
+   * be divided by it. The function is sampled on a grid of the domain, its corners included; a
+   * factor that vanishes somewhere (at a wall, say) turns the division singular and is refused.
+   */
+  static boolean keepsSign(IExpr factor, Ranges ranges, EvalEngine engine) {
+    if (factor.isNumber()) {
+      return !factor.isZero();
+    }
+    Coefficient f = new Coefficient(factor, ranges.t, ranges.x, engine);
+    int tSamples = factor.isFree(ranges.t) ? 0 : SIGN_SAMPLES;
+    int sign = 0;
+    for (int k = 0; k <= tSamples; k++) {
+      double tv = tSamples == 0 ? ranges.t0 : ranges.t0 + k * (ranges.t1 - ranges.t0) / tSamples;
+      for (int i = 0; i <= SIGN_SAMPLES; i++) {
+        engine.checkTimeLimit();
+        double xv = ranges.x0 + i * (ranges.x1 - ranges.x0) / SIGN_SAMPLES;
+        double value = f.value(tv, xv);
+        if (!Double.isFinite(value) || value == 0.0) {
+          return false;
+        }
+        int s = value > 0.0 ? 1 : -1;
+        if (sign != 0 && s != sign) {
+          return false;
+        }
+        sign = s;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Whether the denominator of <code>expr</code> vanishes somewhere on the closed domain, which
+   * the grid points need not hit: it changes its sign there, or is zero at a sample. A denominator
+   * with other unknowns in it is left to the time stepping, which refuses values that aren't
+   * finite.
+   */
+  static boolean hasPoleOnDomain(IExpr expr, Ranges ranges, EvalEngine engine) {
+    if (expr.isFree(ranges.t) && expr.isFree(ranges.x)) {
+      return false;
+    }
+    IExpr denominator = engine.evaluate(F.Denominator(F.Together(expr)));
+    if (denominator.isNumber()) {
+      return false;
+    }
+    if (!denominator.isFree(v -> v.isSymbol() && v != ranges.t && v != ranges.x
+        && !v.isBuiltInSymbol(), true)) {
+      return false;
+    }
+    return !keepsSign(denominator, ranges, engine);
   }
 
   /** Whether <code>u(t, x0) == u(t, x1)</code>, either way round. */
@@ -425,6 +489,12 @@ final class NDSolvePDE {
         right[1] -= lowerDiagonal[1] * next[0];
         right[n - 2] -= upperDiagonal[n - 2] * next[n - 1];
         if (!solveTridiagonal(lowerDiagonal, diagonal, upperDiagonal, right, next, 1, n - 2)) {
+          return null;
+        }
+      }
+      for (double v : next) {
+        if (!Double.isFinite(v)) {
+          // a coefficient without a value somewhere on the grid, such as 1/x through x == 0
           return null;
         }
       }
@@ -742,11 +812,44 @@ final class NDSolvePDE {
         }
         return cached;
       }
-      return evaluate(tv, xv);
+      // a time step asks for the values at its old and at its new time, and the next step asks for
+      // the new time again: the rows of the last two times are kept
+      if (tv != lastT) {
+        if (tv == previousT) {
+          java.util.Map<Double, Double> row = previousRow;
+          previousRow = lastRow;
+          previousT = lastT;
+          lastRow = row;
+        } else {
+          previousRow = lastRow;
+          previousT = lastT;
+          lastRow = new java.util.HashMap<>();
+        }
+        lastT = tv;
+      }
+      Double cached = lastRow.get(xv);
+      if (cached == null) {
+        cached = evaluate(tv, xv);
+        lastRow.put(xv, cached);
+      }
+      return cached;
     }
 
+    private double lastT = Double.NaN;
+    private double previousT = Double.NaN;
+    private java.util.Map<Double, Double> lastRow = new java.util.HashMap<>();
+    private java.util.Map<Double, Double> previousRow = new java.util.HashMap<>();
+
     private double evaluate(double tv, double xv) {
-      IExpr value = engine.evalN(F.subst(expr, F.List(F.Rule(t, F.num(tv)), F.Rule(x, F.num(xv)))));
+      // the machine evaluation of the expression tree is far cheaper than evaluating a copy with
+      // the numbers put in, and it is what runs at every grid point of every step
+      final IExpr tValue = F.num(tv);
+      final IExpr xValue = F.num(xv);
+      double direct = expr.evalfNaN(v -> v == t ? tValue : v == x ? xValue : F.NIL);
+      if (!Double.isNaN(direct)) {
+        return direct;
+      }
+      IExpr value = engine.evalN(F.subst(expr, F.List(F.Rule(t, tValue), F.Rule(x, xValue))));
       return value.isReal() ? value.evalf() : Double.NaN;
     }
   }

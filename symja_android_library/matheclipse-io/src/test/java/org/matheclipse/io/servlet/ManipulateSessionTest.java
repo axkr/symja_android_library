@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -195,6 +196,27 @@ public class ManipulateSessionTest {
     bindings.put("u", 3);
     assertEquals("{3,9}",
         ManipulateSession.evaluateFrame(engine, spec, bindings).result.toString());
+  }
+
+  /** A slider bound written as Dynamic follows the control it is written with. */
+  @Test
+  public void testDynamicBoundFollowsTheOtherSlider() throws Exception {
+    EvalEngine engine = engine();
+    ManipulateSpec spec = widget(engine,
+        "Manipulate({a, b}, {{a, 1}, 1, 5, 1}, {{b, 2}, -1, Dynamic(4 * a)}, {c, 0, 1})");
+    ObjectNode bindings = MAPPER.createObjectNode();
+    bindings.put("a", 3);
+    bindings.put("b", 2);
+    bindings.put("c", 0.5);
+    assertEquals("[null,[-1.0,12.0],null]",
+        ManipulateSession.resolveRanges(engine, spec, bindings).toString());
+    // a bound below the other pins the slider
+    ManipulateSpec pinned = widget(engine, "Manipulate(b, {{a, 1}, 1, 5, 1}, {{b, 0}, 0, Dynamic(a - 3)})");
+    assertEquals("[null,[0.0,0.0]]",
+        ManipulateSession.resolveRanges(engine, pinned, bindings).toString());
+    // no moving bound at all: nothing to send
+    ManipulateSpec fixed = widget(engine, "Manipulate(a, {a, 0, 2})");
+    assertNull(ManipulateSession.resolveRanges(engine, fixed, bindings));
   }
 
   /** The body of one frame with the given slider value, as a string. */

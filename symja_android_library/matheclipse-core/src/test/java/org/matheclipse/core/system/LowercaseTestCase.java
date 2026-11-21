@@ -16033,8 +16033,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "DataDistribution(Empirical,{{1/2,1/2},{5,7},False},1,3)");
     check("d=EmpiricalDistribution({1,2,1} -> {5,7,5}); {Mean(d), Variance(d)}", //
         "{6,1}");
+    // machine numbers among the values make the probabilities machine numbers; the CDF at or
+    // above the largest value is still the exact 1, below the least one the exact 0
     check("EmpiricalDistribution({2.5, 1, 2.5, 4})", //
-        "DataDistribution(Empirical,{{1/4,1/2,1/4},{1,2.5,4},False},1,4)");
+        "DataDistribution(Empirical,{{0.25,0.5,0.25},{1,2.5,4},False},1,4)");
+    check("d=EmpiricalDistribution({6.5, 3., 6.5, 6.5, 8.});"
+        + "{CDF(d,2), CDF(d,3), CDF(d,7), CDF(d,8), CDF(d,9.5), PDF(d,6.5)}", //
+        "{0,0.2,0.8,1,1,0.6}");
+    // arbitrary precision values keep their precision
+    check("Precision(EmpiricalDistribution({2.5`30, 1, 2.5`25})[[2,1,1]])", //
+        "25");
     check("Expectation(s^2+1, Distributed(s, EmpiricalDistribution({1,3} -> {0,2})))", //
         "4");
     check("Expectation(If(s>4, a, b), Distributed(s, EmpiricalDistribution({0.25,0.75} -> {3,6})))", //
@@ -31003,6 +31011,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "12");
     check("NestWhileList(#+1 &, 0, # < 10 &, 1, Infinity, -1)", //
         "{0,1,2,3,4,5,6,7,8,9}");
+    // dropping more values than there are: the start value, or an empty list
+    check("Quiet(NestWhile(#+3 &, 7, # > 100 &, 1, Infinity, -2))", //
+        "7");
+    check("Quiet(NestWhileList(#+3 &, 7, # > 100 &, 1, Infinity, -1))", //
+        "{}");
+    check("Check(NestWhile(#+3 &, 7, # > 100 &, 1, Infinity, -2), failed)", //
+        "failed");
+    check("Check(NestWhileList(#+3 &, 7, # > 100 &, 1, Infinity, -1), failed)", //
+        "failed");
+    check("NestWhile(#+3 &, 7, # < 9 &, 1, Infinity, -1)", //
+        "7");
     check("NestWhile(#^2 &, 2, # < 256 &)", //
         "256");
     check("NestWhile(#+1 &, 1, # + #4 < 10 &, 4)", //

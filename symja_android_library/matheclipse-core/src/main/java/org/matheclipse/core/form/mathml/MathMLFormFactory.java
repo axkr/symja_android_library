@@ -1588,11 +1588,24 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         return false;
       }
       IAST items = (IAST) f.arg1();
+      // ItemStyle -> s styles every item, ItemStyle -> {s1, s2, ...} the items one by one
+      IExpr itemStyle = F.NIL;
+      for (int i = 2; i < f.size(); i++) {
+        if (f.get(i).isRuleAST() && f.get(i).first() == S.ItemStyle) {
+          itemStyle = f.get(i).second();
+        }
+      }
       fFactory.tagStart(buf, "mtable", "columnalign=\"left\"");
       for (int i = 1; i < items.size(); i++) {
         fFactory.tagStart(buf, "mtr");
         fFactory.tagStart(buf, "mtd", "columnalign=\"left\"");
-        fFactory.convertInternal(buf, items.get(i), Integer.MIN_VALUE, false);
+        IExpr item = items.get(i);
+        IExpr style = itemStyle.isList() ? (i < itemStyle.size() ? itemStyle.getAt(i) : F.NIL)
+            : itemStyle;
+        if (style.isPresent() && !style.isNone() && !style.isAutomatic()) {
+          item = F.binaryAST2(S.Style, item, style);
+        }
+        fFactory.convertInternal(buf, item, Integer.MIN_VALUE, false);
         fFactory.tagEnd(buf, "mtd");
         fFactory.tagEnd(buf, "mtr");
       }
