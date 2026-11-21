@@ -404,11 +404,12 @@ public class AstroFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testAstroSubpoint() {
-    // on the solstices the subsolar point sits on a tropic, at the obliquity of the ecliptic
-    check("AstroSubpoint(\"Sun\", DateObject({2026,6,21,12,0,0}))", //
-        "GeoPosition({23.437796666650257,0.4603246720565153,0.0})");
-    check("AstroSubpoint(\"Sun\", DateObject({2026,12,21,12,0,0}))", //
-        "GeoPosition({-23.436931386226547,-0.47725974793263504,0.0})");
+    // on the solstices the subsolar point sits on a tropic, at the obliquity of the ecliptic.
+    // Compared to 10 decimals: the last digits move between Orekit and Hipparchus builds.
+    checkRegex("AstroSubpoint(\"Sun\", DateObject({2026,6,21,12,0,0}))", //
+        "GeoPosition\\(\\{23\\.4377966666\\d*,0\\.4603246720\\d*,0\\.0\\}\\)");
+    checkRegex("AstroSubpoint(\"Sun\", DateObject({2026,12,21,12,0,0}))", //
+        "GeoPosition\\(\\{-23\\.4369313862\\d*,-0\\.4772597479\\d*,0\\.0\\}\\)");
   }
 
   @Test
