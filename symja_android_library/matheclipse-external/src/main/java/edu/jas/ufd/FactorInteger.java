@@ -144,9 +144,21 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
      * @param P squarefree and primitive! GenPolynomial.
      * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
      */
-    @SuppressWarnings("unchecked")
     @Override
     public List<GenPolynomial<BigInteger>> baseFactorsSquarefree(GenPolynomial<BigInteger> P) {
+        return baseFactorsSquarefree(P, true);
+    }
+
+
+    /**
+     * Symja: GenPolynomial base factorization of a squarefree polynomial.
+     * @param P squarefree and primitive! GenPolynomial.
+     * @param splitCyclotomic if false, P is known to have no cyclotomic factor.
+     * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
+     */
+    @SuppressWarnings("unchecked")
+    private List<GenPolynomial<BigInteger>> baseFactorsSquarefree(GenPolynomial<BigInteger> P,
+                    boolean splitCyclotomic) {
         if (P == null) {
             throw new IllegalArgumentException(this.getClass().getName() + " P == null");
         }
@@ -183,6 +195,24 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             return normalizeFactorization(factors);
         }
         //}
+        // Symja: split off cyclotomic factors first; modulo every prime they fall into many factors, and
+        // the recombination below is exponential in the number of modular factors
+        List<GenPolynomial<BigInteger>> cyclo = splitCyclotomic ? CycloUtil.cyclotomicFactorsDividing(P)
+                        : new ArrayList<GenPolynomial<BigInteger>>();
+        if (!cyclo.isEmpty()) {
+            logger.info("cyclotomicFactorsDividing: #factors = {}", cyclo.size());
+            GenPolynomial<BigInteger> rest = P;
+            for (GenPolynomial<BigInteger> c : cyclo) {
+                rest = rest.divide(c);
+            }
+            factors = new ArrayList<GenPolynomial<BigInteger>>(cyclo);
+            if (!rest.isConstant()) {
+                factors.addAll(baseFactorsSquarefree(rest, false));
+            } else if (!rest.isONE()) {
+                factors.add(rest);
+            }
+            return normalizeFactorization(factors);
+        }
         // compute norm
         BigInteger an = P.maxNorm();
         BigInteger ac = P.leadingBaseCoefficient();

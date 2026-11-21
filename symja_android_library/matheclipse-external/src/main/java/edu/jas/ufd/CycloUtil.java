@@ -19,6 +19,7 @@ import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
+import edu.jas.poly.PolyUtil;
 import edu.jas.structure.Power;
 
 
@@ -247,6 +248,151 @@ public class CycloUtil {
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * Largest degree for which {@link #cyclotomicFactorsDividing} searches.
+     */
+    private static final long MAX_CYCLOTOMIC_SPLIT_DEGREE = 2000L;
+
+
+    /**
+     * Per order n: {q, zeta} with q prime, q == 1 mod n, and zeta of exact order n in GF(q).
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<Integer, long[]> ROOT_OF_UNITY_MOD_Q = new java.util.concurrent.ConcurrentHashMap<>();
+
+
+    /**
+     * Symja: the cyclotomic factors of a univariate integer polynomial which is not a binomial. Modular
+     * factorization splits Phi_n into phi(n)/ord_n(p) factors for every prime p, so a polynomial with
+     * cyclotomic factors makes the Hensel recombination search exponentially many subsets.
+     * @param P univariate polynomial over the integers.
+     * @return the list of cyclotomic polynomials Phi_n dividing P, each listed as often as it divides
+     *         P, or an empty list.
+     */
+    public static List<GenPolynomial<BigInteger>> cyclotomicFactorsDividing(GenPolynomial<BigInteger> P) {
+        List<GenPolynomial<BigInteger>> H = new ArrayList<GenPolynomial<BigInteger>>();
+        if (P == null || P.ring.nvar != 1) {
+            return H;
+        }
+        long d = P.degree(0);
+        if (d < 2L || d > MAX_CYCLOTOMIC_SPLIT_DEGREE) {
+            return H;
+        }
+        // n / phi(n) < 7 for n < 10^8, so phi(n) <= d implies n < 7*d
+        int bound = (int) (7L * d + 30L);
+        int[] phi = new int[bound + 1];
+        for (int i = 0; i <= bound; i++) {
+            phi[i] = i;
+        }
+        for (int i = 2; i <= bound; i++) {
+            if (phi[i] == i) { // i is prime
+                for (int j = i; j <= bound; j += i) {
+                    phi[j] -= phi[j] / i;
+                }
+            }
+        }
+        GenPolynomial<BigInteger> Q = P;
+        java.math.BigInteger[] dense = denseCoefficients(Q);
+        for (int n = 1; n <= bound; n++) {
+            PolyUtil.checkInterrupted();
+            long dq = Q.degree(0);
+            if (dq <= 0L) {
+                break;
+            }
+            if (phi[n] > dq) {
+                continue;
+            }
+            while (Q.degree(0) >= phi[n] && vanishesAtRootOfUnity(dense, n)) {
+                GenPolynomial<BigInteger> c = cyclotomicPolynomial(Q.ring, n);
+                if (!PolyUtil.<BigInteger> baseSparsePseudoRemainder(Q, c).isZERO()) {
+                    break;
+                }
+                H.add(c);
+                Q = Q.divide(c);
+                dense = denseCoefficients(Q);
+            }
+        }
+        return H;
+    }
+
+
+    /**
+     * The coefficients of a univariate polynomial, indexed by degree.
+     */
+    private static java.math.BigInteger[] denseCoefficients(GenPolynomial<BigInteger> P) {
+        java.math.BigInteger[] dense = new java.math.BigInteger[(int) P.degree(0) + 1];
+        java.util.Arrays.fill(dense, java.math.BigInteger.ZERO);
+        for (Monomial<BigInteger> m : P) {
+            dense[(int) m.e.getVal(0)] = m.c.getVal();
+        }
+        return dense;
+    }
+
+
+    /**
+     * Necessary condition for Phi_n | P: P vanishes at a primitive n-th root of unity of GF(q).
+     */
+    private static boolean vanishesAtRootOfUnity(java.math.BigInteger[] dense, int n) {
+        long[] qz = ROOT_OF_UNITY_MOD_Q.computeIfAbsent(n, CycloUtil::rootOfUnityModQ);
+        long q = qz[0];
+        long z = qz[1];
+        java.math.BigInteger bq = java.math.BigInteger.valueOf(q);
+        long s = 0L;
+        for (int i = dense.length - 1; i >= 0; i--) { // Horner
+            java.math.BigInteger c = dense[i];
+            long cm = c.bitLength() < 63 ? Math.floorMod(c.longValue(), q) : c.mod(bq).longValue();
+            s = (s * z + cm) % q;
+        }
+        return s == 0L;
+    }
+
+
+    /**
+     * A prime q == 1 mod n with 2^20 < q < 2^31 and an element of exact order n in GF(q).
+     */
+    private static long[] rootOfUnityModQ(int n) {
+        long q = ((1L << 20) / n + 1L) * n + 1L;
+        while (!java.math.BigInteger.valueOf(q).isProbablePrime(40)) {
+            q += n;
+        }
+        if (q >= (1L << 31)) {
+            throw new ArithmeticException("no prime q == 1 mod " + n + " below 2^31");
+        }
+        java.util.Set<Long> primeDivisors = PrimeInteger.factors(n).keySet();
+        long cofactor = (q - 1L) / n;
+        for (long a = 2L; a < q; a++) {
+            long z = powMod(a, cofactor, q);
+            boolean primitive = true;
+            for (long r : primeDivisors) {
+                if (powMod(z, n / r, q) == 1L) {
+                    primitive = false;
+                    break;
+                }
+            }
+            if (primitive) {
+                return new long[] { q, z };
+            }
+        }
+        throw new ArithmeticException("no root of unity of order " + n + " mod " + q);
+    }
+
+
+    /**
+     * b^e mod q for q < 2^31.
+     */
+    private static long powMod(long b, long e, long q) {
+        long r = 1L;
+        b %= q;
+        while (e > 0L) {
+            if ((e & 1L) != 0L) {
+                r = r * b % q;
+            }
+            b = b * b % q;
+            e >>= 1;
+        }
+        return r;
     }
 
 }
