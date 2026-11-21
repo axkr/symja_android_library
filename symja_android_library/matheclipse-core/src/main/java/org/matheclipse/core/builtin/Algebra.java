@@ -2033,7 +2033,7 @@ public class Algebra {
         IAST parts = factored.isTimes() ? (IAST) factored : F.Times(factored);
         for (IExpr part : parts) {
           if (part.isRational()) {
-            IInteger residue = residue((IRational) part, p);
+            IInteger residue = ((IRational) part).modularResidue(p);
             if (residue == null || (residue.isZero() && exponent.isNegative())) {
               // 1/(5*x) has no residue modulo 5
               return Errors.printMessage(head, "nmod", F.List(part, p));
@@ -2055,14 +2055,6 @@ public class Algebra {
       return engine.evaluate(result);
     }
 
-    /** <code>q</code> as a residue modulo <code>p</code>, or <code>null</code> if it has none. */
-    private static IInteger residue(IRational q, IInteger p) {
-      IInteger denominator = q.denominator().mod(p);
-      if (denominator.isZero()) {
-        return null;
-      }
-      return (IInteger) q.numerator().multiply(denominator.modInverse(p)).mod(p);
-    }
 
     public static @AllowNIL IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
         boolean factorSquareFree, final IExpr[] options, final EvalEngine engine)
@@ -5450,15 +5442,8 @@ public class Algebra {
      * <code>b</code> has no inverse modulo <code>m</code>.
      */
     private static @AllowNIL IExpr rationalMod(IRational r, IInteger m) {
-      IInteger numerator = r.numerator();
-      IInteger denominator = r.denominator();
-      if (denominator.isOne()) {
-        return numerator.mod(m);
-      }
-      if (!denominator.gcd(m).isOne()) {
-        return F.NIL;
-      }
-      return numerator.multiply(denominator.modInverse(m)).mod(m);
+      IInteger residue = r.modularResidue(m);
+      return residue == null ? F.NIL : residue;
     }
 
     /**

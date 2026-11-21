@@ -10,10 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 
 /**
  * {@link IExpr#splitFreeFactors(IExpr)}, {@link IExpr#isPolynomialShape(Predicate)},
- * {@link IAST#chainToAnd()} and {@link IInteger#perfectPower()}.
+ * {@link IExpr#isRationalFunctionShape(Predicate)}, {@link IExpr#hasRadicalIn(IExpr)},
+ * {@link IExpr#hasEvenRootIn(IExpr)}, {@link IAST#chainToAnd()}, {@link IInteger#perfectPower()}
+ * and {@link IRational#modularResidue(IInteger)}.
  */
 class ExpressionHelperMethodsTest {
 
@@ -74,5 +77,51 @@ class ExpressionHelperMethodsTest {
     assertNull(F.C1.perfectPower());
     assertNull(F.C0.perfectPower());
     assertNull(F.ZZ(-8).perfectPower());
+  }
+
+  @Test
+  void testIsRationalFunctionShape() {
+    Predicate<IExpr> freeOfXOrX = e -> e.isFree(F.x, true) || e.equals(F.x);
+    // negative integer powers are allowed, unlike for the polynomial shape
+    IExpr quotient = F.Times(F.Plus(F.x, F.C1), F.Power(F.Plus(F.Sqr(F.x), F.a), F.CN2));
+    assertTrue(quotient.isRationalFunctionShape(freeOfXOrX));
+    assertFalse(quotient.isPolynomialShape(freeOfXOrX));
+    assertFalse(F.Power(F.x, F.C1D2).isRationalFunctionShape(freeOfXOrX));
+    assertFalse(F.Plus(F.x, F.Sin(F.x)).isRationalFunctionShape(freeOfXOrX));
+    // an accepted atom is accepted whole: Sqrt(a) is free of x
+    assertTrue(F.Times(F.Sqrt(F.a), F.Power(F.x, F.CN1)).isRationalFunctionShape(freeOfXOrX));
+  }
+
+  @Test
+  void testHasRadicalIn() {
+    assertTrue(F.Plus(F.C1, F.Sqrt(F.x)).hasRadicalIn(F.x));
+    assertTrue(F.Sin(F.Power(F.Plus(F.x, F.C1), F.QQ(2, 3))).hasRadicalIn(F.x));
+    assertFalse(F.Times(F.Sqrt(F.C2), F.x).hasRadicalIn(F.x));
+    assertFalse(F.Power(F.x, F.C3).hasRadicalIn(F.x));
+    assertFalse(F.Power(F.x, F.y).hasRadicalIn(F.x));
+  }
+
+  @Test
+  void testHasEvenRootIn() {
+    assertTrue(F.Sqrt(F.x).hasEvenRootIn(F.x));
+    assertTrue(F.Plus(F.C1, F.Power(F.x, F.QQ(3, 4))).hasEvenRootIn(F.x));
+    // an odd root has no branch cut on the real line
+    assertFalse(F.Power(F.x, F.QQ(1, 3)).hasEvenRootIn(F.x));
+    assertFalse(F.Times(F.Sqrt(F.y), F.x).hasEvenRootIn(F.x));
+  }
+
+  @Test
+  void testModularResidue() {
+    IInteger seven = F.ZZ(7);
+    assertEquals(F.C3, F.ZZ(10).modularResidue(seven));
+    assertEquals(F.C4, F.ZZ(-3).modularResidue(seven));
+    // 1/3 == 5 mod 7, because 3*5 == 15 == 1 mod 7
+    assertEquals(F.C5, F.QQ(1, 3).modularResidue(seven));
+    // -2/5 == -2*3 == 1 mod 7, because 5*3 == 1 mod 7
+    assertEquals(F.C1, F.QQ(-2, 5).modularResidue(seven));
+    // a composite modulus: 1/3 mod 10 is 7, 1/4 mod 10 doesn't exist
+    assertEquals(F.ZZ(7), F.QQ(1, 3).modularResidue(F.ZZ(10)));
+    assertNull(F.QQ(1, 4).modularResidue(F.ZZ(10)));
+    assertNull(F.QQ(2, 7).modularResidue(seven));
   }
 }

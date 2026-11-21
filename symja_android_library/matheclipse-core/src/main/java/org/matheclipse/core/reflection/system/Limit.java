@@ -5875,9 +5875,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   private static boolean hasEvenRootAtFinitePoint(IExpr f, IAST rule) {
     return !rule.arg2().isDirectedInfinity()
         && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
-        && f.has(y -> y.isPower() && y.exponent().isFraction()
-            && ((IFraction) y.exponent()).denominator().isEven()
-            && !y.base().isFree(rule.arg1(), true), true);
+        && f.hasEvenRootIn(rule.arg1());
   }
 
   @Override

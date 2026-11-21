@@ -88,7 +88,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
@@ -10426,19 +10425,7 @@ public final class LinearAlgebra {
    *         invertible modulo <code>modulus</code>
    */
   private static IInteger modularValue(IExpr value, IInteger modulus) {
-    if (value.isInteger()) {
-      return ((IInteger) value).mod(modulus);
-    }
-    if (value.isFraction()) {
-      IFraction fraction = (IFraction) value;
-      IInteger denominator = fraction.denominator().mod(modulus);
-      IInteger inverse = modularInverse(denominator, modulus);
-      if (inverse == null) {
-        return null;
-      }
-      return fraction.numerator().mod(modulus).multiply(inverse).mod(modulus);
-    }
-    return null;
+    return value.isRational() ? ((IRational) value).modularResidue(modulus) : null;
   }
 
   /**

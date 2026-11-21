@@ -3472,21 +3472,71 @@ public interface IExpr
    * Test if this expression is built from sums, products and positive integer powers of atoms which
    * fulfill <code>atom</code>: the shape of a polynomial whose variables and coefficients are what
    * <code>atom</code> accepts. A negative or a non-integer exponent, or any other function, isn't
-   * accepted.
+   * accepted. <code>atom</code> is tested first, so an expression it accepts is accepted whole.
    *
-   * @param atom the test for the expressions which aren't a <code>Plus()</code>, a
-   *        <code>Times()</code> or a <code>Power()</code>
+   * @param atom the test for the parts which aren't taken apart
    * @return <code>true</code> if this expression has the shape of a polynomial over the accepted
    *         atoms
+   * @see #isRationalFunctionShape(Predicate)
    */
   default boolean isPolynomialShape(Predicate<? super IExpr> atom) {
+    if (atom.test(this)) {
+      return true;
+    }
     if (isPlus() || isTimes()) {
       return ((IAST) this).forAll(x -> x.isPolynomialShape(atom));
     }
-    if (isPower()) {
-      return exponent().isInteger() && exponent().isPositive() && base().isPolynomialShape(atom);
+    return isPower() && exponent().isInteger() && exponent().isPositive()
+        && base().isPolynomialShape(atom);
+  }
+
+  /**
+   * Test if this expression is built from sums, products and integer powers, negative ones
+   * included, of atoms which fulfill <code>atom</code>: the shape of a rational function whose
+   * variables and coefficients are what <code>atom</code> accepts. <code>atom</code> is tested
+   * first, so an expression it accepts is accepted whole, e.g. any subexpression free of the
+   * variable.
+   *
+   * @param atom the test for the parts which aren't taken apart
+   * @return <code>true</code> if this expression has the shape of a rational function over the
+   *         accepted atoms
+   * @see #isPolynomialShape(Predicate)
+   */
+  default boolean isRationalFunctionShape(Predicate<? super IExpr> atom) {
+    if (atom.test(this)) {
+      return true;
     }
-    return atom.test(this);
+    if (isPlus() || isTimes()) {
+      return ((IAST) this).forAll(x -> x.isRationalFunctionShape(atom));
+    }
+    return isPower() && exponent().isInteger() && base().isRationalFunctionShape(atom);
+  }
+
+  /**
+   * Test if a power with a rational, non-integer exponent of something which depends on
+   * <code>variable</code> occurs in this expression: <code>Sqrt(x)</code> or
+   * <code>(1+x)^(2/3)</code>, but not <code>Sqrt(2)</code>.
+   *
+   * @param variable the variable
+   * @return <code>true</code> if such a radical occurs
+   */
+  default boolean hasRadicalIn(IExpr variable) {
+    return !isFree(e -> e.isPower() && e.exponent().isRational() && !e.exponent().isInteger()
+        && !e.base().isFree(variable, true), true);
+  }
+
+  /**
+   * Test if a power with a fraction exponent of even denominator of something which depends on
+   * <code>variable</code> occurs in this expression: <code>Sqrt(x)</code> or
+   * <code>x^(3/4)</code>, which have a branch cut, but not <code>x^(1/3)</code>.
+   *
+   * @param variable the variable
+   * @return <code>true</code> if such an even root occurs
+   */
+  default boolean hasEvenRootIn(IExpr variable) {
+    return has(e -> e.isPower() && e.exponent().isFraction()
+        && ((IFraction) e.exponent()).denominator().isEven() && !e.base().isFree(variable, true),
+        true);
   }
 
   /**

@@ -209,6 +209,26 @@ public interface IRational extends IReal, IBigNumber {
    */
   public IRational powerRational(final long exp) throws ArithmeticException;
 
+  /**
+   * This rational number as a residue modulo <code>m</code>: <code>n * d^-1 mod m</code> for
+   * <code>n/d</code>, an integer is reduced modulo <code>m</code>.
+   *
+   * @param m the modulus, a positive integer
+   * @return the residue in <code>0 .. m-1</code>, or <code>null</code> if the denominator has no
+   *         inverse modulo <code>m</code>
+   */
+  default IInteger modularResidue(IInteger m) {
+    IInteger denominator = denominator();
+    if (denominator.isOne()) {
+      return numerator().mod(m);
+    }
+    denominator = denominator.mod(m);
+    if (!denominator.gcd(m).isOne()) {
+      return null;
+    }
+    return numerator().multiply(denominator.modInverse(m)).mod(m);
+  }
+
   @Override
   default IRational reRational() {
     return this;

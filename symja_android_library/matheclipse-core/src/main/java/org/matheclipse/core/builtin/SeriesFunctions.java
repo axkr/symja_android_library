@@ -1646,12 +1646,6 @@ public class SeriesFunctions {
     private static final ThreadLocal<Boolean> BRANCH_SIDES =
         ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-    /** An even root of something which depends on <code>x</code>. */
-    private static boolean hasEvenRoot(IExpr expr, IExpr x) {
-      return expr.has(y -> y.isPower() && y.exponent().isFraction()
-          && ((IFraction) y.exponent()).denominator().isEven() && !y.base().isFree(x), true);
-    }
-
     /**
      * The expansion at <code>0</code> of a function with even roots, which can differ on the two
      * sides: <code>Sqrt(x^2)</code> is <code>x</code> on the right and <code>-x</code> on the
@@ -1872,14 +1866,14 @@ public class SeriesFunctions {
           }
         }
 
-        if (!leadingTermMode && x0.isZero() && hasEvenRoot(currentExpr, x)) {
+        if (!leadingTermMode && x0.isZero() && currentExpr.hasEvenRootIn(x)) {
           IExpr twoSided = twoSidedSeries(currentExpr, x, n, engine);
           if (twoSided.isPresent()) {
             currentExpr = twoSided;
             continue;
           }
         }
-        if (!leadingTermMode && x0.isNegativeInfinity() && hasEvenRoot(currentExpr, x)) {
+        if (!leadingTermMode && x0.isNegativeInfinity() && currentExpr.hasEvenRootIn(x)) {
           // An even root takes its branch from the sign of x: expand f(-x) at +Infinity, where
           // the positive branch is the right one, and put -x back into the powers.
           ISymbol t = F.Dummy("t");

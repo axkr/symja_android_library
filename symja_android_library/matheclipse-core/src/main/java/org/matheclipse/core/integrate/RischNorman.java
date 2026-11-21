@@ -92,7 +92,7 @@ public class RischNorman {
     final long deadline = System.currentTimeMillis()
         + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS);
     try {
-      if (RischNormanRadical.hasRoot(integrand, x)) {
+      if (integrand.hasRadicalIn(x)) {
         // one square root in the tower (and roots which flatten into a generator)
         return RischNormanRadical.integrate(integrand, x, engine, System.currentTimeMillis()
             + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS));
@@ -112,7 +112,7 @@ public class RischNorman {
    * {@link #integrate(IExpr, IExpr, EvalEngine)} is worth a try after them.
    */
   public static boolean isRadicalTower(IExpr f, IExpr x) {
-    if (RADICAL_TOWER_OFF.get().booleanValue() || !RischNormanRadical.hasRoot(f, x)) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || !f.hasRadicalIn(x)) {
       return false;
     }
     return hasTowerKernel(f, x);
@@ -125,7 +125,7 @@ public class RischNorman {
    * own; {@link #integrate(IExpr, IExpr, EvalEngine)} takes the integrand as a whole.
    */
   public static boolean isTranscendentalTower(IExpr f, IExpr x) {
-    if (RADICAL_TOWER_OFF.get().booleanValue() || RischNormanRadical.hasRoot(f, x)) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || f.hasRadicalIn(x)) {
       return false;
     }
     return hasTowerKernel(f, x);
@@ -141,7 +141,7 @@ public class RischNorman {
    * linear system of the ansatz symbolic and slow.
    */
   public static boolean isMixedTangentTower(IExpr f, IExpr x) {
-    if (RADICAL_TOWER_OFF.get().booleanValue() || RischNormanRadical.hasRoot(f, x)) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || f.hasRadicalIn(x)) {
       return false;
     }
     final Set<IExpr> tangents = tangentArguments(f, x);
@@ -192,7 +192,7 @@ public class RischNorman {
     // the kernels first: a member inside a kernel, E^(2*x) in Log(1+E^(2*x)), stays with it
     IExpr substituted = replaceMembers(replaceKernels(integrand, kernels, dummies), members,
         kernels, dummies);
-    if (!isRationalIn(substituted, x, dummies)) {
+    if (!isRationalIn(substituted, x)) {
       return F.NIL;
     }
     // 3. derivatives of the kernels, expressed in x and the dummies
@@ -200,7 +200,7 @@ public class RischNorman {
     for (int i = 0; i < kernels.size(); i++) {
       IExpr d = tangentSquares(engine.evaluate(F.D(kernels.get(i), x)), tangentArgs, engine);
       d = replaceMembers(replaceKernels(d, kernels, dummies), members, kernels, dummies);
-      if (!isRationalIn(d, x, dummies)) {
+      if (!isRationalIn(d, x)) {
         return F.NIL;
       }
       derivatives[i] = d;
@@ -699,31 +699,12 @@ public class RischNorman {
     return result;
   }
 
-  /** Check that <code>expr</code> is rational in <code>x</code> and the dummy variables. */
-  private static boolean isRationalIn(IExpr expr, IExpr x, ISymbol[] dummies) {
-    return isRationalRecursive(expr, x, dummies);
-  }
-
-  private static boolean isRationalRecursive(IExpr expr, IExpr x, ISymbol[] dummies) {
-    if (expr.isNumber() || expr.equals(x)) {
-      return true;
-    }
-    if (expr.isSymbol()) {
-      return true; // free symbolic constants and dummies are allowed
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      IAST ast = (IAST) expr;
-      for (int i = 1; i < ast.size(); i++) {
-        if (!isRationalRecursive(ast.get(i), x, dummies)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (expr.isPower()) {
-      return expr.exponent().isInteger() && isRationalRecursive(expr.base(), x, dummies);
-    }
-    return false;
+  /**
+   * Check that <code>expr</code> is rational in <code>x</code>; symbols, the dummy variables
+   * among them, are free constants.
+   */
+  private static boolean isRationalIn(IExpr expr, IExpr x) {
+    return expr.isRationalFunctionShape(e -> e.isNumber() || e.isSymbol() || e.equals(x));
   }
 
   /**

@@ -87,12 +87,6 @@ final class RischNormanRadical {
     this.deadline = deadline;
   }
 
-  /** Does <code>f</code> have a root depending on <code>x</code>, so this method applies? */
-  static boolean hasRoot(IExpr f, IExpr x) {
-    return !f.isFree(e -> e.isPower() && !e.exponent().isInteger() && e.exponent().isRational()
-        && !e.base().isFree(x, true), true);
-  }
-
   /**
    * @return the antiderivative, verified by differentiation, or {@link F#NIL}
    */

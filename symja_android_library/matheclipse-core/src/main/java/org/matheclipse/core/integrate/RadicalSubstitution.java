@@ -143,25 +143,7 @@ public class RadicalSubstitution {
    * coefficients which are free of <code>t</code>.
    */
   private static boolean isSymbolicRationalFunction(IExpr expr, IExpr t) {
-    if (expr.isFree(t, true)) {
-      return true;
-    }
-    if (expr.equals(t)) {
-      return true;
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      IAST ast = (IAST) expr;
-      for (int i = 1; i < ast.size(); i++) {
-        if (!isSymbolicRationalFunction(ast.get(i), t)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (expr.isPower()) {
-      return expr.exponent().isInteger() && isSymbolicRationalFunction(expr.base(), t);
-    }
-    return false;
+    return expr.isRationalFunctionShape(e -> e.isFree(t, true) || e.equals(t));
   }
 
   private static final class StopException extends RuntimeException {

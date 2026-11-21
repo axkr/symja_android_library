@@ -4066,19 +4066,7 @@ public class AlgebraUtil {
    * <code>Plus, Times</code> and integer powers only, so that <code>Factor</code> can normalize it.
    */
   private static boolean isRationalFunctionOfSymbols(IExpr expr) {
-    if (expr.isNumber()) {
-      return expr.isRational();
-    }
-    if (expr.isSymbol()) {
-      return expr.isVariable();
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      return ((IAST) expr).forAll(x -> isRationalFunctionOfSymbols(x));
-    }
-    if (expr.isPower()) {
-      return expr.exponent().isInteger() && isRationalFunctionOfSymbols(expr.base());
-    }
-    return false;
+    return expr.isRationalFunctionShape(x -> x.isRational() || x.isSymbol() && x.isVariable());
   }
 
   /**

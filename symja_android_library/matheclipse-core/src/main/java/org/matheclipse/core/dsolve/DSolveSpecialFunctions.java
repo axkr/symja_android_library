@@ -697,24 +697,15 @@ final class DSolveSpecialFunctions {
               F.Hypergeometric1F1(F.Plus(F.C1, F.Times(F.C1D2, degree)), F.QQ(3L, 2L), positive))};
       for (int i = 0; i < 2; i++) {
         IExpr original = engine.evaluate(basis[i]);
-        if (hasFractionalPower(original, xVar)) {
+        if (original.hasRadicalIn(xVar)) {
           IExpr better = withoutSquareRoots(transformed[i], xVar, engine);
-          if (!hasFractionalPower(better, xVar)) {
+          if (!better.hasRadicalIn(xVar)) {
             basis[i] = better;
           }
         }
       }
     }
     return basis;
-  }
-
-  /**
-   * Whether a fractional power of something containing the variable occurs in <code>expr</code>.
-   * A root of a constant, <code>Sqrt(Pi)</code> or <code>Sqrt(2)</code>, is not one.
-   */
-  private static boolean hasFractionalPower(IExpr expr, IExpr xVar) {
-    return !expr.isFree(x -> x.isPower() && x.exponent().isRational()
-        && !x.exponent().isInteger() && !x.base().isFree(xVar), true);
   }
 
   /**
@@ -726,7 +717,7 @@ final class DSolveSpecialFunctions {
    */
   private static IExpr withoutSquareRoots(IExpr member, IExpr xVar, EvalEngine engine) {
     IExpr evaluated = engine.evaluate(member);
-    if (!hasFractionalPower(evaluated, xVar)) {
+    if (!evaluated.hasRadicalIn(xVar)) {
       return evaluated;
     }
     IExpr expanded = engine.evaluate(F.PowerExpand(evaluated));
