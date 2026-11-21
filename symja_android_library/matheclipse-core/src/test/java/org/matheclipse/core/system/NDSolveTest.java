@@ -183,6 +183,15 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         "{0.6931471805599453,0.5}", 1.0e-8);
   }
 
+  @Test
+  public void testNDSolveEventLocatorListOfEvents() {
+    // of the two events y(t)==0.8 and y(t)==0.25 of y'==-y, y(0)==1 the first one met, at
+    // Log(5/4), stops the integration
+    checkNumeric(
+        "s=NDSolve({y'(t)==-y(t),y(0)==1},y,{t,0,10},Method->{\"EventLocator\",\"Event\"->{y(t)-0.25,y(t)-0.8},\"EventAction\":>Throw(stopT=t,\"StopIntegration\")});fy=y/.Part(s,1);{stopT,fy(stopT)}", //
+        "{0.22314355131420976,0.8}", 1.0e-8);
+  }
+
   // symbolic_initial_condition_value
   @Test
   public void testNDSolveSymbolicInitialConditionValue() {

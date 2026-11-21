@@ -4072,8 +4072,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
             }
             break;
           case "Event":
-            events = rhs.isList() ? ((IAST) rhs).argSize() == 0 ? new IExpr[0] : toArray((IAST) rhs)
-                : new IExpr[] {rhs};
+            events = rhs.isList() ? ((IAST) rhs).toArray(1) : new IExpr[] {rhs};
             break;
           case "EventAction":
             eventAction = rhs;
@@ -4107,14 +4106,6 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         }
       }
       return true;
-    }
-
-    private static IExpr[] toArray(IAST list) {
-      IExpr[] result = new IExpr[list.argSize()];
-      for (int i = 0; i < result.length; i++) {
-        result[i] = list.get(i + 1);
-      }
-      return result;
     }
 
     private boolean setEventLocationMethod(IExpr value, IAST ast, EvalEngine engine) {

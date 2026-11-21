@@ -164,8 +164,8 @@ public class FindDivisions extends AbstractFunctionEvaluator {
 
   /** The multiples of <code>step</code> from below <code>min</code> to above <code>max</code>. */
   private static IExpr points(IRational min, IRational max, IRational step) {
-    BigInteger first = floor(min.divideBy(step));
-    BigInteger last = floor(max.divideBy(step).negate()).negate();
+    BigInteger first = min.divideBy(step).floor().toBigNumerator();
+    BigInteger last = max.divideBy(step).negate().floor().toBigNumerator().negate();
     if (last.compareTo(first) < 0
         || last.subtract(first).compareTo(BigInteger.valueOf(MAX_POINTS)) > 0) {
       return F.NIL;
@@ -176,11 +176,6 @@ public class FindDivisions extends AbstractFunctionEvaluator {
       list.append(step.multiply(F.ZZ(first.add(BigInteger.valueOf(i)))));
     }
     return list;
-  }
-
-  private static BigInteger floor(IRational r) {
-    BigInteger[] qr = r.toBigNumerator().divideAndRemainder(r.toBigDenominator());
-    return qr[1].signum() < 0 ? qr[0].subtract(BigInteger.ONE) : qr[0];
   }
 
   /**

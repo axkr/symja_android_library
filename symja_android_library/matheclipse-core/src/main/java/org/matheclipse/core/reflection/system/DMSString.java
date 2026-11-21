@@ -73,12 +73,8 @@ public class DMSString extends AbstractFunctionEvaluator {
   }
 
   private static String withHemisphere(IExpr value, String letters, int precision) {
-    char letter = isNegative(value) ? letters.charAt(1) : letters.charAt(0);
+    char letter = value.isNegative() ? letters.charAt(1) : letters.charAt(0);
     return format(value, precision) + letter;
-  }
-
-  private static boolean isNegative(IExpr value) {
-    return value.isNegative();
   }
 
   /**
