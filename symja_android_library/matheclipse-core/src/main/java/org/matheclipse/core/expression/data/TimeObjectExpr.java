@@ -160,6 +160,11 @@ public class TimeObjectExpr extends DataExpr<LocalTime> implements Externalizabl
   }
 
   @Override
+  public boolean isDateOrTimeObject() {
+    return true;
+  }
+
+  @Override
   public int hierarchy() {
     return TIMEOBJECTEXPRID;
   }

@@ -42,8 +42,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.expression.DefaultDict;
@@ -299,7 +297,7 @@ public class Algebra {
     private static @AllowNIL IExpr apartTerm(IExpr arg1, IExpr variable, EvalEngine engine) {
       if ((arg1.isTimes() || arg1.isPower())
           && !arg1.isFree(x -> x instanceof INum || x instanceof IComplexNum, true)
-          && arg1.isFree(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum, true)) {
+          && arg1.isFree(x -> x.isArbitraryPrecisionNumber(), true)) {
         // Machine numbers: the denominator is not factored, and common factors do not cancel.
         // The rational form is decomposed, and its numbers are given back as machine numbers.
         IExpr rationalized = AbstractFractionSym.rationalize(arg1, false);

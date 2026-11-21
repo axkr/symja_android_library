@@ -10,7 +10,6 @@ import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -128,8 +127,8 @@ public final class WorkingPrecision {
    */
   public static IExpr evaluate(IInexactNumber a, IInexactNumber b, boolean realResult,
       Routine routine) {
-    boolean machinePrecision = !(a instanceof ApfloatNum) && !(a instanceof ApcomplexNum)
-        && !(b instanceof ApfloatNum) && !(b instanceof ApcomplexNum);
+    boolean machinePrecision = !a.isArbitraryPrecisionNumber()
+        && !b.isArbitraryPrecisionNumber();
     FixedPrecisionApcomplexHelper h =
         machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
     final int precision = (int) h.precision();
@@ -200,7 +199,7 @@ public final class WorkingPrecision {
       if (!arg.isNumber()) {
         return F.NIL;
       }
-      arbitrary |= arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
+      arbitrary |= arg.isArbitraryPrecisionNumber();
       inexact |= arg.isInexactNumber();
       real &= arg.isReal();
     }

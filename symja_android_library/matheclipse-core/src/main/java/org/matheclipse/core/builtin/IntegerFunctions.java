@@ -2746,18 +2746,13 @@ public class IntegerFunctions {
       if (Double.isFinite(dx) && Double.isFinite(da) && da != 0.0 && Double.isFinite(quotient)) {
         return F.num(quotient);
       }
-      if (!Double.isNaN(dx) && !Double.isNaN(da) && isFiniteNumber(x) && isFiniteNumber(a)) {
+      if (!Double.isNaN(dx) && !Double.isNaN(da) && x.isFinite() && a.isFinite()) {
         final long precision = ParserConfig.MACHINE_PRECISION;
         return F.num(((IReal) x).apfloatValue().precision(precision)
             .divide(((IReal) a).apfloatValue().precision(precision)));
       }
     }
     return F.Divide(x, a);
-  }
-
-  /** No machine infinity; an arbitrary precision number is always finite. */
-  private static boolean isFiniteNumber(IExpr x) {
-    return !(x instanceof Num) || Double.isFinite(((Num) x).doubleValue());
   }
 
   /**

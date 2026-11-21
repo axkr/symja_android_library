@@ -1987,6 +1987,11 @@ public class ApfloatNum implements INum {
 
 
   @Override
+  public boolean isArbitraryPrecisionNumber() {
+    return true;
+  }
+
+  @Override
   public int hierarchy() {
     return DOUBLEID;
   }

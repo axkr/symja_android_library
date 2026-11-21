@@ -129,11 +129,9 @@ public final class BesselOrderDerivative {
     return value.isNumber() ? value : F.NIL;
   }
 
+  /** A finite <code>double</code> based number. */
   private static boolean isMachine(IExpr x) {
-    return x.isInexactNumber() && (x instanceof org.matheclipse.core.interfaces.INum
-        || x instanceof org.matheclipse.core.interfaces.IComplexNum)
-        && !(x instanceof org.matheclipse.core.expression.ApfloatNum)
-        && !(x instanceof org.matheclipse.core.expression.ApcomplexNum);
+    return x.isInexactNumber() && x.isDoubleNumber();
   }
 
   private static long precisionOf(IExpr x) {

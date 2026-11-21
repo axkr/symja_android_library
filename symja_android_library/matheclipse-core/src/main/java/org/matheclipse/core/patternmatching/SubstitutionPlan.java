@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats;
 import org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats.Refusal;
 
@@ -85,7 +84,7 @@ final class SubstitutionPlan {
     for (int i = 0; i < patternMap.size(); i++) {
       IExpr key = patternMap.getKey(i);
       // substituteSymbols() only ever replaces symbols; a pattern object key can never match
-      if (key instanceof ISymbol) {
+      if (key.isSymbol()) {
         slots.put(key, Integer.valueOf(i));
       }
     }

@@ -2254,7 +2254,7 @@ public class SpecialFunctions {
         boolean arbitrary = false;
         boolean real = true;
         for (int i = 1; i <= 3; i++) {
-          arbitrary |= ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum;
+          arbitrary |= ast.get(i).isArbitraryPrecisionNumber();
           real &= ast.get(i).isReal();
         }
         if (real && !((IReal) ast.arg1()).isLT(F.C1)) {
@@ -3422,7 +3422,7 @@ public class SpecialFunctions {
     boolean machinePrecision = true;
     Apcomplex[] args = new Apcomplex[ast.argSize()];
     for (int i = 1; i <= ast.argSize(); i++) {
-      if (ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum) {
+      if (ast.get(i).isArbitraryPrecisionNumber()) {
         machinePrecision = false;
       }
     }
@@ -3620,8 +3620,7 @@ public class SpecialFunctions {
    * for an argument beyond the limit of those routines.
    */
   private static boolean isBeyondStruveSeries(IInexactNumber n, IInexactNumber z) {
-    if (n instanceof ApfloatNum || n instanceof ApcomplexNum || z instanceof ApfloatNum
-        || z instanceof ApcomplexNum) {
+    if (n.isArbitraryPrecisionNumber() || z.isArbitraryPrecisionNumber()) {
       return !(z.abs().evalf() <= 3000.0);
     }
     return false;

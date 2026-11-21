@@ -2,8 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.eval.Errors;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apcomplex;
@@ -47,7 +45,7 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
     if (ast.argSize() == 1 && ast.arg1().isNumber()) {
       // at arbitrary precision, and at machine precision where log(Zeta(k*s)) has lost its digits
       IExpr arg = ast.arg1();
-      final boolean arbitrary = arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
+      final boolean arbitrary = arg.isArbitraryPrecisionNumber();
       Complex c = arg.evalfc();
       if (c.getReal() > 1.0 && (arbitrary || (c.getReal() >= 3.0 && Math.abs(c.getImaginary()) <= 5.0))) {
         final int digits = WorkingPrecision.digits(arbitrary, engine);

@@ -4148,6 +4148,48 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an arbitrary precision real or complex number, an
+   * <code>ApfloatNum</code> or an <code>ApcomplexNum</code>.
+   *
+   * @return <code>true</code>, if this expression is an arbitrary precision number
+   */
+  default boolean isArbitraryPrecisionNumber() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a <code>double</code> based real or complex number, a
+   * <code>Num</code> (also a <code>NumStr</code> with more digits than a machine number) or a
+   * <code>ComplexNum</code>, finite or not. Unlike {@link #isMachineNumber()} it does not look at the
+   * precision of the number.
+   *
+   * @return <code>true</code>, if this expression is a <code>double</code> based number
+   */
+  default boolean isDoubleNumber() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a <code>double</code> based number, see {@link #isDoubleNumber()},
+   * with an infinite or <code>NaN</code> real or imaginary part.
+   *
+   * @return <code>true</code>, if this expression is a <code>double</code> based number which isn't
+   *         finite
+   */
+  default boolean isNonFiniteDoubleNumber() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a <code>DateObject</code> or a <code>TimeObject</code> data object.
+   *
+   * @return <code>true</code>, if this expression is a date or a time object
+   */
+  default boolean isDateOrTimeObject() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a machine-precision (Java <code>double</code> type) real or complex
    * number. I.e. an instance of type <code>Num</code> or <code>ComplexNum</code>.
    *

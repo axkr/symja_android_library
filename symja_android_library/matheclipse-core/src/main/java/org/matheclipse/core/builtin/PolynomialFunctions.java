@@ -2517,7 +2517,7 @@ public class PolynomialFunctions {
       }
       if (arg.isInexactNumber()) {
         inexact = true;
-        if (arg instanceof ApfloatNum || arg instanceof ApcomplexNum) {
+        if (arg.isArbitraryPrecisionNumber()) {
           precision = Math.max(precision, ((INumber) arg).determinePrecision(true));
         }
         exact.set(i, exactNumber((INumber) arg));
@@ -2716,22 +2716,7 @@ public class PolynomialFunctions {
      * number: an overflow, or a number promoted beyond the double range.
      */
     static boolean leftMachineRange(IExpr value) {
-      return !(value instanceof org.matheclipse.core.expression.Num
-          || value instanceof org.matheclipse.core.expression.ComplexNum)
-          || isMachineOverflow(value);
-    }
-
-    /** Test if <code>value</code> is a machine number which isn't finite. */
-    static boolean isMachineOverflow(IExpr value) {
-      if (value instanceof org.matheclipse.core.expression.Num) {
-        return !Double.isFinite(((org.matheclipse.core.expression.Num) value).doubleValue());
-      }
-      if (value instanceof org.matheclipse.core.expression.ComplexNum) {
-        org.hipparchus.complex.Complex c =
-            ((org.matheclipse.core.expression.ComplexNum) value).complexValue();
-        return !Double.isFinite(c.getReal()) || !Double.isFinite(c.getImaginary());
-      }
-      return false;
+      return !value.isDoubleNumber() || value.isNonFiniteDoubleNumber();
     }
 
     /** The digits beyond machine precision a recurrence beyond the double range runs with. */

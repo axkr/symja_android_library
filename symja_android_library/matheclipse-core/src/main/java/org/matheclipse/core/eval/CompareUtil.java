@@ -373,7 +373,7 @@ public class CompareUtil {
   }
 
   private static boolean isPrecise(IExpr value) {
-    return value instanceof ApfloatNum || value instanceof IRational;
+    return value instanceof ApfloatNum || value.isRational();
   }
 
   private static final Set<ISymbol> LOGIC_EQUATION_HEADS =

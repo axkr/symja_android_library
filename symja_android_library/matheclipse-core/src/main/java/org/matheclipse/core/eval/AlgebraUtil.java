@@ -4929,7 +4929,7 @@ public class AlgebraUtil {
   private static boolean isFractionFree(IExpr expr) {
     if (expr.isAtom()) {
       // a Gaussian rational content is taken out like a rational one: (-1-I)/(3/5+I/5+x)
-      return expr.isSymbol() || expr.isInteger() || expr instanceof IComplex;
+      return expr.isSymbol() || expr.isInteger() || expr.isComplex();
     }
     if (expr.isPlus() || expr.isTimes()) {
       return ((IAST) expr).forAll(AlgebraUtil::isFractionFree);

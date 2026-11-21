@@ -1975,7 +1975,7 @@ public class SeriesFunctions {
      * <code>f(x)</code>.
      */
     private static boolean isUndefinedFunction(IExpr expr) {
-      return expr.isAST() && expr.head().isSymbol() && !(expr.head() instanceof IBuiltInSymbol);
+      return expr.isAST() && expr.head().isSymbol() && !expr.head().isBuiltInSymbol();
     }
 
     /**

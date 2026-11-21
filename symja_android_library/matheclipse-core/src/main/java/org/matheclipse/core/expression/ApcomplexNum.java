@@ -1588,6 +1588,11 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isArbitraryPrecisionNumber() {
+    return true;
+  }
+
+  @Override
   public int hierarchy() {
     return DOUBLECOMPLEXID;
   }
@@ -2521,7 +2526,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   private static boolean isMachine(final INumber operand) {
-    return operand instanceof Num || operand instanceof ComplexNum;
+    return operand.isDoubleNumber();
   }
 
   /** <code>z</code> with {@link ApfloatNum#MACHINE_ROUNDING_DIGITS} digits, taken as exact. */

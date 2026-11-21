@@ -7,8 +7,6 @@ import org.matheclipse.external.apfloat.ApfloatRiemannSiegelMath;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.external.apfloat.ApcomplexPolynomialMath;
@@ -157,7 +155,7 @@ public class EllipticIntegrals {
   private static int zeros(IExpr... args) {
     int count = 0;
     for (IExpr x : args) {
-      if (x instanceof Num || x instanceof ComplexNum) {
+      if (x.isDoubleNumber()) {
         INumber number = (INumber) x;
         if (number.reDoubleValue() == 0.0 && number.imDoubleValue() == 0.0) {
           count++;
@@ -1632,8 +1630,7 @@ public class EllipticIntegrals {
 
   /** Whether the numbers <code>z</code> and <code>q</code> ask for arbitrary precision. */
   private static boolean isArbitraryTheta(IExpr z, IExpr q, EvalEngine engine) {
-    return z instanceof ApfloatNum || z instanceof ApcomplexNum || q instanceof ApfloatNum
-        || q instanceof ApcomplexNum
+    return z.isArbitraryPrecisionNumber() || q.isArbitraryPrecisionNumber()
         || (engine.isArbitraryMode() && !z.isInexactNumber() && !q.isInexactNumber());
   }
 
@@ -2337,7 +2334,7 @@ public class EllipticIntegrals {
       if (!z.isNumber()) {
         return F.NIL;
       }
-      final boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
+      final boolean arbitrary = z.isArbitraryPrecisionNumber()
           || (engine.isArbitraryMode() && !z.isInexactNumber());
       if (!arbitrary && !z.isInexactNumber() && !engine.isDoubleMode()) {
         return F.NIL;
@@ -2384,8 +2381,7 @@ public class EllipticIntegrals {
     if (!z.isNumber() || !m.isNumber()) {
       return false;
     }
-    return z instanceof ApfloatNum || z instanceof ApcomplexNum || m instanceof ApfloatNum
-        || m instanceof ApcomplexNum
+    return z.isArbitraryPrecisionNumber() || m.isArbitraryPrecisionNumber()
         || (engine.isArbitraryMode() && !z.isInexactNumber() && !m.isInexactNumber());
   }
 
@@ -3192,7 +3188,7 @@ public class EllipticIntegrals {
       if (numericMode && t.isNumber()) {
         // through the fundamental domain, at machine precision or the precision of the engine
         EvalEngine engine = EvalEngine.get();
-        final boolean arbitrary = t instanceof ApfloatNum || t instanceof ApcomplexNum
+        final boolean arbitrary = t.isArbitraryPrecisionNumber()
             || (engine.isArbitraryMode() && !t.isInexactNumber());
         final int digits = WorkingPrecision.digits(arbitrary, engine);
         try {
@@ -3432,9 +3428,6 @@ public class EllipticIntegrals {
     }
   }
 
-  private static boolean isArbitrary(IExpr x) {
-    return x instanceof ApfloatNum || x instanceof ApcomplexNum;
-  }
 
   private static IAST weierstrassJacobiParameters(IExpr g2, IExpr g3) {
     if (g2.isZero() && g3.isZero()) {
@@ -3532,8 +3525,8 @@ public class EllipticIntegrals {
           g2 = g2.isNumber() ? g2 : engine.evalN(g2);
           g3 = g3.isNumber() ? g3 : engine.evalN(g3);
         }
-        if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
-            || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
+        if (u.isNumber() && g2.isNumber() && g3.isNumber() && (u.isArbitraryPrecisionNumber() || g2.isArbitraryPrecisionNumber()
+            || g3.isArbitraryPrecisionNumber() || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
           return weierstrassArbitrary(u, g2, g3, derivative, engine);
         }
         return (derivative ? weierstrassPPrime(u, g2, g3) : weierstrassP(u, g2, g3)).eval(engine);
@@ -3589,7 +3582,7 @@ public class EllipticIntegrals {
     private static final int REDUCTION_MULTIPLES = 4;
 
     private static boolean isMachineInput(IExpr u, IExpr g2, IExpr g3) {
-      if (isArbitrary(u) || isArbitrary(g2) || isArbitrary(g3)
+      if (u.isArbitraryPrecisionNumber() || g2.isArbitraryPrecisionNumber() || g3.isArbitraryPrecisionNumber()
           || EvalEngine.get().isArbitraryMode()) {
         // N(..., digits) numericizes a constant such as Pi first, then the arbitrary route applies
         return false;
@@ -3737,7 +3730,7 @@ public class EllipticIntegrals {
       if (!u.isNumber() || !g2.isNumber() || !g3.isNumber()) {
         return F.NIL;
       }
-      final boolean arbitrary = isArbitrary(u) || isArbitrary(g2) || isArbitrary(g3)
+      final boolean arbitrary = u.isArbitraryPrecisionNumber() || g2.isArbitraryPrecisionNumber() || g3.isArbitraryPrecisionNumber()
           || (engine.isArbitraryMode() && !u.isInexactNumber() && !g2.isInexactNumber()
               && !g3.isInexactNumber());
       if (!arbitrary && !engine.isDoubleMode() && !u.isInexactNumber() && !g2.isInexactNumber()

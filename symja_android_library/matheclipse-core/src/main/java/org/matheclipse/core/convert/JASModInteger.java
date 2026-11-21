@@ -12,7 +12,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.ISymbol;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.ExpVector;
@@ -145,13 +144,13 @@ public class JASModInteger {
           return monomial;
         }
       }
-    } else if (exprPoly instanceof ISymbol) {
+    } else if (exprPoly.isSymbol()) {
       int i = variableIndex(exprPoly);
       if (i >= 0) {
         return monomial(i, 1L);
       }
       // class cast exception
-    } else if (exprPoly instanceof IInteger) {
+    } else if (exprPoly.isInteger()) {
       return fPolyFactory
           .fromInteger((java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
     } else if (exprPoly instanceof IFraction) {
@@ -237,13 +236,13 @@ public class JASModInteger {
           return monomial;
         }
       }
-    } else if (exprPoly instanceof ISymbol) {
+    } else if (exprPoly.isSymbol()) {
       int i = variableIndex(exprPoly);
       if (i >= 0) {
         return monomial(i, 1L);
       }
       return new GenPolynomial(fPolyFactory, exprPoly);
-    } else if (exprPoly instanceof IInteger) {
+    } else if (exprPoly.isInteger()) {
       return fPolyFactory
           .fromInteger((java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
     } else if (exprPoly instanceof IFraction) {

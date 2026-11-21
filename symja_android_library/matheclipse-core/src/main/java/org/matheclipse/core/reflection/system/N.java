@@ -976,7 +976,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
           .valueOf(new Apcomplex(round(z.real(), precision), round(z.imag(), precision)));
     }
     if (result.isAST()) {
-      return result.replaceAll(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum
+      return result.replaceAll(x -> x.isArbitraryPrecisionNumber()
           ? toPrecision(x, precision)
           : F.NIL).orElse(result);
     }

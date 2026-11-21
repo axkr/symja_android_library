@@ -2205,13 +2205,13 @@ public class EvalEngine implements Serializable {
     while (first.isList() && !((IAST) first).isEmpty()) {
       first = ((IAST) first).arg1();
     }
-    if (!(first instanceof ApfloatNum || first instanceof ApcomplexNum)) {
+    if (!first.isArbitraryPrecisionNumber()) {
       return 0L;
     }
     long precision = 0L;
     for (int i = 1; i < list.size(); i++) {
       final IExpr element = list.get(i);
-      if (element instanceof ApfloatNum || element instanceof ApcomplexNum) {
+      if (element.isArbitraryPrecisionNumber()) {
         if (hasOwnPrecision(element)) {
           precision = Math.max(precision, element.determinePrecision(false));
         }
@@ -5365,7 +5365,7 @@ public class EvalEngine implements Serializable {
     final int from = i <= 8 ? 1 : i - 1;
     for (int j = from; j < i; j++) {
       IExpr y = ast.get(j);
-      if (y == symbol || (!y.isSymbol() && !(y instanceof IPatternObject) && y.isPresent()
+      if (y == symbol || (!y.isSymbolOrPattern() && y.isPresent()
           && y.topHead() == symbol)) {
         return true;
       }
@@ -6543,14 +6543,8 @@ public class EvalEngine implements Serializable {
     boolean machine = false;
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
-      if (arg instanceof Num) {
-        if (!Double.isFinite(((Num) arg).doubleValue())) {
-          return false;
-        }
-        machine = true;
-      } else if (arg instanceof ComplexNum) {
-        ComplexNum c = (ComplexNum) arg;
-        if (!Double.isFinite(c.reDoubleValue()) || !Double.isFinite(c.imDoubleValue())) {
+      if (arg.isDoubleNumber()) {
+        if (arg.isNonFiniteDoubleNumber()) {
           return false;
         }
         machine = true;
@@ -6572,7 +6566,7 @@ public class EvalEngine implements Serializable {
    *         below the one of a machine number and above one digit
    */
   private static double conditionedMachinePrecision(IAST ast, Apfloat value) {
-    if (value.signum() == 0 || !(ast.topHead() instanceof IBuiltInSymbol)) {
+    if (value.signum() == 0 || !ast.topHead().isBuiltInSymbol()) {
       return Double.NaN;
     }
     final double machineDigits = ApfloatNum.bitsToDigits(ApfloatNum.MACHINE_BITS);

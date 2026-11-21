@@ -345,7 +345,7 @@ public class StructureFunctions {
         BigInteger value = ((IInteger) atom).toBigNumerator();
         return OBJECT_HEADER + REFERENCE + Math.max(REFERENCE, (value.bitLength() + 7) / 8);
       }
-      if (atom instanceof ISymbol) {
+      if (atom.isSymbol()) {
         return OBJECT_HEADER + 2L * REFERENCE;
       }
       return OBJECT_HEADER + REFERENCE;

@@ -335,7 +335,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     // one argument's value and stays one, which is what keeps `With[{x = Sequence[a, b]}, …]` a
     // binding rather than a three-argument Set.
     IExpr replaced = ast.get(position);
-    return replaced.isSymbol() || replaced instanceof IPatternObject;
+    return replaced.isSymbolOrPattern();
   }
 
   /** The expression with every substituted <code>Sequence</code> spread into it. */

@@ -400,6 +400,11 @@ public class DateObjectExpr extends DataExpr<LocalDateTime> implements Externali
   }
 
   @Override
+  public boolean isDateOrTimeObject() {
+    return true;
+  }
+
+  @Override
   public int hierarchy() {
     return DATEOBJECTEXPRID;
   }

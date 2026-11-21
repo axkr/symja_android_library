@@ -1352,6 +1352,16 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isDoubleNumber() {
+    return true;
+  }
+
+  @Override
+  public boolean isNonFiniteDoubleNumber() {
+    return !Double.isFinite(fComplex.getReal()) || !Double.isFinite(fComplex.getImaginary());
+  }
+
+  @Override
   public int hierarchy() {
     return DOUBLECOMPLEXID;
   }
@@ -1972,7 +1982,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof ComplexNum || arg2 instanceof Num) {
+      if (arg2.isDoubleNumber()) {
         return plus(arg2).gamma().divide(gamma());
       }
       Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apcomplexValue(),

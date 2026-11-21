@@ -33,9 +33,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
-import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.form.NumberFormatter;
@@ -2156,8 +2154,7 @@ public class OutputFormFactory {
         // so the choice is about which is clearer, not about round tripping.
         final boolean relaxedApplication = fRelaxedSyntax //
             && (header instanceof InterpolatingFunctionExpr //
-                || header instanceof DateObjectExpr //
-                || header instanceof TimeObjectExpr);
+                || header.isDateOrTimeObject());
         // avoid fast StackOverflow
         append(buf, relaxedApplication ? "(" : "[");
         for (int i = 1; i < list.size(); i++) {
@@ -2527,7 +2524,7 @@ public class OutputFormFactory {
       }
     } else if (o.isQuantity()) {
       convertQuantityData(buf, (IAST) o, precedence);
-    } else if (o instanceof DateObjectExpr || o instanceof TimeObjectExpr) {
+    } else if (o.isDateOrTimeObject()) {
       // date and time objects are printed as DateObject(...) / TimeObject(...) expressions, so that
       // the numerical components use the same number formatting as everywhere else
       IAST fullForm = ((DataExpr) o).fullForm();

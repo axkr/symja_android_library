@@ -435,7 +435,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int front = 0;
     while (front < patternArgs) {
       IExpr temp = lhsPattern.get(front + 1);
-      if (!(temp instanceof IPatternObject) && temp.isFreeOfPatterns()) {
+      if (temp.isFreeOfPatterns()) {
         if (front < evalArgs && lhsEval.get(front + 1).equals(temp)) {
           front++;
           continue;
@@ -450,7 +450,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int eIndex = evalArgs;
     while (pIndex > front) {
       IExpr temp = lhsPattern.get(pIndex);
-      if (!(temp instanceof IPatternObject) && temp.isFreeOfPatterns()) {
+      if (temp.isFreeOfPatterns()) {
         if (eIndex > front && lhsEval.get(eIndex).equals(temp)) {
           pIndex--;
           eIndex--;
@@ -495,7 +495,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int jIndex = -1;
     while (iIndex < lhsPattern.size()) {
       IExpr temp = lhsPattern.get(iIndex);
-      if (!(temp instanceof IPatternObject) && temp.isFreeOfPatterns()) {
+      if (temp.isFreeOfPatterns()) {
         jIndex = lhsEval.indexOf(temp);
         if (jIndex > 0) {
           break;
@@ -511,7 +511,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       lhsEvalAST.remove(jIndex);
       while (iIndex < lhsPatternAST.size()) {
         final IExpr temp = lhsPatternAST.get(iIndex);
-        if (!(temp instanceof IPatternObject) && temp.isFreeOfPatterns()) {
+        if (temp.isFreeOfPatterns()) {
           int indx = lhsEvalAST.indexOf(temp);
           if (indx > 0) {
             lhsPatternAST.remove(iIndex);

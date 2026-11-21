@@ -7,7 +7,6 @@ import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.numerics.functions.BesselOrderDerivative;
@@ -413,10 +412,10 @@ public class Derivative extends AbstractFunctionEvaluator {
     if (!s.isNumber() || s.isOne() || (!s.isInexactNumber() && !engine.isNumericMode())) {
       return F.NIL;
     }
-    final boolean arbitrary = s instanceof ApfloatNum || s instanceof ApcomplexNum
+    final boolean arbitrary = s.isArbitraryPrecisionNumber()
         || (!s.isInexactNumber() && engine.isArbitraryMode());
     // an arbitrary precision argument outside of numeric mode brings its own precision
-    final long ownDigits = s instanceof ApfloatNum || s instanceof ApcomplexNum
+    final long ownDigits = s.isArbitraryPrecisionNumber()
         ? s.determinePrecision(false)
         : 0L;
     final int digits = !arbitrary ? (int) ParserConfig.MACHINE_PRECISION + 1

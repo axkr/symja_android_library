@@ -9,7 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /** Generate the horner scheme for univariate polynomials */
 public class HornerScheme {
@@ -153,7 +152,7 @@ public class HornerScheme {
           return;
         }
       }
-    } else if (expr instanceof ISymbol && expr.equals(sym)) {
+    } else if (expr.isSymbol() && expr.equals(sym)) {
       addToMap(one, one);
       return;
     }

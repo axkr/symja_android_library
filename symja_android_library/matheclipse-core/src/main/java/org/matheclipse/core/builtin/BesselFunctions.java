@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apcomplex;
@@ -2281,8 +2280,8 @@ public class BesselFunctions {
         || !(n.isInexactNumber() || z.isInexactNumber() || engine.isNumericMode())) {
       return F.NIL;
     }
-    final boolean arbitrary = n instanceof ApfloatNum || n instanceof ApcomplexNum
-        || z instanceof ApfloatNum || z instanceof ApcomplexNum
+    final boolean arbitrary = n.isArbitraryPrecisionNumber()
+        || z.isArbitraryPrecisionNumber()
         || (engine.isArbitraryMode() && !n.isInexactNumber() && !z.isInexactNumber());
     if (n instanceof Num && z instanceof Num) {
       // a large machine argument: the expansion which keeps the phase

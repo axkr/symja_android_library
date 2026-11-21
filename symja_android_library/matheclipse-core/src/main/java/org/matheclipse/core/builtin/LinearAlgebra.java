@@ -68,7 +68,6 @@ import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.eval.util.SymbolicDeterminant;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -3114,9 +3113,9 @@ public final class LinearAlgebra {
           if (!entry.isNumber()) {
             return null;
           }
-          if (entry instanceof Num || entry instanceof ComplexNum) {
+          if (entry.isDoubleNumber()) {
             machine = true;
-          } else if (entry instanceof ApfloatNum || entry instanceof ApcomplexNum) {
+          } else if (entry.isArbitraryPrecisionNumber()) {
             arbitrary = true;
           }
         }
@@ -6510,7 +6509,7 @@ public final class LinearAlgebra {
           if (machineNorm.isPresent()) {
             return machineNorm;
           }
-          if (vector.forAll(x -> x instanceof Num || x instanceof ComplexNum)) {
+          if (vector.forAll(x -> x.isDoubleNumber())) {
             // too large for a machine number: Power carries the squares over to arbitrary
             // precision
             return F.Sqrt(vector.map(S.Plus, x -> F.Power(x.abs(), F.C2)));

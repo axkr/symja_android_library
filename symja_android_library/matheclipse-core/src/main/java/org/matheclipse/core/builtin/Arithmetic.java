@@ -98,7 +98,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.interfaces.Attribute;
@@ -3837,7 +3836,7 @@ public final class Arithmetic {
         if (a.isNumber() && n.isNumber()) {
           if (a.isExactNumber() && n.isInexactNumber()) {
             // an exact first argument of any size, as the kind of inexact number the second one is
-            final boolean arbitrary = n instanceof ApfloatNum || n instanceof ApcomplexNum;
+            final boolean arbitrary = n.isArbitraryPrecisionNumber();
             final IExpr inexact;
             if (a.isReal()) {
               inexact = arbitrary ? ((IReal) a).apfloatNumValue()
@@ -5254,7 +5253,7 @@ public final class Arithmetic {
      * precision, <code>0.0</code> for a machine number.
      */
     private static IExpr underflowTimes(INumber factor) {
-      if (factor instanceof Num || factor instanceof ComplexNum) {
+      if (factor.isDoubleNumber()) {
         return F.CD0;
       }
       return factor.subtract(factor);
@@ -6467,9 +6466,8 @@ public final class Arithmetic {
      */
     private static double machinePrecision(IExpr expr) {
       // a literal with more digits than a machine number keeps the precision of its digits
-      return expr.has(x -> (x instanceof Num
-          && !(x instanceof NumStr && ((NumStr) x).precision() > ParserConfig.MACHINE_PRECISION))
-          || x instanceof ComplexNum, false) ? ParserConfig.MACHINE_PRECISION : Double.NaN;
+      return expr.has(x -> x.isMachineNumber(), false) ? ParserConfig.MACHINE_PRECISION
+          : Double.NaN;
     }
 
     @Override

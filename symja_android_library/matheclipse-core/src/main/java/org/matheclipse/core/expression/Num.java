@@ -1540,6 +1540,16 @@ public class Num implements INum {
   }
 
   @Override
+  public boolean isDoubleNumber() {
+    return true;
+  }
+
+  @Override
+  public boolean isNonFiniteDoubleNumber() {
+    return !Double.isFinite(value);
+  }
+
+  @Override
   public int hierarchy() {
     return DOUBLEID;
   }
@@ -2498,7 +2508,7 @@ public class Num implements INum {
             return F.num(machine);
           }
         }
-        if (arg2 instanceof ComplexNum || arg2 instanceof Num) {
+        if (arg2.isDoubleNumber()) {
           return plus(arg2).gamma().divide(gamma());
         }
         if (arg2 instanceof ApfloatNum) {

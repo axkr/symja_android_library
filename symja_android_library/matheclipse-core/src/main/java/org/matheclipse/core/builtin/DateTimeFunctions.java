@@ -1127,7 +1127,7 @@ public class DateTimeFunctions {
     int datePosition = -1;
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
-      if (arg instanceof DateObjectExpr || arg instanceof TimeObjectExpr) {
+      if (arg.isDateOrTimeObject()) {
         if (datePosition > 0) {
           return F.NIL;
         }
@@ -1205,17 +1205,13 @@ public class DateTimeFunctions {
     }
     IExpr first = ast.arg1();
     IExpr second = ast.arg2();
-    if (isDateOrTimeObject(first) && second.isString()) {
+    if (first.isDateOrTimeObject() && second.isString()) {
       return F.unaryAST1(first, second);
     }
-    if (isDateOrTimeObject(second) && first.isString()) {
+    if (second.isDateOrTimeObject() && first.isString()) {
       return F.unaryAST1(second, first);
     }
     return F.NIL;
-  }
-
-  private static boolean isDateOrTimeObject(IExpr expr) {
-    return expr instanceof DateObjectExpr || expr instanceof TimeObjectExpr;
   }
 
   /**

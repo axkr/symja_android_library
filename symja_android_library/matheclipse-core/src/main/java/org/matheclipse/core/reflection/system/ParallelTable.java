@@ -29,7 +29,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IPattern;
@@ -268,7 +267,7 @@ public class ParallelTable extends AbstractFunctionEvaluator {
 
     /** A symbol which can be assigned to, so that two threads must not share it. */
     private static boolean isUserSymbol(ISymbol symbol) {
-      return !(symbol instanceof IBuiltInSymbol) && symbol.getContext() != Context.SYSTEM
+      return !symbol.isBuiltInSymbol() && symbol.getContext() != Context.SYSTEM
           && !symbol.hasProtectedAttribute();
     }
 
@@ -360,7 +359,7 @@ public class ParallelTable extends AbstractFunctionEvaluator {
      * @return <code>expr</code> itself if nothing was replaced
      */
     private static IExpr rename(IExpr expr, Map<ISymbol, ISymbol> map) {
-      if (expr instanceof ISymbol) {
+      if (expr.isSymbol()) {
         ISymbol symbol = map.get(expr);
         return symbol == null ? expr : symbol;
       }

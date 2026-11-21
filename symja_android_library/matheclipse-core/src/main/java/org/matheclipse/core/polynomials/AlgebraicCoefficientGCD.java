@@ -527,7 +527,7 @@ public final class AlgebraicCoefficientGCD {
       atoms.add(c);
       return true;
     }
-    if (c instanceof IComplex) {
+    if (c.isComplex()) {
       atoms.add(F.CI);
       return true;
     }
@@ -545,7 +545,7 @@ public final class AlgebraicCoefficientGCD {
       if (exponent.isInteger()) {
         return collectAtoms(base, atoms, allowRoot);
       }
-      if (exponent.isFraction() && (base.isRational() || base instanceof IComplex)) {
+      if (exponent.isFraction() && (base.isRational() || base.isComplex())) {
         atoms.add(radicalAtom(base, (IRational) exponent));
         return true;
       }
