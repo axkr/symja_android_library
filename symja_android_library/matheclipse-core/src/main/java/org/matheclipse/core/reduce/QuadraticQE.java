@@ -599,18 +599,9 @@ public final class QuadraticQE {
     return expanded;
   }
 
+  /** A polynomial with rational coefficients in symbols which aren't built-in. */
   private static boolean isPolynomial(IExpr expr) {
-    if (expr.isRational() || expr.isSymbol() && !expr.isBuiltInSymbol()) {
-      return true;
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      return ((IAST) expr).forAll(QuadraticQE::isPolynomial);
-    }
-    if (expr.isPower()) {
-      return expr.exponent().isInteger() && expr.exponent().isPositive()
-          && isPolynomial(expr.base());
-    }
-    return false;
+    return expr.isPolynomialShape(x -> x.isRational() || x.isSymbol() && !x.isBuiltInSymbol());
   }
 
   private IExpr expand(IExpr expr) {

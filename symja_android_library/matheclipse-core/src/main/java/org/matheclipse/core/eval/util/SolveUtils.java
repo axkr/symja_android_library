@@ -164,8 +164,7 @@ public class SolveUtils {
 
   private static IExpr expandChainedEqual(IExpr expr) {
     if (expr.isAST(S.Equal) && expr.argSize() > 2) {
-      IAST chain = (IAST) expr;
-      return F.mapRange(S.And, 1, chain.argSize(), i -> F.Equal(chain.get(i), chain.get(i + 1)));
+      return ((IAST) expr).chainToAnd();
     }
     if (expr.isList() || expr.isAnd() || expr.isOr()) {
       IAST list = (IAST) expr;

@@ -3469,6 +3469,44 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is built from sums, products and positive integer powers of atoms which
+   * fulfill <code>atom</code>: the shape of a polynomial whose variables and coefficients are what
+   * <code>atom</code> accepts. A negative or a non-integer exponent, or any other function, isn't
+   * accepted.
+   *
+   * @param atom the test for the expressions which aren't a <code>Plus()</code>, a
+   *        <code>Times()</code> or a <code>Power()</code>
+   * @return <code>true</code> if this expression has the shape of a polynomial over the accepted
+   *         atoms
+   */
+  default boolean isPolynomialShape(Predicate<? super IExpr> atom) {
+    if (isPlus() || isTimes()) {
+      return ((IAST) this).forAll(x -> x.isPolynomialShape(atom));
+    }
+    if (isPower()) {
+      return exponent().isInteger() && exponent().isPositive() && base().isPolynomialShape(atom);
+    }
+    return atom.test(this);
+  }
+
+  /**
+   * Split this expression into the product of its factors which are free of <code>variable</code>
+   * and the product of the other factors. An expression which isn't a <code>Times()</code> is a
+   * single factor.
+   *
+   * @param variable the variable (or any pattern) the factors are tested against with
+   *        {@link #isFree(IExpr, boolean)}, heads included
+   * @return <code>{free, rest}</code>; either is <code>1</code> if it has no factors
+   */
+  default IExpr[] splitFreeFactors(IExpr variable) {
+    if (isTimes()) {
+      IASTAppendable[] parts = ((IAST) this).filter(factor -> factor.isFree(variable, true));
+      return new IExpr[] {parts[0].oneIdentity1(), parts[1].oneIdentity1()};
+    }
+    return isFree(variable, true) ? new IExpr[] {this, F.C1} : new IExpr[] {F.C1, this};
+  }
+
+  /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, did not match the given pattern.
    *

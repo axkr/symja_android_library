@@ -7088,11 +7088,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       // Handle chained comparators like Less(0, x, 2)
       else if (ast.isComparatorFunction() && ast.argSize() > 2) {
-        IASTAppendable andAST = F.AndAlloc(ast.argSize());
-        for (int i = 1; i < ast.size() - 1; i++) {
-          andAST.append(F.binaryAST2(ast.head(), ast.get(i), ast.get(i + 1)));
-        }
-        return andAST;
+        return ast.chainToAnd();
       }
       // Recursively process logical wrappers
       else if (ast.isFunctionID(ID.And, ID.Or, ID.Not, ID.List)) {

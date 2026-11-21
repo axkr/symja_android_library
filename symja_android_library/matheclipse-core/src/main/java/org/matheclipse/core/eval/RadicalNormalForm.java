@@ -219,21 +219,10 @@ public final class RadicalNormalForm {
     return atom(expr);
   }
 
+  /** A polynomial with rational coefficients in symbols which aren't radicals of this form. */
   private boolean isPolynomial(IExpr expr) {
-    if (expr.isRational()) {
-      return true;
-    }
-    if (expr.isSymbol()) {
-      return !radicandOf.containsKey(expr);
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      return ((IAST) expr).forAll(this::isPolynomial);
-    }
-    if (expr.isPower()) {
-      return expr.exponent().isInteger() && expr.exponent().isPositive()
-          && isPolynomial(expr.base());
-    }
-    return false;
+    return expr.isPolynomialShape(
+        x -> x.isRational() || x.isSymbol() && !radicandOf.containsKey(x));
   }
 
   private ISymbol radical(IExpr radicand, IExpr originalRadicand) {

@@ -513,29 +513,15 @@ public class PolynomialHomogenization {
         IInteger base = (IInteger) expr.base();
         long value = base.toLongDefault();
         if (F.isPresent(value) && value > 1 && !baseToRoot.containsKey(base)) {
-          long[] rootAndPower = perfectPower(value);
+          IInteger[] power = base.perfectPower();
+          long[] rootAndPower = power == null ? new long[] {value, 1}
+              : new long[] {power[0].toLong(), power[1].toLong()};
           baseToRoot.put(base, rootAndPower);
           rootToBases.computeIfAbsent(F.ZZ(rootAndPower[0]), k -> new HashSet<>()).add(base);
         }
       }
       ((IAST) expr).forEach(x -> collectIntegerBases(x, rootToBases, baseToRoot));
     }
-  }
-
-  /**
-   * @return <code>{r, k}</code> with <code>value == r^k</code> and the largest possible
-   *         <code>k</code>
-   */
-  private static long[] perfectPower(long value) {
-    for (int k = 62; k > 1; k--) {
-      long estimate = Math.round(Math.pow(value, 1.0 / k));
-      for (long root = Math.max(2, estimate - 1); root <= estimate + 1; root++) {
-        if (F.ZZ(root).powerRational(k).equals(F.ZZ(value))) {
-          return new long[] {root, k};
-        }
-      }
-    }
-    return new long[] {value, 1};
   }
 
   /**

@@ -146,12 +146,7 @@ public final class ResidueIntegration {
       return F.subst(expr, t -> {
         if (t.isAST() && t.argSize() > 2 && (t.isAST(S.Less) || t.isAST(S.LessEqual)
             || t.isAST(S.Greater) || t.isAST(S.GreaterEqual))) {
-          IAST chain = (IAST) t;
-          IASTAppendable and = F.ast(S.And, chain.argSize());
-          for (int i = 1; i < chain.argSize(); i++) {
-            and.append(F.binaryAST2(chain.head(), chain.get(i), chain.get(i + 1)));
-          }
-          return and;
+          return ((IAST) t).chainToAnd();
         }
         return F.NIL;
       });

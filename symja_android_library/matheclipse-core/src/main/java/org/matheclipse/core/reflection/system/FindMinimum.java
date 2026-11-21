@@ -424,8 +424,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       if (chain.argSize() < 2) {
         return false;
       }
-      for (int i = 1; i < chain.argSize(); i++) {
-        relations.add(F.binaryAST2(chain.head(), chain.get(i), chain.get(i + 1)));
+      for (IExpr link : chain.chainToAnd()) {
+        relations.add(link);
       }
       return true;
     }

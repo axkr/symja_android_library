@@ -624,43 +624,6 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
-   * Split a positive integer into <code>base^exponent</code> with the largest possible exponent,
-   * e.g. <code>16</code> into <code>2^4</code> and <code>1296</code> into <code>6^4</code>.
-   *
-   * @param expr the candidate integer
-   * @return <code>{base, exponent}</code>, or <code>null</code> if <code>expr</code> is not an
-   *         integer perfect power
-   */
-  private IInteger[] perfectPower(IExpr expr) {
-    if (!expr.isInteger() || !expr.isPositive() || expr.isOne()) {
-      return null;
-    }
-    IInteger n = (IInteger) expr;
-    IExpr factors = eval(F.FactorInteger(n));
-    if (!factors.isList()) {
-      return null;
-    }
-    IAST list = (IAST) factors;
-    IInteger exponent = null;
-    for (int i = 1; i < list.size(); i++) {
-      IExpr pair = list.get(i);
-      if (!pair.isList2() || !pair.second().isInteger()) {
-        return null;
-      }
-      IInteger e = (IInteger) pair.second();
-      exponent = (exponent == null) ? e : exponent.gcd(e);
-    }
-    if (exponent == null || exponent.isOne()) {
-      return null;
-    }
-    IExpr root = S.Power.of(n, F.Divide(F.C1, exponent));
-    if (!root.isInteger()) {
-      return null;
-    }
-    return new IInteger[] {(IInteger) root, exponent};
-  }
-
-  /**
    * Test whether the given denominators share no factor, so that putting each group over its own
    * denominator does not throw away a cancellation.
    *
@@ -1069,7 +1032,8 @@ public class SimplifyUtil extends VisitorExpr {
       // A summand may already have absorbed its factor: the children of the sum are simplified
       // first, and 4*Log(2) collapses to the cheaper Log(16) before this runs. Split such an
       // argument back into base^exponent so that Log(16) counts as 4*Log(2) again.
-      IInteger[] power = perfectPower(arguments[i]);
+      IInteger[] power =
+          arguments[i].isInteger() ? ((IInteger) arguments[i]).perfectPower() : null;
       if (power != null) {
         coefficients[i] = coefficients[i].multiply(power[1]);
         arguments[i] = power[0];

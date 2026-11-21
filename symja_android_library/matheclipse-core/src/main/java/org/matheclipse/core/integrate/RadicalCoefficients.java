@@ -91,19 +91,9 @@ public class RadicalCoefficients {
     Map<IExpr, IASTAppendable> groups = new LinkedHashMap<>();
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr term = plusAST.get(i);
-      IExpr coefficient = F.C1;
-      IExpr rest = term;
-      if (term.isTimes()) {
-        IAST times = (IAST) term;
-        IASTAppendable free = F.TimesAlloc(times.size());
-        IASTAppendable nonfree = F.TimesAlloc(times.size());
-        times.filter(free, nonfree, factor -> factor.isFree(x, true));
-        coefficient = free.oneIdentity1();
-        rest = nonfree.oneIdentity1();
-      } else if (term.isFree(x, true)) {
-        coefficient = term;
-        rest = F.C1;
-      }
+      IExpr[] split = term.splitFreeFactors(x);
+      IExpr coefficient = split[0];
+      IExpr rest = split[1];
       groups.computeIfAbsent(rest, key -> F.PlusAlloc(4)).append(coefficient);
     }
     boolean collectable = false;

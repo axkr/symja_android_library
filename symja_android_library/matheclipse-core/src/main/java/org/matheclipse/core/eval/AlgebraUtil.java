@@ -3991,7 +3991,7 @@ public class AlgebraUtil {
     }
     Map<IExpr, IASTAppendable> coefficients = new LinkedHashMap<IExpr, IASTAppendable>();
     for (IExpr term : (IAST) decomposition) {
-      IExpr[] split = splitFreeFactors(term, variable);
+      IExpr[] split = term.splitFreeFactors(variable);
       coefficients.computeIfAbsent(split[1], k -> F.PlusAlloc(4)).append(split[0]);
     }
     IASTAppendable result = F.PlusAlloc(coefficients.size());
@@ -4002,20 +4002,6 @@ public class AlgebraUtil {
       }
     }
     return engine.evaluate(result.oneIdentity0());
-  }
-
-  /**
-   * <code>{coefficient, part}</code> of a term: the product of its factors which are free of the
-   * variable and the product of the others.
-   */
-  private static IExpr[] splitFreeFactors(IExpr term, IExpr variable) {
-    if (term.isTimes()) {
-      IASTAppendable free = F.TimesAlloc(term.argSize());
-      IASTAppendable rest = F.TimesAlloc(term.argSize());
-      ((IAST) term).filter(free, rest, f -> f.isFree(variable));
-      return new IExpr[] {free.oneIdentity1(), rest.oneIdentity1()};
-    }
-    return term.isFree(variable) ? new IExpr[] {term, F.C1} : new IExpr[] {F.C1, term};
   }
 
   /**
@@ -4117,7 +4103,7 @@ public class AlgebraUtil {
         IExpr denominator = fraction.get()[1];
         if (denominator.isTimes()) {
           // the factors without the variable belong to the coefficients
-          IExpr[] factors = splitFreeFactors(denominator, variable);
+          IExpr[] factors = denominator.splitFreeFactors(variable);
           numerator = engine.evaluate(F.Divide(numerator, factors[0]));
           denominator = factors[1];
         }
@@ -4711,7 +4697,8 @@ public class AlgebraUtil {
     }
     final IExpr numerator = fraction.get()[0];
     final IExpr denominator = fraction.get()[1];
-    if (denominator.isNumber() || !isFractionFree(numerator) || !isFractionFree(denominator)) {
+    if (denominator.isNumber() || !numerator.isPolynomialShape(FRACTION_FREE_ATOM)
+        || !denominator.isPolynomialShape(FRACTION_FREE_ATOM)) {
       return F.NIL;
     }
     IASTAppendable result = F.TimesAlloc(8);
@@ -4925,18 +4912,13 @@ public class AlgebraUtil {
     return 1;
   }
 
-  /** No negative power and nothing but sums, products and positive integer powers of atoms. */
-  private static boolean isFractionFree(IExpr expr) {
-    if (expr.isAtom()) {
-      // a Gaussian rational content is taken out like a rational one: (-1-I)/(3/5+I/5+x)
-      return expr.isSymbol() || expr.isInteger() || expr.isComplex();
-    }
-    if (expr.isPlus() || expr.isTimes()) {
-      return ((IAST) expr).forAll(AlgebraUtil::isFractionFree);
-    }
-    return expr.isPower() && expr.exponent().isInteger() && expr.exponent().isPositive()
-        && isFractionFree(expr.base());
-  }
+  /**
+   * The atoms of a fraction free expression: no negative power and nothing but sums, products and
+   * positive integer powers of these. A Gaussian rational content is taken out like a rational one:
+   * <code>(-1-I)/(3/5+I/5+x)</code>.
+   */
+  private static final Predicate<IExpr> FRACTION_FREE_ATOM =
+      x -> x.isSymbol() || x.isInteger() || x.isComplex();
 
   /**
    * Calls <code>Together</code> for each argument of the <code>ast</code>.

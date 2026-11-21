@@ -2007,9 +2007,8 @@ public class MinMaxFunctions {
       } else if (constraints.argSize() > 2 && (constraints.isAST(S.Less)
           || constraints.isAST(S.LessEqual) || constraints.isAST(S.Greater)
           || constraints.isAST(S.GreaterEqual) || constraints.isAST(S.Equal))) {
-        IAST chain = (IAST) constraints;
-        for (int i = 1; i < chain.argSize(); i++) {
-          conjuncts.add(F.binaryAST2(chain.head(), chain.get(i), chain.get(i + 1)));
+        for (IExpr link : ((IAST) constraints).chainToAnd()) {
+          conjuncts.add(link);
         }
       } else {
         conjuncts.add(constraints);

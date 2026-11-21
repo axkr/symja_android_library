@@ -970,6 +970,22 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IASTAppendable[] filter(Predicate<? super IExpr> predicate);
 
   /**
+   * The links of a chained relation: <code>head(a1, a2, ..., an)</code> as
+   * <code>And(head(a1, a2), head(a2, a3), ..., head(an-1, an))</code>. The caller decides which
+   * heads are chains; <code>Less(0, x, 2)</code> gives <code>0 &lt; x &amp;&amp; x &lt; 2</code>.
+   *
+   * @return the conjunction of the binary relations of neighbouring arguments; empty for less than
+   *         two arguments
+   */
+  default IASTAppendable chainToAnd() {
+    IASTAppendable and = F.AndAlloc(argSize());
+    for (int i = 1; i < argSize(); i++) {
+      and.append(F.binaryAST2(head(), get(i), get(i + 1)));
+    }
+    return and;
+  }
+
+  /**
    * Select all elements by applying the <code>function</code> to each argument in this <code>AST
    * </code> and append the result elements for which the function returns non <code>F.NIL</code>
    * elements to the <code>0th element</code> of the result array, or otherwise append it to the

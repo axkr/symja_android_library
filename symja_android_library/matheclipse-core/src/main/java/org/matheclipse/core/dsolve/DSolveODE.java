@@ -720,9 +720,9 @@ final class DSolveODE {
         rest.append(term);
         continue;
       }
-      IExpr[] split = splitYFree(term, y);
-      IExpr carried = split[0];
-      IExpr coefficient = split[1];
+      IExpr[] split = term.splitFreeFactors(y);
+      IExpr carried = split[1];
+      IExpr coefficient = split[0];
       if (carried.isLog()) {
         if (logCoefficient.isPresent() || !isLinearIn(carried.first(), y, engine)) {
           return null;
@@ -830,29 +830,6 @@ final class DSolveODE {
     return a;
   }
 
-  /**
-   * Splits a product into the factors that contain <code>y</code> and the <code>y</code>-free
-   * coefficient.
-   *
-   * @return <code>{carried, coefficient}</code>
-   */
-  private static IExpr[] splitYFree(IExpr term, IExpr y) {
-    if (!term.isTimes()) {
-      return new IExpr[] {term, F.C1};
-    }
-    IAST factors = (IAST) term;
-    IASTAppendable carrying = F.TimesAlloc(factors.argSize());
-    IASTAppendable coefficients = F.TimesAlloc(factors.argSize());
-    for (int k = 1; k <= factors.argSize(); k++) {
-      if (factors.get(k).isFree(y, true)) {
-        coefficients.append(factors.get(k));
-      } else {
-        carrying.append(factors.get(k));
-      }
-    }
-    return new IExpr[] {carrying.oneIdentity1(), coefficients.oneIdentity1()};
-  }
-
   private static int exponentiationPower(IExpr gyExpr, IExpr y) {
     boolean anyLogarithm = false;
     long power = 1;
@@ -862,9 +839,9 @@ final class DSolveODE {
       if (term.isFree(y, true)) {
         continue;
       }
-      IExpr[] split = splitYFree(term, y);
-      IExpr carried = split[0];
-      IExpr coefficient = split[1];
+      IExpr[] split = term.splitFreeFactors(y);
+      IExpr carried = split[1];
+      IExpr coefficient = split[0];
       if (carried.equals(y)) {
         continue;
       }

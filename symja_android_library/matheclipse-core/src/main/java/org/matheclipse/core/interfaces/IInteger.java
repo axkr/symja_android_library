@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
+import org.matheclipse.core.numbertheory.Primality;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
@@ -101,6 +102,26 @@ public interface IInteger extends IRational {
    * @throws ArithmeticException if <code>(that)</code> is zero.
    */
   public IInteger div(final IInteger that);
+
+  /**
+   * Write this integer as <code>base^exponent</code> with the largest possible exponent, e.g.
+   * <code>16</code> as <code>2^4</code> and <code>1296</code> as <code>6^4</code>. No factorization
+   * is needed.
+   *
+   * @return <code>{base, exponent}</code> with <code>exponent &gt;= 2</code>, or <code>null</code>
+   *         if this integer is less than <code>2</code> or not a perfect power
+   */
+  default IInteger[] perfectPower() {
+    BigInteger value = toBigNumerator();
+    if (value.compareTo(BigInteger.TWO) < 0) {
+      return null;
+    }
+    BigInteger[] rootAndExponent = Primality.perfectPower(value, 2);
+    if (rootAndExponent[1].equals(BigInteger.ONE)) {
+      return null;
+    }
+    return new IInteger[] {F.ZZ(rootAndExponent[0]), F.ZZ(rootAndExponent[1])};
+  }
 
   default IInteger div(final int that) {
     if (that == 1) {
