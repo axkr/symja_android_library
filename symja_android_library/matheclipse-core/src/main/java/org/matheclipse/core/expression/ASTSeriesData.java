@@ -2439,7 +2439,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       if (coefficientMap.equals(that.coefficientMap)) {
         return true;
       }
-      for (int i = minExponent; i < exponentBound; i++) {
+      // the longer of the two coefficient ranges: 1+O(x)^4 isn't 1+x+O(x)^4
+      final int bound = Math.max(exponentBound, that.exponentBound);
+      for (int i = minExponent; i < bound; i++) {
         if (!coefficient(i).equals(that.coefficient(i))) {
           return false;
         }
@@ -2524,11 +2526,17 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   @Override
   public int hashCode() {
     if (hashValue == 0 && expansionPoint != null) {
+      // like equals(): the nonzero coefficients only, a stored 0 is the same as a missing one
+      int hash = expansionPoint.hashCode() + 31 * truncateOrder;
       if (coefficientMap != null) {
-        hashValue = expansionPoint.hashCode() + truncateOrder * coefficientMap.hashCode();
-      } else {
-        hashValue = expansionPoint.hashCode() + truncateOrder;
+        for (int i = minExponent; i < exponentBound; i++) {
+          IExpr coefficient = coefficient(i);
+          if (!coefficient.isZero()) {
+            hash = 31 * hash + (i ^ coefficient.hashCode());
+          }
+        }
       }
+      hashValue = hash;
     }
     return hashValue;
   }

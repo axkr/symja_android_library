@@ -495,4 +495,20 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "Chop(N((Product((i^2+1)/(i^2+4), {i, 1, n}) /. n -> 5) / Product((i^2+1)/(i^2+4), {i, 1, 5}) - 1))", //
         "0");
   }
+
+  @Test
+  public void testFactorWithPredicateOverNumericRange() {
+    // the factor is evaluated for each value of the iterator, not once with a symbolic one, for
+    // which EvenQ(k) is False
+    check("Product(If(EvenQ(k), 5, 7), {k, 1, 5})", //
+        "8575");
+    check("Product(If(EvenQ(k), 5, 7), {k, 1, 2}, {m, 1, 3})", //
+        "42875");
+    check("w = {3, 4, 4}; Product(If(EvenQ(w[[k]]), z, 2), {k, 1, Length(w)})", //
+        "2*z^2");
+    // the factors of a product over numbers are multiplied out, not split and simplified
+    check("Product((1 + z^k)^3/(1 - z^(3*k))^2, {k, 1, 12}) === "
+        + "Times @@ Table((1 + z^k)^3/(1 - z^(3*k))^2, {k, 1, 12})", //
+        "True");
+  }
 }

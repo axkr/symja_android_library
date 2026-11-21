@@ -72,6 +72,12 @@ public class Product extends ListFunctions.Table implements ProductRules {
     if (numericProduct.isPresent()) {
       return numericProduct;
     }
+    if (Sum.isTermByTerm(ast, engine)) {
+      // the factor isn't evaluated with symbolic iterator variables: OddQ(i) would be False for
+      // each i of Product(If(OddQ(i),2,3), {i,1,4})
+      IExpr factors = evaluateTableThrow(ast, Times(), Times(), engine);
+      return factors.isPresent() ? factors : F.NIL;
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isList()) {
       // Product({f,g},{i,1,n}) is the list of the two products
@@ -97,10 +103,13 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return telescoping;
       }
     }
-    // the products of the factors of an infinite product may diverge, while their product doesn't
+    // the products of the factors of an infinite product may diverge, while their product doesn't;
+    // over numeric bounds the factors are multiplied out, splitting and simplifying their products
+    // only costs time: Product((1+x^k)^10/(1-x^(4*k-2))^4, {k,1,20})
     final boolean infiniteRange = ast.last().isList() && ast.last().argSize() >= 3
         && (ast.last().last().isInfinity() || ast.last().second().isNegativeInfinity());
-    if (arg1.isTimes() && !infiniteRange && !isLinearIn(arg1, ast.last(), engine)) {
+    if (arg1.isTimes() && !infiniteRange && !Sum.hasNumericIterators(ast)
+        && !isLinearIn(arg1, ast.last(), engine)) {
       IExpr resultTimes = engine.evaluate(arg1.mapThread(ast, 1));
       if (resultTimes.isTimes()) {
         return factorialsToGamma(engine.evaluate(F.FullSimplify(resultTimes)), engine);

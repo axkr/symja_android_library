@@ -4108,6 +4108,10 @@ public final class Arithmetic {
             }
           } else if (base instanceof ASTSeriesData) {
             int exp = exponent.toIntDefault();
+            if (exp == 0 && exponent.isInteger()) {
+              // the exact 1, not the series 1+O(x)^n; a machine 0.0 isn't an exact exponent
+              return F.C1;
+            }
             if (F.isPresent(exp)) {
               return ((ASTSeriesData) base).powerSeries(exp);
             }

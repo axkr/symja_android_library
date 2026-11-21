@@ -542,7 +542,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * with real bounds, or <code>{i, {i1, i2, ...}}</code>. The bounds of an inner iterator may
    * depend on the variables of the outer iterators: <code>Sum(f(i,j), {i,1,3}, {j,1,i})</code>.
    */
-  private static boolean hasNumericIterators(IAST ast) {
+  static boolean hasNumericIterators(IAST ast) {
     final IASTAppendable outerVariables = F.ListAlloc(ast.argSize());
     for (int i = 2; i < ast.size(); i++) {
       IExpr iterator = ast.get(i);
@@ -573,6 +573,132 @@ public class Sum extends ListFunctions.Table implements SumRules {
       outerVariables.append(list.arg1());
     }
     return true;
+  }
+
+  /**
+   * Test if a sum or product over numeric iterators is evaluated term by term, with the iterator
+   * variables set, and never with symbolic iterator variables: its summand decides on the form of
+   * its arguments. A predicate like <code>OddQ(i)</code> is <code>False</code> for a symbolic
+   * <code>i</code>, and <code>Numerator(i/2)</code> is <code>i</code>; such a summand is always
+   * evaluated term by term. The rules of a user-defined function may match a symbolic argument
+   * differently from a number, or never end for it; such a summand is evaluated term by term if the
+   * range has at most {@link #MAX_TERM_BY_TERM} terms.
+   *
+   * @param ast <code>Sum(f, iter1, ...)</code> or <code>Product(f, iter1, ...)</code>
+   */
+  static boolean isTermByTerm(IAST ast, EvalEngine engine) {
+    if (ast.size() <= 2 || !hasNumericIterators(ast)) {
+      return false;
+    }
+    final IExpr summand = ast.arg1();
+    if (!summand.isFree(Sum::isStructuralCall, false)) {
+      // evaluated with symbolic iterator variables the result is wrong, a long range is slow
+      return true;
+    }
+    // the rules of a user-defined function are mostly fine for symbolic arguments, and a long range
+    // keeps its closed form: f(x_):=x^2; Sum(f(i)*j, {i,1,10^6}, {j,1,10^6})
+    return !summand.isFree(Sum::isUserFunctionCall, false)
+        && termCount(ast, engine) <= MAX_TERM_BY_TERM;
+  }
+
+  /**
+   * The built-in functions, apart from the predicates whose name ends with <code>Q</code>, whose
+   * value for a symbol is not their value at the numbers: <code>Numerator(k/2)</code> is
+   * <code>k</code>, <code>Numerator(1/2)</code> is <code>1</code>.
+   */
+  private static final java.util.Set<ISymbol> STRUCTURAL_FUNCTIONS =
+      java.util.Set.of(S.Switch, S.Numerator, S.Denominator, S.NumeratorDenominator, S.Head,
+          S.Exponent, S.Part, S.Depth, S.LeafCount, S.Variables);
+
+  /** Most terms of a sum or product with a user-defined function evaluated one by one. */
+  private static final long MAX_TERM_BY_TERM = 100_000L;
+
+  /** Test if <code>x</code> calls a structural predicate or function. */
+  private static boolean isStructuralCall(IExpr x) {
+    if (!x.isAST() || !x.head().isBuiltInSymbol()) {
+      return false;
+    }
+    ISymbol head = (ISymbol) x.head();
+    // the symbol name is lower case with the relaxed syntax
+    String name = head.getSymbolName();
+    return STRUCTURAL_FUNCTIONS.contains(head)
+        || (name.length() > 1 && Character.toUpperCase(name.charAt(name.length() - 1)) == 'Q');
+  }
+
+  /** Test if <code>x</code> calls a symbol which has user-defined rules. */
+  private static boolean isUserFunctionCall(IExpr x) {
+    return x.isAST() && x.head().isSymbol() && !x.head().isBuiltInSymbol()
+        && ((ISymbol) x.head()).getRulesData() != null;
+  }
+
+  /**
+   * Estimate the number of terms of <code>Sum(f, iter1, iter2, ...)</code> over numeric iterators:
+   * a bound which depends on an outer iterator variable is taken at the smallest and the largest
+   * value of that variable.
+   *
+   * @return the estimate, or {@link Long#MAX_VALUE} if a range can't be counted
+   */
+  private static long termCount(IAST ast, EvalEngine engine) {
+    // the smallest and the largest value of each outer iterator variable
+    java.util.Map<IExpr, IExpr> lowest = new java.util.HashMap<>();
+    java.util.Map<IExpr, IExpr> highest = new java.util.HashMap<>();
+    long count = 1L;
+    for (int i = 2; i < ast.size(); i++) {
+      IAST iterator = (IAST) ast.get(i);
+      IExpr variable = iterator.arg1();
+      long n;
+      if (iterator.isAST2() && iterator.arg2().isList()) {
+        n = iterator.arg2().argSize();
+      } else {
+        IExpr from = iterator.argSize() == 2 ? F.C1 : iterator.arg2();
+        IExpr to = iterator.argSize() == 2 ? iterator.arg2() : iterator.arg3();
+        IExpr step = iterator.argSize() == 4 ? iterator.arg4() : F.C1;
+        double[] fromRange = boundRange(from, lowest, highest, engine);
+        double[] toRange = boundRange(to, lowest, highest, engine);
+        double[] stepRange = boundRange(step, lowest, highest, engine);
+        if (fromRange == null || toRange == null || stepRange == null || stepRange[0] <= 0.0) {
+          return Long.MAX_VALUE;
+        }
+        double terms = Math.floor((toRange[1] - fromRange[0]) / stepRange[0]) + 1.0;
+        if (terms > MAX_TERM_BY_TERM) {
+          return Long.MAX_VALUE;
+        }
+        n = Math.max(0L, (long) terms);
+        if (variable.isSymbol()) {
+          lowest.put(variable, F.num(fromRange[0]));
+          highest.put(variable, F.num(toRange[1]));
+        }
+      }
+      count *= Math.max(n, 1L);
+      if (count > MAX_TERM_BY_TERM) {
+        return Long.MAX_VALUE;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * The smallest and largest value of an iterator bound, with the outer iterator variables set to
+   * their smallest and to their largest values.
+   *
+   * @return <code>{min, max}</code> or <code>null</code> if the bound is no real number
+   */
+  private static double[] boundRange(IExpr bound, java.util.Map<IExpr, IExpr> lowest,
+      java.util.Map<IExpr, IExpr> highest, EvalEngine engine) {
+    double[] range = null;
+    for (java.util.Map<IExpr, IExpr> values : java.util.List.of(lowest, highest)) {
+      IExpr value = engine.evalQuiet(F.N(values.isEmpty() ? bound : F.subst(bound, values)));
+      if (!value.isReal()) {
+        return null;
+      }
+      double d = ((org.matheclipse.core.interfaces.IReal) value).doubleValue();
+      if (Double.isNaN(d) || Double.isInfinite(d)) {
+        return null;
+      }
+      range = range == null ? new double[] {d, d}
+          : new double[] {Math.min(range[0], d), Math.max(range[1], d)};
+    }
+    return range;
   }
 
   /**
@@ -761,6 +887,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
         if (preevaledSum.argSize() > 2) {
+          if (isTermByTerm(preevaledSum, engine)) {
+            // the innermost sum isn't reduced with symbolic outer variables: OddQ(i) would be False
+            // for each i, and a recursive h(m_,n_):=Sum(h(i,j),{i,1,m-1},{j,1,n-1}) never ends
+            IExpr terms = evaluateTableThrow(preevaledSum, Plus(), Plus(), engine);
+            return terms.isPresent() ? terms : F.NIL;
+          }
           // Multiple iterators: reduce the innermost sum with the full engine, not just with the
           // rule table, and splice the result back. Only a closed form is spliced; a partially
           // evaluated sum, or a DifferenceRoot recurrence, would be pushed into the outer iterator

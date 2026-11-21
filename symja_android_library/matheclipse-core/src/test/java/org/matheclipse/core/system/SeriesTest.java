@@ -55,8 +55,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
     check("s2 = Series(Sin(x), {x, 0, 10})", //
         "x-x^3/6+x^5/120-x^7/5040+x^9/362880+O(x)^11");
+    // a series to the power 0 is the exact 1
     check("s2^0", //
-        "1+O(x)^11");
+        "1");
     check("s1 = Series(Exp(x), {x, 0, 10})", //
         "1+x+x^2/2+x^3/6+x^4/24+x^5/120+x^6/720+x^7/5040+x^8/40320+x^9/362880+x^10/\n"
             + "3628800+O(x)^11");
@@ -2548,5 +2549,21 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(z,0,List(1),3,4,1)");
     check("FullForm(Series(Cos(2*z), {z, 0, 1}))", //
         "SeriesData(z,0,List(1),0,2,1)");
+  }
+
+  @Test
+  public void testSeriesTimesShorterSeries() {
+    // a series with fewer coefficients isn't taken for the other factor, so it isn't squared
+    check("(1 + O(z)^5)*(2 + 3*z + z^2 + 5*z^4 + O(z)^5)", //
+        "2+3*z+z^2+5*z^4+O(z)^5");
+    check("(3 + z^2 + O(z)^5)^0", //
+        "1");
+    // a machine zero isn't an exact exponent
+    check("(3 + z^2 + O(z)^5)^0.0", //
+        "1+O(z)^5");
+    check("(3 + z^2 + O(z)^5)^0*(1 - z + z^3 + O(z)^5)", //
+        "1-z+z^3+O(z)^5");
+    check("(1 + O(z)^5)*(1 + O(z)^5)*(1 + 2*z + O(z)^5)", //
+        "1+2*z+O(z)^5");
   }
 }

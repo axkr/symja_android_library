@@ -949,4 +949,47 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(z^i, {i, 0, n})", //
         "(-1+z^(1+n))/(-1+z)");
   }
+
+  @Test
+  public void testRecursiveDefinitionOverSeveralIterators() {
+    // the inner sum is evaluated with the outer variable set, not with a symbolic one, which would
+    // match the general rule and recurse without end
+    check("h(_, 1) = 1; h(1, _) = 1; " //
+        + "h(m_, n_) := h(m, n) = Sum(h(i, j), {i, 1, m - 1}, {j, 1, n - 1}) + m; h(4, 4)", //
+        "30");
+    check("v(1) = 2; v(n_) := v(n) = Sum(v(i)*v(j), {i, 1, n - 1}, {j, 1, i}); Array(v, 5)", //
+        "{2,4,28,980,994700}");
+    check("u(m_, n_) := m + n - Sum(u(i, j)*Binomial(m, i), {i, 1, m - 1}, {j, 1, n - 1}); " //
+        + "Table(u(m, n), {m, 1, 3}, {n, 1, 3})", //
+        "{{2,3,4},{3,0,-5},{4,-10,-18}}");
+    // without a user definition the inner sum still gets its closed form
+    check("Sum(i^2*j, {i, 1, 10^6}, {j, 1, 10^6})", //
+        "166667083333666666750000000000");
+    // a long range over a user definition keeps its closed form too, it isn't summed term by term
+    check("sq(x_) := x^2; Sum(sq(i)*j, {i, 1, 10^6}, {j, 1, 10^6})", //
+        "166667083333666666750000000000");
+  }
+
+  @Test
+  public void testSummandWithStructuralFunctionOverSeveralIterators() {
+    // Numerator(m/2) is m for a symbolic m, but 1 at m=1
+    check("Sum(Numerator(m/2), {m, 1, 4}, {k, 1, 2})", //
+        "14");
+    check("Sum(Denominator(m/2)*k, {m, 1, 4}, {k, 1, 2})", //
+        "18");
+  }
+
+  @Test
+  public void testSummandWithPredicateOverSeveralIterators() {
+    // a predicate of an outer iterator variable is decided for each of its values, not once for a
+    // symbolic one, for which EvenQ(m) is False
+    check("Sum(If(EvenQ(m), 3, 1), {m, 1, 5}, {k, 1, 2})", //
+        "18");
+    check("Sum(If(OddQ(m + k), z, 1), {m, 1, 2}, {k, 1, 3})", //
+        "3+3*z");
+    check("w = {3, 4, 4}; Sum(If(EvenQ(w[[m]]), 2, 5), {m, 1, Length(w)}, {k, 1, 2})", //
+        "18");
+    check("Sum(Switch(m, 2, 10, _, 1), {m, 1, 3}, {k, 1, 4})", //
+        "48");
+  }
 }
