@@ -55,6 +55,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.numerics.functions.OwenTFunction;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -959,8 +960,7 @@ public class SpecialFunctions {
           }
           return F.num(ApfloatOwenMath.owenT(h.apfloatValue(), a.apfloatValue(), precision));
         }
-        return F.num(ApfloatOwenMath
-            .owenT(new Apfloat(h.getRealPart()), new Apfloat(a.getRealPart()), 20).doubleValue());
+        return F.num(OwenTFunction.value(h.getRealPart(), a.getRealPart()));
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         if (!(h instanceof ApfloatNum) && !(a instanceof ApfloatNum)) {

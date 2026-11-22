@@ -29,6 +29,12 @@ public class ChartGaugeFilterTest extends ExprEvaluatorTestCase {
         "{0,1,2,3}");
     check("BulletGauge(a, 2, {0, 3})", //
         "BulletGauge(a,2,{0,3})");
+    // the options of the picture are handed on to it
+    check("{ImageSize, Background} /. Options(BulletGauge(2, 5, {0, 8}, "
+        + "ImageSize -> {240, 60}, Background -> Yellow))", //
+        "{{240,60},RGBColor(1,1,0)}");
+    check("{ImageSize, Background} /. Options(BulletGauge(2, 5, {0, 8}))", //
+        "{Small,Background}");
   }
 
   @Test

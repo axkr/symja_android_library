@@ -28,12 +28,6 @@ public class BesselKRules {
       Times(CSqrtPiHalf,Power(Times(Exp(z),Sqrt(z)),CN1))),
     // BesselK(1/2,z_):=Sqrt(Pi/2)/(E^z*Sqrt(z))
     ISetDelayed(BesselK(C1D2,z_),
-      Times(CSqrtPiHalf,Power(Times(Exp(z),Sqrt(z)),CN1))),
-    // BesselK(x_/;RealValuedNumberQ(x)&&x>0&&x<6&&FractionalPart(x)==1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=x-1/2},f=1/(E^u*u);While(k>0,k=k-1;f=D(f,u)/u);Sqrt(Pi/2*z)*(-u)^(x-1/2)*f/.u->z)
-    ISetDelayed(BesselK(Condition(x_,And(RealValuedNumberQ(x),Greater(x,C0),Less(x,C6),Equal(FractionalPart(x),C1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
-      Module(list(u,f,Set(k,Plus(x,CN1D2))),CompoundExpression(Set(f,Times(Exp(Negate(u)),Power(u,CN1))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C1D2,Pi,z)),Power(Negate(u),Plus(x,CN1D2)),f),Rule(u,z))))),
-    // BesselK(x_/;RealValuedNumberQ(x)&&x<0&&x>-6&&FractionalPart(x)==-1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-x-1/2},f=1/(E^u*u);While(k>0,k=k-1;f=D(f,u)/u);Sqrt(Pi/2*z)*f/(-u)^(x+1/2)/.u->z)
-    ISetDelayed(BesselK(Condition(x_,And(RealValuedNumberQ(x),Less(x,C0),Greater(x,CN6),Equal(FractionalPart(x),CN1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
-      Module(list(u,f,Set(k,Plus(Negate(x),CN1D2))),CompoundExpression(Set(f,Times(Exp(Negate(u)),Power(u,CN1))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C1D2,Pi,z)),Power(Negate(u),Plus(Negate(x),CN1D2)),f),Rule(u,z)))))
+      Times(CSqrtPiHalf,Power(Times(Exp(z),Sqrt(z)),CN1)))
   );
 }

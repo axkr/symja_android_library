@@ -14509,11 +14509,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // integer data gets bins around the integers
     check("HistogramList({2, 3, 3, 4, 4, 4})", //
         "{{1.5,2.5,3.5,4.5},{1,2,3}}");
-    // automatic bins have an exact round width, and only bins one wide are shifted for integers
+    // automatic bins have an exact round width, and only bins one wide are shifted for integers;
+    // Scott's rule with the sample standard deviation: 7.56 -> 10, 35.9 -> 50
     check("HistogramList({0.25, 1.5, 2.25, 3.75, 6.5, 8.75, 11.5})", //
-        "{{0,5,10,15},{4,2,1}}");
+        "{{0,10,20},{6,1}}");
     check("HistogramList({15, 25, 25, 35, 35, 40, 55, 80})", //
-        "{{0,20,40,60,80,100},{1,4,2,0,1}}");
+        "{{0,50,100},{6,2}}");
+    check("HistogramList({0.5, 1.75, 2.5, 4.0, 6.25, 8.5, 12.0})", //
+        "{{0,10,20},{6,1}}");
+    // two or three entries get two or three bins, in the middle of them if the width divides the
+    // range; an entry which isn't a number still counts
+    check("{HistogramList({0.0, 20.0}), HistogramList({3, 7}), HistogramList({1.1, 2.7, 1.9})}", //
+        "{{{-10.0,10.0,30.0},{1,1}},{{0,5,10},{1,1}},{{1,2,3},{2,1}}}");
+    check("{HistogramList({4.2, 4.3}), HistogramList({x, 1.6, 4.1})}", //
+        "{{{4.15,4.25,4.35},{1,1}},{{1,2,3,4,5},{1,0,0,1}}}");
+    // a far outlier: the interquartile range sets the width, and the integers aren't shifted
+    check("HistogramList({21, 22, 22, 23, 23, 22, 29})", //
+        "{{21.0,22.0,23.0,24.0,25.0,26.0,27.0,28.0,29.0,30.0},{1,3,2,0,0,0,0,0,1}}");
+    check("HistogramList({5, 15, 15, 25, 25, 25, 35, 85})", //
+        "{{0,50,100},{7,1}}");
     check("HistogramList({0.011, 0.012, 0.0125, 0.014, 0.0171})", //
         "{{1/100,3/200,1/50},{4,1}}");
     // an exact width gives exact edges, a number of bins asks for a width of at least the range
@@ -14527,9 +14541,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,2,4},{0.8,0.2}}");
     check("HistogramList({0.25, 0.5, 0.75, 1.5, 2.75}, Automatic, \"PDF\")", //
         "{{0,2,4},{2/5,1/10}}");
-    // too many bins for an outlier
-    check("HistogramList({1, 3, 4, 6, 7, 9, 10, 12, 13, 2.0*^25})", //
-        "HistogramList({1,3,4,6,7,9,10,12,13,2.*10^25})");
+    // exact real constants are counted by their values
+    check("HistogramList({Sqrt(3), 2, E, 3, 13/4, Pi, Sqrt(17)})", //
+        "{{1,2,3,4,5},{1,2,3,1}}");
+    // entries which aren't real numbers are left out
+    check("HistogramList({Sqrt(3), w, 2, E, \"s\", 3, 13/4, Pi, Sqrt(17)})", //
+        "{{1,2,3,4,5},{1,2,3,1}}");
+    check("HistogramList({w, \"s\"})", //
+        "{{},{}}");
+    // Scott's rule rounded to the nearest of 1, 2 or 5 times a power of ten: 1.71 -> 2
+    check("HistogramList({1, 2, Sqrt(6), 3, 15/4, Pi})", //
+        "{{0,2,4},{1,5}}");
+    // normal quantiles: Scott's rule up to 2500 values (0.28 -> 1/5), above that the widest round
+    // width which gives Sturges' 13 bins (1/2, 16 bins); uniform data: 0.075 -> 1/10, then 1/20
+    check("Table(Differences(First(HistogramList("
+        + "Table(InverseCDF(NormalDistribution(), N((k-1/2)/n)), {k, n}))))[[1]], {n, {2000, 3000}})", //
+        "{1/5,1/2}");
+    check("{Differences(First(HistogramList(N(Range(2400)/2400))))[[1]],"
+        + " Differences(First(HistogramList(N(Range(2600)/2600))))[[1]]}", //
+        "{1/10,1/20}");
+    // a far outlier: the interquartile range sets the width, capped at a thousand bins
+    check("With({h = HistogramList({2, 5, 6, 8, 9, 11, 12, 14, 15, 3.0*^22})},"
+        + " {Length(First(h)), First(h)[[2]], First(Last(h)), Total(Last(h))})", //
+        "{602,50000000000000000000,9,10}");
   }
 
   @Test
@@ -30318,6 +30352,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // the precision of N(x, p) stays inside it: a machine N in the same input is machine
+    check("a = N(g(3/4)); b = N(g(3/4), 22); {Precision(a), Precision(b)}", //
+        "{16,22}");
+    check("{Precision(N(h(5/8))), N(Pi, 30); Precision(N(h(1/8)))}", //
+        "{16,16}");
+    // an N(x) which a function builds while it works keeps the precision of the engine
+    check("{Precision(x /. First(Solve(N(x^2 - 3, 25) == 0, x))), Precision(N(h(3/8)))}", //
+        "{25,16}");
     // a fraction with a denominator beyond 53 bits is rounded once
     check("N(1/10^40)", //
         "1.*10^-40");

@@ -7,6 +7,8 @@ import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.basic.Config;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BrentSolver;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -20,9 +22,12 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DMath;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.numerics.functions.OwenTFunction;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.interfaces.IAST.PROPERTY;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -7741,9 +7746,103 @@ public class StatisticsContinousDistribution {
       return ARGS_1_3;
     }
 
+    /**
+     * The quantile of a machine probability, or of any probability in numeric mode, found by
+     * Brent's method on <code>CDF</code>. Arbitrary-precision input refines the machine quantile by
+     * Newton steps at its precision. Exact input stays unevaluated.
+     */
     @Override
     public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      IExpr[] p = parameters(dist);
+      if (p == null || !k.isReal() || !p[0].isReal() || !p[1].isReal() || !p[2].isReal()) {
+        return F.NIL;
+      }
+      boolean numeric = engine.isNumericMode() || k.isInexactNumber() || p[0].isInexactNumber()
+          || p[1].isInexactNumber() || p[2].isInexactNumber();
+      if (!numeric) {
+        return F.NIL;
+      }
+      // the precision of the result is that of its least precise argument: a machine number
+      // anywhere gives a machine quantile, exact arguments the precision N(expr, p) asks for
+      long precision = Long.MAX_VALUE;
+      for (IExpr arg : new IExpr[] {k, p[0], p[1], p[2]}) {
+        if (arg instanceof ApfloatNum) {
+          precision = Math.min(precision, ((ApfloatNum) arg).precision());
+        } else if (arg.isInexactNumber()) {
+          precision = 0;
+        }
+      }
+      if (precision == Long.MAX_VALUE) {
+        precision = engine.getRequestedPrecision();
+      }
+      if (precision <= ParserConfig.MACHINE_PRECISION) {
+        precision = 0;
+      }
+      double probability = k.evalf();
+      double mu = p[0].evalf();
+      double sigma = p[1].evalf();
+      double alpha = p[2].evalf();
+      if (!(sigma > 0) || !(probability >= 0.0 && probability <= 1.0)) {
+        return F.NIL;
+      }
+      if (probability == 0.0) {
+        return F.CNInfinity;
+      }
+      if (probability == 1.0) {
+        return F.CInfinity;
+      }
+      // the standardized CDF Erfc(-z/Sqrt(2))/2 - 2*OwenT(z, alpha) minus the probability
+      UnivariateFunction excess = z -> 0.5 * org.hipparchus.special.Erf.erfc(-z / Math.sqrt(2.0))
+          - 2.0 * OwenTFunction.value(z, alpha) - probability;
+      double lo = -1.0;
+      double hi = 1.0;
+      for (int i = 0; i < 64 && excess.value(lo) > 0.0; i++) {
+        lo *= 2.0;
+      }
+      for (int i = 0; i < 64 && excess.value(hi) < 0.0; i++) {
+        hi *= 2.0;
+      }
+      if (excess.value(lo) > 0.0 || excess.value(hi) < 0.0) {
+        return F.NIL;
+      }
+      double z = new BrentSolver(2.0e-16, 1.0e-18).solve(500, excess, lo, hi);
+      if (precision > 0) {
+        return refinedQuantile(z, k, p, precision, engine);
+      }
+      return F.num(mu + sigma * z);
+    }
+
+    /**
+     * <code>mu + sigma*z</code> with the standardized quantile <code>z</code> refined by Newton
+     * steps on <code>Erfc(-z/Sqrt(2))/2 - 2*OwenT(z, alpha) == k</code>, whose derivative is
+     * <code>E^(-z^2/2)*Erfc(-alpha*z/Sqrt(2))/Sqrt(2*Pi)</code>.
+     */
+    private static @AllowNIL IExpr refinedQuantile(double z0, IExpr k, IExpr[] p, long precision,
+        EvalEngine engine) {
+      // a few guard digits for the steps
+      IExpr digits = F.ZZ(precision + 5);
+      IExpr alpha = p[2];
+      IExpr z = ApfloatNum.valueOf(Double.toString(z0), precision + 5);
+      for (int i = 0; i < 8; i++) {
+        engine.checkTimeLimit();
+        IExpr excess = F.Subtract(
+            F.Subtract(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, z))),
+                F.Times(F.C2, F.binaryAST2(S.OwenT, z, alpha))),
+            k);
+        IExpr density = F.Times(F.Exp(F.Times(F.CN1D2, F.Sqr(z))),
+            F.Power(F.Times(F.C2, S.Pi), F.CN1D2),
+            F.Erfc(F.Times(F.CN1, F.C1DSqrt2, alpha, z)));
+        IExpr step = engine.evaluate(F.N(F.Divide(excess, density), digits));
+        if (!step.isReal()) {
+          return F.NIL;
+        }
+        z = engine.evaluate(F.N(F.Subtract(z, step), digits));
+        double tolerance = Math.pow(10.0, -precision - 2) * (1.0 + Math.abs(z0));
+        if (step.isZero() || step.abs().evalf() < tolerance) {
+          break;
+        }
+      }
+      return engine.evaluate(F.N(F.Plus(p[0], F.Times(p[1], z)), F.ZZ(precision)));
     }
 
     @Override

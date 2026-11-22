@@ -35,6 +35,11 @@ public class BulletGauge extends AbstractEvaluator {
           F.RGBColor(0.7501007083058716, 0.7501007083058716, 0.7501007083058716),
           F.RGBColor(0.8999984736740948, 0.8999984736740948, 0.8999984736740948)};
 
+  /** The options which are handed on to the picture. */
+  private static final java.util.Set<IExpr> PICTURE_OPTIONS =
+      java.util.Set.of(S.ImageSize, S.Background, S.ImagePadding, S.ImageMargins, S.PlotLabel,
+          S.Epilog, S.Prolog, S.BaseStyle, S.LabelStyle, S.PlotRangePadding);
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     int positional = 0;
@@ -63,6 +68,8 @@ public class BulletGauge extends AbstractEvaluator {
     IAST styles = F.CEmptyList;
     IExpr label = F.NIL;
     int divisions = -1;
+    // the options of the picture itself, such as ImageSize or Background
+    IASTAppendable graphicsOptions = F.ListAlloc();
     for (int i = 4; i < ast.size(); i++) {
       IExpr option = ast.get(i);
       IExpr value = option.second();
@@ -73,6 +80,8 @@ public class BulletGauge extends AbstractEvaluator {
       } else if (option.first() == S.ScaleDivisions) {
         IExpr n = value.isList() && value.argSize() > 0 ? value.first() : value;
         divisions = n.toIntDefault();
+      } else if (PICTURE_OPTIONS.contains(option.first())) {
+        graphicsOptions.append(option);
       }
     }
 
@@ -164,8 +173,11 @@ public class BulletGauge extends AbstractEvaluator {
     graphics.append(primitives);
     graphics.append(F.Rule(S.AspectRatio, S.Automatic));
     graphics.append(F.Rule(S.Axes, S.False));
-    graphics.append(F.Rule(S.ImageSize, S.Small));
+    if (!graphicsOptions.exists(o -> o.first() == S.ImageSize)) {
+      graphics.append(F.Rule(S.ImageSize, S.Small));
+    }
     graphics.append(F.Rule(S.PlotRange, S.All));
+    graphics.appendArgs(graphicsOptions);
     return graphics;
   }
 

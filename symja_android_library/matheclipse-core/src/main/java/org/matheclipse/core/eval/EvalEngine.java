@@ -843,6 +843,26 @@ public class EvalEngine implements Serializable {
   private transient long fRequestedPrecision;
 
   /**
+   * The precision {@link #setDeterminePrecision(IExpr, boolean)} gave the input, <code>0</code> if
+   * it gave none.
+   */
+  private transient long fInputPrecision;
+
+  /**
+   * The part of {@link #fInputPrecision} which the numbers of the input ask for, without the
+   * precisions of the <code>N(x, p)</code> calls in it.
+   */
+  private transient long fInputNumberPrecision;
+
+  /**
+   * The machine <code>N(x)</code> calls of the input outside of its <code>N(y, p)</code> calls,
+   * compared by identity, or <code>null</code>. Only they evaluate with
+   * {@link #fInputNumberPrecision}: an <code>N(x)</code> which a function builds while it works
+   * keeps the precision of the engine.
+   */
+  private transient java.util.Set<IExpr> fInputMachineNCalls;
+
+  /**
    * if <code>true</code> the engine evaluates &quot;F.Together(expr)&quot; in IExpr#times() method.
    */
   transient boolean fTogetherMode;
@@ -6140,6 +6160,9 @@ public class EvalEngine implements Serializable {
     stackBegin();
     // fNumericPrecision = 15;
     fApfloatHelper = null;
+    fInputPrecision = 0;
+    fInputNumberPrecision = 0;
+    fInputMachineNCalls = null;
     // fApfloatHelperDouble = null;
     fConstantCounter = 1;
     fSignificantFigures = 6;
@@ -6926,10 +6949,76 @@ public class EvalEngine implements Serializable {
       long precision = expr.determinePrecision(postParserProcessing);
       if (precision > getNumericPrecision()) {
         setNumericPrecision(precision);
+        fInputPrecision = precision;
+        fInputNumberPrecision = precisionOutsideN(expr, postParserProcessing);
+        if (fInputNumberPrecision < precision) {
+          final java.util.Set<IExpr> calls =
+              java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+          collectMachineNCalls(expr, calls);
+          fInputMachineNCalls = calls.isEmpty() ? null : calls;
+        } else {
+          fInputMachineNCalls = null;
+        }
       }
     } catch (RecursionLimitExceeded rle) {
       //
     }
+  }
+
+  /**
+   * The precision the machine call <code>N(x)</code> of the input works with, or <code>0</code> to
+   * keep the precision of the engine. An <code>N(y, p)</code> elsewhere in the input raises the
+   * precision of the engine for the whole input; a machine <code>N(x)</code> of the input outside of
+   * it still asks for machine numbers. Inside an <code>N(y, p)</code>, and with a precision set in
+   * another way, it is <code>0</code>.
+   *
+   * @param nCall the unevaluated call <code>N(x)</code>
+   */
+  public long inputMachineNPrecision(IAST nCall) {
+    if (fInputMachineNCalls == null || fRequestedPrecision != 0
+        || getNumericPrecision() != fInputPrecision || !fInputMachineNCalls.contains(nCall)) {
+      return 0;
+    }
+    return Math.max(fInputNumberPrecision, ParserConfig.MACHINE_PRECISION - 1);
+  }
+
+  /** The calls <code>N(x)</code> of <code>expr</code> which aren't inside an <code>N(y, p)</code>. */
+  private static void collectMachineNCalls(IExpr expr, java.util.Set<IExpr> calls) {
+    if (!expr.isAST()) {
+      return;
+    }
+    final IAST ast = (IAST) expr;
+    if (ast.isAST(S.N, 3)) {
+      return;
+    }
+    if (ast.isAST(S.N, 2)) {
+      calls.add(ast);
+    }
+    for (int i = 0; i < ast.size(); i++) {
+      collectMachineNCalls(ast.get(i), calls);
+    }
+  }
+
+  /**
+   * {@link IExpr#determinePrecision(boolean)} without the precisions of the <code>N(x, p)</code>
+   * calls of <code>expr</code>.
+   */
+  private static long precisionOutsideN(IExpr expr, boolean postParserProcessing) {
+    if (!expr.isAST()) {
+      return expr.determinePrecision(postParserProcessing);
+    }
+    final IAST ast = (IAST) expr;
+    if (ast.isAST(S.N, 3)) {
+      return precisionOutsideN(ast.arg1(), postParserProcessing);
+    }
+    long precision = -1;
+    for (int i = 1; i < ast.size(); i++) {
+      final long p = precisionOutsideN(ast.get(i), postParserProcessing);
+      if (p > precision && p != org.apfloat.Apcomplex.INFINITE) {
+        precision = p;
+      }
+    }
+    return precision;
   }
   // public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
   // try {

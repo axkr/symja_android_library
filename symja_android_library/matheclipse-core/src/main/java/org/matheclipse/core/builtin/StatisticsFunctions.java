@@ -838,11 +838,16 @@ public class StatisticsFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isList() || ast.arg1().argSize() == 0
-          || !((IAST) ast.arg1()).forAll(IExpr::isReal)) {
+      if (!ast.arg1().isList()) {
         return F.NIL;
       }
-      IAST data = (IAST) ast.arg1();
+      // exact real constants such as Sqrt(5) or Pi are counted by their values; entries which
+      // aren't real numbers, such as symbols or strings, are left out
+      IAST data = ((IAST) ast.arg1())
+          .select(v -> v.isReal() || (v.isNumericFunction(false) && v.isRealResult()));
+      if (data.argSize() == 0) {
+        return F.list(F.CEmptyList, F.CEmptyList);
+      }
       IExpr bspec = ast.argSize() >= 2 ? ast.arg2() : S.Automatic;
       String hspec = "Count";
       if (ast.argSize() >= 3) {
@@ -851,7 +856,8 @@ public class StatisticsFunctions {
         }
         hspec = ast.arg3().toString();
       }
-      IAST edges = edges(data, bspec, engine);
+      // the entries which aren't numbers still count towards the number of bins
+      IAST edges = edges(data, ast.arg1().argSize(), bspec, engine);
       if (edges.isNIL() || edges.argSize() < 2) {
         return F.NIL;
       }
@@ -917,7 +923,7 @@ public class StatisticsFunctions {
     }
 
     /** The bin edges of a specification, or {@link F#NIL} if it isn't one. */
-    private static IAST edges(IAST data, IExpr bspec, EvalEngine engine) {
+    private static IAST edges(IAST data, int entries, IExpr bspec, EvalEngine engine) {
       if (bspec.isList1() && bspec.first().isList()) {
         // the edges themselves
         IAST list = (IAST) bspec.first();
@@ -950,7 +956,7 @@ public class StatisticsFunctions {
         width = org.matheclipse.core.builtin.graphics.Histogram
             .roundNumberAbove(max > min ? (max - min) / bspec.toIntDefault() : 1.0);
       } else if (bspec == S.Automatic) {
-        width = org.matheclipse.core.builtin.graphics.Histogram.binWidth(values, min, max);
+        width = org.matheclipse.core.builtin.graphics.Histogram.binWidth(values, min, max, entries);
       } else {
         return F.NIL;
       }
@@ -961,15 +967,31 @@ public class StatisticsFunctions {
       IExpr exactWidth = bspec.isList()
           ? (bspec.first().isRational() ? bspec.first() : F.NIL)
           : org.matheclipse.core.builtin.graphics.Histogram.exactWidth(width);
-      if (exactWidth.isPresent() && !(integerData && width == 1.0)
+      double start = bspec == S.Automatic
+          ? org.matheclipse.core.builtin.graphics.Histogram.automaticBinOrigin(values, min, max,
+              width, entries, integerData)
+          : org.matheclipse.core.builtin.graphics.Histogram.binOrigin(min, width, integerData);
+      double steps = start / width;
+      // edges which are multiples of an exact width are exact, edges between them numeric, and so
+      // are the edges of integers in bins one wide
+      boolean onMultiples = Math.abs(steps - Math.rint(steps)) < 1.0e-9 * (1.0 + Math.abs(steps));
+      if (exactWidth.isPresent() && onMultiples && !(integerData && width == 1.0)
           && Math.max(Math.abs(min), Math.abs(max)) / width < 1.0e15) {
         return exactEdges((IRational) exactWidth, width, min, max);
       }
-      double start =
-          org.matheclipse.core.builtin.graphics.Histogram.binOrigin(min, width, integerData);
       double bins = Math.floor((max - start) / width) + 1.0;
       if (bins > Config.MAX_AST_SIZE || bins > 100_000) {
         return F.NIL;
+      }
+      double halfSteps = 2.0 * steps;
+      if (exactWidth.isPresent() && Math.max(Math.abs(min), Math.abs(max)) / width < 1.0e15
+          && Math.abs(halfSteps - Math.rint(halfSteps)) < 1.0e-9 * (1.0 + Math.abs(halfSteps))) {
+        // edges halfway between multiples of an exact width: the machine numbers nearest to them,
+        // 4.35 rather than 4.15 + 2 * 0.1
+        final IRational half = ((IRational) exactWidth).multiply(F.C1D2);
+        final long first = Math.round(halfSteps);
+        return F.mapRange(0, (int) bins + 1,
+            i -> F.num(half.multiply(F.ZZ(first + 2L * i)).evalf()));
       }
       return F.mapRange(0, (int) bins + 1, i -> F.num(start + i * width));
     }

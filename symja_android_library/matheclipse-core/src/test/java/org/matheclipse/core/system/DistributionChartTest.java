@@ -13,15 +13,14 @@ public class DistributionChartTest extends ExprEvaluatorTestCase {
         + "ChartElementFunction -> \"HistogramDensity\"); "
         + "{Length(Cases(g, _Polygon, Infinity)), "
         + "Cases(g, Rectangle({a_, b_}, {c_, d_}) :> {(a + c)/2, c - a, b, d}, Infinity)}", //
-        "{0,{{1.0,0.2,10.0,20.0},{1.0,0.4,20.0,30.0},{1.0,0.6,30.0,40.0},{1.0,0.2,40.0,50.0},"
-            + "{1.0,0.0,50.0,60.0},{1.0,0.0,60.0,70.0},{1.0,0.0,70.0,80.0},{1.0,0.0,80.0,90.0},"
-            + "{1.0,0.2,90.0,100.0},{2.0,0.4,50.0,60.0},{2.0,0.8,60.0,70.0},"
+        "{0,{{1.0,0.28,0.0,50.0},{1.0,0.04,50.0,100.0},{2.0,0.4,50.0,60.0},{2.0,0.8,60.0,70.0},"
             + "{2.0,0.4,70.0,80.0}}}");
     // an empty bin between two full ones is a rectangle of no width
-    check("Cases(DistributionChart({{11, 12, 12, 13, 17}}, "
+    check("Cases(DistributionChart({{11, 12, 12, 13, 13, 12, 17}}, "
         + "ChartElementFunction -> \"HistogramDensity\"), "
         + "Rectangle({a_, b_}, {c_, d_}) :> {c - a, b}, Infinity)", //
-        "{{0.266667,10.0},{0.8,12.0},{0.0,14.0},{0.266667,16.0}}");
+        "{{0.266667,10.5},{0.8,11.5},{0.533333,12.5},{0.0,13.5},{0.0,14.5},{0.0,15.5},"
+            + "{0.266667,16.5}}");
     // every dataset in its own colour
     check("Length(Union(Cases(DistributionChart({{1, 2, 2, 3}, {4, 5, 5, 6}, {2, 4, 6, 8}}, "
         + "ChartElementFunction -> \"HistogramDensity\"), _RGBColor, Infinity)))", //

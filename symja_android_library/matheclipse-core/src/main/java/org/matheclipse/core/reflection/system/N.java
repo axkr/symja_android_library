@@ -288,6 +288,17 @@ public final class N extends AbstractCoreFunctionEvaluator {
       return function.setAtCopy(body, heldNumbers(function.get(body), numeric));
     }
     if (ast.isAST1()) {
+      final long machine = engine.inputMachineNPrecision(ast);
+      if (machine > 0) {
+        // a machine N(x) of the input, which an N(y, p) elsewhere in it doesn't concern
+        final long oldPrecision = engine.getNumericPrecision();
+        engine.setNumericPrecision(machine);
+        try {
+          return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);
+        } finally {
+          engine.setNumericPrecision(oldPrecision);
+        }
+      }
       return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);
     }
     IExpr arg2 = ast.arg2();

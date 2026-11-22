@@ -2001,6 +2001,38 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0");
     check("PDF(SkewNormalDistribution(0, -1, 1), x)", //
         "PDF(SkewNormalDistribution(0,-1,1),x)");
+    // quantiles of machine probabilities are found numerically, exact ones are kept
+    check("d = SkewNormalDistribution(1, 3, 6); q = InverseCDF(d, 0.65);"
+        + "{q > Mean(d), Abs(CDF(d, q) - 0.65) < 10^-14}", //
+        "{True,True}");
+    check("d = SkewNormalDistribution(-1, 1/2, -4); q = InverseCDF(d, 0.01);"
+        + "Abs(CDF(d, q) - 0.01) < 10^-15", //
+        "True");
+    check("{Abs(N(InverseCDF(SkewNormalDistribution(0, 1, 0), 4/5)) - N(InverseCDF(NormalDistribution(), 4/5))) < 10^-14, "
+        + "InverseCDF(SkewNormalDistribution(0., 2, 5), 0), InverseCDF(SkewNormalDistribution(0., 2, 5), 1)}", //
+        "{True,-Infinity,Infinity}");
+    check("InverseCDF(SkewNormalDistribution(0, 1, 6), 2/5)", //
+        "InverseCDF(SkewNormalDistribution(0,1,6),2/5)");
+    // a machine probability gives a machine quantile, also next to an N(x, p) of the input
+    check("{Precision(InverseCDF(SkewNormalDistribution(0, 1, 6), 0.35)), N(E, 30);"
+        + " Precision(InverseCDF(SkewNormalDistribution(0, 1`30, 6), 0.35))}", //
+        "{16,16}");
+    // arbitrary precision: Newton steps from the machine quantile
+    check("InverseCDF(SkewNormalDistribution(2, 1/2, 3), 0.7`30)", //
+        "2.5181773931530600818172475471");
+    check("d = SkewNormalDistribution(0, 2, -5); q = N(InverseCDF(d, 1/4), 20);"
+        + "{q, Abs(CDF(d, q) - 1/4) < 10^-19}", //
+        "{-2.3006987604717846224,True}");
+  }
+
+  @Test
+  public void testOwenTMachinePrecision() {
+    // machine values agree with 30 digits, for small and large a and h
+    check("Table(Module({v = OwenT @@ p, w = N(OwenT @@ SetPrecision(p, 30), 30)}, "
+        + "Abs(v - w) <= 10^-15*Abs(w)), "
+        + "{p, {{0.4, 0.7}, {2.2, 6.5}, {-0.9, 2.0}, {0.6, -11.0}, {7.5, 0.1}, {0.02, 250.0}, "
+        + "{9.0, 0.3}}})", //
+        "{True,True,True,True,True,True,True}");
   }
 
   @Test

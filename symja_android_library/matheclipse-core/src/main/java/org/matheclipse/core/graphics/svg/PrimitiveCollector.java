@@ -356,6 +356,9 @@ public final class PrimitiveCollector {
       case ID.Inset:
         collectInset(ast, style);
         break;
+      case ID.Locator:
+        collectLocator(ast, style);
+        break;
       case ID.BoundaryMeshRegion: {
         // drawn the way Show draws it: the region as a GraphicsComplex in its own scope
         IExpr complex = org.matheclipse.core.builtin.MeshFunctions.meshGraphicsComplex(ast,
@@ -1765,6 +1768,41 @@ public final class PrimitiveCollector {
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
   private String textOf(IExpr expr) {
     return LabelText.of(expr);
+  }
+
+  /** The marker a locator without an appearance of its own is drawn with. */
+  private static final IExpr LOCATOR_MARKER =
+      F.Style(F.stringx("\u2295"), F.GrayLevel(F.num(0.5)), F.Rule(S.FontSize, F.ZZ(16)));
+
+  /**
+   * <code>Locator(p)</code> and <code>Locator(p, appearance)</code> - a marker on the point. A
+   * picture is placed as an inset,
+   * any other appearance - a string, a styled label, a number - is written as a label centred on
+   * the point, and <code>None</code> draws nothing.
+   */
+  private void collectLocator(IAST ast, Style2D style) {
+    if (ast.argSize() < 1) {
+      return;
+    }
+    IExpr point = ast.arg1();
+    if (point.isAST(S.Dynamic) && point.argSize() >= 1) {
+      point = point.first();
+    }
+    // a locator has one position; a list of positions draws nothing
+    if (!(point.isList() && point.argSize() == 2 && point.first().isReal()
+        && point.second().isReal())) {
+      return;
+    }
+    IExpr appearance = ast.argSize() >= 2 && !ast.arg2().isRuleAST() ? ast.arg2() : S.Automatic;
+    if (appearance.isNone()) {
+      return;
+    }
+    if (appearance == S.Automatic) {
+      appearance = LOCATOR_MARKER;
+    }
+    boolean picture = appearance.isAST(S.Graphics) || appearance.isAST(S.Graphics3D);
+    collect(picture ? F.binaryAST2(S.Inset, appearance, point)
+        : F.Text(appearance, (IAST) point), style.clone());
   }
 
   private void collectInset(IAST ast, Style2D style) {

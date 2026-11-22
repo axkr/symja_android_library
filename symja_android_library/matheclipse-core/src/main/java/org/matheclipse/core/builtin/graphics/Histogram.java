@@ -3,8 +3,6 @@ package org.matheclipse.core.builtin.graphics;
 import java.math.BigInteger;
 import java.util.Arrays;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
-import org.hipparchus.stat.descriptive.rank.Percentile;
-import org.hipparchus.stat.descriptive.rank.Percentile.EstimationType;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -100,7 +98,7 @@ public class Histogram extends AbstractChart {
     double h = binWidth(all, min, max);
     // the bins start at a multiple of their width: standard normal data binned at 0.5 then has
     // its edges at -3, -2.5, ... rather than at the smallest datum
-    double origin = binOrigin(min, h, isIntegerData(datasets));
+    double origin = automaticBinOrigin(all, min, max, h, all.length, isIntegerData(datasets));
     int numBins = (int) Math.ceil((max + h * 0.001 - origin) / h);
     numBins = Math.max(1, Math.min(numBins, 1000));
 
@@ -264,35 +262,136 @@ public class Histogram extends AbstractChart {
     return Arrays.copyOf(values, count);
   }
 
+  /** Above this many values the width comes from the number of bins rather than the spread. */
+  private static final int LARGE_SAMPLE = 2500;
+
+  /** The most bins an automatic width makes. */
+  private static final int MAX_BINS = 1000;
+
   /**
-   * The width of a bin: the Freedman-Diaconis rule, rounded to a round number, as Mathematica
-   * chooses it. Two hundred standard normal samples are binned at 0.5 - twelve bins from -3 to 3 -
-   * where the plain rule of thumb this used gave eight wider ones.
-   *
-   * <p>
-   * The spread of the data falls back to its standard deviation when half of it lies on one value,
-   * and to a tenth of the range when every value is the same.
+   * A standard deviation this many times the interquartile range comes from a few far outliers
+   * rather than from the bulk of the data.
    */
+  private static final double HEAVY_TAIL_RATIO = 1.8;
+
+  /** The interquartile range of a normal distribution in units of its standard deviation. */
+  private static final double NORMAL_IQR = 1.349;
+
+  /** {@link #binWidth(double[], double, double, int)} with one entry per value. */
   public static double binWidth(double[] values, double min, double max) {
-    double h = 0;
-    if (values.length > 1) {
-      // the quartiles of InterquartileRange
-      Percentile quartiles = new Percentile().withEstimationType(EstimationType.R_5);
-      double spread = quartiles.evaluate(values, 75.0) - quartiles.evaluate(values, 25.0);
-      if (spread > 0) {
-        h = 2.0 * spread / Math.cbrt(values.length);
-      } else {
-        double sigma = new StandardDeviation().evaluate(values);
-        if (sigma > 0 && !Double.isNaN(sigma)) {
-          h = 3.5 * sigma / Math.cbrt(values.length);
-        }
+    return binWidth(values, min, max, values.length);
+  }
+
+  /**
+   * The width of a bin, rounded to a round number, for <code>n</code> entries of which
+   * <code>values</code> are the numeric ones.
+   * <ul>
+   * <li>Two or three entries get two or three bins over the range.</li>
+   * <li>Up to {@link #LARGE_SAMPLE} entries Scott's rule <code>3.5*sigma/n^(1/3)</code> applies,
+   * with the sample standard deviation (divided by <code>n-1</code>): two hundred standard normal
+   * values are binned at 0.5, a thousand at 0.2. When a few far outliers inflate the standard
+   * deviation, the interquartile range estimates it instead.</li>
+   * <li>Larger samples get the widest round width which still gives Sturges'
+   * <code>ceiling(log2(n))+1</code> bins, so that ten thousand standard normal values are binned at
+   * 0.5 again rather than in some forty narrow bins.</li>
+   * </ul>
+   * No automatic width makes more than {@link #MAX_BINS} bins. When every value is the same, the
+   * width is 1.
+   */
+  public static double binWidth(double[] values, double min, double max, int n) {
+    double range = max - min;
+    if (!(range > 0) || !Double.isFinite(range)) {
+      return 1.0;
+    }
+    double h;
+    if (n <= 3) {
+      h = roundNumber(range / Math.max(1, n - 1));
+    } else if (n > LARGE_SAMPLE) {
+      h = sturgesWidth(values, min, max, n);
+    } else {
+      double sigma = new StandardDeviation(true).evaluate(values);
+      if (isHeavyTailed(values, sigma)) {
+        sigma = interquartileRange(values) / NORMAL_IQR;
       }
+      h = 3.5 * sigma / Math.cbrt(n);
+      if (!(h > 0) || !Double.isFinite(h)) {
+        return roundNumber(range / 10.0);
+      }
+      h = commensurateRoundNumber(h, values);
     }
-    if (!(h > 0)) {
-      h = (max - min) / 10.0;
-      return h > 0 ? h : 1.0;
+    if (range / h > MAX_BINS) {
+      // the quotient is rounded, so that a round width of exactly a thousandth isn't passed over
+      h = roundNumberAbove(range / MAX_BINS * (1.0 - 1.0e-12));
     }
-    return commensurateRoundNumber(h, values);
+    return h;
+  }
+
+  /**
+   * The widest round width which gives at least Sturges' <code>ceiling(log2(n))+1</code> bins
+   * between <code>min</code> and <code>max</code>, counted on edges which are multiples of the
+   * width. Integer data isn't binned finer than 1.
+   */
+  private static double sturgesWidth(double[] values, double min, double max, int n) {
+    int bins = 64 - Long.numberOfLeadingZeros(n - 1L) + 1;
+    boolean integerData = allMultiples(values, 1.0);
+    double width = roundNumberAbove(max - min);
+    while (Math.floor(max / width) - Math.floor(min / width) + 1 < bins) {
+      double next = roundNumberBelow(width);
+      if (integerData && next < 1.0) {
+        return 1.0;
+      }
+      width = next;
+    }
+    return width;
+  }
+
+  /**
+   * Whether the standard deviation <code>sigma</code> of <code>values</code> is
+   * {@link #HEAVY_TAIL_RATIO} times their interquartile range or more.
+   */
+  private static boolean isHeavyTailed(double[] values, double sigma) {
+    if (values.length < 4) {
+      return false;
+    }
+    double iqr = interquartileRange(values);
+    return iqr > 0 && sigma > HEAVY_TAIL_RATIO * iqr;
+  }
+
+  /**
+   * The interquartile range, with the quartiles interpolated at the positions
+   * <code>1/2 + n*q</code> of the sorted values.
+   */
+  private static double interquartileRange(double[] values) {
+    double[] sorted = values.clone();
+    Arrays.sort(sorted);
+    return quartile(sorted, 0.75) - quartile(sorted, 0.25);
+  }
+
+  private static double quartile(double[] sorted, double q) {
+    int n = sorted.length;
+    double position = 0.5 + n * q;
+    int lower = (int) Math.floor(position);
+    double fraction = position - lower;
+    lower = Math.max(1, Math.min(n, lower));
+    int upper = Math.min(n, lower + 1);
+    return sorted[lower - 1] + fraction * (sorted[upper - 1] - sorted[lower - 1]);
+  }
+
+  /**
+   * The lower edge of the first automatic bin of width <code>width</code> for <code>n</code>
+   * entries. Two or three values which the width divides evenly sit in the middle of their bins:
+   * <code>{0., 10.}</code> is binned from -5 to 15. Integer data in bins one wide has its edges
+   * halfway between the integers, unless a few far outliers set the width.
+   */
+  public static double automaticBinOrigin(double[] values, double min, double max, double width,
+      int n, boolean integerData) {
+    double steps = (max - min) / width;
+    if (n <= 3 && steps > 0 && Math.abs(steps - Math.rint(steps)) < 1.0e-9 * (1.0 + steps)) {
+      return min - 0.5 * width;
+    }
+    boolean centerIntegers = integerData
+        && !isHeavyTailed(values, new StandardDeviation(true).evaluate(values));
+    return binOrigin(min, width, centerIntegers);
   }
 
   /**
@@ -329,16 +428,13 @@ public class Histogram extends AbstractChart {
   }
 
   /**
-   * The nearest round number - 1, 2 or 5 times a power of ten - a reader can count in.
-   *
-   * <p>
-   * Mathematica counts in those three alone: five hundred standard normal samples, whose rule of
-   * thumb asks for 0.34, are binned at 0.5 rather than at the nearer 0.25.
+   * The nearest round number - 1, 2 or 5 times a power of ten - a reader can count in. Nearest
+   * on the plain scale: 0.34 is binned at 0.2 and 0.36 at 0.5.
    */
   public static double roundNumber(double value) {
     double magnitude = Math.pow(10, Math.floor(Math.log10(value)));
     double scaled = value / magnitude;
-    double rounded = scaled <= 1.5 ? 1.0 : scaled <= 3.0 ? 2.0 : scaled <= 7.0 ? 5.0 : 10.0;
+    double rounded = scaled < 1.5 ? 1.0 : scaled < 3.5 ? 2.0 : scaled < 7.5 ? 5.0 : 10.0;
     return rounded * magnitude;
   }
 
@@ -351,6 +447,13 @@ public class Histogram extends AbstractChart {
       }
     }
     return 10.0 * magnitude;
+  }
+
+  /** The next smaller round number below the round number <code>value</code>: 5 -> 2 -> 1 -> 0.5. */
+  private static double roundNumberBelow(double value) {
+    double magnitude = Math.pow(10, Math.floor(Math.log10(value) + 1.0e-9));
+    long mantissa = Math.round(value / magnitude);
+    return mantissa >= 5 ? 2.0 * magnitude : mantissa >= 2 ? magnitude : 0.5 * magnitude;
   }
 
   /**

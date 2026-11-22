@@ -2847,8 +2847,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testRiccatiThroughABesselEquation() {
     // y == -u'/(a*u) leaves u'' + u'/x + 4*u == 0
     check("DSolve(x*y'(x)+4*x^2+y(x)^2==0, y(x), x)", //
-        "{{y(x)->(x*BesselY(-1,2*x)-x*BesselY(1,2*x)-2*x*BesselJ(1,2*x)*C(1))/(BesselY(0,\n"
-            + "2*x)+BesselJ(0,2*x)*C(1))}}");
+        "{{y(x)->(-2*x*BesselY(1,2*x)-2*x*BesselJ(1,2*x)*C(1))/(BesselY(0,2*x)+BesselJ(0,\n"
+            + "2*x)*C(1))}}");
   }
 
   @Test

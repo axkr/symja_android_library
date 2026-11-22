@@ -667,6 +667,28 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
 
   /** A value range as PlotRange leaves the parts of the plot outside it blank. */
   @Test
+  public void testLocatorMarkers() {
+    // a textual appearance is written on the point, a styled one keeps its style
+    check("StringCount(ExportString(Graphics({Locator({2, 1}, Style(\"K\", 18, Blue)), "
+        + "Locator({-1, 0}, \"K\")}, PlotRange -> 3), \"SVG\"), \">K<\")", //
+        "2");
+    // a locator has a single position, a list of positions draws nothing
+    check("StringCount(ExportString(Graphics({Locator({{-1, 0}, {2, 1}}, \"K\")}, "
+        + "PlotRange -> 3), \"SVG\"), \">K<\")", //
+        "0");
+    check("StringCount(ExportString(Plot(u, {u, 0, 2}, Epilog -> {Locator({1.5, 1}, 42)}), "
+        + "\"SVG\"), \">42<\")", //
+        "1");
+    // without an appearance a marker is drawn, with None nothing
+    check("StringCount(ExportString(Graphics({Locator({0.5, -1})}, PlotRange -> 2), \"SVG\"), "
+        + "\"<text\")", //
+        "1");
+    check("StringCount(ExportString(Graphics({Locator({0.5, -1}, None), Point({0, 0})}, "
+        + "PlotRange -> 2), \"SVG\"), \"<text\")", //
+        "0");
+  }
+
+  @Test
   public void testContourPlotValueRangeIsClipped() {
     check("g=ContourPlot(x*y, {x,-1,1}, {y,-1,1}, PlotRange->{-1/4,1/4});"
         + "m=Max(Cases(Normal(g), Polygon(p_) :> Max(Abs(Times @@@ p)), Infinity));"

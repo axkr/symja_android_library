@@ -269,8 +269,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0.0868136462159715016481161751876");
     check("N(BesselI(201/2, 100), 30)", //
         "2980887736253533000171.24924939");
-    check("LeafCount(BesselK(21/2, x))", //
-        "5");
+    // K of a half-integer order is written out up to 81/2
+    check("{LeafCount(BesselK(21/2, x)), LeafCount(BesselK(83/2, x))}", //
+        "{72,5}");
     // complex order
     check("N(BesselJ(2+I, 12), 30)", //
         "-0.166242296231681360011136923587+I*0.417283913817552994949165651471");
@@ -402,15 +403,38 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("N(BesselK(2, 60), 30)", //
         "0.00000000000000000000000000146141890810967795320279258526");
     check("BesselK(3/2, x)", //
-        "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
+        "(Sqrt(Pi/2)*(1+1/x))/(E^x*Sqrt(x))");
     check("BesselK(-3/2, x)", //
-        "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
+        "(Sqrt(Pi/2)*(1+1/x))/(E^x*Sqrt(x))");
     check("BesselK(1317624576693539401,3.0-2*I)", //
         "BesselK(1.31762*10^18,3.0+I*(-2.0))");
     check("BesselK(1/2, z)", //
         "Sqrt(Pi/2)/(E^z*Sqrt(z))");
     check("BesselK(-1/2, z)", //
         "Sqrt(Pi/2)/(E^z*Sqrt(z))");
+    // a negative integer order becomes positive: K and I keep their sign, Y picks up (-1)^n;
+    // other negative orders are kept
+    check("{BesselK(-3, z), BesselK(-2/7, z), BesselY(-3, z), BesselY(-4, z), BesselI(-5, z)}", //
+        "{BesselK(3,z),BesselK(-2/7,z),-BesselY(3,z),BesselY(4,z),BesselI(5,z)}");
+    // a half-integer order of K has a closed form for either sign
+    check("{BesselK(7/2, w), BesselK(-7/2, w)}", //
+        "{(Sqrt(Pi/2)*(1+15/w^3+15/w^2+6/w))/(E^w*Sqrt(w)),(Sqrt(Pi/2)*(1+15/w^3+15/w^2+6/w))/(E^w*Sqrt(w))}");
+    check("BesselK(9/2, y)", //
+        "(Sqrt(Pi/2)*(1+105/y^4+105/y^3+45/y^2+10/y))/(E^y*Sqrt(y))");
+    // an exact number argument keeps the function, a machine number evaluates it
+    check("{BesselK(5/2, 3), BesselK(5/2, Sqrt(2)), BesselK(5/2, 3.0)}", //
+        "{BesselK(5/2,3),BesselK(5/2,Sqrt(2)),0.0840606}");
+    checkNumeric("BesselK(-3.5, 1.25) - BesselK(3.5, 1.25)", //
+        "0.0");
+    // J and I of an integer order take the sign of a negative argument out as (-1)^n
+    check("{BesselJ(4, -w), BesselJ(5, -3*w), BesselI(5, -w), BesselI(2, -2 - 3*I)}", //
+        "{BesselJ(4,w),-BesselJ(5,3*w),-BesselI(5,w),BesselI(2,2+I*3)}");
+    // a non-integer order, and Y and K, keep the argument
+    check("{BesselJ(1/4, -w), BesselY(3, -w), BesselK(3, -w)}", //
+        "{BesselJ(1/4,-w),BesselY(3,-w),BesselK(3,-w)}");
+    checkNumeric("{BesselK(-1.75, 0.8) - BesselK(1.75, 0.8), BesselY(-3, 2.5) + BesselY(3, 2.5), "
+        + "BesselI(-2, 1.5 + I) - BesselI(2, 1.5 + I)}", //
+        "{0.0,0.0,0.0}");
 
     checkNumeric("BesselK(I+1, -I*Infinity)", //
         "0");
@@ -779,7 +803,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0.87421109767332575585+I*(-0.22246979247864997435)");
     // a real half-integer order keeps its closed form
     check("Check(BesselK(-3/2, z), failed)", //
-        "Sqrt(Pi/2)*(1/(E^z*z^2)+1/(E^z*z))*Sqrt(z)");
+        "(Sqrt(Pi/2)*(1+1/z))/(E^z*Sqrt(z))");
     checkNumeric("Check(BesselI(2.5, 3), failed)", //
         "1.5153394466819652");
   }

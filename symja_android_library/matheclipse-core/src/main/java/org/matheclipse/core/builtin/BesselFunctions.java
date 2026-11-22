@@ -34,12 +34,14 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
@@ -641,6 +643,22 @@ public class BesselFunctions {
       return besselJ(n, z, engine.isNumericMode()).eval(engine);
     }
 
+    /**
+     * <code>-z</code> for an exact number <code>z</code> with a negative sign, such as
+     * <code>-2</code> or <code>-1+I</code>, or a product with a negative leading factor, such as
+     * <code>-x</code>; otherwise <code>F.NIL</code>.
+     */
+    private static IExpr negatedArgument(IExpr z) {
+      if (z.isNumber()) {
+        return z.isInexactNumber() ? F.NIL
+            : AbstractFunctionEvaluator.getNormalizedNegativeExpression(z, false);
+      }
+      if (z.isTimes()) {
+        return AbstractFunctionEvaluator.getNormalizedNegativeExpression(z, true);
+      }
+      return F.NIL;
+    }
+
     private static @AllowNIL IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
       if (F.isExactZero(z)) {
         if (n.isZero()) {
@@ -680,6 +698,11 @@ public class BesselFunctions {
         if (n.isNegative()) {
           // (-n,z) => (-1)^n*BesselJ(n,z)
           return F.Times(F.Power(-1, n), F.BesselJ(n.negate(), z));
+        }
+        IExpr negZ = negatedArgument(z);
+        if (negZ.isPresent()) {
+          // J(n, -z) == (-1)^n*J(n, z) for an integer order
+          return F.Times(F.Power(-1, n), F.BesselJ(n, negZ));
         }
       }
 
@@ -883,6 +906,17 @@ public class BesselFunctions {
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
+      if (n.isInteger()) {
+        if (n.isNegative()) {
+          // I(-n, z) == I(n, z) for an integer order
+          return F.BesselI(n.negate(), z);
+        }
+        IExpr negZ = BesselJ.negatedArgument(z);
+        if (negZ.isPresent()) {
+          // I(n, -z) == (-1)^n*I(n, z) for an integer order
+          return F.Times(F.Power(-1, n), F.BesselI(n, negZ));
+        }
+      }
       if (n.isNumber() && z.isNumber()) {
         // if (engine.isDoubleMode()) {
         // try {
@@ -974,6 +1008,58 @@ public class BesselFunctions {
     }
 
 
+    /** The largest <code>m</code> for which <code>K(m+1/2, z)</code> is written out. */
+    private static final int MAX_HALF_INTEGER_TERMS = 40;
+
+    /**
+     * <code>K(m+1/2, z) == K(-m-1/2, z)</code> for <code>0 <= m <= 40</code> and a symbolic
+     * <code>z</code> in closed form:
+     * <code>Sqrt(Pi/2)*Sum((m+k)!/(k!*(m-k)!*(2*z)^k), {k,0,m})/(E^z*Sqrt(z))</code>. A machine
+     * order gives a machine coefficient; an exact number <code>z</code> keeps the function.
+     */
+    private static IExpr besselKHalfInteger(IExpr n, IExpr z) {
+      int m;
+      boolean machineOrder = false;
+      if (n.isRational() && !n.isInteger()) {
+        IRational order = ((IRational) n).abs();
+        if (!order.denominator().equals(F.C2)) {
+          return F.NIL;
+        }
+        m = order.numerator().toIntDefault() / 2;
+      } else if (n instanceof INum) {
+        double order = Math.abs(((INum) n).doubleValue()) - 0.5;
+        if (order != Math.rint(order) || order < 0) {
+          return F.NIL;
+        }
+        m = (int) order;
+        machineOrder = true;
+      } else {
+        return F.NIL;
+      }
+      if (m < 0 || m > MAX_HALF_INTEGER_TERMS || z.isPossibleZero(true)
+          || !z.isFree(S.DirectedInfinity)
+          || (z.isNumericFunction(true) && !z.isInexactNumber())) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(m + 1);
+      for (int k = 0; k <= m; k++) {
+        // (m+k)!/(k!*(m-k)!*2^k)
+        java.math.BigInteger c = factorial(m + k)
+            .divide(factorial(k).multiply(factorial(m - k)).shiftLeft(k));
+        sum.append(F.Times(F.ZZ(c), F.Power(z, F.ZZ(-k))));
+      }
+      IExpr coefficient = machineOrder ? F.num(Math.sqrt(Math.PI / 2.0)) : F.Sqrt(F.CPiHalf);
+      return F.Times(coefficient, sum, F.Power(F.Exp(z), F.CN1), F.Power(z, F.CN1D2));
+    }
+
+    private static java.math.BigInteger factorial(int k) {
+      java.math.BigInteger result = java.math.BigInteger.ONE;
+      for (int i = 2; i <= k; i++) {
+        result = result.multiply(java.math.BigInteger.valueOf(i));
+      }
+      return result;
+    }
+
     private static @AllowNIL IExpr besselK(EvalEngine engine, IExpr n, IExpr z) {
       // final int order = n.toIntDefault();
       if (F.isExactZero(z)) {
@@ -991,6 +1077,14 @@ public class BesselFunctions {
       if (n.isNumber() && //
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
+      }
+      if (n.isInteger() && n.isNegative()) {
+        // K(-n, z) == K(n, z); other negative orders are kept
+        return F.BesselK(n.negate(), z);
+      }
+      IExpr halfInteger = besselKHalfInteger(n, z);
+      if (halfInteger.isPresent()) {
+        return halfInteger;
       }
       // if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
       // try {
@@ -1106,6 +1200,10 @@ public class BesselFunctions {
       if (n.isNumber() && //
           (z.isInfinity() || z.isNegativeInfinity())) {
         return F.C0;
+      }
+      if (n.isInteger() && n.isNegative()) {
+        // Y(-n, z) == (-1)^n*Y(n, z) for an integer order
+        return F.Times(F.Power(F.CN1, n), F.BesselY(n.negate(), z));
       }
       // if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
       // try {
