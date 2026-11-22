@@ -3913,7 +3913,8 @@ public class SpecialFunctions {
    *
    * @param h <code>true</code> for <code>StruveH</code>, <code>false</code> for <code>StruveL</code>
    */
-  private static IExpr struveNegativeIntegerOrder(boolean h, IExpr nu, IExpr z, EvalEngine engine) {
+  private static @AllowNIL IExpr struveNegativeIntegerOrder(boolean h, IExpr nu, IExpr z,
+      EvalEngine engine) {
     if (!nu.isInteger() || !nu.isNegative()) {
       return F.NIL;
     }
