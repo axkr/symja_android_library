@@ -393,6 +393,10 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
                 && x.isPositiveResult()) {
               logPart = F.Log(x);
             } else if (y.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+                && x.isNegativeResult()) {
+              // a negative real x: Log(Abs(x)) == Log(-x)
+              logPart = fEngine.evaluate(F.Log(F.Negate(x)));
+            } else if (y.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
                 && !x.isNumericFunction(true)) {
               // a real x of unknown sign: Log(Abs(x)) == Log(x^2)/2
               logPart = fEngine.evaluate(F.Times(F.C1D2, F.Log(F.Sqr(x))));

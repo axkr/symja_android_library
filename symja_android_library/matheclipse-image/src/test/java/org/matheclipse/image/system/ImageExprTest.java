@@ -90,7 +90,7 @@ public class ImageExprTest extends AbstractTestCase {
     check("Options(Image({{{0.1, 0.2, 0.3}}}, ColorSpace -> \"RGB\"))", //
         "{ColorSpace->RGB,Interleaving->True}");
     check("Options(Image({{0.3, 0.6}}), {ImageSize, ColorSpace})", //
-        "{ColorSpace->Automatic,ImageSize->Automatic}");
+        "{ImageSize->Automatic,ColorSpace->Automatic}");
     check("Options(Image({{0.3, 0.6}}, ImageSize -> 40), ImageSize)", //
         "{ImageSize->40}");
   }

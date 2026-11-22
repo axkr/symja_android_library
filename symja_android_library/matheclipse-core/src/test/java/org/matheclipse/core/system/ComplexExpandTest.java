@@ -55,6 +55,9 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
 
     check("ComplexExpand(Log(1-Sqrt(2)))", //
         "I*Pi+Log(-1+Sqrt(2))");
+    // a negative real sum with a nearly cancelling difference
+    check("ComplexExpand(Log(E^20-(1+E^60)^(1/3)))", //
+        "I*Pi+Log(-E^20+(1+E^60)^(1/3))");
     check("ComplexExpand(Log(1+I))", //
         "I*1/4*Pi+Log(2)/2");
 
