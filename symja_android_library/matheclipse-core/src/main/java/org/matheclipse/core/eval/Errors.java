@@ -208,6 +208,8 @@ public class Errors {
       "cxt", "`1` is not a valid context name.", //
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
+      "lstol",
+      "The line search decreased the step size to within the tolerance but was unable to find a sufficient decrease in the residual.", //
       "date", "Expression `1` cannot be interpreted as a date specification.", //
       "datum", "No direct transformation between datums `1` and `2` is available.", //
       "delaysm",

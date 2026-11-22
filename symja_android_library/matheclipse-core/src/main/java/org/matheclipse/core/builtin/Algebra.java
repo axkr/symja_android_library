@@ -6010,6 +6010,10 @@ public class Algebra {
       IAST variablesList = F.NIL;
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
+        if (arg1.isList()) {
+          // a list is no polynomial, also a list of constants or the empty list
+          return S.False;
+        }
         // `PolynomialQ(expr)` tests if `expr` is a polynomial in its "generalized variables":
         // every maximal subexpression which isn't built from `Plus`, `Times` or a non-negative
         // integer `Power` counts as a variable of its own. So `Sqrt(x)+6*Sin(x)` is a polynomial
@@ -6026,6 +6030,9 @@ public class Algebra {
             Errors.printMessage(S.General, "ivar", F.List(variable));
             return F.NIL;
           }
+        }
+        if (arg1.isList()) {
+          return S.False;
         }
         // if (!fVariablesSet.contains(variable)) {
         // // `1` is not a valid variable.

@@ -104,12 +104,17 @@ public final class N extends AbstractCoreFunctionEvaluator {
         return numerical;
       }
     }
+    if (ast.isAST2() && ast.arg2() != S.MachinePrecision) {
+      // with a precision of its own a value below the range stays Underflow()
+      return result;
+    }
     return underflowAsZero(result, engine);
   }
 
   /**
-   * The value of <code>Underflow()</code> is <code>0.0</code>: a numeric evaluation inside another
-   * one, of a power with numeric arguments, keeps the object, only <code>N</code> replaces it.
+   * The machine value of <code>Underflow()</code> is <code>0.0</code>: a numeric evaluation inside
+   * another one, of a power with numeric arguments, keeps the object, only <code>N</code> with
+   * machine precision replaces it.
    */
   private static IExpr underflowAsZero(IExpr result, EvalEngine engine) {
     if (result.isNIL() || result.isFree(x -> x.isUnderflow(), true)) {

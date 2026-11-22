@@ -127,11 +127,47 @@ public class Zeta extends AbstractArg12 {
       if (large != null) {
         return F.complexNum(large);
       }
+      if (arg1.real().compareTo(REFLECTION_BOUND) < 0) {
+        final Apcomplex reflected = reflectedZeta(arg1, precision);
+        if (reflected != null) {
+          return F.complexNum(reflected);
+        }
+      }
       return F.complexNum(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
     }
     return F.NIL;
+  }
+
+  /** Below this real part the functional equation gives the value. */
+  private static final Apfloat REFLECTION_BOUND = new Apfloat(-1000);
+
+  /**
+   * <code>Zeta(s) = 2^s*Pi^(s-1)*Sin(Pi*s/2)*Gamma(1-s)*Zeta(1-s)</code> for a large negative real
+   * part, where the series of the library doesn't return a value. The sine of a large argument
+   * needs as many extra digits as the argument has in front of the decimal point.
+   *
+   * @return the value with <code>precision</code> digits, or <code>null</code>
+   */
+  private static Apcomplex reflectedZeta(Apcomplex s, long precision) {
+    final double size = Math.max(1.0, Math.abs(s.real().doubleValue()) + Math.abs(s.imag().doubleValue()));
+    final long workingPrecision = precision + (long) Math.ceil(Math.log10(size)) + 10;
+    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(workingPrecision);
+    // the digits of s are exact: a shorter s would cost Sin(Pi*s/2) the digits in front of the
+    // decimal point
+    final Apcomplex sw = s.precision(workingPrecision);
+    final Apcomplex oneMinus = h.subtract(Apcomplex.ONE, sw);
+    Apcomplex zetaOneMinus = ApcomplexZetaMath.zetaOfLargeRealPart(oneMinus);
+    if (zetaOneMinus == null) {
+      zetaOneMinus = h.zeta(oneMinus);
+    }
+    final Apfloat pi = h.pi();
+    final Apcomplex factor = h.multiply(h.pow(new Apfloat(2, workingPrecision), sw),
+        h.pow(pi, h.subtract(sw, Apcomplex.ONE)));
+    final Apcomplex sine = h.sin(h.divide(h.multiply(pi, sw), new Apfloat(2, workingPrecision)));
+    final Apcomplex value = h.multiply(h.multiply(factor, sine), h.multiply(h.gamma(oneMinus), zetaOneMinus));
+    return value.precision(precision);
   }
 
   @Override
@@ -173,6 +209,19 @@ public class Zeta extends AbstractArg12 {
                 ApfloatNum.apfloatOf(cNum.imDoubleValue(), h.precision())));
         if (large != null) {
           return F.complexNum(large.real().doubleValue(), large.imag().doubleValue());
+        }
+      }
+      if (cNum.reDoubleValue() < REFLECTION_BOUND.doubleValue()) {
+        // the digits of the double as they are
+        final Apcomplex exact = new Apcomplex(ApfloatNum.apfloatOf(cNum.reDoubleValue(), h.precision()),
+            ApfloatNum.apfloatOf(cNum.imDoubleValue(), h.precision()));
+        final Apcomplex reflected = reflectedZeta(exact, h.precision());
+        if (reflected != null) {
+          final double re = reflected.real().doubleValue();
+          final double im = reflected.imag().doubleValue();
+          // beyond the range of a double: an arbitrary precision number of machine precision
+          return Double.isFinite(re) && Double.isFinite(im) ? F.complexNum(re, im)
+              : F.complexNum(reflected);
         }
       }
       Apcomplex zeta = h.zeta(cNum.apcomplexValue());

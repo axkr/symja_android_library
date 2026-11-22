@@ -689,6 +689,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    */
   private static final int MAX_BACKTRACK_STEPS = 60;
 
+  /** How often a step of the multivariate Newton iteration is halved in its line search. */
+  private static final int MAX_LINE_SEARCH_HALVINGS = 10;
+
   /**
    * The solver of one of the bracketing methods by name.
    *
@@ -1877,9 +1880,13 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // runs out of steps settles on it rather than on wherever it happened to stop.
     IAST bestPoint = F.NIL;
     double bestResidual = Double.MAX_VALUE;
+    // the negated function value at xCurr, known from the line search of the last step
+    IExpr nextValue = F.NIL;
     for (int k = 0; k < maxIterations; k++) {
+      engine.checkTimeLimit();
       Map<IExpr, IExpr> map = createSubsMap(vectorOfVariables, xCurr);
-      IExpr fValue = engine.evalN(F.Negate(F.subsList(vectorValuedFunction, map)));
+      IExpr fValue = nextValue.isPresent() ? nextValue
+          : engine.evalN(F.Negate(F.subsList(vectorValuedFunction, map)));
       IExpr jValue = engine.evalN(F.subsList(jacobianMatrix, map));
       if (!isNumericVector(fValue, argSize) || !isNumericMatrix(jValue, argSize)) {
         // Grad builds the jacobian matrix as Outer(D, ...), so a function which cannot be
@@ -1897,18 +1904,64 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       if (!isNumericVector(y, argSize)) {
         break;
       }
-      IExpr temp = engine.evaluate(F.Plus(xCurr, y));
-      if (!isNumericVector(temp, argSize)) {
-        break;
-      }
-      IAST xNext = (IAST) temp;
-      if (monitor != null) {
-        monitor.step(vectorOfVariables, xNext);
-      }
       double norm = engine.evalDouble(F.Norm(y));
       if (norm < tolerance) {
+        IExpr temp = engine.evaluate(F.Plus(xCurr, y));
+        if (!isNumericVector(temp, argSize)) {
+          break;
+        }
+        if (monitor != null) {
+          monitor.step(vectorOfVariables, (IAST) temp);
+        }
         // convert result vector to list of rules
-        return vectorOfVariables.mapThread(xNext, (a, b) -> F.Rule(a, b));
+        return vectorOfVariables.mapThread((IAST) temp, (a, b) -> F.Rule(a, b));
+      }
+      // Armijo line search for one variable: a full step far from the root may leave the region
+      // where the function is well behaved; the step is halved until the residual decreases
+      // enough. A system keeps its full steps, the residual of a badly scaled one may grow on the
+      // way to the root.
+      IAST xNext = F.NIL;
+      nextValue = F.NIL;
+      double lambda = 1.0;
+      boolean numericTrial = false;
+      final int halvings = argSize == 1 ? MAX_LINE_SEARCH_HALVINGS : -1;
+      if (halvings < 0) {
+        IExpr temp = engine.evaluate(F.Plus(xCurr, y));
+        if (!isNumericVector(temp, argSize)) {
+          break;
+        }
+        xNext = (IAST) temp;
+      }
+      for (int halving = 0; halving <= halvings; halving++) {
+        engine.checkTimeLimit();
+        // the full step as it is, the shorter ones by exact powers of 1/2
+        IExpr temp = engine.evaluate(
+            halving == 0 ? F.Plus(xCurr, y) : F.Plus(xCurr, F.Times(F.QQ(1, 1L << halving), y)));
+        if (isNumericVector(temp, argSize)) {
+          IExpr value = engine.evalN(F.Negate(
+              F.subsList(vectorValuedFunction, createSubsMap(vectorOfVariables, (IAST) temp))));
+          numericTrial |= isNumericVector(value, argSize);
+          if (isNumericVector(value, argSize)
+              && normOf(value, engine) <= (1.0 - 1.0e-4 * lambda) * residual) {
+            xNext = (IAST) temp;
+            nextValue = value;
+            break;
+          }
+        }
+        lambda *= 0.5;
+      }
+      if (xNext.isNIL() && !numericTrial) {
+        // the function has no value along the step: the methods without a derivative may do
+        return F.NIL;
+      }
+      if (xNext.isNIL()) {
+        // The line search decreased the step size to within the tolerance but was unable to find a
+        // sufficient decrease in the residual.
+        Errors.printMessage(S.FindRoot, "lstol", F.CEmptyList, engine);
+        return vectorOfVariables.mapThread(bestPoint, (a, b) -> F.Rule(a, b));
+      }
+      if (monitor != null) {
+        monitor.step(vectorOfVariables, xNext);
       }
       xCurr = xNext;
     }

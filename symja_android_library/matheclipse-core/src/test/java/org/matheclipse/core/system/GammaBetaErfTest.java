@@ -459,8 +459,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("Chop(N(Hypergeometric1F1(1, 3/2, -1/2)) - Hypergeometric1F1(1.0, 1.5, -0.5))", //
         "0");
 
+    // below the range of numbers: Underflow() with a precision of 30 digits
     check("N(Erfc(100000000000000000000000000000000035/2*1/Sqrt(2)),30)", //
-        "0");
+        "Underflow()");
     checkNumeric("Erfc(1.5-I)", //
         "-0.07839920749893325+I*(-0.02796371123865648)");
     check("Erfc({0.5, 1.0, 1.5})", //

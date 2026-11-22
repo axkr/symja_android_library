@@ -349,7 +349,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // different radical extensions, which Plus cannot add. Collect them and denest the sums.
       IExpr x = holdallAST.arg2().isList() ? holdallAST.arg2().first() : holdallAST.arg2();
       result = RadicalCoefficients.collect(result, x, engine).orElse(result);
-      if (containsRubiInternals(result)) {
+      if (containsRubiInternals(result) || hasRubiSymbolOutsideFunctions(result)) {
         // Rubi's own symbols escaped into the answer, which happens when a rule deactivated part
         // of the integrand and the sub-integral it produced stayed unevaluated: the inert trig
         // markers survive as §sin/§cos, and a substitution rule leaves Rubi`subst[Integrate[..]].
@@ -537,6 +537,28 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return symbol.getSymbolName().startsWith("§") || (symbol.getContext() == Context.RUBI
           && symbol.getSymbolName().equalsIgnoreCase("subst"));
     }, true) || hasHeldRubiFunctions(expr);
+  }
+
+  /**
+   * Whether a symbol of the <code>Rubi`</code> context appears outside the body of a pure function:
+   * an unevaluated utility function, like the <code>If(...,Rubi`ExpandToSum(...),...)</code> a
+   * normalization leaves in the parameter lists of <code>HypergeometricPFQ</code>, where a
+   * comparison of a list with a number has no truth value.
+   */
+  private static boolean hasRubiSymbolOutsideFunctions(IExpr expr) {
+    if (expr.isSymbol()) {
+      return ((ISymbol) expr).getContext() == Context.RUBI;
+    }
+    if (!expr.isAST() || expr.isFunction()) {
+      return false;
+    }
+    final IAST ast = (IAST) expr;
+    for (int i = 0; i < ast.size(); i++) {
+      if (hasRubiSymbolOutsideFunctions(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1087,6 +1109,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             return result;
           }
         }
+        if (!fx.isFree(S.HypergeometricPFQ, true)) {
+          result = hypergeometricPower(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
         if (Config.INTEGRATE_ALGORITHMS && RischNorman.isMixedTangentTower(fx, x)) {
           // A tangent beside an exponential, a logarithm or a second tangent: the conditions of
           // the rules simplify ever larger expressions for these until the deadline, while the
@@ -1288,6 +1316,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // E^(c+d*x)*Erf(a+b*x): by parts to a shifted Gaussian
           result = quietStage(engine, fx, x, "an exponential times an error function",
               () -> IntegralTable.exponentialTimesErrorFunction(fx, x, engine));
+          if (result.isPresent()) {
+            return result;
+          }
+          // K*S with S = Erf, Erfc, Erfi, ExpIntegralEi or LogIntegral and an elementary
+          // antiderivative V of K: by parts, S*V - Integrate(V*S'), with S' elementary
+          result = quietStage(engine, fx, x, "integration by parts of a special function",
+              () -> IntegrateTimeBudget.runWithin(() -> specialFunctionByParts(fx, x, engine),
+                  MachineProfile.millis(SPECIAL_BY_PARTS_TIMELIMIT_MILLIS)));
           if (result.isPresent()) {
             return result;
           }
@@ -2030,6 +2066,121 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   /** The time for the holonomic ansatz of a product of Bessel or Airy functions. */
   private static final long HOLONOMIC_TIMELIMIT_MILLIS = 8000L;
+
+  /**
+   * <code>Integrate(c0*x^m*HypergeometricPFQ(a, b, c*x^k), x)</code> for a rational
+   * <code>m != -1</code> and a rational <code>k &gt; 0</code>: the series integrated term by term
+   * is <code>c0*x^(m+1)/(m+1)*HypergeometricPFQ(Append(a, (m+1)/k), Append(b, (m+1)/k+1),
+   * c*x^k)</code>.
+   *
+   * @return the antiderivative or {@link F#NIL} if <code>fx</code> has not this shape
+   */
+  private static IExpr hypergeometricPower(IExpr fx, IExpr x, EvalEngine engine) {
+    IExpr pfq = F.NIL;
+    IExpr m = F.C0;
+    final IASTAppendable constant = F.TimesAlloc(2);
+    for (IExpr factor : fx.isTimes() ? (IAST) fx : F.list(fx)) {
+      if (factor.isAST(S.HypergeometricPFQ, 4) && pfq.isNIL()) {
+        pfq = factor;
+      } else if (factor.equals(x)) {
+        m = F.C1;
+      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isRational()) {
+        m = factor.exponent();
+      } else if (factor.isFree(x, true)) {
+        constant.append(factor);
+      } else {
+        return F.NIL;
+      }
+    }
+    if (pfq.isNIL() || m.isMinusOne() || !pfq.first().isList() || !pfq.second().isList()
+        || !pfq.first().isFree(x, true) || !pfq.second().isFree(x, true)) {
+      return F.NIL;
+    }
+    // the argument c*x^k
+    final IExpr z = ((IAST) pfq).arg3();
+    IExpr k = F.NIL;
+    for (IExpr factor : z.isTimes() ? (IAST) z : F.list(z)) {
+      if (factor.equals(x)) {
+        k = k.isNIL() ? F.C1 : F.NIL;
+      } else if (factor.isPower() && factor.base().equals(x) && factor.exponent().isRational()
+          && factor.exponent().isPositive()) {
+        k = k.isNIL() ? factor.exponent() : F.NIL;
+      } else if (!factor.isFree(x, true)) {
+        return F.NIL;
+      }
+    }
+    if (k.isNIL()) {
+      return F.NIL;
+    }
+    final IExpr m1 = m.inc();
+    final IExpr s = engine.evaluate(F.Divide(m1, k));
+    if (s.isInteger() && !s.isPositive()) {
+      // the series has a term x^(-1): its integral is a logarithm
+      return F.NIL;
+    }
+    final IAST a = ((IAST) pfq.first()).appendClone(s);
+    final IAST b = ((IAST) pfq.second()).appendClone(engine.evaluate(F.Plus(s, F.C1)));
+    return engine.evaluate(F.Times(constant.oneIdentity1(), F.Power(x, m1), F.Power(m1, F.CN1),
+        F.HypergeometricPFQ(a, b, z)));
+  }
+
+  /** The time the two integrals of {@link #specialFunctionByParts} may take together. */
+  private static final long SPECIAL_BY_PARTS_TIMELIMIT_MILLIS = 6000L;
+
+  /** Whether <code>e</code> is a special function whose derivative is elementary. */
+  private static boolean isPrimitiveSpecialFunction(IExpr e, IExpr x) {
+    return (e.isAST(S.Erf, 2) || e.isAST(S.Erfc, 2) || e.isAST(S.Erfi, 2)
+        || e.isAST(S.ExpIntegralEi, 2) || e.isAST(S.LogIntegral, 2)) && !e.first().isFree(x, true);
+  }
+
+  /**
+   * <code>Integrate(K*S, x)</code> for a factor <code>S</code> which is <code>Erf, Erfc, Erfi,
+   * ExpIntegralEi</code> or <code>LogIntegral</code> of an argument with <code>x</code>, and a
+   * rest <code>K</code> without such functions whose antiderivative <code>V</code> is elementary:
+   * <code>S*V - Integrate(V*D(S, x), x)</code>, where <code>D(S, x)</code> is elementary. For
+   * <code>Log(x)*LogIntegral(x)</code> or <code>x*E^x*Erf(x)</code>.
+   *
+   * @return the antiderivative, or {@link F#NIL} if <code>fx</code> has not this shape or one of
+   *         the two integrals is not found
+   */
+  private static IExpr specialFunctionByParts(IExpr fx, IExpr x, EvalEngine engine) {
+    if (!fx.isTimes()) {
+      return F.NIL;
+    }
+    IExpr special = F.NIL;
+    final IASTAppendable rest = F.TimesAlloc(fx.argSize());
+    for (IExpr factor : (IAST) fx) {
+      if (special.isNIL() && isPrimitiveSpecialFunction(factor, x)) {
+        special = factor;
+      } else {
+        rest.append(factor);
+      }
+    }
+    if (special.isNIL()) {
+      return F.NIL;
+    }
+    final IExpr k = rest.oneIdentity1();
+    if (!k.isFree(e -> isPrimitiveSpecialFunction(e, x), true)) {
+      return F.NIL;
+    }
+    final IExpr v = engine.evaluate(F.Integrate(k, x));
+    if (!v.isFree(S.Integrate, true) || !v.isFree(e -> isPrimitiveSpecialFunction(e, x), true)
+        || !v.isFree(e -> e.isAST(S.PolyLog) || e.isAST(S.RootSum), true)) {
+      return F.NIL;
+    }
+    final IExpr product = engine.evaluate(F.Times(v, F.D(special, x)));
+    IExpr w = engine.evaluate(F.Integrate(product, x));
+    if (!w.isFree(S.Integrate, true) && !product.isFree(e -> e.isTrigFunction(), true)) {
+      // Cos(x)*E^x/x: exponentials of complex multiples of x, whose integrals are Ei
+      w = engine.evaluate(F.Integrate(engine.evaluate(F.Expand(F.TrigToExp(product))), x));
+    }
+    if (!w.isFree(S.Integrate, true)) {
+      return F.NIL;
+    }
+    // the terms of a small W combine: ExpIntegralEi(2*Log(x))*(1-Log(x))+ExpIntegralEi(2*Log(x))*Log(x)
+    final IExpr wTerms = w.leafCount() < 200 ? engine.evaluate(F.Expand(w)) : w;
+    return engine.evaluate(F.Subtract(F.Times(special, v), wTerms));
+  }
 
   /** The time of the Meijer G antiderivative stage. */
   private static final long MEIJER_ANTIDERIVATIVE_TIMELIMIT_MILLIS = 5000L;

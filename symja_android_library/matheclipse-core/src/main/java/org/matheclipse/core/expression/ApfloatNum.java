@@ -1558,9 +1558,21 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr erfc() {
     try {
-      return valueOf(h().erfc(fApfloat));
+      final Apfloat erfc = h().erfc(fApfloat);
+      if (erfc.signum() == 0 && fApfloat.signum() > 0) {
+        // Erfc(x) ~ E^(-x^2)/(x*Sqrt(Pi)) is below the range of numbers, not zero
+        // Underflow occurred in computation.
+        Errors.printMessage(S.General, "unfl", F.CEmptyList, EvalEngine.get());
+        return F.Underflow();
+      }
+      return valueOf(erfc);
     } catch (OverflowException of) {
-      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      // the exponent of E^(-x^2) is beyond the range: tiny for a positive x
+      if (fApfloat.signum() > 0) {
+        // Underflow occurred in computation.
+        Errors.printMessage(S.General, "unfl", F.CEmptyList, EvalEngine.get());
+        return F.Underflow();
+      }
       return F.Overflow();
     } catch (ArithmeticException | NumericComputationException e) {
       e.printStackTrace();

@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,6 +53,9 @@ public class RischNorman {
   /** Maximum number of undetermined coefficients in the ansatz. */
   private static final int MAX_UNKNOWNS = 150;
 
+  /** The size of an integrand whose terms are grouped by their exponentials. */
+  private static final int MAX_GROUPING_LEAVES = 1500;
+
   /** Recursion guard. */
   private static final ThreadLocal<Boolean> ACTIVE = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
@@ -97,7 +101,14 @@ public class RischNorman {
         return RischNormanRadical.integrate(integrand, x, engine, System.currentTimeMillis()
             + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS));
       }
-      return integrateInternal(integrand, x, engine, deadline);
+      final IExpr[] factored = constantFactor(integrand, x, engine);
+      if (factored != null) {
+        // E^(-I)*(...): numeric coefficients in the linear system of the ansatz; the integrand
+        // divided by the factor is the same tower, so it is the only attempt
+        final IExpr result = integrateTerms(factored[1], x, engine, deadline);
+        return result.isPresent() ? engine.evaluate(F.Times(factored[0], result)) : F.NIL;
+      }
+      return integrateTerms(integrand, x, engine, deadline);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
@@ -163,9 +174,117 @@ public class RischNorman {
         && !e.isFree(x, true), true);
   }
 
+  private static IExpr integrateTerms(IExpr integrand, IExpr x, EvalEngine engine,
+      long deadline) {
+    final IExpr result = integrateInternal(integrand, x, engine, deadline);
+    return result.isPresent() ? result : integrateByExponentials(integrand, x, engine, deadline);
+  }
+
+  /**
+   * A constant factor <code>c</code> other than a number which all terms of the sum
+   * <code>integrand</code> have, like <code>E^(-I)</code>, even inside an exponential
+   * <code>E^(-I+I*x)</code>.
+   *
+   * @return <code>{c, integrand/c}</code> with no constant factor but numbers left in the terms,
+   *         or <code>null</code>
+   */
+  private static IExpr[] constantFactor(IExpr integrand, IExpr x, EvalEngine engine) {
+    if (!integrand.isPlus() || !integrand.first().isTimes()) {
+      return null;
+    }
+    final IASTAppendable factor = F.TimesAlloc(2);
+    for (IExpr arg : (IAST) integrand.first()) {
+      if (!arg.isNumber() && arg.isFree(x, true)) {
+        factor.append(arg);
+      }
+    }
+    if (factor.isEmpty()) {
+      return null;
+    }
+    final IExpr c = factor.oneIdentity1();
+    final IExpr inverse = engine.evaluate(F.Power(c, F.CN1));
+    final IASTAppendable divided = F.PlusAlloc(integrand.argSize());
+    for (IExpr term : (IAST) integrand) {
+      final IExpr quotient = engine.evaluate(F.Times(inverse, term));
+      if ((quotient.isTimes()
+          && ((IAST) quotient).exists(arg -> !arg.isNumber() && arg.isFree(x, true)))
+          || (!quotient.isNumber() && quotient.isFree(x, true))) {
+        return null;
+      }
+      divided.append(quotient);
+    }
+    return new IExpr[] {c, divided};
+  }
+
+  /**
+   * Integrate the terms of <code>integrand</code> group by group, the terms of a group having the
+   * same exponentials (up to a constant factor and summand in the exponent). The derivative of
+   * <code>E^u*R+S</code> keeps <code>E^u</code> in every term of the first part, so the groups of
+   * an elementary integrand are often elementary on their own and need much smaller ansatzes than
+   * the whole.
+   *
+   * @return the sum of the antiderivatives of all groups, or {@link F#NIL} if there is only one
+   *         group or a group has none
+   */
+  private static IExpr integrateByExponentials(IExpr integrand, IExpr x, EvalEngine engine,
+      long deadline) {
+    if (integrand.leafCount() > MAX_GROUPING_LEAVES) {
+      return F.NIL;
+    }
+    final IExpr expanded = engine.evaluate(F.Expand(integrand));
+    if (!expanded.isPlus() || expanded.leafCount() > 4 * MAX_GROUPING_LEAVES) {
+      return F.NIL;
+    }
+    final Map<Set<IExpr>, IASTAppendable> groups = new LinkedHashMap<>();
+    for (IExpr term : (IAST) expanded) {
+      final Set<IExpr> key = new HashSet<>();
+      term.isFree(e -> {
+        if (e.isPower() && e.base().isE() && !e.exponent().isFree(x, true)) {
+          key.add(exponentClass(e.exponent(), x));
+        }
+        return false;
+      }, true);
+      groups.computeIfAbsent(key, k -> F.PlusAlloc(4)).append(term);
+    }
+    if (groups.size() < 2) {
+      return F.NIL;
+    }
+    final IASTAppendable sum = F.PlusAlloc(groups.size());
+    for (IASTAppendable group : groups.values()) {
+      if (System.currentTimeMillis() > deadline) {
+        return F.NIL;
+      }
+      final IExpr part = integrateInternal(group.oneIdentity0(), x, engine, deadline);
+      if (part.isNIL()) {
+        return F.NIL;
+      }
+      sum.append(part);
+    }
+    return engine.evaluate(sum);
+  }
+
+  /** The exponent without its summands free of <code>x</code> and without a number factor. */
+  private static IExpr exponentClass(IExpr exponent, IExpr x) {
+    IExpr u = exponent;
+    if (u.isPlus()) {
+      final IASTAppendable dependent = F.PlusAlloc(u.argSize());
+      for (IExpr arg : (IAST) u) {
+        if (!arg.isFree(x, true)) {
+          dependent.append(arg);
+        }
+      }
+      u = dependent.oneIdentity0();
+    }
+    if (u.isTimes() && u.first().isNumber()) {
+      u = ((IAST) u).rest().oneIdentity1();
+    }
+    return u;
+  }
+
   private static boolean hasTowerKernel(IExpr f, IExpr x) {
-    return !f.isFree(e -> (e.isAST(S.Log, 2) || e.isAST(S.Tan, 2)
-        || (e.isPower() && e.base().isE())) && !e.isFree(x, true), true);
+    return !f.isFree(e -> (e.isAST(S.Log, 2) || e.isAST(S.Tan, 2) || e.isAST(S.Tanh, 2)
+        || e.isAST(S.Cot, 2) || e.isAST(S.Coth, 2) || (e.isPower() && e.base().isE()))
+        && !e.isFree(x, true), true);
   }
 
   private static IExpr integrateInternal(IExpr integrand, IExpr x, EvalEngine engine,
@@ -174,7 +293,7 @@ public class RischNorman {
     // Sec(u)^2 is 1+Tan(u)^2 over a tower with Tan(u): the derivative of Tan(u) and of E^Tan(u)
     // must be rational in the kernels
     final Set<IExpr> tangentArgs = tangentArguments(integrand, x);
-    integrand = tangentSquares(integrand, tangentArgs, engine);
+    integrand = tangentForm(integrand, tangentArgs, engine);
     List<IExpr> kernels = collectKernels(integrand, x);
     // exponentials with commensurable exponents are powers of one generator
     Map<IExpr, IExpr[]> members = commonExponentials(kernels, engine);
@@ -198,7 +317,7 @@ public class RischNorman {
     // 3. derivatives of the kernels, expressed in x and the dummies
     IExpr[] derivatives = new IExpr[kernels.size()];
     for (int i = 0; i < kernels.size(); i++) {
-      IExpr d = tangentSquares(engine.evaluate(F.D(kernels.get(i), x)), tangentArgs, engine);
+      IExpr d = tangentForm(engine.evaluate(F.D(kernels.get(i), x)), tangentArgs, engine);
       d = replaceMembers(replaceKernels(d, kernels, dummies), members, kernels, dummies);
       if (!isRationalIn(d, x)) {
         return F.NIL;
@@ -641,12 +760,80 @@ public class RischNorman {
     final Set<IExpr> args = new LinkedHashSet<>();
     // a predicate which never matches visits every subexpression
     expr.isFree(e -> {
-      if ((e.isAST(S.Tan, 2) || e.isAST(S.Tanh, 2)) && !e.first().isFree(x, true)) {
-        args.add(e);
+      if (e.isAST1() && !e.first().isFree(x, true)) {
+        if (e.isAST(S.Tan, 2) || e.isAST(S.Tanh, 2)) {
+          args.add(e);
+        } else if (e.isAST(S.Cot, 2) || e.isAST(S.Csc, 2) || e.isAST(S.Sec, 2)) {
+          // rational in Tan(u) together with the other functions of u, if Sec(u) occurs squared
+          args.add(F.Tan(e.first()));
+        } else if (e.isAST(S.Coth, 2) || e.isAST(S.Csch, 2) || e.isAST(S.Sech, 2)) {
+          args.add(F.Tanh(e.first()));
+        }
       }
       return false;
     }, true);
     return args;
+  }
+
+  /**
+   * Write the functions of each <code>u</code> with a tangent in <code>tangents</code> as rational
+   * functions of <code>Tan(u)</code> resp. <code>Tanh(u)</code>, if they occur only with an even
+   * total power of <code>Sec(u)</code> resp. <code>Sech(u)</code>: <code>Csch(u)*Sech(u)</code> is
+   * <code>1/Tanh(u)</code>, <code>Csc(u)^2</code> is <code>(1+Tan(u)^2)/Tan(u)^2</code>. Otherwise
+   * only the even powers of <code>Sec(u), Cos(u), Sech(u), Cosh(u)</code> are written so, see
+   * {@link #tangentSquares(IExpr, Set, EvalEngine)}.
+   */
+  private static IExpr tangentForm(IExpr expr, Set<IExpr> tangents, EvalEngine engine) {
+    IExpr result = expr;
+    for (IExpr tangent : tangents) {
+      final IExpr u = tangent.first();
+      final boolean circular = tangent.isAST(S.Tan, 2);
+      final ISymbol t = F.Dummy("rn$t");
+      final ISymbol sec = F.Dummy("rn$s");
+      final boolean[] changed = new boolean[1];
+      IExpr replaced = F.subst(result, e -> {
+        if (!e.isAST1() || !e.first().equals(u)) {
+          return F.NIL;
+        }
+        final IExpr h = e.head();
+        IExpr r = F.NIL;
+        if (h == tangent.head()) {
+          r = t;
+        } else if (h == (circular ? S.Sec : S.Sech)) {
+          r = sec;
+        } else if (h == (circular ? S.Cos : S.Cosh)) {
+          r = F.Power(sec, F.CN1);
+        } else if (h == (circular ? S.Csc : S.Csch)) {
+          r = F.Times(sec, F.Power(t, F.CN1));
+        } else if (h == (circular ? S.Sin : S.Sinh)) {
+          r = F.Times(t, F.Power(sec, F.CN1));
+        } else if (h == (circular ? S.Cot : S.Coth)) {
+          r = F.Power(t, F.CN1);
+        }
+        if (r.isPresent()) {
+          changed[0] = true;
+        }
+        return r;
+      });
+      if (!changed[0]) {
+        continue;
+      }
+      final IExpr square = circular ? F.Plus(F.C1, F.Sqr(t)) : F.Subtract(F.C1, F.Sqr(t));
+      replaced = F.subst(engine.evaluate(replaced), e -> {
+        if (e.isPower() && e.base().equals(sec) && e.exponent().isInteger()) {
+          final int n = e.exponent().toIntDefault();
+          if (n != Integer.MIN_VALUE && (n & 1) == 0) {
+            return F.Power(square, F.ZZ(n / 2));
+          }
+        }
+        return F.NIL;
+      });
+      if (replaced.isFree(sec)) {
+        // the tangent itself stays unevaluated: 1/Tanh(u) is not written as Coth(u) again
+        result = F.subst(replaced, t, tangent);
+      }
+    }
+    return tangentSquares(result, tangents, engine);
   }
 
   /**
