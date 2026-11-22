@@ -27,10 +27,10 @@ public class CschRules {
     ISet(Csch(Times(CC(0L,1L,1L,6L),Pi)),
       CC(0L,1L,-2L,1L), true),
     // Csch(I*1/4*Pi)=-Sqrt(2)*I
-    ISet(Csch(Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(Csch(Times(CID4,Pi)),
       Times(CNI,CSqrt2), true),
     // Csch(I*1/2*Pi)=-I
-    ISet(Csch(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Csch(CIPiHalf),
       CNI, true),
     // Csch(I*3/4*Pi)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,3L,4L),Pi)),
@@ -39,11 +39,11 @@ public class CschRules {
     ISet(Csch(Times(CC(0L,1L,5L,6L),Pi)),
       CC(0L,1L,-2L,1L), true),
     // Csch(I*Pi)=ComplexInfinity
-    ISet(Csch(Times(CI,Pi)),
+    ISet(Csch(CIPi),
       CComplexInfinity, true),
     // Csch(I*7/6*Pi)=2*I
     ISet(Csch(Times(CC(0L,1L,7L,6L),Pi)),
-      CC(0L,1L,2L,1L), true),
+      C2I, true),
     // Csch(I*5/4*Pi)=Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,5L,4L),Pi)),
       Times(CI,CSqrt2), true),
@@ -55,9 +55,9 @@ public class CschRules {
       Times(CI,CSqrt2), true),
     // Csch(I*11/6*Pi)=2*I
     ISet(Csch(Times(CC(0L,1L,11L,6L),Pi)),
-      CC(0L,1L,2L,1L), true),
+      C2I, true),
     // Csch(I*2*Pi)=ComplexInfinity
-    ISet(Csch(Times(CC(0L,1L,2L,1L),Pi)),
+    ISet(Csch(Times(C2I,Pi)),
       CComplexInfinity, true),
     // Csch(ArcSinh(x_)):=1/x
     ISetDelayed(Csch(ArcSinh(x_)),

@@ -19,7 +19,7 @@ public class StruveLRules {
     IInit(StruveL, SIZES),
     // StruveL(-1,0)=Times(2/Pi)
     ISet(StruveL(CN1,C0),
-      Times(C2,Power(Pi,CN1)), true),
+      Times(C2,C1DPi), true),
     // StruveL(-1/2,0)=0
     ISet(StruveL(CN1D2,C0),
       C0, true),
@@ -28,10 +28,10 @@ public class StruveLRules {
       C0, true),
     // StruveL(-1/2,z_):=(Sqrt(2/Pi)*Sinh(z))/Sqrt(z)
     ISetDelayed(StruveL(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sinh(z))),
-    // StruveL(1/2,z_):=(Sqrt(2/Pi)*(-1+Cosh(z)))/Sqrt(z)
+      Times(CSqrt2DPi,Power(z,CN1D2),Sinh(z))),
+    // StruveL(1/2,z_):=((Cosh(z)-1)*Sqrt(2/Pi))/Sqrt(z)
     ISetDelayed(StruveL(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(CN1,Cosh(z)))),
+      Times(Plus(Cosh(z),CN1),CSqrt2DPi,Power(z,CN1D2))),
     // StruveL(Undefined,y_):=Undefined
     ISetDelayed(StruveL(Undefined,y_),
       Undefined),

@@ -24,19 +24,19 @@ public class TanRules {
     ISet(Tan(C0),
       C0, true),
     // Tan(Pi/12)=2-Sqrt(3)
-    ISet(Tan(Times(QQ(1L,12L),Pi)),
+    ISet(Tan(CPiTwelfth),
       Subtract(C2,CSqrt3), true),
     // Tan(Pi/10)=Sqrt(1-2/Sqrt(5))
     ISet(Tan(Times(QQ(1L,10L),Pi)),
       Sqrt(Plus(C1,Times(CN2,C1DSqrt5))), true),
     // Tan(Pi/8)=-1+Sqrt(2)
-    ISet(Tan(Times(QQ(1L,8L),Pi)),
+    ISet(Tan(CPiEighth),
       Plus(CN1,CSqrt2), true),
     // Tan(Pi/6)=1/Sqrt(3)
-    ISet(Tan(Times(QQ(1L,6L),Pi)),
+    ISet(Tan(CPiSixth),
       C1DSqrt3, true),
     // Tan(Pi/5)=Sqrt(5-2*Sqrt(5))
-    ISet(Tan(Times(QQ(1L,5L),Pi)),
+    ISet(Tan(CPiFifth),
       Sqrt(Plus(C5,Times(CN2,CSqrt5))), true),
     // Tan(Pi/4)=1
     ISet(Tan(CPiQuarter),
@@ -66,16 +66,16 @@ public class TanRules {
     ISet(Tan(Times(QQ(3L,5L),Pi)),
       Negate(Sqrt(Plus(C5,Times(C2,CSqrt5)))), true),
     // Tan(5/8*Pi)=-1-Sqrt(2)
-    ISet(Tan(Times(QQ(5L,8L),Pi)),
+    ISet(Tan(Times(C5D8,Pi)),
       Subtract(CN1,CSqrt2), true),
     // Tan(2/3*Pi)=-Sqrt(3)
-    ISet(Tan(Times(QQ(2L,3L),Pi)),
+    ISet(Tan(Times(C2D3,Pi)),
       Negate(CSqrt3), true),
     // Tan(7/10*Pi)=-Sqrt(1+2/Sqrt(5))
     ISet(Tan(Times(QQ(7L,10L),Pi)),
       Negate(Sqrt(Plus(C1,Times(C2,C1DSqrt5)))), true),
     // Tan(3/4*Pi)=-1
-    ISet(Tan(Times(QQ(3L,4L),Pi)),
+    ISet(Tan(Times(C3D4,Pi)),
       CN1, true),
     // Tan(4/5*Pi)=-Sqrt(5-2*Sqrt(5))
     ISet(Tan(Times(QQ(4L,5L),Pi)),
@@ -98,9 +98,9 @@ public class TanRules {
     // Tan(I)=I*Tanh(1)
     ISet(Tan(CI),
       Times(CI,Tanh(C1)), true),
-    // Tan(Pi*x_?NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((-1+x)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
+    // Tan(Pi*x_?NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((x-1)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
     ISetDelayed(Tan(Times(Pi,PatternTest(x_,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Tan(Times(Subtract(C1,x),Pi))),If(Less(x,C2),Tan(Times(Plus(CN1,x),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
+      Condition(If(Less(x,C1),Negate(Tan(Times(Subtract(C1,x),Pi))),If(Less(x,C2),Tan(Times(Plus(x,CN1),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
     // Tan(ArcSin(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Tan(ArcSin(x_)),
       Times(x,Power(Subtract(C1,Sqr(x)),CN1D2))),
@@ -126,10 +126,10 @@ public class TanRules {
     ISetDelayed(Tan(ArcSec(x_)),
       Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),
     // Tan(I*Infinity)=I
-    ISet(Tan(DirectedInfinity(CI)),
+    ISet(Tan(CIInfinity),
       CI, true),
     // Tan(-I*Infinity)=-I
-    ISet(Tan(DirectedInfinity(CNI)),
+    ISet(Tan(CNIInfinity),
       CNI, true),
     // Tan(ComplexInfinity)=Indeterminate
     ISet(Tan(CComplexInfinity),

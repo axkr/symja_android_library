@@ -28,22 +28,22 @@ public class CoshRules {
       Times(C1D2,CSqrt3), true),
     // Cosh(I*1/5*Pi)=1/4*(Sqrt(5)+1)
     ISet(Cosh(Times(CC(0L,1L,1L,5L),Pi)),
-      Times(C1D4,Plus(C1,CSqrt5)), true),
+      Times(C1D4,C1PSqrt5), true),
     // Cosh(I*1/4*Pi)=1/Sqrt(2)
-    ISet(Cosh(Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(Cosh(Times(CID4,Pi)),
       C1DSqrt2, true),
     // Cosh(I*1/3*Pi)=1/2
     ISet(Cosh(Times(CC(0L,1L,1L,3L),Pi)),
       C1D2, true),
-    // Cosh(I*2/5*Pi)=1/4*(-1+Sqrt(5))
+    // Cosh(I*2/5*Pi)=1/4*(Sqrt(5)-1)
     ISet(Cosh(Times(CC(0L,1L,2L,5L),Pi)),
-      Times(C1D4,Plus(CN1,CSqrt5)), true),
+      Times(C1D4,CN1PSqrt5), true),
     // Cosh(I*1/2*Pi)=0
-    ISet(Cosh(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Cosh(CIPiHalf),
       C0, true),
-    // Cosh(I*3/5*Pi)=-(-1+Sqrt(5))/4
+    // Cosh(I*3/5*Pi)=-(Sqrt(5)-1)/4
     ISet(Cosh(Times(CC(0L,1L,3L,5L),Pi)),
-      Times(C1D4,Subtract(C1,CSqrt5)), true),
+      Times(C1D4,C1MSqrt5), true),
     // Cosh(I*2/3*Pi)=-1/2
     ISet(Cosh(Times(CC(0L,1L,2L,3L),Pi)),
       CN1D2, true),
@@ -52,31 +52,31 @@ public class CoshRules {
       Negate(C1DSqrt2), true),
     // Cosh(I*4/5*Pi)=-(Sqrt(5)+1)/4
     ISet(Cosh(Times(CC(0L,1L,4L,5L),Pi)),
-      Times(C1D4,Subtract(CN1,CSqrt5)), true),
+      Times(C1D4,CN1MSqrt5), true),
     // Cosh(I*5/6*Pi)=-Sqrt(3)/2
     ISet(Cosh(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CN1D2,CSqrt3), true),
     // Cosh(I*Pi)=-1
-    ISet(Cosh(Times(CI,Pi)),
+    ISet(Cosh(CIPi),
       CN1, true),
     // Cosh(I*7/6*Pi)=-Sqrt(3)/2
     ISet(Cosh(Times(CC(0L,1L,7L,6L),Pi)),
       Times(CN1D2,CSqrt3), true),
     // Cosh(I*6/5*Pi)=-(Sqrt(5)+1)/4
     ISet(Cosh(Times(CC(0L,1L,6L,5L),Pi)),
-      Times(C1D4,Subtract(CN1,CSqrt5)), true),
+      Times(C1D4,CN1MSqrt5), true),
     // Cosh(I*5/4*Pi)=-1/Sqrt(2)
     ISet(Cosh(Times(CC(0L,1L,5L,4L),Pi)),
       Negate(C1DSqrt2), true),
     // Cosh(I*4/3*Pi)=-1/2
     ISet(Cosh(Times(CC(0L,1L,4L,3L),Pi)),
       CN1D2, true),
-    // Cosh(I*7/5*Pi)=-(-1+Sqrt(5))/4
+    // Cosh(I*7/5*Pi)=-(Sqrt(5)-1)/4
     ISet(Cosh(Times(CC(0L,1L,7L,5L),Pi)),
-      Times(C1D4,Subtract(C1,CSqrt5)), true),
-    // Cosh(I*8/5*Pi)=1/4*(-1+Sqrt(5))
+      Times(C1D4,C1MSqrt5), true),
+    // Cosh(I*8/5*Pi)=1/4*(Sqrt(5)-1)
     ISet(Cosh(Times(CC(0L,1L,8L,5L),Pi)),
-      Times(C1D4,Plus(CN1,CSqrt5)), true),
+      Times(C1D4,CN1PSqrt5), true),
     // Cosh(I*5/3*Pi)=1/2
     ISet(Cosh(Times(CC(0L,1L,5L,3L),Pi)),
       C1D2, true),
@@ -85,15 +85,15 @@ public class CoshRules {
       C1DSqrt2, true),
     // Cosh(I*9/5*Pi)=1/4*(Sqrt(5)+1)
     ISet(Cosh(Times(CC(0L,1L,9L,5L),Pi)),
-      Times(C1D4,Plus(C1,CSqrt5)), true),
+      Times(C1D4,C1PSqrt5), true),
     // Cosh(I*11/6*Pi)=Sqrt(3)/2
     ISet(Cosh(Times(CC(0L,1L,11L,6L),Pi)),
       Times(C1D2,CSqrt3), true),
     // Cosh(I*2*Pi)=1
-    ISet(Cosh(Times(CC(0L,1L,2L,1L),Pi)),
+    ISet(Cosh(Times(C2I,Pi)),
       C1, true),
     // Cosh(I*1/2*Pi+x_):=I*Sinh(x)
-    ISetDelayed(Cosh(Plus(Times(CC(0L,1L,1L,2L),Pi),x_)),
+    ISetDelayed(Cosh(Plus(CIPiHalf,x_)),
       Times(CI,Sinh(x))),
     // Cosh(Pi*I*n_Integer+x_):=(-1)^n*Cosh(x)
     ISetDelayed(Cosh(Plus(Times(Pi,Complex(C0,$p(n, Integer))),x_)),

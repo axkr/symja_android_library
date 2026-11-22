@@ -26,9 +26,9 @@ public class HypergeometricPFQRules {
     // HypergeometricPFQ({a_,b_},{c_,b_},z_):=HypergeometricPFQ({a},{c},z)
     ISetDelayed(HypergeometricPFQ(list(a_,b_),list(c_,b_),z_),
       HypergeometricPFQ(list(a),list(c),z)),
-    // HypergeometricPFQ({1/2,b_},{3/2,c_},z_):=b/(-1+2*b)*(Sqrt(Pi/z)*Erfi(Sqrt(z))-(Gamma(b)-Gamma(b,-z))/(-z)^b)/;PossibleZeroQ(1+b-c)&&!PossibleZeroQ(-1+2*b)
-    ISetDelayed(HypergeometricPFQ(list(C1D2,b_),list(QQ(3L,2L),c_),z_),
-      Condition(Times(b,Power(Plus(CN1,Times(C2,b)),CN1),Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),And(PossibleZeroQ(Plus(C1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,Times(C2,b))))))),
+    // HypergeometricPFQ({1/2,b_},{3/2,c_},z_):=b/(2*b-1)*(Sqrt(Pi/z)*Erfi(Sqrt(z))-(Gamma(b)-Gamma(b,-z))/(-z)^b)/;PossibleZeroQ(b+1-c)&&!PossibleZeroQ(2*b-1)
+    ISetDelayed(HypergeometricPFQ(list(C1D2,b_),list(C3D2,c_),z_),
+      Condition(Times(Power(Plus(Times(C2,b),CN1),CN1),b,Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),And(PossibleZeroQ(Plus(b,C1,Negate(c))),Not(PossibleZeroQ(Plus(Times(C2,b),CN1)))))),
     // HypergeometricPFQ({1,1},{2,2},z_):=-(EulerGamma+Gamma(0,-z)+Log(-z))/z/;!PossibleZeroQ(z)
     ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C2,C2),z_),
       Condition(Times(CN1,Power(z,CN1),Plus(EulerGamma,Gamma(C0,Negate(z)),Log(Negate(z)))),Not(PossibleZeroQ(z)))),
@@ -36,10 +36,10 @@ public class HypergeometricPFQRules {
     ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C1D2,C1),z_),
       Plus(C1,Times(Exp(z),CSqrtPi,Sqrt(z),Erf(Sqrt(z))))),
     // HypergeometricPFQ({1/2},{3/2,3/2},z_):=SinhIntegral(2*Sqrt(z))/(2*Sqrt(z))
-    ISetDelayed(HypergeometricPFQ(list(C1D2),list(QQ(3L,2L),QQ(3L,2L)),z_),
+    ISetDelayed(HypergeometricPFQ(list(C1D2),list(C3D2,C3D2),z_),
       Times(Power(Times(C2,Sqrt(z)),CN1),SinhIntegral(Times(C2,Sqrt(z))))),
     // HypergeometricPFQ({1,1},{2,2,3/2},z_):=(-EulerGamma+CoshIntegral(2*Sqrt(z))-Log(2*Sqrt(z)))/z
-    ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C2,C2,QQ(3L,2L)),z_),
+    ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C2,C2,C3D2),z_),
       Times(Power(z,CN1),Plus(Negate(EulerGamma),CoshIntegral(Times(C2,Sqrt(z))),Negate(Log(Times(C2,Sqrt(z))))))),
     // HypergeometricPFQ({1,1,1},{2,2},z_):=PolyLog(2,z)/z
     ISetDelayed(HypergeometricPFQ(list(C1,C1,C1),list(C2,C2),z_),
@@ -48,7 +48,7 @@ public class HypergeometricPFQRules {
     ISetDelayed(HypergeometricPFQ(list(C1),list(C1D2,c_),z_),
       Plus(C1,Times(CSqrtPi,Power(z,Times(C1D4,Plus(C3,Times(CN2,c)))),Gamma(c),StruveL(Plus(C1,Times(C1D2,Plus(CN3,Times(C2,c)))),Times(C2,Sqrt(z)))))),
     // HypergeometricPFQ({1},{3/2,c_},z_):=1/2*Sqrt(Pi)*z^(1/4-c/2)*Gamma(c)*StruveL(-3/2+c,2*Sqrt(z))
-    ISetDelayed(HypergeometricPFQ(list(C1),list(QQ(3L,2L),c_),z_),
-      Times(C1D2,CSqrtPi,Power(z,Plus(C1D4,Times(CN1D2,c))),Gamma(c),StruveL(Plus(QQ(-3L,2L),c),Times(C2,Sqrt(z)))))
+    ISetDelayed(HypergeometricPFQ(list(C1),list(C3D2,c_),z_),
+      Times(C1D2,CSqrtPi,Power(z,Plus(C1D4,Times(CN1D2,c))),Gamma(c),StruveL(Plus(CN3D2,c),Times(C2,Sqrt(z)))))
   );
 }

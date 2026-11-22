@@ -100,10 +100,10 @@ public class LimitRules {
       Indeterminate),
     // Limit(ArcCos(x_),x_Symbol->Infinity)=I*Infinity
     ISet(Limit(ArcCos(x_),Rule(x_Symbol,oo)),
-      DirectedInfinity(CI)),
+      CIInfinity),
     // Limit(ArcCos(x_),x_Symbol->-Infinity)=-I*Infinity
     ISet(Limit(ArcCos(x_),Rule(x_Symbol,Noo)),
-      DirectedInfinity(CNI)),
+      CNIInfinity),
     // Limit(ArcCot(x_),x_Symbol->Infinity)=0
     ISet(Limit(ArcCot(x_),Rule(x_Symbol,oo)),
       C0),
@@ -124,10 +124,10 @@ public class LimitRules {
       CPiHalf),
     // Limit(ArcSin(x_),x_Symbol->Infinity)=-I*Infinity
     ISet(Limit(ArcSin(x_),Rule(x_Symbol,oo)),
-      DirectedInfinity(CNI)),
+      CNIInfinity),
     // Limit(ArcSin(x_),x_Symbol->-Infinity)=I*Infinity
     ISet(Limit(ArcSin(x_),Rule(x_Symbol,Noo)),
-      DirectedInfinity(CI)),
+      CIInfinity),
     // Limit(ArcTan(x_),x_Symbol->Infinity)=Pi/2
     ISet(Limit(ArcTan(x_),Rule(x_Symbol,oo)),
       CPiHalf),
@@ -154,10 +154,10 @@ public class LimitRules {
       C0),
     // Limit(ArcSech(x_),x_Symbol->Infinity)=I*Pi/2
     ISet(Limit(ArcSech(x_),Rule(x_Symbol,oo)),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      CIPiHalf),
     // Limit(ArcSech(x_),x_Symbol->-Infinity)=I*Pi/2
     ISet(Limit(ArcSech(x_),Rule(x_Symbol,Noo)),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      CIPiHalf),
     // Limit(ArcSinh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(ArcSinh(x_),Rule(x_Symbol,oo)),
       oo),
@@ -166,10 +166,10 @@ public class LimitRules {
       Noo),
     // Limit(ArcTanh(x_),x_Symbol->Infinity)=-I*Pi/2
     ISet(Limit(ArcTanh(x_),Rule(x_Symbol,oo)),
-      Times(CC(0L,1L,-1L,2L),Pi)),
+      Times(CNID2,Pi)),
     // Limit(ArcTanh(x_),x_Symbol->-Infinity)=I*Pi/2
     ISet(Limit(ArcTanh(x_),Rule(x_Symbol,Noo)),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      CIPiHalf),
     // Limit(AiryAi(x_),x_Symbol->Infinity)=0
     ISet(Limit(AiryAi(x_),Rule(x_Symbol,oo)),
       C0),
@@ -229,7 +229,7 @@ public class LimitRules {
       Condition(C0,FreeQ(n,x))),
     // Limit(StruveH(n_,x_),x_Symbol->Infinity):=ConditionalExpression(Infinity,1<n<5/2)/;FreeQ(n,x)
     ISetDelayed(Limit(StruveH(n_,x_),Rule(x_Symbol,oo)),
-      Condition(ConditionalExpression(oo,Less(C1,n,QQ(5L,2L))),FreeQ(n,x))),
+      Condition(ConditionalExpression(oo,Less(C1,n,C5D2)),FreeQ(n,x))),
     // Limit(StruveH(n_,x_),x_Symbol->-Infinity):=ConditionalExpression(0,n∈Integers&&n<1/2)/;FreeQ(n,x)
     ISetDelayed(Limit(StruveH(n_,x_),Rule(x_Symbol,Noo)),
       Condition(ConditionalExpression(C0,And(Element(n,Integers),Less(n,C1D2))),FreeQ(n,x))),

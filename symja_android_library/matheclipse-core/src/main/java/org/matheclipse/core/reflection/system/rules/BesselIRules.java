@@ -25,21 +25,21 @@ public class BesselIRules {
       Undefined),
     // BesselI(-1/2,z_):=(Sqrt(2/Pi)*Cosh(z))/Sqrt(z)
     ISetDelayed(BesselI(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Cosh(z))),
+      Times(CSqrt2DPi,Power(z,CN1D2),Cosh(z))),
     // BesselI(1/2,z_):=(Sqrt(2/Pi)*Sinh(z))/Sqrt(z)
     ISetDelayed(BesselI(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sinh(z))),
-    // BesselI(x_/;RealValuedNumberQ(x)&&x>0&&x<6&&FractionalPart(x)==1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2+x},f=Sinh(u)/u;While(k>0,k=-1+k;f=-D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
+      Times(CSqrt2DPi,Power(z,CN1D2),Sinh(z))),
+    // BesselI(x_/;RealValuedNumberQ(x)&&x>0&&x<6&&FractionalPart(x)==1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=x-1/2},f=Sinh(u)/u;While(k>0,k=k-1;f=-D(f,u)/u);Sqrt(2/Pi*z)*(-u)^(x-1/2)*f/.u->z)
     ISetDelayed(BesselI(Condition(x_,And(RealValuedNumberQ(x),Greater(x,C0),Less(x,C6),Equal(FractionalPart(x),C1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
-      Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sinh(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(CN1,Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
-    // BesselI(x_/;RealValuedNumberQ(x)&&x<0&&x>-6&&FractionalPart(x)==-1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2-x},f=Cosh(u)/u;While(k>0,k=-1+k;f=-D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2+x)/.u->z)
+      Module(list(u,f,Set(k,Plus(x,CN1D2))),CompoundExpression(Set(f,Times(Power(u,CN1),Sinh(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Times(CN1,Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,C1DPi,z)),Power(Negate(u),Plus(x,CN1D2)),f),Rule(u,z))))),
+    // BesselI(x_/;RealValuedNumberQ(x)&&x<0&&x>-6&&FractionalPart(x)==-1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-x-1/2},f=Cosh(u)/u;While(k>0,k=k-1;f=-D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(x+1/2)/.u->z)
     ISetDelayed(BesselI(Condition(x_,And(RealValuedNumberQ(x),Less(x,C0),Greater(x,CN6),Equal(FractionalPart(x),CN1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
-      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Cosh(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(CN1,Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Subtract(CN1D2,x)),f),Rule(u,z))))),
+      Module(list(u,f,Set(k,Plus(Negate(x),CN1D2))),CompoundExpression(Set(f,Times(Power(u,CN1),Cosh(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Times(CN1,Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,C1DPi,z)),Power(Negate(u),Plus(Negate(x),CN1D2)),f),Rule(u,z))))),
     // BesselI(x_,-I*Infinity)=0
-    ISet(BesselI(x_,DirectedInfinity(CNI)),
+    ISet(BesselI(x_,CNIInfinity),
       C0),
     // BesselI(x_,I*Infinity)=0
-    ISet(BesselI(x_,DirectedInfinity(CI)),
+    ISet(BesselI(x_,CIInfinity),
       C0)
   );
 }

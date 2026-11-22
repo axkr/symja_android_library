@@ -16,7 +16,7 @@ import com.google.common.base.Supplier;
 class IntRules257 { 
   public static IAST RULES = List( 
 IIntegrate(5141,Integrate(Times(Power(Times(e_DEFAULT,x_),m_DEFAULT),Sin(Times(Sqr(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT))),d_DEFAULT))),x_Symbol),
-    Condition(Subtract(Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Times(e,x),m),Power(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),CN1)),x),x),x),Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Times(e,x),m),Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n))))))))),x),x),x)),FreeQ(List(a,b,c,d,e,m,n),x))),
+    Condition(Subtract(Simp(Dist(CID2,Integrate(Times(Power(Times(e,x),m),Power(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),CN1)),x),x),x),Simp(Dist(CID2,Integrate(Times(Power(Times(e,x),m),Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n))))))))),x),x),x)),FreeQ(List(a,b,c,d,e,m,n),x))),
 IIntegrate(5142,Integrate(Times(Cos(Times(Sqr(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT))),d_DEFAULT)),Power(Times(e_DEFAULT,x_),m_DEFAULT)),x_Symbol),
     Condition(Plus(Simp(Dist(C1D2,Integrate(Times(Power(Times(e,x),m),Power(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),CN1)),x),x),x),Simp(Dist(C1D2,Integrate(Times(Power(Times(e,x),m),Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n))))))))),x),x),x)),FreeQ(List(a,b,c,d,e,m,n),x))),
 IIntegrate(5143,Integrate(Power(Plus(a_DEFAULT,Times(ArcSin(Times(c_DEFAULT,x_)),b_DEFAULT)),n_DEFAULT),x_Symbol),

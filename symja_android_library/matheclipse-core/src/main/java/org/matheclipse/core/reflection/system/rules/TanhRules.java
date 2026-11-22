@@ -24,13 +24,13 @@ public class TanhRules {
     ISet(Tanh(C0),
       C0, true),
     // Tanh(I*1/4*Pi)=I
-    ISet(Tanh(Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(Tanh(Times(CID4,Pi)),
       CI, true),
     // Tanh(I*1/3*Pi)=Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,1L,3L),Pi)),
       Times(CI,CSqrt3), true),
     // Tanh(I*1/2*Pi)=ComplexInfinity
-    ISet(Tanh(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Tanh(CIPiHalf),
       CComplexInfinity, true),
     // Tanh(I*2/3*Pi)=-Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,2L,3L),Pi)),
@@ -42,7 +42,7 @@ public class TanhRules {
     ISet(Tanh(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CNI,C1DSqrt3), true),
     // Tanh(I*Pi)=0
-    ISet(Tanh(Times(CI,Pi)),
+    ISet(Tanh(CIPi),
       C0, true),
     // Tanh(ArcSinh(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Tanh(ArcSinh(x_)),
@@ -62,9 +62,9 @@ public class TanhRules {
     // Tanh(ArcCsch(x_)):=1/(Sqrt(1+1/x^2)*x)
     ISetDelayed(Tanh(ArcCsch(x_)),
       Power(Times(Sqrt(Plus(C1,Power(x,CN2))),x),CN1)),
-    // Tanh(Log(x_)):=(-1+x^2)/(1+x^2)
+    // Tanh(Log(x_)):=(x^2-1)/(1+x^2)
     ISetDelayed(Tanh(Log(x_)),
-      Times(Plus(CN1,Sqr(x)),Power(Plus(C1,Sqr(x)),CN1))),
+      Times(Plus(Sqr(x),CN1),Power(Plus(C1,Sqr(x)),CN1))),
     // Tanh(Infinity)=1
     ISet(Tanh(oo),
       C1, true),

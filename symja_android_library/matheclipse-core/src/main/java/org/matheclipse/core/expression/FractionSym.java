@@ -415,28 +415,10 @@ public class FractionSym extends AbstractFractionSym {
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = SourceCodeProperties.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
-    if (fNumerator == 1) {
     // CPD-ON
-      switch (fDenominator) {
-        case 2:
-          return javaForm.append("C1D2");
-        case 3:
-          return javaForm.append("C1D3");
-        case 4:
-          return javaForm.append("C1D4");
-        default:
-      }
-    }
-    if (fNumerator == -1) {
-      switch (fDenominator) {
-        case 2:
-          return javaForm.append("CN1D2");
-        case 3:
-          return javaForm.append("CN1D3");
-        case 4:
-          return javaForm.append("CN1D4");
-        default:
-      }
+    String name = JavaConstantNames.fraction(fNumerator, fDenominator);
+    if (name != null) {
+      return javaForm.append(name);
     }
     return javaForm.append("QQ(").append(fNumerator).append("L,").append(fDenominator).append("L)");
   }

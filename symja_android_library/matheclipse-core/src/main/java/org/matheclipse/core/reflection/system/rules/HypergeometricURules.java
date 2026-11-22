@@ -22,6 +22,6 @@ public class HypergeometricURules {
       Times(Exp(z),Power(z,Subtract(C1,m)),Gamma(Plus(CN1,m),z))),
     // HypergeometricU(1/2,1,z_):=(E^(z/2)*BesselK(0,z/2))/Sqrt(Pi)
     ISetDelayed(HypergeometricU(C1D2,C1,z_),
-      Times(Exp(Times(C1D2,z)),Power(Pi,CN1D2),BesselK(C0,Times(C1D2,z))))
+      Times(Exp(Times(C1D2,z)),C1DSqrtPi,BesselK(C0,Times(C1D2,z))))
   );
 }

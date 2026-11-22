@@ -52,7 +52,7 @@ IIntegrate(5137,Integrate(Times(Cot(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Cot(Plu
 IIntegrate(5138,Integrate(Times(u_DEFAULT,Power(Plus(Times(Cos(v_),a_DEFAULT),Times(b_DEFAULT,Sin(v_))),n_DEFAULT)),x_Symbol),
     Condition(Integrate(Times(u,Power(Times(a,Power(Exp(Times(a,Power(b,CN1),v)),CN1)),n)),x),And(FreeQ(list(a,b,n),x),EqQ(Plus(Sqr(a),Sqr(b)),C0)))),
 IIntegrate(5139,Integrate(Sin(Times(Sqr(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT))),d_DEFAULT)),x_Symbol),
-    Condition(Subtract(Simp(Dist(CC(0L,1L,1L,2L),Integrate(Exp(Times(CNI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x),Simp(Dist(CC(0L,1L,1L,2L),Integrate(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x)),FreeQ(List(a,b,c,d,n),x))),
+    Condition(Subtract(Simp(Dist(CID2,Integrate(Exp(Times(CNI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x),Simp(Dist(CID2,Integrate(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x)),FreeQ(List(a,b,c,d,n),x))),
 IIntegrate(5140,Integrate(Cos(Times(Sqr(Plus(a_DEFAULT,Times(Log(Times(c_DEFAULT,Power(x_,n_DEFAULT))),b_DEFAULT))),d_DEFAULT)),x_Symbol),
     Condition(Plus(Simp(Dist(C1D2,Integrate(Exp(Times(CNI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x),Simp(Dist(C1D2,Integrate(Exp(Times(CI,d,Sqr(Plus(a,Times(b,Log(Times(c,Power(x,n)))))))),x),x),x)),FreeQ(List(a,b,c,d,n),x)))
   );

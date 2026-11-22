@@ -24,17 +24,17 @@ public class SecRules {
     ISet(Sec(C0),
       C1, true),
     // Sec(Pi/12)=Sqrt(2)*(-1+Sqrt(3))
-    ISet(Sec(Times(QQ(1L,12L),Pi)),
-      Times(CSqrt2,Plus(CN1,CSqrt3)), true),
+    ISet(Sec(CPiTwelfth),
+      Times(CSqrt2,CN1PSqrt3), true),
     // Sec(Pi/10)=Sqrt(2-2/Sqrt(5))
     ISet(Sec(Times(QQ(1L,10L),Pi)),
       Sqrt(Plus(C2,Times(CN2,C1DSqrt5))), true),
     // Sec(Pi/6)=2/Sqrt(3)
-    ISet(Sec(Times(QQ(1L,6L),Pi)),
+    ISet(Sec(CPiSixth),
       Times(C2,C1DSqrt3), true),
     // Sec(Pi/5)=Sqrt(5)-1
-    ISet(Sec(Times(QQ(1L,5L),Pi)),
-      Plus(CN1,CSqrt5), true),
+    ISet(Sec(CPiFifth),
+      CN1PSqrt5, true),
     // Sec(Pi/4)=Sqrt(2)
     ISet(Sec(CPiQuarter),
       CSqrt2, true),
@@ -46,34 +46,34 @@ public class SecRules {
       C2, true),
     // Sec(3/8*Pi)=Csc(Pi/8)
     ISet(Sec(Times(QQ(3L,8L),Pi)),
-      Csc(Times(QQ(1L,8L),Pi)), true),
+      Csc(CPiEighth), true),
     // Sec(2/5*Pi)=1+Sqrt(5)
     ISet(Sec(Times(QQ(2L,5L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Sec(5/12*Pi)=Sqrt(2)*(1+Sqrt(3))
     ISet(Sec(Times(QQ(5L,12L),Pi)),
-      Times(CSqrt2,Plus(C1,CSqrt3)), true),
+      Times(CSqrt2,C1PSqrt3), true),
     // Sec(Pi/2)=ComplexInfinity
     ISet(Sec(CPiHalf),
       CComplexInfinity, true),
     // Sec(7/12*Pi)=-Sqrt(2)*(1+Sqrt(3))
     ISet(Sec(Times(QQ(7L,12L),Pi)),
-      Times(CN1,CSqrt2,Plus(C1,CSqrt3)), true),
+      Times(CN1,CSqrt2,C1PSqrt3), true),
     // Sec(3/5*Pi)=-1-Sqrt(5)
     ISet(Sec(Times(QQ(3L,5L),Pi)),
-      Subtract(CN1,CSqrt5), true),
+      CN1MSqrt5, true),
     // Sec(2/3*Pi)=-2
-    ISet(Sec(Times(QQ(2L,3L),Pi)),
+    ISet(Sec(Times(C2D3,Pi)),
       CN2, true),
     // Sec(7/10*Pi)=-Sqrt(2+2/Sqrt(5))
     ISet(Sec(Times(QQ(7L,10L),Pi)),
       Negate(Sqrt(Plus(C2,Times(C2,C1DSqrt5)))), true),
     // Sec(3/4*Pi)=-Sqrt(2)
-    ISet(Sec(Times(QQ(3L,4L),Pi)),
+    ISet(Sec(Times(C3D4,Pi)),
       Negate(CSqrt2), true),
     // Sec(4/5*Pi)=1-Sqrt(5)
     ISet(Sec(Times(QQ(4L,5L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Sec(5/6*Pi)=-2/Sqrt(3)
     ISet(Sec(Times(QQ(5L,6L),Pi)),
       Times(CN2,C1DSqrt3), true),
@@ -82,13 +82,13 @@ public class SecRules {
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5)))), true),
     // Sec(11/12*Pi)=Sqrt(2)*(1-Sqrt(3))
     ISet(Sec(Times(QQ(11L,12L),Pi)),
-      Times(CSqrt2,Subtract(C1,CSqrt3)), true),
+      Times(CSqrt2,C1MSqrt3), true),
     // Sec(Pi)=-1
     ISet(Sec(Pi),
       CN1, true),
     // Sec(13/12*Pi)=Sqrt(2)*(1-Sqrt(3))
     ISet(Sec(Times(QQ(13L,12L),Pi)),
-      Times(CSqrt2,Subtract(C1,CSqrt3)), true),
+      Times(CSqrt2,C1MSqrt3), true),
     // Sec(11/10*Pi)=-Sqrt(2-2/Sqrt(5))
     ISet(Sec(Times(QQ(11L,10L),Pi)),
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5)))), true),
@@ -97,7 +97,7 @@ public class SecRules {
       Times(CN2,C1DSqrt3), true),
     // Sec(6/5*Pi)=1-Sqrt(5)
     ISet(Sec(Times(QQ(6L,5L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Sec(5/4*Pi)=-Sqrt(2)
     ISet(Sec(Times(QQ(5L,4L),Pi)),
       Negate(CSqrt2), true),
@@ -106,16 +106,16 @@ public class SecRules {
       CN2, true),
     // Sec(7/5*Pi)=-1-Sqrt(5)
     ISet(Sec(Times(QQ(7L,5L),Pi)),
-      Subtract(CN1,CSqrt5), true),
+      CN1MSqrt5, true),
     // Sec(3/2*Pi)=ComplexInfinity
-    ISet(Sec(Times(QQ(3L,2L),Pi)),
+    ISet(Sec(Times(C3D2,Pi)),
       CComplexInfinity, true),
     // Sec(19/12*Pi)=Sqrt(2)*(1+Sqrt(3))
     ISet(Sec(Times(QQ(19L,12L),Pi)),
-      Times(CSqrt2,Plus(C1,CSqrt3)), true),
+      Times(CSqrt2,C1PSqrt3), true),
     // Sec(8/5*Pi)=1+Sqrt(5)
     ISet(Sec(Times(QQ(8L,5L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Sec(5/3*Pi)=2
     ISet(Sec(Times(QQ(5L,3L),Pi)),
       C2, true),
@@ -127,7 +127,7 @@ public class SecRules {
       CSqrt2, true),
     // Sec(9/5*Pi)=Sqrt(5)-1
     ISet(Sec(Times(QQ(9L,5L),Pi)),
-      Plus(CN1,CSqrt5), true),
+      CN1PSqrt5, true),
     // Sec(11/6*Pi)=2/Sqrt(3)
     ISet(Sec(Times(QQ(11L,6L),Pi)),
       Times(C2,C1DSqrt3), true),
@@ -136,7 +136,7 @@ public class SecRules {
       Sqrt(Plus(C2,Times(CN2,C1DSqrt5))), true),
     // Sec(23/12*Pi)=Sqrt(2)*(-1+Sqrt(3))
     ISet(Sec(Times(QQ(23L,12L),Pi)),
-      Times(CSqrt2,Plus(CN1,CSqrt3)), true),
+      Times(CSqrt2,CN1PSqrt3), true),
     // Sec(2*Pi)=1
     ISet(Sec(C2Pi),
       C1, true),
@@ -159,10 +159,10 @@ public class SecRules {
     ISetDelayed(Sec(ArcCsc(x_)),
       Power(Subtract(C1,Power(x,CN2)),CN1D2)),
     // Sec(I*Infinity)=0
-    ISet(Sec(DirectedInfinity(CI)),
+    ISet(Sec(CIInfinity),
       C0, true),
     // Sec(-I*Infinity)=0
-    ISet(Sec(DirectedInfinity(CNI)),
+    ISet(Sec(CNIInfinity),
       C0, true),
     // Sec(ComplexInfinity)=Indeterminate
     ISet(Sec(CComplexInfinity),

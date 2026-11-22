@@ -20,9 +20,9 @@ public class InverseZTransformRules {
     // InverseZTransform(z_/(a_+z_),z_?NotListQ,n_?NotListQ):=(-a)^n/;FreeQ(a,n)&&FreeQ(a,z)
     ISetDelayed(InverseZTransform(Times(z_,Power(Plus(a_,z_),CN1)),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
       Condition(Power(Negate(a),n),And(FreeQ(a,n),FreeQ(a,z)))),
-    // InverseZTransform(z_/(a_+z_)^p_Integer,z_?NotListQ,n_?NotListQ):=Binomial(n,-1+p)/(-a)^(-1+p-n)/;p>1&&FreeQ({a,p},n)&&FreeQ({a,p},z)
+    // InverseZTransform(z_/(a_+z_)^p_Integer,z_?NotListQ,n_?NotListQ):=Binomial(n,p-1)/(-a)^(p-1-n)/;p>1&&FreeQ({a,p},n)&&FreeQ({a,p},z)
     ISetDelayed(InverseZTransform(Times(z_,Power(Plus(a_,z_),Negate($p(p, Integer)))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
-      Condition(Times(Power(Negate(a),Plus(Negate(Plus(CN1,p)),n)),Binomial(n,Plus(CN1,p))),And(Greater(p,C1),FreeQ(list(a,p),n),FreeQ(list(a,p),z)))),
+      Condition(Times(Power(Negate(a),Plus(Negate(Plus(p,CN1)),n)),Binomial(n,Plus(p,CN1))),And(Greater(p,C1),FreeQ(list(a,p),n),FreeQ(list(a,p),z)))),
     // InverseZTransform(E^(a_./z_),z_?NotListQ,n_?NotListQ):=a^n/Gamma(n+1)/;FreeQ(a,z)&&FreeQ(a,n)
     ISetDelayed(InverseZTransform(Exp(Times(a_DEFAULT,Power(z_,CN1))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
       Condition(Times(Power(a,n),Power(Gamma(Plus(n,C1)),CN1)),And(FreeQ(a,z),FreeQ(a,n)))),

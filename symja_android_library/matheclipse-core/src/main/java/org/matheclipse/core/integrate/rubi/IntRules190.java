@@ -16,9 +16,9 @@ import com.google.common.base.Supplier;
 class IntRules190 { 
   public static IAST RULES = List( 
 IIntegrate(3801,Integrate(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),m_DEFAULT),$($s("§sin"),Plus(e_DEFAULT,Times(Pi,k_DEFAULT),Times(f_DEFAULT,x_)))),x_Symbol),
-    Condition(Subtract(Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Plus(c,Times(d,x)),m),Power(Times(Exp(Times(CI,k,Pi)),Exp(Times(CI,Plus(e,Times(f,x))))),CN1)),x),x),x),Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Plus(c,Times(d,x)),m),Exp(Times(CI,k,Pi)),Exp(Times(CI,Plus(e,Times(f,x))))),x),x),x)),And(FreeQ(List(c,d,e,f,m),x),IntegerQ(Times(C2,k))))),
+    Condition(Subtract(Simp(Dist(CID2,Integrate(Times(Power(Plus(c,Times(d,x)),m),Power(Times(Exp(Times(CI,k,Pi)),Exp(Times(CI,Plus(e,Times(f,x))))),CN1)),x),x),x),Simp(Dist(CID2,Integrate(Times(Power(Plus(c,Times(d,x)),m),Exp(Times(CI,k,Pi)),Exp(Times(CI,Plus(e,Times(f,x))))),x),x),x)),And(FreeQ(List(c,d,e,f,m),x),IntegerQ(Times(C2,k))))),
 IIntegrate(3802,Integrate(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),m_DEFAULT),$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),x_Symbol),
-    Condition(Subtract(Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Plus(c,Times(d,x)),m),Power(Exp(Times(CI,Plus(e,Times(f,x)))),CN1)),x),x),x),Simp(Dist(CC(0L,1L,1L,2L),Integrate(Times(Power(Plus(c,Times(d,x)),m),Exp(Times(CI,Plus(e,Times(f,x))))),x),x),x)),FreeQ(List(c,d,e,f,m),x))),
+    Condition(Subtract(Simp(Dist(CID2,Integrate(Times(Power(Plus(c,Times(d,x)),m),Power(Exp(Times(CI,Plus(e,Times(f,x)))),CN1)),x),x),x),Simp(Dist(CID2,Integrate(Times(Power(Plus(c,Times(d,x)),m),Exp(Times(CI,Plus(e,Times(f,x))))),x),x),x)),FreeQ(List(c,d,e,f,m),x))),
 IIntegrate(3803,Integrate(Times(Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),m_DEFAULT),Sqr($($s("§sin"),Plus(e_DEFAULT,Times(C1D2,f_DEFAULT,x_))))),x_Symbol),
     Condition(Subtract(Simp(Dist(C1D2,Integrate(Power(Plus(c,Times(d,x)),m),x),x),x),Simp(Dist(C1D2,Integrate(Times(Power(Plus(c,Times(d,x)),m),Cos(Plus(Times(C2,e),Times(f,x)))),x),x),x)),FreeQ(List(c,d,e,f,m),x))),
 IIntegrate(3804,Integrate(Times(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),Power(Times(b_DEFAULT,$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_)),x_Symbol),

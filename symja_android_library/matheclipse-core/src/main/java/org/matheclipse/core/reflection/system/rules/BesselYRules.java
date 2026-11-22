@@ -25,27 +25,27 @@ public class BesselYRules {
       Undefined),
     // BesselY(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(BesselY(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sin(z))),
+      Times(CSqrt2DPi,Power(z,CN1D2),Sin(z))),
     // BesselY(1/2,z_):=(-Sqrt(2/Pi)*Cos(z))/Sqrt(z)
     ISetDelayed(BesselY(C1D2,z_),
-      Times(CN1,Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Cos(z))),
+      Times(CN1,CSqrt2DPi,Power(z,CN1D2),Cos(z))),
     // BesselY(-3/2,z_):=(Sqrt(2/Pi)*(Cos(z)-Sin(z)/z))/Sqrt(z)
-    ISetDelayed(BesselY(QQ(-3L,2L),z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Cos(z),Times(CN1,Power(z,CN1),Sin(z))))),
+    ISetDelayed(BesselY(CN3D2,z_),
+      Times(CSqrt2DPi,Power(z,CN1D2),Plus(Cos(z),Times(CN1,Power(z,CN1),Sin(z))))),
     // BesselY(3/2,z_):=(Sqrt(2/Pi)*(-Cos(z)/z-Sin(z)))/Sqrt(z)
-    ISetDelayed(BesselY(QQ(3L,2L),z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Subtract(Times(CN1,Power(z,CN1),Cos(z)),Sin(z)))),
+    ISetDelayed(BesselY(C3D2,z_),
+      Times(CSqrt2DPi,Power(z,CN1D2),Subtract(Times(CN1,Power(z,CN1),Cos(z)),Sin(z)))),
     // BesselY(-5/2,z_):=(Sqrt(2/Pi)*(((-1)*3*Cos(z))/z-Sin(z)+(3*Sin(z))/z^2))/Sqrt(z)
-    ISetDelayed(BesselY(QQ(-5L,2L),z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Times(CN1,C3,Power(z,CN1),Cos(z)),Negate(Sin(z)),Times(C3,Power(z,CN2),Sin(z))))),
+    ISetDelayed(BesselY(CN5D2,z_),
+      Times(CSqrt2DPi,Power(z,CN1D2),Plus(Times(CN1,C3,Power(z,CN1),Cos(z)),Negate(Sin(z)),Times(C3,Power(z,CN2),Sin(z))))),
     // BesselY(5/2,z_):=(Sqrt(2/Pi)*(Cos(z)+(-3*Cos(z))/z^2+(-3*Sin(z))/z))/Sqrt(z)
-    ISetDelayed(BesselY(QQ(5L,2L),z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Cos(z),Times(CN3,Power(z,CN2),Cos(z)),Times(CN3,Power(z,CN1),Sin(z))))),
-    // BesselY(x_/;RealValuedNumberQ(x)&&x>0&&x<21&&FractionalPart(x)==1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-1/2+x},f=Cos(u)/u;While(k>0,k=-1+k;f=Together(D(f,u)/u));-Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
+    ISetDelayed(BesselY(C5D2,z_),
+      Times(CSqrt2DPi,Power(z,CN1D2),Plus(Cos(z),Times(CN3,Power(z,CN2),Cos(z)),Times(CN3,Power(z,CN1),Sin(z))))),
+    // BesselY(x_/;RealValuedNumberQ(x)&&x>0&&x<21&&FractionalPart(x)==1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=x-1/2},f=Cos(u)/u;While(k>0,k=k-1;f=Together(D(f,u)/u));-Sqrt(2/Pi*z)*(-u)^(x-1/2)*f/.u->z)
     ISetDelayed(BesselY(Condition(x_,And(RealValuedNumberQ(x),Greater(x,C0),Less(x,ZZ(21L)),Equal(FractionalPart(x),C1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity),Not(InexactNumberQ(z))))),
-      Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Cos(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(CN1,Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
-    // BesselY(x_/;RealValuedNumberQ(x)&&x<0&&x>-21&&FractionalPart(x)==-1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-1/2-x},f=Sin(u)/u;While(k>0,k=-1+k;f=Together(D(f,u)/u));Sqrt(2/Pi*z)*f/u^(1/2+x)/.u->z)
+      Module(list(u,f,Set(k,Plus(x,CN1D2))),CompoundExpression(Set(f,Times(Power(u,CN1),Cos(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(CN1,Sqrt(Times(C2,C1DPi,z)),Power(Negate(u),Plus(x,CN1D2)),f),Rule(u,z))))),
+    // BesselY(x_/;RealValuedNumberQ(x)&&x<0&&x>-21&&FractionalPart(x)==-1/2&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-x-1/2},f=Sin(u)/u;While(k>0,k=k-1;f=Together(D(f,u)/u));Sqrt(2/Pi*z)*f/u^(x+1/2)/.u->z)
     ISetDelayed(BesselY(Condition(x_,And(RealValuedNumberQ(x),Less(x,C0),Greater(x,ZZ(-21L)),Equal(FractionalPart(x),CN1D2),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity),Not(InexactNumberQ(z))))),
-      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(u,Subtract(CN1D2,x)),f),Rule(u,z)))))
+      Module(list(u,f,Set(k,Plus(Negate(x),CN1D2))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(k,CN1)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(Sqrt(Times(C2,C1DPi,z)),Power(u,Plus(Negate(x),CN1D2)),f),Rule(u,z)))))
   );
 }

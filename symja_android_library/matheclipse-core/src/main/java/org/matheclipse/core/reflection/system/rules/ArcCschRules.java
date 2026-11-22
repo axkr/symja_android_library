@@ -25,21 +25,21 @@ public class ArcCschRules {
       CComplexInfinity, true),
     // ArcCsch(I)=-1/2*Pi*I
     ISet(ArcCsch(CI),
-      Times(CC(0L,1L,-1L,2L),Pi), true),
+      Times(CNID2,Pi), true),
     // ArcCsch((I*2)/Sqrt(3))=-1/3*Pi*I
-    ISet(ArcCsch(Times(CC(0L,1L,2L,1L),C1DSqrt3)),
+    ISet(ArcCsch(Times(C2I,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi), true),
     // ArcCsch(I*Sqrt(2))=-1/4*Pi*I
     ISet(ArcCsch(Times(CI,CSqrt2)),
       Times(CC(0L,1L,-1L,4L),Pi), true),
     // ArcCsch(I*2)=-1/6*Pi*I
-    ISet(ArcCsch(CC(0L,1L,2L,1L)),
+    ISet(ArcCsch(C2I),
       Times(CC(0L,1L,-1L,6L),Pi), true),
     // ArcCsch(Infinity)=0
     ISet(ArcCsch(oo),
       C0, true),
     // ArcCsch(I*Infinity)=0
-    ISet(ArcCsch(DirectedInfinity(CI)),
+    ISet(ArcCsch(CIInfinity),
       C0, true),
     // ArcCsch(ComplexInfinity)=0
     ISet(ArcCsch(CComplexInfinity),

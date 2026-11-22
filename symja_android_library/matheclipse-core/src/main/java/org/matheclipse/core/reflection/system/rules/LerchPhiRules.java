@@ -19,7 +19,7 @@ public class LerchPhiRules {
     IInit(LerchPhi, SIZES),
     // LerchPhi(-1,1,0)=-Log(2)
     ISet(LerchPhi(CN1,C1,C0),
-      Negate(Log(C2)), true),
+      Negate(CLog2), true),
     // LerchPhi(-1,2,1/2)=4*Catalan
     ISet(LerchPhi(CN1,C2,C1D2),
       Times(C4,Catalan), true),
@@ -31,7 +31,7 @@ public class LerchPhiRules {
       oo, true),
     // LerchPhi(1,2,1)=Pi^2/6
     ISet(LerchPhi(C1,C2,C1),
-      Times(QQ(1L,6L),Sqr(Pi)), true),
+      Times(C1D6,CPiSqr), true),
     // LerchPhi(2,1,0)=-I*Pi
     ISet(LerchPhi(C2,C1,C0),
       Times(CNI,Pi), true),
@@ -40,9 +40,9 @@ public class LerchPhiRules {
       Times(CC(1L,1L,1L,1L),PolyLog(C2,CC(1L,2L,-1L,2L))), true),
     // LerchPhi(z_,s_,i_Integer):=Module({n=-i},z^n*PolyLog(s,z)+Sum(z^(n-k)/k^s,{k,1,n}))/;i<0
     ISetDelayed(LerchPhi(z_,s_,$p(i, Integer)),
-      Condition(Module(list(Set(n,Negate(i))),Plus(Times(Power(z,n),PolyLog(s,z)),Sum(Times(Power(z,Plus(n,Negate(k))),Power(Power(k,s),CN1)),list(k,C1,n)))),Less(i,C0))),
-    // LerchPhi(z_,s_,n_Integer):=(PolyLog(s,z)-Sum(z^k/k^s,{k,1,-1+n}))/z^n/;n>0
+      Condition(Module(list(Set(n,Negate(i))),Plus(Times(Power(z,n),PolyLog(s,z)),Sum(Times(Power(Power(k,s),CN1),Power(z,Subtract(n,k))),list(k,C1,n)))),Less(i,C0))),
+    // LerchPhi(z_,s_,n_Integer):=(PolyLog(s,z)-Sum(z^k/k^s,{k,1,n-1}))/z^n/;n>0
     ISetDelayed(LerchPhi(z_,s_,$p(n, Integer)),
-      Condition(Times(Power(Power(z,n),CN1),Subtract(PolyLog(s,z),Sum(Times(Power(Power(k,s),CN1),Power(z,k)),list(k,C1,Plus(CN1,n))))),Greater(n,C0)))
+      Condition(Times(Power(Power(z,n),CN1),Subtract(PolyLog(s,z),Sum(Times(Power(Power(k,s),CN1),Power(z,k)),list(k,C1,Plus(n,CN1))))),Greater(n,C0)))
   );
 }

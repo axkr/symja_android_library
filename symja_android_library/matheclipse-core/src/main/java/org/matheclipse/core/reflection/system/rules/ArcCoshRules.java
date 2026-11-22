@@ -22,7 +22,7 @@ public class ArcCoshRules {
       Undefined, true),
     // ArcCosh(0)=I*Pi/2
     ISet(ArcCosh(C0),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+      CIPiHalf, true),
     // ArcCosh(1/2)=I*Pi/3
     ISet(ArcCosh(C1D2),
       Times(CC(0L,1L,1L,3L),Pi), true),
@@ -31,7 +31,7 @@ public class ArcCoshRules {
       Times(CC(0L,1L,2L,3L),Pi), true),
     // ArcCosh(1/Sqrt(2))=1/4*I*Pi
     ISet(ArcCosh(C1DSqrt2),
-      Times(CC(0L,1L,1L,4L),Pi), true),
+      Times(CID4,Pi), true),
     // ArcCosh(-1/Sqrt(2))=3/4*I*Pi
     ISet(ArcCosh(Negate(C1DSqrt2)),
       Times(CC(0L,1L,3L,4L),Pi), true),
@@ -46,7 +46,7 @@ public class ArcCoshRules {
       C0, true),
     // ArcCosh(-1)=Pi*I
     ISet(ArcCosh(CN1),
-      Times(CI,Pi), true),
+      CIPi, true),
     // ArcCosh(Infinity)=Infinity
     ISet(ArcCosh(oo),
       oo, true),
@@ -54,10 +54,10 @@ public class ArcCoshRules {
     ISet(ArcCosh(Noo),
       oo, true),
     // ArcCosh(I*Infinity)=Infinity
-    ISet(ArcCosh(DirectedInfinity(CI)),
+    ISet(ArcCosh(CIInfinity),
       oo, true),
     // ArcCosh(-I*Infinity)=Infinity
-    ISet(ArcCosh(DirectedInfinity(CNI)),
+    ISet(ArcCosh(CNIInfinity),
       oo, true),
     // ArcCosh(ComplexInfinity)=Infinity
     ISet(ArcCosh(CComplexInfinity),

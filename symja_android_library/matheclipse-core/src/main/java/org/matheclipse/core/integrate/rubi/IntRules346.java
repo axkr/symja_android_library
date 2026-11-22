@@ -16,7 +16,7 @@ import com.google.common.base.Supplier;
 class IntRules346 { 
   public static IAST RULES = List( 
 IIntegrate(6921,Integrate(Sqr(Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
-    Condition(Subtract(Simp(Times(Plus(a,Times(b,x)),Sqr(Erfi(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,Power(Pi,CN1D2)),Integrate(Times(Plus(a,Times(b,x)),Exp(Sqr(Plus(a,Times(b,x)))),Erfi(Plus(a,Times(b,x)))),x),x),x)),FreeQ(list(a,b),x))),
+    Condition(Subtract(Simp(Times(Plus(a,Times(b,x)),Sqr(Erfi(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,C1DSqrtPi),Integrate(Times(Plus(a,Times(b,x)),Exp(Sqr(Plus(a,Times(b,x)))),Erfi(Plus(a,Times(b,x)))),x),x),x)),FreeQ(list(a,b),x))),
 IIntegrate(6922,Integrate(Power(Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),n_),x_Symbol),
     Condition(Unintegrable(Power(Erf(Plus(a,Times(b,x))),n),x),And(FreeQ(list(a,b,n),x),NeQ(n,C1),NeQ(n,C2)))),
 IIntegrate(6923,Integrate(Power(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),n_),x_Symbol),
@@ -24,11 +24,11 @@ IIntegrate(6923,Integrate(Power(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),n_),x_
 IIntegrate(6924,Integrate(Power(Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),n_),x_Symbol),
     Condition(Unintegrable(Power(Erfi(Plus(a,Times(b,x))),n),x),And(FreeQ(list(a,b,n),x),NeQ(n,C1),NeQ(n,C2)))),
 IIntegrate(6925,Integrate(Times(Erf(Times(b_DEFAULT,x_)),Power(x_,CN1)),x_Symbol),
-    Condition(Simp(Times(C2,b,x,Power(Pi,CN1D2),HypergeometricPFQ(list(C1D2,C1D2),list(QQ(3L,2L),QQ(3L,2L)),Times(CN1,Sqr(b),Sqr(x)))),x),FreeQ(b,x))),
+    Condition(Simp(Times(C2,b,x,C1DSqrtPi,HypergeometricPFQ(list(C1D2,C1D2),list(C3D2,C3D2),Times(CN1,Sqr(b),Sqr(x)))),x),FreeQ(b,x))),
 IIntegrate(6926,Integrate(Times(Erfc(Times(b_DEFAULT,x_)),Power(x_,CN1)),x_Symbol),
     Condition(Subtract(Simp(Log(x),x),Integrate(Times(Erf(Times(b,x)),Power(x,CN1)),x)),FreeQ(b,x))),
 IIntegrate(6927,Integrate(Times(Erfi(Times(b_DEFAULT,x_)),Power(x_,CN1)),x_Symbol),
-    Condition(Simp(Times(C2,b,x,Power(Pi,CN1D2),HypergeometricPFQ(list(C1D2,C1D2),list(QQ(3L,2L),QQ(3L,2L)),Times(Sqr(b),Sqr(x)))),x),FreeQ(b,x))),
+    Condition(Simp(Times(C2,b,x,C1DSqrtPi,HypergeometricPFQ(list(C1D2,C1D2),list(C3D2,C3D2),Times(Sqr(b),Sqr(x)))),x),FreeQ(b,x))),
 IIntegrate(6928,Integrate(Times(Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),m_DEFAULT)),x_Symbol),
     Condition(Subtract(Simp(Times(Power(Plus(c,Times(d,x)),Plus(m,C1)),Erf(Plus(a,Times(b,x))),Power(Times(d,Plus(m,C1)),CN1)),x),Simp(Dist(Times(C2,b,Power(Times(CSqrtPi,d,Plus(m,C1)),CN1)),Integrate(Times(Power(Plus(c,Times(d,x)),Plus(m,C1)),Power(Exp(Sqr(Plus(a,Times(b,x)))),CN1)),x),x),x)),And(FreeQ(List(a,b,c,d,m),x),NeQ(m,CN1)))),
 IIntegrate(6929,Integrate(Times(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),m_DEFAULT)),x_Symbol),

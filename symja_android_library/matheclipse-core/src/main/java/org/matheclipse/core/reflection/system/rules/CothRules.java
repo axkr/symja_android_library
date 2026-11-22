@@ -27,16 +27,16 @@ public class CothRules {
     ISet(Coth(CD0),
       CComplexInfinity, true),
     // Coth(I*1/4*Pi)=-I
-    ISet(Coth(Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(Coth(Times(CID4,Pi)),
       CNI, true),
     // Coth(I*1/2*Pi)=0
-    ISet(Coth(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Coth(CIPiHalf),
       C0, true),
     // Coth(I*3/4*Pi)=I
     ISet(Coth(Times(CC(0L,1L,3L,4L),Pi)),
       CI, true),
     // Coth(I*Pi)=ComplexInfinity
-    ISet(Coth(Times(CI,Pi)),
+    ISet(Coth(CIPi),
       CComplexInfinity, true),
     // Coth(ArcSinh(x_)):=Sqrt(1+x^2)/x
     ISetDelayed(Coth(ArcSinh(x_)),
@@ -56,9 +56,9 @@ public class CothRules {
     // Coth(ArcCsch(x_)):=Sqrt(1+1/x^2)*x
     ISetDelayed(Coth(ArcCsch(x_)),
       Times(Sqrt(Plus(C1,Power(x,CN2))),x)),
-    // Coth(Log(x_)):=(1+x^2)/(-1+x^2)
+    // Coth(Log(x_)):=(1+x^2)/(x^2-1)
     ISetDelayed(Coth(Log(x_)),
-      Times(Power(Plus(CN1,Sqr(x)),CN1),Plus(C1,Sqr(x)))),
+      Times(Power(Plus(Sqr(x),CN1),CN1),Plus(C1,Sqr(x)))),
     // Coth(Infinity)=1
     ISet(Coth(oo),
       C1, true),

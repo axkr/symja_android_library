@@ -24,19 +24,19 @@ public class CotRules {
     ISet(Cot(C0),
       CComplexInfinity, true),
     // Cot(Pi/12)=2+Sqrt(3)
-    ISet(Cot(Times(QQ(1L,12L),Pi)),
+    ISet(Cot(CPiTwelfth),
       Plus(C2,CSqrt3), true),
     // Cot(Pi/10)=Sqrt(5+2*Sqrt(5))
     ISet(Cot(Times(QQ(1L,10L),Pi)),
       Sqrt(Plus(C5,Times(C2,CSqrt5))), true),
     // Cot(Pi/8)=Sqrt(2)+1
-    ISet(Cot(Times(QQ(1L,8L),Pi)),
+    ISet(Cot(CPiEighth),
       Plus(C1,CSqrt2), true),
     // Cot(Pi/6)=Sqrt(3)
-    ISet(Cot(Times(QQ(1L,6L),Pi)),
+    ISet(Cot(CPiSixth),
       CSqrt3, true),
     // Cot(Pi/5)=Sqrt(1+2/Sqrt(5))
-    ISet(Cot(Times(QQ(1L,5L),Pi)),
+    ISet(Cot(CPiFifth),
       Sqrt(Plus(C1,Times(C2,C1DSqrt5))), true),
     // Cot(Pi/4)=1
     ISet(Cot(CPiQuarter),
@@ -47,7 +47,7 @@ public class CotRules {
     // Cot(Pi/3)=1/Sqrt(3)
     ISet(Cot(CPiThird),
       C1DSqrt3, true),
-    // Cot(3/8*Pi)=-1+Sqrt(2)
+    // Cot(3/8*Pi)=Sqrt(2)-1
     ISet(Cot(Times(QQ(3L,8L),Pi)),
       Plus(CN1,CSqrt2), true),
     // Cot(2/5*Pi)=Sqrt(1-2/Sqrt(5))
@@ -66,16 +66,16 @@ public class CotRules {
     ISet(Cot(Times(QQ(3L,5L),Pi)),
       Negate(Sqrt(Plus(C1,Times(CN2,C1DSqrt5)))), true),
     // Cot(5/8*Pi)=1-Sqrt(2)
-    ISet(Cot(Times(QQ(5L,8L),Pi)),
+    ISet(Cot(Times(C5D8,Pi)),
       Subtract(C1,CSqrt2), true),
     // Cot(2/3*Pi)=-1/Sqrt(3)
-    ISet(Cot(Times(QQ(2L,3L),Pi)),
+    ISet(Cot(Times(C2D3,Pi)),
       Negate(C1DSqrt3), true),
     // Cot(7/10*Pi)=-Sqrt(5-2*Sqrt(5))
     ISet(Cot(Times(QQ(7L,10L),Pi)),
       Negate(Sqrt(Plus(C5,Times(CN2,CSqrt5)))), true),
     // Cot(3/4*Pi)=-1
-    ISet(Cot(Times(QQ(3L,4L),Pi)),
+    ISet(Cot(Times(C3D4,Pi)),
       CN1, true),
     // Cot(4/5*Pi)=-Sqrt(1+2/Sqrt(5))
     ISet(Cot(Times(QQ(4L,5L),Pi)),
@@ -120,10 +120,10 @@ public class CotRules {
     ISetDelayed(Cot(ArcSec(x_)),
       Times(Power(Subtract(C1,Power(x,CN2)),CN1D2),Power(x,CN1))),
     // Cot(I*Infinity)=-I
-    ISet(Cot(DirectedInfinity(CI)),
+    ISet(Cot(CIInfinity),
       CNI, true),
     // Cot(-I*Infinity)=I
-    ISet(Cot(DirectedInfinity(CNI)),
+    ISet(Cot(CNIInfinity),
       CI, true),
     // Cot(ComplexInfinity)=Indeterminate
     ISet(Cot(CComplexInfinity),

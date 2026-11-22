@@ -48,38 +48,38 @@ public class ArcCscRules {
     ISet(ArcCsc(Times(C2,C1DSqrt3)),
       CPiThird, true),
     // ArcCsc(-1+Sqrt(5))=3/10*Pi
-    ISet(ArcCsc(Plus(CN1,CSqrt5)),
+    ISet(ArcCsc(CN1PSqrt5),
       Times(QQ(3L,10L),Pi), true),
     // ArcCsc(1-Sqrt(5))=-3/10*Pi
-    ISet(ArcCsc(Subtract(C1,CSqrt5)),
+    ISet(ArcCsc(C1MSqrt5),
       Times(QQ(-3L,10L),Pi), true),
     // ArcCsc(Sqrt(2))=Pi/4
     ISet(ArcCsc(CSqrt2),
       CPiQuarter, true),
     // ArcCsc(Sqrt(2+2/Sqrt(5)))=Pi/5
     ISet(ArcCsc(Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
-      Times(QQ(1L,5L),Pi), true),
+      CPiFifth, true),
     // ArcCsc(-Sqrt(2+2/Sqrt(5)))=-Pi/5
     ISet(ArcCsc(Negate(Sqrt(Plus(C2,Times(C2,C1DSqrt5))))),
-      Times(QQ(-1L,5L),Pi), true),
+      Times(CN1D5,Pi), true),
     // ArcCsc(2)=Pi/6
     ISet(ArcCsc(C2),
-      Times(QQ(1L,6L),Pi), true),
+      CPiSixth, true),
     // ArcCsc(Sqrt(2*(2+Sqrt(2))))=Pi/8
     ISet(ArcCsc(Sqrt(Times(C2,Plus(C2,CSqrt2)))),
-      Times(QQ(1L,8L),Pi), true),
+      CPiEighth, true),
     // ArcCsc(-Sqrt(2*(2+Sqrt(2))))=-Pi/8
     ISet(ArcCsc(Negate(Sqrt(Times(C2,Plus(C2,CSqrt2))))),
-      Times(QQ(-1L,8L),Pi), true),
+      Times(CN1D8,Pi), true),
     // ArcCsc(1+Sqrt(5))=Pi/10
-    ISet(ArcCsc(Plus(C1,CSqrt5)),
+    ISet(ArcCsc(C1PSqrt5),
       Times(QQ(1L,10L),Pi), true),
     // ArcCsc(-1-Sqrt(5))=-Pi/10
-    ISet(ArcCsc(Subtract(CN1,CSqrt5)),
+    ISet(ArcCsc(CN1MSqrt5),
       Times(QQ(-1L,10L),Pi), true),
     // ArcCsc(Sqrt(2)+Sqrt(6))=Pi/12
     ISet(ArcCsc(Plus(CSqrt2,CSqrt6)),
-      Times(QQ(1L,12L),Pi), true),
+      CPiTwelfth, true),
     // ArcCsc(-Sqrt(2)-Sqrt(6))=-Pi/12
     ISet(ArcCsc(Subtract(Negate(CSqrt2),CSqrt6)),
       Times(QQ(-1L,12L),Pi), true),
@@ -90,10 +90,10 @@ public class ArcCscRules {
     ISet(ArcCsc(Noo),
       C0, true),
     // ArcCsc(I*Infinity)=0
-    ISet(ArcCsc(DirectedInfinity(CI)),
+    ISet(ArcCsc(CIInfinity),
       C0, true),
     // ArcCsc(-I*Infinity)=0
-    ISet(ArcCsc(DirectedInfinity(CNI)),
+    ISet(ArcCsc(CNIInfinity),
       C0, true),
     // ArcCsc(ComplexInfinity)=0
     ISet(ArcCsc(CComplexInfinity),

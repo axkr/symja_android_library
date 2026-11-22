@@ -24,11 +24,11 @@ public class GudermannianRules {
     ISet(Gudermannian(C0),
       C0, true),
     // Gudermannian(I*2*Pi)=0
-    ISet(Gudermannian(Times(CC(0L,1L,2L,1L),Pi)),
+    ISet(Gudermannian(Times(C2I,Pi)),
       C0, true),
     // Gudermannian(I*3/2*Pi)=-I*Infinity
     ISet(Gudermannian(Times(CC(0L,1L,3L,2L),Pi)),
-      DirectedInfinity(CNI), true),
+      CNIInfinity, true),
     // Gudermannian(Infinity)=Pi/2
     ISet(Gudermannian(oo),
       CPiHalf, true),

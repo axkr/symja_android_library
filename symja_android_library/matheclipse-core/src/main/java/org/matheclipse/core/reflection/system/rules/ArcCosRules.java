@@ -28,22 +28,22 @@ public class ArcCosRules {
       CPiThird, true),
     // ArcCos(-1/2)=2/3*Pi
     ISet(ArcCos(CN1D2),
-      Times(QQ(2L,3L),Pi), true),
+      Times(C2D3,Pi), true),
     // ArcCos(1/Sqrt(2))=Pi/4
     ISet(ArcCos(C1DSqrt2),
       CPiQuarter, true),
     // ArcCos(-1/Sqrt(2))=3/4*Pi
     ISet(ArcCos(Negate(C1DSqrt2)),
-      Times(QQ(3L,4L),Pi), true),
+      Times(C3D4,Pi), true),
     // ArcCos(Sqrt(3)/2)=Pi/6
     ISet(ArcCos(Times(C1D2,CSqrt3)),
-      Times(QQ(1L,6L),Pi), true),
+      CPiSixth, true),
     // ArcCos(-Sqrt(3)/2)=5/6*Pi
     ISet(ArcCos(Times(CN1D2,CSqrt3)),
       Times(QQ(5L,6L),Pi), true),
     // ArcCos(Sqrt(2+Sqrt(2))/2)=Pi/8
     ISet(ArcCos(Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
-      Times(QQ(1L,8L),Pi), true),
+      CPiEighth, true),
     // ArcCos(Sqrt(2-Sqrt(2))/2)=3/8*Pi
     ISet(ArcCos(Times(C1D2,Sqrt(Subtract(C2,CSqrt2)))),
       Times(QQ(3L,8L),Pi), true),
@@ -51,17 +51,17 @@ public class ArcCosRules {
     ISet(ArcCos(Times(CN1D2,Sqrt(Plus(C2,CSqrt2)))),
       Times(QQ(7L,8L),Pi), true),
     // ArcCos((1+Sqrt(3))/(2*Sqrt(2)))=Pi/12
-    ISet(ArcCos(Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
-      Times(QQ(1L,12L),Pi), true),
+    ISet(ArcCos(Times(C1D2,C1DSqrt2,C1PSqrt3)),
+      CPiTwelfth, true),
     // ArcCos((-1-Sqrt(3))/(2*Sqrt(2)))=11/12*Pi
     ISet(ArcCos(Times(C1D2,C1DSqrt2,Subtract(CN1,CSqrt3))),
       Times(QQ(11L,12L),Pi), true),
     // ArcCos(1/4*(-1+Sqrt(5)))=2/5*Pi
-    ISet(ArcCos(Times(C1D4,Plus(CN1,CSqrt5))),
+    ISet(ArcCos(Times(C1D4,CN1PSqrt5)),
       Times(QQ(2L,5L),Pi), true),
     // ArcCos(1/4*(1+Sqrt(5)))=Pi/5
-    ISet(ArcCos(Times(C1D4,Plus(C1,CSqrt5))),
-      Times(QQ(1L,5L),Pi), true),
+    ISet(ArcCos(Times(C1D4,C1PSqrt5)),
+      CPiFifth, true),
     // ArcCos(1)=0
     ISet(ArcCos(C1),
       C0, true),
@@ -70,16 +70,16 @@ public class ArcCosRules {
       Pi, true),
     // ArcCos(Infinity)=I*Infinity
     ISet(ArcCos(oo),
-      DirectedInfinity(CI), true),
+      CIInfinity, true),
     // ArcCos(-Infinity)=-I*Infinity
     ISet(ArcCos(Noo),
-      DirectedInfinity(CNI), true),
+      CNIInfinity, true),
     // ArcCos(I*Infinity)=-I*Infinity
-    ISet(ArcCos(DirectedInfinity(CI)),
-      DirectedInfinity(CNI), true),
+    ISet(ArcCos(CIInfinity),
+      CNIInfinity, true),
     // ArcCos(-I*Infinity)=I*Infinity
-    ISet(ArcCos(DirectedInfinity(CNI)),
-      DirectedInfinity(CI), true),
+    ISet(ArcCos(CNIInfinity),
+      CIInfinity, true),
     // ArcCos(ComplexInfinity)=ComplexInfinity
     ISet(ArcCos(CComplexInfinity),
       CComplexInfinity, true)

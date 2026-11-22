@@ -21,10 +21,10 @@ public class GammaRules {
     ISet(Gamma(Undefined),
       Undefined, true),
     // Gamma(-5/2)=(-1)*1/15*8*Sqrt(Pi)
-    ISet(Gamma(QQ(-5L,2L)),
+    ISet(Gamma(CN5D2),
       Times(QQ(-8L,15L),CSqrtPi), true),
     // Gamma(-3/2)=1/3*4*Sqrt(Pi)
-    ISet(Gamma(QQ(-3L,2L)),
+    ISet(Gamma(CN3D2),
       Times(QQ(4L,3L),CSqrtPi), true),
     // Gamma(-1/2)=-2*Sqrt(Pi)
     ISet(Gamma(CN1D2),
@@ -33,11 +33,11 @@ public class GammaRules {
     ISet(Gamma(C1D2),
       CSqrtPi, true),
     // Gamma(3/2)=Sqrt(Pi)/2
-    ISet(Gamma(QQ(3L,2L)),
+    ISet(Gamma(C3D2),
       Times(C1D2,CSqrtPi), true),
     // Gamma(5/2)=1/4*3*Sqrt(Pi)
-    ISet(Gamma(QQ(5L,2L)),
-      Times(QQ(3L,4L),CSqrtPi), true),
+    ISet(Gamma(C5D2),
+      Times(C3D4,CSqrtPi), true),
     // Gamma(Infinity)=Infinity
     ISet(Gamma(oo),
       oo, true),
@@ -45,10 +45,10 @@ public class GammaRules {
     ISet(Gamma(Noo),
       Indeterminate, true),
     // Gamma(I*Infinity)=0
-    ISet(Gamma(DirectedInfinity(CI)),
+    ISet(Gamma(CIInfinity),
       C0, true),
     // Gamma(-I*Infinity)=0
-    ISet(Gamma(DirectedInfinity(CNI)),
+    ISet(Gamma(CNIInfinity),
       C0, true),
     // Gamma(ComplexInfinity)=Indeterminate
     ISet(Gamma(CComplexInfinity),
@@ -71,9 +71,9 @@ public class GammaRules {
     // Gamma(1,z_):=E^(-z)
     ISetDelayed(Gamma(C1,z_),
       Exp(Negate(z))),
-    // Gamma(a_,z_,0):=-Gamma(a)+Gamma(a,z)/;Re(a)>0
+    // Gamma(a_,z_,0):=Gamma(a,z)-Gamma(a)/;Re(a)>0
     ISetDelayed(Gamma(a_,z_,C0),
-      Condition(Plus(Negate(Gamma(a)),Gamma(a,z)),Greater(Re(a),C0))),
+      Condition(Subtract(Gamma(a,z),Gamma(a)),Greater(Re(a),C0))),
     // Gamma(a_,z_,Infinity):=Gamma(a,z)
     ISetDelayed(Gamma(a_,z_,oo),
       Gamma(a,z)),

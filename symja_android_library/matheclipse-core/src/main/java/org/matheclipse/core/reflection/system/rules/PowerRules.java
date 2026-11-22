@@ -18,7 +18,7 @@ public class PowerRules {
   final public static IAST RULES = List(
     IInit(Power, SIZES),
     // E^(I*1/2*Pi)=I
-    ISet(Exp(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Exp(CIPiHalf),
       CI, true),
     // E^(I*3/2*Pi)=-I
     ISet(Exp(Times(CC(0L,1L,3L,2L),Pi)),

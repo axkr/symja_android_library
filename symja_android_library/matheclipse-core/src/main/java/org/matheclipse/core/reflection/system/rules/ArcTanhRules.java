@@ -28,7 +28,7 @@ public class ArcTanhRules {
       Times(CC(0L,1L,1L,6L),Pi), true),
     // ArcTanh(I)=Pi*I*1/4
     ISet(ArcTanh(CI),
-      Times(CC(0L,1L,1L,4L),Pi), true),
+      Times(CID4,Pi), true),
     // ArcTanh(I*Sqrt(3))=Pi*I*1/3
     ISet(ArcTanh(Times(CI,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi), true),
@@ -37,10 +37,10 @@ public class ArcTanhRules {
       oo, true),
     // ArcTanh(Infinity)=-1/2*Pi*I
     ISet(ArcTanh(oo),
-      Times(CC(0L,1L,-1L,2L),Pi), true),
+      Times(CNID2,Pi), true),
     // ArcTanh(I*Infinity)=1/2*Pi*I
-    ISet(ArcTanh(DirectedInfinity(CI)),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+    ISet(ArcTanh(CIInfinity),
+      CIPiHalf, true),
     // ArcTanh(ComplexInfinity)=Indeterminate
     ISet(ArcTanh(CComplexInfinity),
       Indeterminate, true)

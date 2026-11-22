@@ -17,12 +17,12 @@ public class ZTransformRules {
 
   final public static IAST RULES = List(
     IInit(ZTransform, SIZES),
-    // ZTransform(a_^n_,n_?NotListQ,z_?NotListQ):=z/(-a+z)/;FreeQ(a,n)&&FreeQ(a,z)
+    // ZTransform(a_^n_,n_?NotListQ,z_?NotListQ):=z/(z-a)/;FreeQ(a,n)&&FreeQ(a,z)
     ISetDelayed(ZTransform(Power(a_,n_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Condition(Times(z,Power(Plus(Negate(a),z),CN1)),And(FreeQ(a,n),FreeQ(a,z)))),
-    // ZTransform(a_^(f_*n_),n_?NotListQ,z_?NotListQ):=z/(-a^f+z)/;FreeQ({a,f},n)&&FreeQ({a,f},z)
+      Condition(Times(Power(Subtract(z,a),CN1),z),And(FreeQ(a,n),FreeQ(a,z)))),
+    // ZTransform(a_^(f_*n_),n_?NotListQ,z_?NotListQ):=z/(z-a^f)/;FreeQ({a,f},n)&&FreeQ({a,f},z)
     ISetDelayed(ZTransform(Power(a_,Times(f_,n_)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Condition(Times(z,Power(Plus(Negate(Power(a,f)),z),CN1)),And(FreeQ(list(a,f),n),FreeQ(list(a,f),z)))),
+      Condition(Times(Power(Subtract(z,Power(a,f)),CN1),z),And(FreeQ(list(a,f),n),FreeQ(list(a,f),z)))),
     // ZTransform(f_./(g_+n_),n_?NotListQ,z_?NotListQ):=f*HurwitzLerchPhi(1/z,1,g)/;FreeQ({f,g},n)&&FreeQ({f,g},z)
     ISetDelayed(ZTransform(Times(f_DEFAULT,Power(Plus(g_,n_),CN1)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
       Condition(Times(f,HurwitzLerchPhi(Power(z,CN1),C1,g)),And(FreeQ(list(f,g),n),FreeQ(list(f,g),z)))),

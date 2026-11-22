@@ -575,13 +575,9 @@ public class ComplexSym implements IComplex {
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = SourceCodeProperties.getPrefixF(properties);
-    if (fReal.isZero()) {
-      if (fImaginary.isOne()) {
-        return new StringBuilder(prefix).append("CI");
-      }
-      if (fImaginary.isMinusOne()) {
-        return new StringBuilder(prefix).append("CNI");
-      }
+    String name = JavaConstantNames.complex(this);
+    if (name != null) {
+      return prefix + name;
     }
     BigInteger realNumerator = fReal.toBigNumerator();
     BigInteger realDenominator = fReal.toBigDenominator();

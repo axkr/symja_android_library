@@ -50,7 +50,7 @@ IIntegrate(1396,Integrate(Times(u_DEFAULT,Power(Plus(a_,Times(c_DEFAULT,Power(x_
 IIntegrate(1397,Integrate(Power(Plus(Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4))),p_),x_Symbol),
     Condition(Integrate(Times(Power(x,Times(C2,p)),Power(Plus(b,Times(c,Sqr(x))),p)),x),And(FreeQ(list(b,c),x),IntegerQ(p)))),
 IIntegrate(1398,Integrate(Sqrt(Plus(Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4)))),x_Symbol),
-    Condition(Simp(Times(Power(Plus(Times(b,Sqr(x)),Times(c,Power(x,C4))),QQ(3L,2L)),Power(Times(C3,c,Power(x,C3)),CN1)),x),FreeQ(list(b,c),x))),
+    Condition(Simp(Times(Power(Plus(Times(b,Sqr(x)),Times(c,Power(x,C4))),C3D2),Power(Times(C3,c,Power(x,C3)),CN1)),x),FreeQ(list(b,c),x))),
 IIntegrate(1399,Integrate(Power(Plus(Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4))),p_),x_Symbol),
     Condition(Subtract(Simp(Times(Power(Plus(Times(b,Sqr(x)),Times(c,Power(x,C4))),Plus(p,C1)),Power(Times(c,Plus(Times(C4,p),C1),Power(x,C3)),CN1)),x),Simp(Dist(Times(b,Plus(Times(C2,p),CN1),Power(Times(c,Plus(Times(C4,p),C1)),CN1)),Integrate(Times(Power(Plus(Times(b,Sqr(x)),Times(c,Power(x,C4))),p),Power(x,CN2)),x),x),x)),And(FreeQ(list(b,c,p),x),IGtQ(Plus(p,CN1D2),C0)))),
 IIntegrate(1400,Integrate(Power(Plus(Times(b_DEFAULT,Sqr(x_)),Times(c_DEFAULT,Power(x_,C4))),CN1D2),x_Symbol),

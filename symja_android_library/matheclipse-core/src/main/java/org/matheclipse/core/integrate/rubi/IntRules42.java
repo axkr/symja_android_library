@@ -16,7 +16,7 @@ import com.google.common.base.Supplier;
 class IntRules42 { 
   public static IAST RULES = List( 
 IIntegrate(841,Integrate(Times(Power(x_,CN2),Power(Plus(a_,Times(b_DEFAULT,Power(x_,C4))),CN1D4)),x_Symbol),
-    Condition(Subtract(Negate(Simp(Power(Times(x,Power(Plus(a,Times(b,Power(x,C4))),C1D4)),CN1),x)),Simp(Dist(b,Integrate(Times(Sqr(x),Power(Plus(a,Times(b,Power(x,C4))),QQ(-5L,4L))),x),x),x)),And(FreeQ(list(a,b),x),PosQ(Times(b,Power(a,CN1)))))),
+    Condition(Subtract(Negate(Simp(Power(Times(x,Power(Plus(a,Times(b,Power(x,C4))),C1D4)),CN1),x)),Simp(Dist(b,Integrate(Times(Sqr(x),Power(Plus(a,Times(b,Power(x,C4))),CN5D4)),x),x),x)),And(FreeQ(list(a,b),x),PosQ(Times(b,Power(a,CN1)))))),
 IIntegrate(842,Integrate(Times(Power(x_,CN2),Power(Plus(a_,Times(b_DEFAULT,Power(x_,C4))),CN1D4)),x_Symbol),
     Condition(Simp(Dist(Times(x,Power(Plus(C1,Times(a,Power(Times(b,Power(x,C4)),CN1))),C1D4),Power(Plus(a,Times(b,Power(x,C4))),CN1D4)),Integrate(Power(Times(Power(x,C3),Power(Plus(C1,Times(a,Power(Times(b,Power(x,C4)),CN1))),C1D4)),CN1),x),x),x),And(FreeQ(list(a,b),x),NegQ(Times(b,Power(a,CN1)))))),
 IIntegrate(843,Integrate(Times(Power(Times(c_DEFAULT,x_),m_),Power(Plus(a_,Times(b_DEFAULT,Power(x_,n_))),p_)),x_Symbol),
@@ -39,7 +39,7 @@ IIntegrate(851,Integrate(Times(Power(Times(c_DEFAULT,x_),m_),Power(Plus(a_,Times
     Condition(With(list(Set(k,Denominator(m))),Simp(Dist(Times(k,Power(c,CN1)),Subst(Integrate(Times(Power(x,Plus(Times(k,Plus(m,C1)),CN1)),Power(Plus(a,Times(b,Power(x,Times(k,n)),Power(Power(c,n),CN1))),p)),x),x,Power(Times(c,x),Power(k,CN1))),x),x)),And(FreeQ(List(a,b,c,p),x),IGtQ(n,C0),FractionQ(m),IntBinomialQ(a,b,c,n,m,p,x)))),
 IIntegrate(852,Integrate(Times(Power(Times(c_DEFAULT,x_),m_),Power(Plus($p("a1"),Times($p("b1",true),Power(x_,n_))),p_),Power(Plus($p("a2"),Times($p("b2",true),Power(x_,n_))),p_)),x_Symbol),
     Condition(With(list(Set(k,Denominator(m))),Simp(Dist(Times(k,Power(c,CN1)),Subst(Integrate(Times(Power(x,Plus(Times(k,Plus(m,C1)),CN1)),Power(Plus($s("a1"),Times($s("b1"),Power(x,Times(k,n)),Power(Power(c,n),CN1))),p),Power(Plus($s("a2"),Times($s("b2"),Power(x,Times(k,n)),Power(Power(c,n),CN1))),p)),x),x,Power(Times(c,x),Power(k,CN1))),x),x)),And(FreeQ(List($s("a1"),$s("b1"),$s("a2"),$s("b2"),c,p),x),EqQ(Plus(Times($s("a2"),$s("b1")),Times($s("a1"),$s("b2"))),C0),IGtQ(Times(C2,n),C0),FractionQ(m),IntBinomialQ(Times($s("a1"),$s("a2")),Times($s("b1"),$s("b2")),c,Times(C2,n),m,p,x)))),
-IIntegrate(853,Integrate(Times(x_,Power(Plus(a_,Times(b_DEFAULT,Power(x_,C3))),QQ(-2L,3L))),x_Symbol),
+IIntegrate(853,Integrate(Times(x_,Power(Plus(a_,Times(b_DEFAULT,Power(x_,C3))),CN2D3)),x_Symbol),
     Condition(With(list(Set(q,Rt(b,C3))),Subtract(Simp(Times(CN1,ArcTan(Times(Plus(C1,Times(C2,q,x,Power(Plus(a,Times(b,Power(x,C3))),CN1D3))),C1DSqrt3)),Power(Times(CSqrt3,Sqr(q)),CN1)),x),Simp(Times(Log(Subtract(Times(q,x),Power(Plus(a,Times(b,Power(x,C3))),C1D3))),Power(Times(C2,Sqr(q)),CN1)),x))),FreeQ(list(a,b),x))),
 IIntegrate(854,Integrate(Times(Power(x_,m_DEFAULT),Power(Plus(a_,Times(b_DEFAULT,Power(x_,n_))),p_)),x_Symbol),
     Condition(Simp(Dist(Power(a,Plus(p,Times(Plus(m,C1),Power(n,CN1)))),Subst(Integrate(Times(Power(x,m),Power(Power(Subtract(C1,Times(b,Power(x,n))),Plus(p,Times(Plus(m,C1),Power(n,CN1)),C1)),CN1)),x),x,Times(x,Power(Power(Plus(a,Times(b,Power(x,n))),Power(n,CN1)),CN1))),x),x),And(FreeQ(list(a,b),x),IGtQ(n,C0),LtQ(CN1,p,C0),NeQ(p,CN1D2),IntegersQ(m,Plus(p,Times(Plus(m,C1),Power(n,CN1))))))),

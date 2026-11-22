@@ -571,6 +571,27 @@ public class F extends S {
   /** Constant integer &quot;10&quot; */
   public static final IInteger C10 = AbstractIntegerSym.valueOf(10);
 
+  /** Constant integer &quot;12&quot; */
+  public static final IInteger C12 = AbstractIntegerSym.valueOf(12);
+
+  /** Constant integer &quot;15&quot; */
+  public static final IInteger C15 = AbstractIntegerSym.valueOf(15);
+
+  /** Constant integer &quot;16&quot; */
+  public static final IInteger C16 = AbstractIntegerSym.valueOf(16);
+
+  /** Constant integer &quot;18&quot; */
+  public static final IInteger C18 = AbstractIntegerSym.valueOf(18);
+
+  /** Constant integer &quot;20&quot; */
+  public static final IInteger C20 = AbstractIntegerSym.valueOf(20);
+
+  /** Constant integer &quot;27&quot; */
+  public static final IInteger C27 = AbstractIntegerSym.valueOf(27);
+
+  /** Constant integer &quot;35&quot; */
+  public static final IInteger C35 = AbstractIntegerSym.valueOf(35);
+
   /** Constant integer &quot;100&quot; */
   public static final IInteger C100 = AbstractIntegerSym.valueOf(100);
 
@@ -591,6 +612,18 @@ public class F extends S {
 
   /** Complex negative imaginary unit &quot;0 - I&quot;. */
   public static final IComplex CNI = ComplexSym.valueOf(0, 1, -1, 1);
+
+  /** Complex constant &quot;I/2&quot; */
+  public static final IComplex CID2 = ComplexSym.valueOf(0, 1, 1, 2);
+
+  /** Complex constant &quot;-I/2&quot; */
+  public static final IComplex CNID2 = ComplexSym.valueOf(0, 1, -1, 2);
+
+  /** Complex constant &quot;I/4&quot; */
+  public static final IComplex CID4 = ComplexSym.valueOf(0, 1, 1, 4);
+
+  /** Complex constant &quot;2*I&quot; */
+  public static final IComplex C2I = ComplexSym.valueOf(0, 1, 2, 1);
 
   /** Constant fraction &quot;1/2&quot; */
   public static final IFraction C1D2 = AbstractFractionSym.valueOf(1, 2);
@@ -639,6 +672,30 @@ public class F extends S {
 
   /** Constant fraction &quot;-2/3&quot; */
   public static final IFraction CN2D3 = AbstractFractionSym.valueOf(-2, 3);
+
+  /** Constant fraction &quot;1/8&quot; */
+  public static final IFraction C1D8 = AbstractFractionSym.valueOf(1, 8);
+
+  /** Constant fraction &quot;-1/8&quot; */
+  public static final IFraction CN1D8 = AbstractFractionSym.valueOf(-1, 8);
+
+  /** Constant fraction &quot;1/12&quot; */
+  public static final IFraction C1D12 = AbstractFractionSym.valueOf(1, 12);
+
+  /** Constant fraction &quot;-3/4&quot; */
+  public static final IFraction CN3D4 = AbstractFractionSym.valueOf(-3, 4);
+
+  /** Constant fraction &quot;-5/4&quot; */
+  public static final IFraction CN5D4 = AbstractFractionSym.valueOf(-5, 4);
+
+  /** Constant fraction &quot;7/2&quot; */
+  public static final IFraction C7D2 = AbstractFractionSym.valueOf(7, 2);
+
+  /** Constant fraction &quot;5/8&quot; */
+  public static final IFraction C5D8 = AbstractFractionSym.valueOf(5, 8);
+
+  /** Constant fraction &quot;-5/2&quot; */
+  public static final IFraction CN5D2 = AbstractFractionSym.valueOf(-5, 2);
 
   /** Constant double &quot;-1.0&quot; */
   public static final Num CND1 = new Num(-1.0);
@@ -825,6 +882,72 @@ public class F extends S {
   /** Represents <code>1/Sqrt(10)</code> */
   public static final IAST C1DSqrt10;
 
+  /** Represents <code>1/Pi</code> as <code>Power(Pi, -1)</code> */
+  public static final IAST C1DPi;
+
+  /** Represents <code>Pi^2</code> */
+  public static final IAST CPiSqr;
+
+  /** Represents <code>I*Pi</code> */
+  public static final IAST CIPi;
+
+  /** Represents <code>I/2*Pi</code> */
+  public static final IAST CIPiHalf;
+
+  /** Represents <code>Pi/5</code> */
+  public static final IAST CPiFifth;
+
+  /** Represents <code>Pi/6</code> */
+  public static final IAST CPiSixth;
+
+  /** Represents <code>Pi/8</code> */
+  public static final IAST CPiEighth;
+
+  /** Represents <code>Pi/12</code> */
+  public static final IAST CPiTwelfth;
+
+  /** Represents <code>1/Sqrt(Pi)</code> as <code>Power(Pi, -1/2)</code> */
+  public static final IAST C1DSqrtPi;
+
+  /** Represents <code>Sqrt(Pi/2)</code> */
+  public static final IAST CSqrtPiHalf;
+
+  /** Represents <code>Sqrt(2/Pi)</code> */
+  public static final IAST CSqrt2DPi;
+
+  /** Represents <code>1+Sqrt(3)</code> */
+  public static final IAST C1PSqrt3;
+
+  /** Represents <code>1-Sqrt(3)</code> */
+  public static final IAST C1MSqrt3;
+
+  /** Represents <code>-1+Sqrt(3)</code> */
+  public static final IAST CN1PSqrt3;
+
+  /** Represents <code>1+Sqrt(5)</code> */
+  public static final IAST C1PSqrt5;
+
+  /** Represents <code>1-Sqrt(5)</code> */
+  public static final IAST C1MSqrt5;
+
+  /** Represents <code>-1+Sqrt(5)</code> */
+  public static final IAST CN1PSqrt5;
+
+  /** Represents <code>-1-Sqrt(5)</code> */
+  public static final IAST CN1MSqrt5;
+
+  /** Represents <code>2^(1/3)</code> */
+  public static final IAST CCbrt2;
+
+  /** Represents <code>2^(2/3)</code> */
+  public static final IAST CCbrt4;
+
+  /** Represents <code>Log(2)</code> */
+  public static final IAST CLog2;
+
+  /** Represents <code>Derivative(1)</code>, the head of a first derivative */
+  public static final IAST CDerivative1;
+
   /** Represents <code>#1</code>, the first argument of a pure function. */
   public static final IAST Slot1;
 
@@ -964,6 +1087,29 @@ public class F extends S {
       C1DSqrt7 = new B2.Power(C7, CN1D2);
       C1DSqrt10 = new B2.Power(C10, CN1D2);
 
+      C1DPi = new B2.Power(Pi, CN1);
+      CPiSqr = new B2.Power(Pi, C2);
+      CIPi = new B2.Times(CI, Pi);
+      CIPiHalf = new B2.Times(CID2, Pi);
+      CPiFifth = new B2.Times(C1D5, Pi);
+      CPiSixth = new B2.Times(C1D6, Pi);
+      CPiEighth = new B2.Times(C1D8, Pi);
+      CPiTwelfth = new B2.Times(C1D12, Pi);
+      C1DSqrtPi = new B2.Power(Pi, CN1D2);
+      CSqrtPiHalf = new B2.Power(CPiHalf, C1D2);
+      CSqrt2DPi = new B2.Power(new B2.Times(C2, C1DPi), C1D2);
+      C1PSqrt3 = new B2.Plus(C1, CSqrt3);
+      C1MSqrt3 = new B2.Plus(C1, new B2.Times(CN1, CSqrt3));
+      CN1PSqrt3 = new B2.Plus(CN1, CSqrt3);
+      C1PSqrt5 = new B2.Plus(C1, CSqrt5);
+      C1MSqrt5 = new B2.Plus(C1, new B2.Times(CN1, CSqrt5));
+      CN1PSqrt5 = new B2.Plus(CN1, CSqrt5);
+      CN1MSqrt5 = new B2.Plus(CN1, new B2.Times(CN1, CSqrt5));
+      CCbrt2 = new B2.Power(C2, C1D3);
+      CCbrt4 = new B2.Power(C2, C2D3);
+      CLog2 = new B1.Log(C2);
+      CDerivative1 = new AST1(Derivative, C1);
+
       IAST Slot0 = new B1.Slot(C0);
       Slot1 = new B1.Slot(C1);
       Slot2 = new B1.Slot(C2);
@@ -1004,7 +1150,15 @@ public class F extends S {
           f_DEFAULT, g_DEFAULT, h_DEFAULT, i_DEFAULT, j_DEFAULT, k_DEFAULT, l_DEFAULT, m_DEFAULT,
           n_DEFAULT, o_DEFAULT, p_DEFAULT, q_DEFAULT, r_DEFAULT, s_DEFAULT, t_DEFAULT, u_DEFAULT,
           v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT,
-          F_DEFAULT, G_DEFAULT};
+          F_DEFAULT, G_DEFAULT,
+          // appended constants - new entries go at the end only, the ID of an entry is its index
+          C12, C15, C16, C18, C20, C27, C35, C100, C1000, C3D2, CN3D2, C2D3, CN2D3, C3D4, CN3D4,
+          C5D2, CN5D2, C7D2, C1D5, CN1D5, C1D6, CN1D6, C1D8, CN1D8, C5D8, CN5D4, C1D12, CID2,
+          CNID2, CID4, C2I, CIInfinity, CNIInfinity, CSqrtPi, C1DSqrtPi, CSqrtPiHalf, CSqrt2DPi,
+          CNPi, CN2Pi, C2Pi, CNPiHalf, CPiHalf, CNPiThird, CPiThird, CNPiQuarter, CPiQuarter,
+          CPiFifth, CPiSixth, CPiEighth, CPiTwelfth, C1DPi, CPiSqr, CIPi, CIPiHalf, C1PSqrt3,
+          C1MSqrt3, CN1PSqrt3, C1PSqrt5, C1MSqrt5, CN1PSqrt5, CN1MSqrt5, CCbrt2, CCbrt4, CLog2,
+          CDerivative1};
       for (short i = 0; i < S.BUILT_IN_SYMBOLS.length; i++) {
         IBuiltInSymbol symbol = S.BUILT_IN_SYMBOLS[i];
         if (symbol != null) {
@@ -2538,6 +2692,10 @@ public class F extends S {
     return new AST3(CarlsonRG, a0, a1, a2);
   }
 
+  public static IAST CarlsonRJ(final IExpr x, final IExpr y, final IExpr z, final IExpr p) {
+    return quaternary(CarlsonRJ, x, y, z, p);
+  }
+
   public static IAST CarmichaelLambda(final IExpr a0) {
     return new AST1(CarmichaelLambda, a0);
   }
@@ -3323,6 +3481,10 @@ public class F extends S {
     return new B1.Cos(z);
   }
 
+  public static IAST CosDegrees(final IExpr z) {
+    return new AST1(CosDegrees, z);
+  }
+
   public static IAST Cosh(final IExpr z) {
     return new AST1(Cosh, z);
   }
@@ -3348,6 +3510,10 @@ public class F extends S {
    */
   public static IAST Cot(final IExpr z) {
     return new AST1(Cot, z);
+  }
+
+  public static IAST CotDegrees(final IExpr z) {
+    return new AST1(CotDegrees, z);
   }
 
   public static IAST Coth(final IExpr z) {
@@ -3422,6 +3588,10 @@ public class F extends S {
 
   public static IAST Csc(final IExpr z) {
     return new B1.Csc(z);
+  }
+
+  public static IAST CscDegrees(final IExpr z) {
+    return new AST1(CscDegrees, z);
   }
 
   public static IAST Csch(final IExpr z) {
@@ -4070,12 +4240,24 @@ public class F extends S {
     return new AST1(EllipticK, m);
   }
 
+  public static IAST EllipticNomeQ(final IExpr m) {
+    return new AST1(EllipticNomeQ, m);
+  }
+
   public static IAST EllipticPi(final IExpr n, final IExpr m) {
     return new AST2(EllipticPi, n, m);
   }
 
   public static IAST EllipticPi(final IExpr n, final IExpr phi, final IExpr m) {
     return new AST3(EllipticPi, n, phi, m);
+  }
+
+  public static IAST EllipticTheta(final IExpr a, final IExpr u, final IExpr q) {
+    return new AST3(EllipticTheta, a, u, q);
+  }
+
+  public static IAST EllipticThetaPrime(final IExpr a, final IExpr u, final IExpr q) {
+    return new AST3(EllipticThetaPrime, a, u, q);
   }
 
   public static IAST EmptyRegion(final IExpr dimension) {
@@ -8305,6 +8487,10 @@ public class F extends S {
     return new AST2(Mod, a0, a1);
   }
 
+  public static IAST ModularLambda(final IExpr tau) {
+    return new AST1(ModularLambda, tau);
+  }
+
   /**
    * Evaluates <code>expr</code> for the <code>listOfLocalVariables</code> by first renaming the
    * local variables in <code>expr</code>.
@@ -9024,6 +9210,10 @@ public class F extends S {
 
   public static IAST PadRight(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(PadRight, a0, a1, a2);
+  }
+
+  public static IAST ParabolicCylinderD(final IExpr nu, final IExpr z) {
+    return new AST2(ParabolicCylinderD, nu, z);
   }
 
   /**
@@ -10434,6 +10624,10 @@ public class F extends S {
     return new AST1(Sec, z);
   }
 
+  public static IAST SecDegrees(final IExpr z) {
+    return new AST1(SecDegrees, z);
+  }
+
   public static IAST Sech(final IExpr z) {
     return new AST1(Sech, z);
   }
@@ -10675,6 +10869,10 @@ public class F extends S {
    */
   public static IAST Sin(final IExpr z) {
     return new B1.Sin(z);
+  }
+
+  public static IAST SinDegrees(final IExpr z) {
+    return new AST1(SinDegrees, z);
   }
 
   public static IAST Sinc(final IExpr z) {
@@ -11852,6 +12050,10 @@ public class F extends S {
     return new B1.Tan(z);
   }
 
+  public static IAST TanDegrees(final IExpr z) {
+    return new AST1(TanDegrees, z);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Tanh.md">Tanh</a>
@@ -12598,6 +12800,22 @@ public class F extends S {
 
   public static IAST WeibullDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(WeibullDistribution, a0, a1, a2);
+  }
+
+  public static IAST WeierstrassP(final IExpr u, final IExpr invariants) {
+    return new AST2(WeierstrassP, u, invariants);
+  }
+
+  public static IAST WeierstrassPPrime(final IExpr u, final IExpr invariants) {
+    return new AST2(WeierstrassPPrime, u, invariants);
+  }
+
+  public static IAST WeierstrassSigma(final IExpr u, final IExpr invariants) {
+    return new AST2(WeierstrassSigma, u, invariants);
+  }
+
+  public static IAST WeierstrassZeta(final IExpr u, final IExpr invariants) {
+    return new AST2(WeierstrassZeta, u, invariants);
   }
 
   public static IAST Which(final IExpr... a) {

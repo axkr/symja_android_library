@@ -26,7 +26,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
     IAST function = Sinc(Times(CI, CInfinity));
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
-    assertEquals("Sinc(DirectedInfinity(CI))", result.internalFormString(true, -1).toString());
+    assertEquals("Sinc(CIInfinity)", result.internalFormString(true, -1).toString());
 
     result = util.evaluate(function);
     assertEquals("oo", result.internalFormString(true, -1).toString());
@@ -47,7 +47,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
     IAST function = Sinc(Times(CI, CInfinity));
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
-    assertEquals("F.Sinc(F.DirectedInfinity(F.CI))",
+    assertEquals("F.Sinc(F.CIInfinity)",
         result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
 
     result = util.evaluate(function);
@@ -81,7 +81,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
 
     IExpr result = EvalEngine.get().evalHoldPattern(function);
     assertEquals(
-        "org.matheclipse.core.expression.F.Sinc(org.matheclipse.core.expression.F.DirectedInfinity(org.matheclipse.core.expression.F.CI))",
+        "org.matheclipse.core.expression.F.Sinc(org.matheclipse.core.expression.F.CIInfinity)",
         result.internalJavaString(SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, x -> null).toString());
 
     result = util.evaluate(function);

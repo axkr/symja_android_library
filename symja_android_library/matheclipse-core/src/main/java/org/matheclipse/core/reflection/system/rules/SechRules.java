@@ -26,20 +26,20 @@ public class SechRules {
     // Sech(I*1/6*Pi)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,1L,6L),Pi)),
       Times(C2,C1DSqrt3), true),
-    // Sech(I*1/5*Pi)=-1+Sqrt(5)
+    // Sech(I*1/5*Pi)=Sqrt(5)-1
     ISet(Sech(Times(CC(0L,1L,1L,5L),Pi)),
-      Plus(CN1,CSqrt5), true),
+      CN1PSqrt5, true),
     // Sech(I*1/4*Pi)=Sqrt(2)
-    ISet(Sech(Times(CC(0L,1L,1L,4L),Pi)),
+    ISet(Sech(Times(CID4,Pi)),
       CSqrt2, true),
     // Sech(I*1/3*Pi)=2
     ISet(Sech(Times(CC(0L,1L,1L,3L),Pi)),
       C2, true),
     // Sech(I*2/5*Pi)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,2L,5L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Sech(I*1/2*Pi)=ComplexInfinity
-    ISet(Sech(Times(CC(0L,1L,1L,2L),Pi)),
+    ISet(Sech(CIPiHalf),
       CComplexInfinity, true),
     // Sech(I*2/3*Pi)=-2
     ISet(Sech(Times(CC(0L,1L,2L,3L),Pi)),
@@ -49,19 +49,19 @@ public class SechRules {
       Negate(CSqrt2), true),
     // Sech(I*4/5*Pi)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,4L,5L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Sech(I*5/6*Pi)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CN2,C1DSqrt3), true),
     // Sech(I*Pi)=-1
-    ISet(Sech(Times(CI,Pi)),
+    ISet(Sech(CIPi),
       CN1, true),
     // Sech(I*7/6*Pi)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,7L,6L),Pi)),
       Times(CN2,C1DSqrt3), true),
     // Sech(I*6/5*Pi)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,6L,5L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Sech(I*5/4*Pi)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,5L,4L),Pi)),
       Negate(CSqrt2), true),
@@ -70,27 +70,27 @@ public class SechRules {
       CN2, true),
     // Sech(I*7/5*Pi)=-1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,7L,5L),Pi)),
-      Subtract(CN1,CSqrt5), true),
+      CN1MSqrt5, true),
     // Sech(I*3/2*Pi)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,3L,2L),Pi)),
       CComplexInfinity, true),
     // Sech(I*8/5*Pi)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,8L,5L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Sech(I*5/3*Pi)=2
     ISet(Sech(Times(CC(0L,1L,5L,3L),Pi)),
       C2, true),
     // Sech(I*7/4*Pi)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,7L,4L),Pi)),
       CSqrt2, true),
-    // Sech(I*9/5*Pi)=-1+Sqrt(5)
+    // Sech(I*9/5*Pi)=Sqrt(5)-1
     ISet(Sech(Times(CC(0L,1L,9L,5L),Pi)),
-      Plus(CN1,CSqrt5), true),
+      CN1PSqrt5, true),
     // Sech(I*11/6*Pi)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,11L,6L),Pi)),
       Times(C2,C1DSqrt3), true),
     // Sech(I*2*Pi)=1
-    ISet(Sech(Times(CC(0L,1L,2L,1L),Pi)),
+    ISet(Sech(Times(C2I,Pi)),
       C1, true),
     // Sech(ArcSinh(x_)):=1/Sqrt(1+x^2)
     ISetDelayed(Sech(ArcSinh(x_)),

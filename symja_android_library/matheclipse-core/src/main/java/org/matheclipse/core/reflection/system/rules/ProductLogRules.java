@@ -25,7 +25,7 @@ public class ProductLogRules {
       C0, true),
     // ProductLog(-Pi/2)=I*Pi/2
     ISet(ProductLog(CNPiHalf),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+      CIPiHalf, true),
     // ProductLog(-1/E)=-1
     ISet(ProductLog(Negate(Exp(CN1))),
       CN1, true),
@@ -34,7 +34,7 @@ public class ProductLogRules {
       C1, true),
     // ProductLog(-1,-Pi/2)=-1/2*Pi*I
     ISet(ProductLog(CN1,CNPiHalf),
-      Times(CC(0L,1L,-1L,2L),Pi), true),
+      Times(CNID2,Pi), true),
     // ProductLog(-1,-1/E)=-1
     ISet(ProductLog(CN1,Negate(Exp(CN1))),
       CN1, true),
@@ -45,10 +45,10 @@ public class ProductLogRules {
     ISet(ProductLog(Noo),
       oo, true),
     // ProductLog(I*Infinity)=Infinity
-    ISet(ProductLog(DirectedInfinity(CI)),
+    ISet(ProductLog(CIInfinity),
       oo, true),
     // ProductLog(-I*Infinity)=Infinity
-    ISet(ProductLog(DirectedInfinity(CNI)),
+    ISet(ProductLog(CNIInfinity),
       oo, true),
     // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),

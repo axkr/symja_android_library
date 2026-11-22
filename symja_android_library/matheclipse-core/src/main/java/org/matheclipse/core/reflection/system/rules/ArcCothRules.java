@@ -22,7 +22,7 @@ public class ArcCothRules {
       Undefined, true),
     // ArcCoth(0)=I*Pi/2
     ISet(ArcCoth(C0),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+      CIPiHalf, true),
     // ArcCoth(I/Sqrt(3))=-1/3*Pi*I
     ISet(ArcCoth(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi), true),
@@ -39,7 +39,7 @@ public class ArcCothRules {
     ISet(ArcCoth(oo),
       C0, true),
     // ArcCoth(I*Infinity)=0
-    ISet(ArcCoth(DirectedInfinity(CI)),
+    ISet(ArcCoth(CIInfinity),
       C0, true),
     // ArcCoth(ComplexInfinity)=0
     ISet(ArcCoth(CComplexInfinity),

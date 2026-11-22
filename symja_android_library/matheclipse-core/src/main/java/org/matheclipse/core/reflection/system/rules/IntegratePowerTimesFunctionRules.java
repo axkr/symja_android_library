@@ -50,16 +50,16 @@ public class IntegratePowerTimesFunctionRules {
       Condition(Times(Power(Plus(QQ(4L,3L),n),CN1),Power(x,Plus(C1,n)),Surd(Times(m,x),C3)),Unequal(n,QQ(-4L,3L)))),
     // f2(EllipticE,x_,-1,m_):=Pi/2*Log(x)-1/8*Pi*m*x*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x)
     SetDelayed($(f2,EllipticE,x_,CN1,m_),
-      Plus(Times(C1D2,Pi,Log(x)),Times(QQ(-1L,8L),Pi,m,x,HypergeometricPFQ(List(C1D2,C1,C1,C3D2),List(C2,C2,C2),Times(m,x))))),
-    // f3(EllipticE,x_,-1,m_,p_):=Pi/2*Log(x)-(Pi*m*x^p*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x^p))/(8*p)
+      Plus(Times(C1D2,Pi,Log(x)),Times(CN1D8,Pi,m,x,HypergeometricPFQ(List(C1D2,C1,C1,C3D2),list(C2,C2,C2),Times(m,x))))),
+    // f3(EllipticE,x_,-1,m_,p_):=Pi/2*Log(x)+(-m*Pi*x^p*HypergeometricPFQ({1/2,1,1,3/2},{2,2,2},m*x^p))/(8*p)
     SetDelayed($(f3,EllipticE,x_,CN1,m_,p_),
-      Plus(Times(C1D2,Pi,Log(x)),Times(CN1,Power(Times(C8,p),CN1),Pi,m,Power(x,p),HypergeometricPFQ(List(C1D2,C1,C1,C3D2),List(C2,C2,C2),Times(m,Power(x,p)))))),
+      Plus(Times(C1D2,Pi,Log(x)),Times(CN1,m,Power(Times(C8,p),CN1),Pi,Power(x,p),HypergeometricPFQ(List(C1D2,C1,C1,C3D2),list(C2,C2,C2),Times(m,Power(x,p)))))),
     // f2(EllipticK,x_,-1,m_):=Pi/2*Log(x)+1/8*Pi*m*x*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x)
     SetDelayed($(f2,EllipticK,x_,CN1,m_),
-      Plus(Times(C1D2,Pi,Log(x)),Times(QQ(1L,8L),Pi,m,x,HypergeometricPFQ(List(C1,C1,C3D2,C3D2),List(C2,C2,C2),Times(m,x))))),
-    // f3(EllipticK,x_,-1,m_,p_):=Pi/2*Log(x)+(Pi*m*x^p*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x^p))/(8*p)
+      Plus(Times(C1D2,Pi,Log(x)),Times(C1D8,Pi,m,x,HypergeometricPFQ(List(C1,C1,C3D2,C3D2),list(C2,C2,C2),Times(m,x))))),
+    // f3(EllipticK,x_,-1,m_,p_):=Pi/2*Log(x)+(m*Pi*x^p*HypergeometricPFQ({1,1,3/2,3/2},{2,2,2},m*x^p))/(8*p)
     SetDelayed($(f3,EllipticK,x_,CN1,m_,p_),
-      Plus(Times(C1D2,Pi,Log(x)),Times(Power(Times(C8,p),CN1),Pi,m,Power(x,p),HypergeometricPFQ(List(C1,C1,C3D2,C3D2),List(C2,C2,C2),Times(m,Power(x,p)))))),
+      Plus(Times(C1D2,Pi,Log(x)),Times(m,Power(Times(C8,p),CN1),Pi,Power(x,p),HypergeometricPFQ(List(C1,C1,C3D2,C3D2),list(C2,C2,C2),Times(m,Power(x,p)))))),
     // f1(EllipticE,x_,m_):=(2*((1+m*x)*EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/(3*m)
     SetDelayed($(f1,EllipticE,x_,m_),
       Times(C2,Power(Times(C3,m),CN1),Plus(Times(Plus(C1,Times(m,x)),EllipticE(Times(m,x))),Times(Plus(CN1,Times(m,x)),EllipticK(Times(m,x)))))),
@@ -92,10 +92,10 @@ public class IntegratePowerTimesFunctionRules {
       Times(Power(m,CN1),Plus(Sqrt(Times(CN1,m,x,Plus(CN1,Times(m,x)))),Times(Plus(CN1,Times(C2,m,x)),ArcSin(Sqrt(Times(m,x))))))),
     // f2(InverseHaversine,x_,n_,m_):=(2*x^(1+n)*((3+2*n)*ArcSin(Sqrt(m*x))-Sqrt(m*x)*Hypergeometric2F1(1/2,3/2+n,5/2+n,m*x)))/((1+n)*(3+2*n))
     SetDelayed($(f2,InverseHaversine,x_,n_,m_),
-      Times(C2,Power(Times(Plus(C1,n),Plus(C3,Times(C2,n))),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C3,Times(C2,n)),ArcSin(Sqrt(Times(m,x)))),Times(CN1,Sqrt(Times(m,x)),Hypergeometric2F1(C1D2,Plus(QQ(3L,2L),n),Plus(QQ(5L,2L),n),Times(m,x)))))),
+      Times(C2,Power(Times(Plus(C1,n),Plus(C3,Times(C2,n))),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C3,Times(C2,n)),ArcSin(Sqrt(Times(m,x)))),Times(CN1,Sqrt(Times(m,x)),Hypergeometric2F1(C1D2,Plus(C3D2,n),Plus(C5D2,n),Times(m,x)))))),
     // f3(InverseHaversine,x_,n_,m_,p_):=(2*x^(1+n)*((2+2*n+p)*ArcSin(Sqrt(m*x^p))-p*Sqrt(m*x^p)*Hypergeometric2F1(1/2,(2+2*n+p)/(2*p),3/2+(1+n)/p,m*x^p)))/((1+n)*(2+2*n+p))
     SetDelayed($(f3,InverseHaversine,x_,n_,m_,p_),
-      Times(C2,Power(Times(Plus(C1,n),Plus(C2,Times(C2,n),p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,Times(C2,n),p),ArcSin(Sqrt(Times(m,Power(x,p))))),Times(CN1,p,Sqrt(Times(m,Power(x,p))),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C2,Times(C2,n),p)),Plus(QQ(3L,2L),Times(Plus(C1,n),Power(p,CN1))),Times(m,Power(x,p))))))),
+      Times(C2,Power(Times(Plus(C1,n),Plus(C2,Times(C2,n),p)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,Times(C2,n),p),ArcSin(Sqrt(Times(m,Power(x,p))))),Times(CN1,p,Sqrt(Times(m,Power(x,p))),Hypergeometric2F1(C1D2,Times(Power(Times(C2,p),CN1),Plus(C2,Times(C2,n),p)),Plus(C3D2,Times(Plus(C1,n),Power(p,CN1))),Times(m,Power(x,p))))))),
     // f1(InverseErf,x_,m_):=-1/(E^InverseErf(m*x)^2*m*Sqrt(Pi))
     SetDelayed($(f1,InverseErf,x_,m_),
       Negate(Power(Times(Exp(Sqr(InverseErf(Times(m,x)))),m,CSqrtPi),CN1))),

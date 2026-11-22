@@ -46,15 +46,15 @@ public class LogRules {
       Noo, true),
     // Log(I)=I*1/2*Pi
     ISet(Log(CI),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+      CIPiHalf, true),
     // Log(-I)=I*1/2*-Pi
     ISet(Log(CNI),
-      Times(CC(0L,1L,-1L,2L),Pi), true),
+      Times(CNID2,Pi), true),
     // Log(GoldenRatio)=ArcCsch(2)
     ISet(Log(GoldenRatio),
       ArcCsch(C2), true),
     // Log(1/2*(1+Sqrt(5)))=ArcCsch(2)
-    ISet(Log(Times(C1D2,Plus(C1,CSqrt5))),
+    ISet(Log(Times(C1D2,C1PSqrt5)),
       ArcCsch(C2), true),
     // Log(Infinity)=Infinity
     ISet(Log(oo),
@@ -63,10 +63,10 @@ public class LogRules {
     ISet(Log(Noo),
       oo, true),
     // Log(I*Infinity)=Infinity
-    ISet(Log(DirectedInfinity(CI)),
+    ISet(Log(CIInfinity),
       oo, true),
     // Log(-I*Infinity)=Infinity
-    ISet(Log(DirectedInfinity(CNI)),
+    ISet(Log(CNIInfinity),
       oo, true),
     // Log(ComplexInfinity)=Infinity
     ISet(Log(CComplexInfinity),
@@ -97,6 +97,6 @@ public class LogRules {
       CComplexInfinity),
     // Log(-1,z_):=-I/Pi*Log(z)
     ISetDelayed(Log(CN1,z_),
-      Times(CNI,Power(Pi,CN1),Log(z)))
+      Times(CNI,C1DPi,Log(z)))
   );
 }

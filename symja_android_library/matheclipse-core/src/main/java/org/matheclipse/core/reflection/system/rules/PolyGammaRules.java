@@ -18,7 +18,7 @@ public class PolyGammaRules {
   final public static IAST RULES = List(
     IInit(PolyGamma, SIZES),
     // PolyGamma(0,-5/2)=46/15-EulerGamma-Log(4)
-    ISet(PolyGamma(C0,QQ(-5L,2L)),
+    ISet(PolyGamma(C0,CN5D2),
       Plus(QQ(46L,15L),Negate(EulerGamma),Negate(Log(C4))), true),
     // PolyGamma(0,1)=-EulerGamma
     ISet(PolyGamma(C0,C1),
@@ -31,16 +31,16 @@ public class PolyGammaRules {
       oo, true),
     // PolyGamma(1,1)=Pi^2/6
     ISet(PolyGamma(C1,C1),
-      Times(QQ(1L,6L),Sqr(Pi)), true),
+      Times(C1D6,CPiSqr), true),
     // PolyGamma(1,1/2)=Pi^2/2
     ISet(PolyGamma(C1,C1D2),
-      Times(C1D2,Sqr(Pi)), true),
+      Times(C1D2,CPiSqr), true),
     // PolyGamma(3,1/2)=Pi^4
     ISet(PolyGamma(C3,C1D2),
       Power(Pi,C4), true),
-    // PolyGamma(0,n_Integer):=-EulerGamma+HarmonicNumber(-1+n)/;n>0
+    // PolyGamma(0,n_Integer):=HarmonicNumber(n-1)-EulerGamma/;n>0
     ISetDelayed(PolyGamma(C0,$p(n, Integer)),
-      Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0))),
+      Condition(Subtract(HarmonicNumber(Plus(n,CN1)),EulerGamma),Greater(n,C0))),
     // PolyGamma(Undefined,y_):=Undefined
     ISetDelayed(PolyGamma(Undefined,y_),
       Undefined),

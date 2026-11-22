@@ -3306,49 +3306,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
     }
     if (equalsAt(2, F.C1D2)) {
-      if (base().isInteger()) {
-        // square root of an integer number
-        IInteger i = (IInteger) base();
-        if (i.equals(F.C2)) {
-          return prefix + "CSqrt2";
-        } else if (i.equals(F.C3)) {
-          return prefix + "CSqrt3";
-        } else if (i.equals(F.C5)) {
-          return prefix + "CSqrt5";
-        } else if (i.equals(F.C6)) {
-          return prefix + "CSqrt6";
-        } else if (i.equals(F.C7)) {
-          return prefix + "CSqrt7";
-        } else if (i.equals(F.C10)) {
-          return prefix + "CSqrt10";
-        }
-      }
-      if (base().isPi()) {
-        return prefix + "CSqrtPi";
-      }
       return new StringBuilder(prefix).append("Sqrt(")
           .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
     }
     if (equalsAt(2, F.C2)) {
       return new StringBuilder(prefix).append("Sqr(")
           .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
-    }
-    if (equalsAt(2, F.CN1D2) && arg1().isInteger()) {
-      // negative square root of an integer number
-      IInteger i = (IInteger) arg1();
-      if (i.equals(F.C2)) {
-        return prefix + "C1DSqrt2";
-      } else if (i.equals(F.C3)) {
-        return prefix + "C1DSqrt3";
-      } else if (i.equals(F.C5)) {
-        return prefix + "C1DSqrt5";
-      } else if (i.equals(F.C6)) {
-        return prefix + "C1DSqrt6";
-      } else if (i.equals(F.C7)) {
-        return prefix + "C1DSqrt7";
-      } else if (i.equals(F.C10)) {
-        return prefix + "C1DSqrt10";
-      }
     }
     // don't optimize if arg2() is integer
     return null;
@@ -3397,6 +3360,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (this.equals(F.Slot2)) {
       return prefix + "Slot2";
     }
+    String constantName = JavaConstantNames.ast(this);
+    if (constantName != null) {
+      return prefix + constantName;
+    }
     if (temp == S.Inequality && size() >= 4) {
       return CompareUtil.inequality2And(this).internalJavaString(properties, depth, variables);
     }
@@ -3426,27 +3393,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (isTimes2()) {
-      if (arg2() == S.Pi) {
-        if (equals(F.CNPi)) {
-          return prefix + "CNPi";
-        } else if (equals(F.CN2Pi)) {
-          return prefix + "CN2Pi";
-        } else if (equals(F.C2Pi)) {
-          return prefix + "C2Pi";
-        } else if (equals(F.CNPiHalf)) {
-          return prefix + "CNPiHalf";
-        } else if (equals(F.CPiHalf)) {
-          return prefix + "CPiHalf";
-        } else if (equals(F.CNPiThird)) {
-          return prefix + "CNPiThird";
-        } else if (equals(F.CPiThird)) {
-          return prefix + "CPiThird";
-        } else if (equals(F.CNPiQuarter)) {
-          return prefix + "CNPiQuarter";
-        } else if (equals(F.CPiQuarter)) {
-          return prefix + "CPiQuarter";
-        }
-      }
       if (arg1().isMinusOne() && !arg2().isTimes()) {
         if (arg2().isNumber()) {
           IExpr num = ((INumber) arg2()).negate();

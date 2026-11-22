@@ -52,8 +52,8 @@ IIntegrate(6917,Integrate(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),x_Symbol),
 IIntegrate(6918,Integrate(Erfi(Plus(a_DEFAULT,Times(b_DEFAULT,x_))),x_Symbol),
     Condition(Subtract(Simp(Times(Plus(a,Times(b,x)),Erfi(Plus(a,Times(b,x))),Power(b,CN1)),x),Simp(Times(Exp(Sqr(Plus(a,Times(b,x)))),Power(Times(b,CSqrtPi),CN1)),x)),FreeQ(list(a,b),x))),
 IIntegrate(6919,Integrate(Sqr(Erf(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
-    Condition(Subtract(Simp(Times(Plus(a,Times(b,x)),Sqr(Erf(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,Power(Pi,CN1D2)),Integrate(Times(Plus(a,Times(b,x)),Erf(Plus(a,Times(b,x))),Power(Exp(Sqr(Plus(a,Times(b,x)))),CN1)),x),x),x)),FreeQ(list(a,b),x))),
+    Condition(Subtract(Simp(Times(Plus(a,Times(b,x)),Sqr(Erf(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,C1DSqrtPi),Integrate(Times(Plus(a,Times(b,x)),Erf(Plus(a,Times(b,x))),Power(Exp(Sqr(Plus(a,Times(b,x)))),CN1)),x),x),x)),FreeQ(list(a,b),x))),
 IIntegrate(6920,Integrate(Sqr(Erfc(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),x_Symbol),
-    Condition(Plus(Simp(Times(Plus(a,Times(b,x)),Sqr(Erfc(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,Power(Pi,CN1D2)),Integrate(Times(Plus(a,Times(b,x)),Erfc(Plus(a,Times(b,x))),Power(Exp(Sqr(Plus(a,Times(b,x)))),CN1)),x),x),x)),FreeQ(list(a,b),x)))
+    Condition(Plus(Simp(Times(Plus(a,Times(b,x)),Sqr(Erfc(Plus(a,Times(b,x)))),Power(b,CN1)),x),Simp(Dist(Times(C4,C1DSqrtPi),Integrate(Times(Plus(a,Times(b,x)),Erfc(Plus(a,Times(b,x))),Power(Exp(Sqr(Plus(a,Times(b,x)))),CN1)),x),x),x)),FreeQ(list(a,b),x)))
   );
 }

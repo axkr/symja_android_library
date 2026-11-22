@@ -24,52 +24,52 @@ public class CscRules {
     ISet(Csc(C0),
       CComplexInfinity, true),
     // Csc(Pi/12)=Sqrt(2)*(1+Sqrt(3))
-    ISet(Csc(Times(QQ(1L,12L),Pi)),
-      Times(CSqrt2,Plus(C1,CSqrt3)), true),
+    ISet(Csc(CPiTwelfth),
+      Times(CSqrt2,C1PSqrt3), true),
     // Csc(Pi/10)=1+Sqrt(5)
     ISet(Csc(Times(QQ(1L,10L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Csc(Pi/6)=2
-    ISet(Csc(Times(QQ(1L,6L),Pi)),
+    ISet(Csc(CPiSixth),
       C2, true),
     // Csc(Pi/5)=Sqrt(2+2/Sqrt(5))
-    ISet(Csc(Times(QQ(1L,5L),Pi)),
+    ISet(Csc(CPiFifth),
       Sqrt(Plus(C2,Times(C2,C1DSqrt5))), true),
     // Csc(Pi/4)=Sqrt(2)
     ISet(Csc(CPiQuarter),
       CSqrt2, true),
     // Csc(3/10*Pi)=Sqrt(5)-1
     ISet(Csc(Times(QQ(3L,10L),Pi)),
-      Plus(CN1,CSqrt5), true),
+      CN1PSqrt5, true),
     // Csc(Pi/3)=2/Sqrt(3)
     ISet(Csc(CPiThird),
       Times(C2,C1DSqrt3), true),
     // Csc(3/8*Pi)=Sec(Pi/8)
     ISet(Csc(Times(QQ(3L,8L),Pi)),
-      Sec(Times(QQ(1L,8L),Pi)), true),
+      Sec(CPiEighth), true),
     // Csc(2/5*Pi)=Sqrt(2-2/Sqrt(5))
     ISet(Csc(Times(QQ(2L,5L),Pi)),
       Sqrt(Plus(C2,Times(CN2,C1DSqrt5))), true),
     // Csc(5/12*Pi)=Sqrt(2)*(-1+Sqrt(3))
     ISet(Csc(Times(QQ(5L,12L),Pi)),
-      Times(CSqrt2,Plus(CN1,CSqrt3)), true),
+      Times(CSqrt2,CN1PSqrt3), true),
     // Csc(Pi/2)=1
     ISet(Csc(CPiHalf),
       C1, true),
     // Csc(7/12*Pi)=Sqrt(2)*(-1+Sqrt(3))
     ISet(Csc(Times(QQ(7L,12L),Pi)),
-      Times(CSqrt2,Plus(CN1,CSqrt3)), true),
+      Times(CSqrt2,CN1PSqrt3), true),
     // Csc(3/5*Pi)=Sqrt(2-2/Sqrt(5))
     ISet(Csc(Times(QQ(3L,5L),Pi)),
       Sqrt(Plus(C2,Times(CN2,C1DSqrt5))), true),
     // Csc(2/3*Pi)=2/Sqrt(3)
-    ISet(Csc(Times(QQ(2L,3L),Pi)),
+    ISet(Csc(Times(C2D3,Pi)),
       Times(C2,C1DSqrt3), true),
     // Csc(7/10*Pi)=Sqrt(5)-1
     ISet(Csc(Times(QQ(7L,10L),Pi)),
-      Plus(CN1,CSqrt5), true),
+      CN1PSqrt5, true),
     // Csc(3/4*Pi)=Sqrt(2)
-    ISet(Csc(Times(QQ(3L,4L),Pi)),
+    ISet(Csc(Times(C3D4,Pi)),
       CSqrt2, true),
     // Csc(4/5*Pi)=Sqrt(2+2/Sqrt(5))
     ISet(Csc(Times(QQ(4L,5L),Pi)),
@@ -79,16 +79,16 @@ public class CscRules {
       C2, true),
     // Csc(9/10*Pi)=1+Sqrt(5)
     ISet(Csc(Times(QQ(9L,10L),Pi)),
-      Plus(C1,CSqrt5), true),
+      C1PSqrt5, true),
     // Csc(11/12*Pi)=Sqrt(2)*(1+Sqrt(3))
     ISet(Csc(Times(QQ(11L,12L),Pi)),
-      Times(CSqrt2,Plus(C1,CSqrt3)), true),
+      Times(CSqrt2,C1PSqrt3), true),
     // Csc(Pi)=ComplexInfinity
     ISet(Csc(Pi),
       CComplexInfinity, true),
     // Csc(11/10*Pi)=-1-Sqrt(5)
     ISet(Csc(Times(QQ(11L,10L),Pi)),
-      Subtract(CN1,CSqrt5), true),
+      CN1MSqrt5, true),
     // Csc(7/6*Pi)=-2
     ISet(Csc(Times(QQ(7L,6L),Pi)),
       CN2, true),
@@ -100,19 +100,19 @@ public class CscRules {
       Negate(CSqrt2), true),
     // Csc(13/10*Pi)=1-Sqrt(5)
     ISet(Csc(Times(QQ(13L,10L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Csc(4/3*Pi)=-2/Sqrt(3)
     ISet(Csc(Times(QQ(4L,3L),Pi)),
       Times(CN2,C1DSqrt3), true),
     // Csc(17/12*Pi)=Sqrt(2)*(1-Sqrt(3))
     ISet(Csc(Times(QQ(17L,12L),Pi)),
-      Times(CSqrt2,Subtract(C1,CSqrt3)), true),
+      Times(CSqrt2,C1MSqrt3), true),
     // Csc(3/2*Pi)=-1
-    ISet(Csc(Times(QQ(3L,2L),Pi)),
+    ISet(Csc(Times(C3D2,Pi)),
       CN1, true),
     // Csc(19/12*Pi)=Sqrt(2)*(1-Sqrt(3))
     ISet(Csc(Times(QQ(19L,12L),Pi)),
-      Times(CSqrt2,Subtract(C1,CSqrt3)), true),
+      Times(CSqrt2,C1MSqrt3), true),
     // Csc(8/5*Pi)=-Sqrt(2-2/Sqrt(5))
     ISet(Csc(Times(QQ(8L,5L),Pi)),
       Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5)))), true),
@@ -121,7 +121,7 @@ public class CscRules {
       Times(CN2,C1DSqrt3), true),
     // Csc(17/10*Pi)=1-Sqrt(5)
     ISet(Csc(Times(QQ(17L,10L),Pi)),
-      Subtract(C1,CSqrt5), true),
+      C1MSqrt5, true),
     // Csc(7/4*Pi)=-Sqrt(2)
     ISet(Csc(Times(QQ(7L,4L),Pi)),
       Negate(CSqrt2), true),
@@ -133,10 +133,10 @@ public class CscRules {
       CN2, true),
     // Csc(19/10*Pi)=-1-Sqrt(5)
     ISet(Csc(Times(QQ(19L,10L),Pi)),
-      Subtract(CN1,CSqrt5), true),
+      CN1MSqrt5, true),
     // Csc(23/12*Pi)=-Sqrt(2)*(1+Sqrt(3))
     ISet(Csc(Times(QQ(23L,12L),Pi)),
-      Times(CN1,CSqrt2,Plus(C1,CSqrt3)), true),
+      Times(CN1,CSqrt2,C1PSqrt3), true),
     // Csc(2*Pi)=ComplexInfinity
     ISet(Csc(C2Pi),
       CComplexInfinity, true),
@@ -159,10 +159,10 @@ public class CscRules {
     ISetDelayed(Csc(ArcSec(x_)),
       Power(Subtract(C1,Power(x,CN2)),CN1D2)),
     // Csc(I*Infinity)=0
-    ISet(Csc(DirectedInfinity(CI)),
+    ISet(Csc(CIInfinity),
       C0, true),
     // Csc(-I*Infinity)=0
-    ISet(Csc(DirectedInfinity(CNI)),
+    ISet(Csc(CNIInfinity),
       C0, true),
     // Csc(ComplexInfinity)=Indeterminate
     ISet(Csc(CComplexInfinity),

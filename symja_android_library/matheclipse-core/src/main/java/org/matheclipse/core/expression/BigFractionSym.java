@@ -453,27 +453,9 @@ public class BigFractionSym extends AbstractFractionSym {
     BigInteger numerator = fFraction.getNumerator();
     BigInteger denominator = fFraction.getDenominator();
     if (NumberUtil.hasIntValue(numerator) && NumberUtil.hasIntValue(denominator)) {
-      int num = numerator.intValue();
-      if (num == 1) {
-        switch (denominator.intValue()) {
-          case 2:
-            return prefix + "C1D2";
-          case 3:
-            return prefix + "C1D3";
-          case 4:
-            return prefix + "C1D4";
-          default:
-        }
-      } else if (num == -1) {
-        switch (denominator.intValue()) {
-          case 2:
-            return prefix + "CN1D2";
-          case 3:
-            return prefix + "CN1D3";
-          case 4:
-            return prefix + "CN1D4";
-          default:
-        }
+      String name = JavaConstantNames.fraction(numerator.longValue(), denominator.longValue());
+      if (name != null) {
+        return prefix + name;
       }
     }
     if (NumberUtil.hasLongValue(numerator) && NumberUtil.hasLongValue(denominator)) {

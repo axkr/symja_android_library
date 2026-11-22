@@ -25,10 +25,10 @@ public class StruveHRules {
       C0, true),
     // StruveH(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(StruveH(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sin(z))),
+      Times(CSqrt2DPi,Power(z,CN1D2),Sin(z))),
     // StruveH(1/2,z_):=(Sqrt(2/Pi)*(1-Cos(z)))/Sqrt(z)
     ISetDelayed(StruveH(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Subtract(C1,Cos(z)))),
+      Times(CSqrt2DPi,Power(z,CN1D2),Subtract(C1,Cos(z)))),
     // StruveH(Undefined,y_):=Undefined
     ISetDelayed(StruveH(Undefined,y_),
       Undefined),

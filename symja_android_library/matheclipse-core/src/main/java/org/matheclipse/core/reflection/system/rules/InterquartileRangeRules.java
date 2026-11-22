@@ -19,7 +19,7 @@ public class InterquartileRangeRules {
     IInit(InterquartileRange, SIZES),
     // InterquartileRange(BernoulliDistribution(n_)):=Piecewise({{1,1/4<n<=3/4}},0)
     ISetDelayed(InterquartileRange(BernoulliDistribution(n_)),
-      Piecewise(list(list(C1,And(Less(C1D4,n),LessEqual(n,QQ(3L,4L))))),C0)),
+      Piecewise(list(list(C1,And(Less(C1D4,n),LessEqual(n,C3D4)))),C0)),
     // InterquartileRange(ExponentialDistribution(n_))=Log(3)/n
     ISet(InterquartileRange(ExponentialDistribution(n_)),
       Times(Power(n,CN1),Log(C3))),

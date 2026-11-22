@@ -45,19 +45,19 @@ public class KleinInvariantJRules {
     ISet(KleinInvariantJ(Times(C1D2,Plus(C1,Times(CI,Sqrt(ZZ(163L)))))),
       ZZ(-151931373056000L), true),
     // KleinInvariantJ(1/2+I*1/2*Sqrt(3))=0
-    ISet(KleinInvariantJ(Plus(C1D2,Times(CC(0L,1L,1L,2L),CSqrt3))),
+    ISet(KleinInvariantJ(Plus(C1D2,Times(CID2,CSqrt3))),
       C0, true),
     // KleinInvariantJ(-1/2+I*1/2*Sqrt(3))=0
-    ISet(KleinInvariantJ(Plus(CN1D2,Times(CC(0L,1L,1L,2L),CSqrt3))),
+    ISet(KleinInvariantJ(Plus(CN1D2,Times(CID2,CSqrt3))),
       C0, true),
     // KleinInvariantJ(1/2+I*1/2*Sqrt(3))=0
-    ISet(KleinInvariantJ(Plus(C1D2,Times(CC(0L,1L,1L,2L),CSqrt3))),
+    ISet(KleinInvariantJ(Plus(C1D2,Times(CID2,CSqrt3))),
       C0, true),
     // KleinInvariantJ(-1/2+I*1/2*Sqrt(3))=0
-    ISet(KleinInvariantJ(Plus(CN1D2,Times(CC(0L,1L,1L,2L),CSqrt3))),
+    ISet(KleinInvariantJ(Plus(CN1D2,Times(CID2,CSqrt3))),
       C0, true),
     // KleinInvariantJ(I*Infinity)=Infinity
-    ISet(KleinInvariantJ(DirectedInfinity(CI)),
+    ISet(KleinInvariantJ(CIInfinity),
       oo, true)
   );
 }

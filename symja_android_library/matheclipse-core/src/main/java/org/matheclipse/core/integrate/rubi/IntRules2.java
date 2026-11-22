@@ -15,10 +15,10 @@ import com.google.common.base.Supplier;
  */
 class IntRules2 { 
   public static IAST RULES = List( 
-IIntegrate(41,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),QQ(-3L,2L)),Power(Plus(c_,Times(d_DEFAULT,x_)),QQ(-3L,2L))),x_Symbol),
+IIntegrate(41,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),CN3D2),Power(Plus(c_,Times(d_DEFAULT,x_)),CN3D2)),x_Symbol),
     Condition(Simp(Times(x,Power(Times(a,c,Sqrt(Plus(a,Times(b,x))),Sqrt(Plus(c,Times(d,x)))),CN1)),x),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0)))),
 IIntegrate(42,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),m_),Power(Plus(c_,Times(d_DEFAULT,x_)),m_)),x_Symbol),
-    Condition(Plus(Simp(Times(CN1,x,Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(m,C1)),Power(Times(C2,a,c,Plus(m,C1)),CN1)),x),Simp(Dist(Times(Plus(Times(C2,m),C3),Power(Times(C2,a,c,Plus(m,C1)),CN1)),Integrate(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(m,C1))),x),x),x)),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),ILtQ(Plus(m,QQ(3L,2L)),C0)))),
+    Condition(Plus(Simp(Times(CN1,x,Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(m,C1)),Power(Times(C2,a,c,Plus(m,C1)),CN1)),x),Simp(Dist(Times(Plus(Times(C2,m),C3),Power(Times(C2,a,c,Plus(m,C1)),CN1)),Integrate(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(m,C1))),x),x),x)),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),ILtQ(Plus(m,C3D2),C0)))),
 IIntegrate(43,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),CN1D2),Power(Plus(c_,Times(d_DEFAULT,x_)),CN1D2)),x_Symbol),
     Condition(Simp(Times(ArcCosh(Times(b,x,Power(a,CN1))),Power(Times(b,Sqrt(Times(d,Power(b,CN1)))),CN1)),x),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),GtQ(a,C0),GtQ(Times(d,Power(b,CN1)),C0)))),
 IIntegrate(44,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),CN1D2),Power(Plus(c_,Times(d_DEFAULT,x_)),CN1D2)),x_Symbol),
@@ -49,7 +49,7 @@ IIntegrate(56,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),QQ(-9L,4L)),Pow
     Condition(Subtract(Simp(Times(CN4,Power(Times(C5,b,Power(Plus(a,Times(b,x)),QQ(5L,4L)),Power(Plus(c,Times(d,x)),C1D4)),CN1)),x),Simp(Dist(Times(d,Power(Times(C5,b),CN1)),Integrate(Power(Times(Power(Plus(a,Times(b,x)),QQ(5L,4L)),Power(Plus(c,Times(d,x)),QQ(5L,4L))),CN1),x),x),x)),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),NegQ(Times(Sqr(a),Sqr(b)))))),
 IIntegrate(57,Integrate(Times(Power(Plus(a_DEFAULT,Times(b_DEFAULT,x_)),m_),Power(Plus(c_DEFAULT,Times(d_DEFAULT,x_)),n_)),x_Symbol),
     Condition(Subtract(Simp(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),n),Power(Times(b,Plus(m,C1)),CN1)),x),Simp(Dist(Times(d,n,Power(Times(b,Plus(m,C1)),CN1)),Integrate(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),Plus(n,CN1))),x),x),x)),And(FreeQ(List(a,b,c,d),x),GtQ(n,C0),LtQ(m,CN1),Not(And(IntegerQ(n),Not(IntegerQ(m)))),Not(And(ILeQ(Plus(m,n,C2),C0),Or(FractionQ(m),GeQ(Plus(Times(C2,n),m,C1),C0)))),IntLinearQ(a,b,c,d,m,n,x)))),
-IIntegrate(58,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),QQ(-5L,4L)),Power(Plus(c_,Times(d_DEFAULT,x_)),CN1D4)),x_Symbol),
+IIntegrate(58,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),CN5D4),Power(Plus(c_,Times(d_DEFAULT,x_)),CN1D4)),x_Symbol),
     Condition(Plus(Simp(Times(CN2,Power(Times(b,Power(Plus(a,Times(b,x)),C1D4),Power(Plus(c,Times(d,x)),C1D4)),CN1)),x),Simp(Dist(c,Integrate(Power(Times(Power(Plus(a,Times(b,x)),QQ(5L,4L)),Power(Plus(c,Times(d,x)),QQ(5L,4L))),CN1),x),x),x)),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),NegQ(Times(Sqr(a),Sqr(b)))))),
 IIntegrate(59,Integrate(Times(Power(Plus(a_,Times(b_DEFAULT,x_)),m_),Power(Plus(c_,Times(d_DEFAULT,x_)),n_)),x_Symbol),
     Condition(Plus(Simp(Times(Power(Plus(a,Times(b,x)),Plus(m,C1)),Power(Plus(c,Times(d,x)),n),Power(Times(b,Plus(m,n,C1)),CN1)),x),Simp(Dist(Times(C2,c,n,Power(Plus(m,n,C1),CN1)),Integrate(Times(Power(Plus(a,Times(b,x)),m),Power(Plus(c,Times(d,x)),Plus(n,CN1))),x),x),x)),And(FreeQ(List(a,b,c,d),x),EqQ(Plus(Times(b,c),Times(a,d)),C0),IGtQ(Plus(m,C1D2),C0),IGtQ(Plus(n,C1D2),C0),LtQ(m,n)))),

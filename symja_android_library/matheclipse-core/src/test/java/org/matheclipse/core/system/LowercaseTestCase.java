@@ -26900,7 +26900,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "$(f,ZZ(123456789123456789L))");
 
     check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
-        "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
+        "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.CPiSqr,F.Power(F.x,F.CN1))))");
     check("JavaForm(E^3-Cos(Pi^2/x), Float->True)", //
         "20.085536923187668-Math.cos(9.869604401089358/x)");
     check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
@@ -26915,9 +26915,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JavaForm(D(sin(x)*cos(x),x))", //
         "Subtract(Sqr(Cos(x)),Sqr(Sin(x)))");
     check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x), Prefix->True)", //
-        "F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Exp(F.Times(F.CI,F.x))))");
+        "F.Plus(F.Times(F.CID2,F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CNID2,F.Exp(F.Times(F.CI,F.x))))");
     check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))", //
-        "Plus(Times(CC(0L,1L,1L,2L),Exp(Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Exp(Times(CI,x))))");
+        "Plus(Times(CID2,Exp(Times(CNI,x))),Times(CNID2,Exp(Times(CI,x))))");
     check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)", //
         "F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
     check("JavaForm(a+b+x^2+I+7+3/4+x+y)", //

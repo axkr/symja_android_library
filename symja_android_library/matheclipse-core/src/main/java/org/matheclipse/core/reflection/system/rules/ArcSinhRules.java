@@ -24,22 +24,22 @@ public class ArcSinhRules {
     ISet(ArcSinh(C0),
       C0, true),
     // ArcSinh(I*1/2)=Pi*I*1/6
-    ISet(ArcSinh(CC(0L,1L,1L,2L)),
+    ISet(ArcSinh(CID2),
       Times(CC(0L,1L,1L,6L),Pi), true),
     // ArcSinh(I/Sqrt(2))=Pi*I*1/4
     ISet(ArcSinh(Times(CI,C1DSqrt2)),
-      Times(CC(0L,1L,1L,4L),Pi), true),
+      Times(CID4,Pi), true),
     // ArcSinh(I*1/2*Sqrt(3))=Pi*I*1/3
-    ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt3)),
+    ISet(ArcSinh(Times(CID2,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi), true),
     // ArcSinh(I)=Pi*I*1/2
     ISet(ArcSinh(CI),
-      Times(CC(0L,1L,1L,2L),Pi), true),
+      CIPiHalf, true),
     // ArcSinh(Infinity)=Infinity
     ISet(ArcSinh(oo),
       oo, true),
     // ArcSinh(I*Infinity)=Infinity
-    ISet(ArcSinh(DirectedInfinity(CI)),
+    ISet(ArcSinh(CIInfinity),
       oo, true),
     // ArcSinh(ComplexInfinity)=ComplexInfinity
     ISet(ArcSinh(CComplexInfinity),

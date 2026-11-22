@@ -21,7 +21,7 @@ public class JacobiSCRules {
     ISetDelayed(JacobiSC(Times(C1D2,EllipticK(m_)),m_),
       Power(Subtract(C1,m),CN1D4)),
     // JacobiSC(I*1/2*EllipticK(1+l_),m_):=I/Sqrt(1+Sqrt(m))/;-l==m
-    ISetDelayed(JacobiSC(Times(CC(0L,1L,1L,2L),EllipticK(Plus(C1,l_))),m_),
+    ISetDelayed(JacobiSC(Times(CID2,EllipticK(Plus(C1,l_))),m_),
       Condition(Times(CI,Power(Plus(C1,Sqrt(m)),CN1D2)),Equal(Negate(l),m)))
   );
 }
