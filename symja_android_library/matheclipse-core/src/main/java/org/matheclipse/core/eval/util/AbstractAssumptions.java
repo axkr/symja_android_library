@@ -6,6 +6,7 @@ import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
@@ -908,13 +909,32 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return sign;
   }
 
+  /**
+   * The sign of the numeric expression <code>ast</code> with the machine value <code>value</code>:
+   * for an exact expression the machine value may be a rounding error of a cancellation, as in
+   * <code>-E^40+(1+E^120)^(1/3)</code>, which is positive; its sign is decided with extra precision,
+   * the same way as for <code>Sign</code> and <code>Positive</code>.
+   *
+   * @return <code>-1, 0, 1</code>, or {@link Integer#MIN_VALUE} if the sign is not certain
+   */
+  private static int numberSign(IAST ast, IReal value) {
+    if (value.isNaN()) {
+      return Integer.MIN_VALUE;
+    }
+    if (!ast.isFree(x -> x.isInexactNumber(), true)) {
+      return value.complexSign();
+    }
+    final int sign = CompareUtil.numericSign(ast, EvalEngine.get());
+    return sign == -1 || sign == 0 || sign == 1 ? sign : Integer.MIN_VALUE;
+  }
+
   public static boolean isNegativeResult(IAST ast) {
     // evalReal "chops" imaginary parts to 0
     INumber e = ast.evalNumber();
     // IReal e = ast.evalReal();
     if (e != null) {
       if (e.isReal()) {
-        return e.isNegative();
+        return numberSign(ast, (IReal) e) == -1;
       }
       return false;
     }
@@ -993,7 +1013,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
     // IReal e = ast.evalReal();
     if (e != null) {
       if (e.isReal()) {
-        return !e.isNegative();
+        final int sign = numberSign(ast, (IReal) e);
+        return sign == 0 || sign == 1;
       }
       return false;
     }
@@ -1099,7 +1120,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
     INumber e = ast.evalNumber();
     if (e != null) {
       if (e.isReal()) {
-        return !((IReal) e).isPositive();
+        final int sign = numberSign(ast, (IReal) e);
+        return sign == 0 || sign == -1;
       }
       return false;
     }
@@ -1168,7 +1190,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
     // IReal e = ast.evalReal();
     if (e != null) {
       if (e.isReal()) {
-        return e.isPositive();
+        return numberSign(ast, (IReal) e) == 1;
       }
       return false;
     }

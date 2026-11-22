@@ -3206,7 +3206,8 @@ public class ExpTrigsFunctions {
           }
         }
       }
-      if (arg1.isNegativeResult()) {
+      if (!arg1.isPlus() && arg1.isNegativeResult()) {
+        // a negative sum like E^25-(1+E^75)^(1/3) stays as it is
         return F.Plus(F.Log(F.Negate(arg1)), F.Times(CI, S.Pi));
       }
       if (arg1.isInterval()) {
