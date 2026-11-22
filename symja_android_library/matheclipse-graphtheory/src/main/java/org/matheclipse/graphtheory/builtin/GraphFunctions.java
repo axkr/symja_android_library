@@ -3251,6 +3251,8 @@ public class GraphFunctions {
       }
       List<int[][]> cycles =
           GraphUtil.simpleCycles(view, minCycleLength, maxCycleLength, atMostCycles, throughIndex);
+      // shorter cycles first; the sort is stable, so cycles of one length keep the search order
+      cycles.sort(java.util.Comparator.comparingInt(cycle -> cycle[1].length));
       IASTAppendable result = F.ListAlloc(cycles.size());
       for (int[][] cycle : cycles) {
         result.append(GraphUtil.walkEdges(view, cycle[0], cycle[1]));

@@ -1207,7 +1207,7 @@ public final class ListFunctions {
           final IExpr arg3 = ast.arg3();
           if (arg2.isInteger() && !arg3.isList()) {
             int length = arg2.toIntDefault();
-            if (length <= 0) {
+            if (length < 0) {
               // Single or list of non-negative machine-sized integers expected at position `1` of
               // `2`.
               return Errors.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
@@ -1229,14 +1229,23 @@ public final class ListFunctions {
             }
           } else if (arg2.isInteger() && arg3.isList2()) {
             int n = arg2.toIntDefault();
-            if (n <= 0) {
+            if (n < 0) {
               // Single or list of non-negative machine-sized integers expected at position `1` of
               // `2`.
               return Errors.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
             }
+            if (n == 0) {
+              // no sample points in the interval: the empty head
+              return engine.evaluate(F.ast(head));
+            }
             final IAST interval = (IAST) arg3;
             final IExpr from = interval.arg1();
             final IExpr to = interval.arg2();
+            if (n == 1) {
+              // the one sample point is the middle of the interval
+              return engine.evaluate(F.unaryAST1(head, F.unaryAST1(arg1,
+                  F.Times(F.C1D2, F.Plus(from, to)))));
+            }
             final IExpr subdivideResult = engine.evaluate(F.Subdivide(from, to, F.ZZ(n - 1)));
             if (subdivideResult.isList()) {
               IAST list = (IAST) subdivideResult;
@@ -1277,9 +1286,12 @@ public final class ListFunctions {
 
         if (iterList.size() > 0) {
           final IAST list = F.ast(arg1);
-          final TableGenerator generator =
-              new TableGenerator(iterList, prototypeList, new MultipleArrayFunction(engine, list));
-          return generator.tableRecursive();
+          // the empty sum or product stands for a dimension of length 0
+          final IExpr empty = head == S.Plus ? F.C0 : head == S.Times ? F.C1 : F.NIL;
+          final TableGenerator generator = new TableGenerator(iterList, prototypeList,
+              new MultipleArrayFunction(engine, list), empty);
+          IExpr result = generator.tableRecursive();
+          return result.isNIL() ? empty : result;
         }
 
       } catch (final ClassCastException | ArithmeticException e) {

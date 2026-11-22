@@ -98,6 +98,7 @@ public final class Programming {
       S.Interrupt.setEvaluator(new Interrupt());
       S.List.setEvaluator(new ListFunction());
       S.Module.setEvaluator(new Module());
+      S.Monitor.setEvaluator(new Monitor());
       S.DynamicModule.setEvaluator(new DynamicModule());
       S.Nest.setEvaluator(new Nest());
       S.Once.setEvaluator(new Once());
@@ -1864,6 +1865,39 @@ public final class Programming {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>Monitor(expr, mon)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * evaluates <code>expr</code> and returns its value. An interactive front end shows the current
+   * value of <code>mon</code> during the evaluation; without one <code>mon</code> isn't evaluated.
+   */
+  private static final class Monitor extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        return engine.evaluate(ast.arg1());
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

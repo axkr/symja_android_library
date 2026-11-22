@@ -992,4 +992,24 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(Switch(m, 2, 10, _, 1), {m, 1, 3}, {k, 1, 4})", //
         "48");
   }
+
+  @Test
+  public void testBinomialTheoremWithIntegerUpperBound() {
+    // the closed form (1+x)^n is 0^0 for x == -1 and n == 0, the sum itself is 1
+    check("Sum((-1)^k*Binomial(0, k)*(3^(5-k)-2)^2, {k, 0, 0})", //
+        "58081");
+    check("Sum((-1)^k*Binomial(0, k), {k, 0, 0})", //
+        "1");
+    check("Table(Sum((-1)^k*Binomial(m, k), {k, 0, m}), {m, 0, 3})", //
+        "{1,0,0,0}");
+    check("Sum(Binomial(0, k)*a^k*(-a)^(0-k), {k, 0, 0})", //
+        "1");
+    check("Sum(Binomial(3, k)*z^k, {k, 0, 3})", //
+        "1+3*z+3*z^2+z^3");
+    // a symbolic upper bound: 1 for m == 0, 0 for every other m
+    check("Sum((-1)^j*Binomial(m, j)*5, {j, 0, m})", //
+        "5*KroneckerDelta(m)");
+    check("Sum((-1)^j*Binomial(m, j), {j, 0, m}) /. m -> 0", //
+        "1");
+  }
 }

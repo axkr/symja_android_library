@@ -108,10 +108,12 @@ Sum(Binomial(n_, i_), {i_Symbol,0,n_}) := 2^n
   /; FreeQ(n,i),
 
 (* binomial theorem *)
+Sum((-1)^i_*Binomial(n_, i_), {i_Symbol,0,n_}) := KroneckerDelta(n)
+  /; FreeQ(n,i) && !IntegerQ(n),
 Sum(Binomial(n_, i_)*x_^i_*y_^(n_-i_), {i_Symbol,0,n_}) := (x+y)^n
-  /; FreeQ({n,x,y},i),
+  /; FreeQ({n,x,y},i) && !IntegerQ(n),
 Sum(Binomial(n_, i_)*x_^i_, {i_Symbol,0,n_}) := (1+x)^n
-  /; FreeQ({n,x},i),
+  /; FreeQ({n,x},i) && !IntegerQ(n),
   
 Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_}) := n*2^(n-1)
   /; FreeQ(n,i),

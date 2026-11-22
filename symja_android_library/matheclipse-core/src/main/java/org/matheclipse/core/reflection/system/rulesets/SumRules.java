@@ -140,12 +140,15 @@ matcher.caseOf(Sum(Times(i_,Power(c_,i_)),list(i_Symbol,C0,n_)),
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_}):=2^n/;FreeQ(n,i)
 matcher.caseOf(Sum(Binomial(n_,i_),list(i_Symbol,C0,n_)),
       Condition(Power(C2,n),FreeQ(n,i)));
-    // Sum((Binomial(n_,i_)*x_^i_)/y_^(i_-n_),{i_Symbol,0,n_}):=(x+y)^n/;FreeQ({n,x,y},i)
+    // Sum((-1)^i_*Binomial(n_,i_),{i_Symbol,0,n_}):=KroneckerDelta(n)/;FreeQ(n,i)&&!IntegerQ(n)
+matcher.caseOf(Sum(Times(Power(CN1,i_),Binomial(n_,i_)),list(i_Symbol,C0,n_)),
+      Condition(KroneckerDelta(n),And(FreeQ(n,i),Not(IntegerQ(n)))));
+    // Sum((Binomial(n_,i_)*x_^i_)/y_^(i_-n_),{i_Symbol,0,n_}):=(x+y)^n/;FreeQ({n,x,y},i)&&!IntegerQ(n)
 matcher.caseOf(Sum(Times(Binomial(n_,i_),Power(x_,i_),Power(y_,Plus(Negate(i_),n_))),list(i_Symbol,C0,n_)),
-      Condition(Power(Plus(x,y),n),FreeQ(list(n,x,y),i)));
-    // Sum(Binomial(n_,i_)*x_^i_,{i_Symbol,0,n_}):=(1+x)^n/;FreeQ({n,x},i)
+      Condition(Power(Plus(x,y),n),And(FreeQ(list(n,x,y),i),Not(IntegerQ(n)))));
+    // Sum(Binomial(n_,i_)*x_^i_,{i_Symbol,0,n_}):=(1+x)^n/;FreeQ({n,x},i)&&!IntegerQ(n)
 matcher.caseOf(Sum(Times(Binomial(n_,i_),Power(x_,i_)),list(i_Symbol,C0,n_)),
-      Condition(Power(Plus(C1,x),n),FreeQ(list(n,x),i)));
+      Condition(Power(Plus(C1,x),n),And(FreeQ(list(n,x),i),Not(IntegerQ(n)))));
     // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_}):=n/2^(1-n)/;FreeQ(n,i)
 matcher.caseOf(Sum(Times(i_,Binomial(n_,i_)),list(i_Symbol,C0,n_)),
       Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i)));

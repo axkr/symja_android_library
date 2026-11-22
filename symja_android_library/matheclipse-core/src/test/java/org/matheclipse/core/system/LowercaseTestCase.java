@@ -1383,6 +1383,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArray() {
+    // zero length with an index origin and a head
+    check("Array(g, 0, 3)", //
+        "{}");
+    check("Array(g, 0, 3, Plus)", //
+        "0");
+    check("Array(Positive(#-2)&, 0, 1, And)", //
+        "True");
+    check("Array(Positive(#-2)&, 3, 4, And)", //
+        "True");
+    check("Array(g, {3, 0}, 1, Plus)", //
+        "0");
+    check("Array(g, {0, 2}, 1, Times)", //
+        "1");
+    check("Array(g, 0, {a, b})", //
+        "{}");
+    // one sample point: the middle of the interval
+    check("Array(g, 1, {2, 7})", //
+        "{g(9/2)}");
+    check("Array(g, 1, {c, d}, h)", //
+        "h(g(1/2*(c+d)))");
+    check("Array(g, -2, 1)", //
+        "Array(g,-2,1)");
     check("Array(If(#1 == #2, x, #1*#2) &, {5, 5}) // MatrixForm", //
         "{{x,2,3,4,5},\n" //
             + " {2,x,6,8,10},\n" //
@@ -29792,6 +29814,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("ModularInverse(10^100000, NextPrime(1000))", //
     // "942");
 
+  }
+
+  @Test
+  public void testMonitor() {
+    check("Monitor(Table(k^3, {k, 0, 4}), k)", //
+        "{0,1,8,27,64}");
+    // the monitored expression isn't evaluated
+    check("Monitor(w + 2, Print(\"never\"); w)", //
+        "2+w");
+    check("cnt = 0; Monitor(Do(cnt += k, {k, 4}), cnt); cnt", //
+        "10");
+    check("Attributes(Monitor)", //
+        "{HoldAll,Protected}");
+    check("Monitor(x)", //
+        "Monitor(x)");
   }
 
   @Test

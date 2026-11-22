@@ -573,6 +573,13 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "Graph({1,2,3,4},{1<->2,1<->3,1<->4,2<->3,2<->4,3<->4})");
     check("FindCycle(WheelGraph(4))", //
         "{{1<->2,2<->3,3<->1}}");
+    // all cycles, shorter ones first
+    check("Tally(Length /@ FindCycle(CompleteGraph(5), Infinity, All))", //
+        "{{3,10},{4,15},{5,12}}");
+    check("Length /@ FindCycle(CompleteGraph({1, 3}), Infinity, All)", //
+        "{}");
+    check("Union(Differences(Length /@ FindCycle(CompleteGraph({1, 2, 3}), Infinity, All)))", //
+        "{0,1}");
   }
 
   @Test
