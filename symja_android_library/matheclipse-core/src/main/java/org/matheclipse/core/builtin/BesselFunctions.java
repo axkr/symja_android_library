@@ -648,7 +648,7 @@ public class BesselFunctions {
      * <code>-2</code> or <code>-1+I</code>, or a product with a negative leading factor, such as
      * <code>-x</code>; otherwise <code>F.NIL</code>.
      */
-    private static IExpr negatedArgument(IExpr z) {
+    private static @AllowNIL IExpr negatedArgument(IExpr z) {
       if (z.isNumber()) {
         return z.isInexactNumber() ? F.NIL
             : AbstractFunctionEvaluator.getNormalizedNegativeExpression(z, false);
@@ -1017,7 +1017,7 @@ public class BesselFunctions {
      * <code>Sqrt(Pi/2)*Sum((m+k)!/(k!*(m-k)!*(2*z)^k), {k,0,m})/(E^z*Sqrt(z))</code>. A machine
      * order gives a machine coefficient; an exact number <code>z</code> keeps the function.
      */
-    private static IExpr besselKHalfInteger(IExpr n, IExpr z) {
+    private static @AllowNIL IExpr besselKHalfInteger(IExpr n, IExpr z) {
       int m;
       boolean machineOrder = false;
       if (n.isRational() && !n.isInteger()) {
