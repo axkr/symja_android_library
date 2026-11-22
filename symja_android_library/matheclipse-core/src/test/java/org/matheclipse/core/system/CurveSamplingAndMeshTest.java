@@ -105,7 +105,7 @@ public class CurveSamplingAndMeshTest extends ExprEvaluatorTestCase {
   @Test
   public void testContourPlot3DMeshDefaults() {
     check("Options(ContourPlot3D, {Mesh, MeshStyle, MeshFunctions})", //
-        "{Mesh->Automatic,MeshFunctions->{#1&,#2&,#3&},MeshStyle->Automatic}");
+        "{Mesh->Automatic,MeshStyle->Automatic,MeshFunctions->{#1&,#2&,#3&}}");
   }
 
   @Test

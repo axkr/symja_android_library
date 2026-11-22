@@ -1828,7 +1828,16 @@ public final class PatternMatching {
         // Options(expr, name) or Options(expr, {name1, name2, ...})
         IExpr names = engine.evaluate(ast.arg2());
         IAST nameList = names.isList() ? (IAST) names : F.list(names);
-        return options.select(rule -> nameList.contains(rule.first()));
+        // the rules in the order of the names asked for; a repeated name repeats its rules
+        IASTAppendable result = F.ListAlloc(nameList.argSize());
+        for (IExpr name : nameList) {
+          for (IExpr rule : options) {
+            if (rule.isRuleAST() && rule.first().equals(name)) {
+              result.append(rule);
+            }
+          }
+        }
+        return result;
       }
       return options;
     }

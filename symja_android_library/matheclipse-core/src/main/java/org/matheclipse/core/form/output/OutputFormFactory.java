@@ -2336,7 +2336,8 @@ public class OutputFormFactory {
             case ID.NumberForm:
             case ID.PaddedForm:
             case ID.ScientificForm:
-              if (list.size() > 1) {
+              if (list.size() > 1 && !fInputForm) {
+                // InputForm keeps the wrapper, so that it can be read back
                 convertNumberForm(buf, list, precedence);
                 return;
               }

@@ -57,6 +57,11 @@ public class NumberFormTest extends ExprEvaluatorTestCase {
         "ScientificForm(2.5`)");
     check("Head(ScientificForm(2.5))", //
         "ScientificForm");
+    // InputForm writes the wrapper, so that the string can be read back
+    check("ToString(NumberForm({7.25, 41234.}, 2, ExponentFunction -> (Null &)), InputForm)", //
+        "NumberForm({7.25`,41234.0`},2,ExponentFunction->(Null&))");
+    check("ToString({AccountingForm(-3.5), x}, InputForm)", //
+        "{AccountingForm(-3.5`),x}");
   }
 
   @Test

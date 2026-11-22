@@ -191,6 +191,14 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{}");
     check("Options(Factor)", //
         "{Extension->None,GaussianIntegers->False,Modulus->0,Trig->False}");
+    // a list of names gives the rules in the order of the names
+    check("Options(h) = {u -> 4, v :> w, z -> 0}; Options(h, {z, u, k})", //
+        "{z->0,u->4}");
+    check("Options(Factor, {Modulus, Extension})", //
+        "{Modulus->0,Extension->None}");
+    // a repeated name repeats its rules
+    check("Options(h) = {u -> 4, v :> w, z -> 0}; Options(h, {v, z, v})", //
+        "{v:>w,z->0,v:>w}");
   }
 
   @Test
