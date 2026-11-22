@@ -154,7 +154,8 @@ public class DistributionChart extends AbstractChart {
         integerData &= v == Math.rint(v);
       }
       double width = Histogram.binWidth(data, min, max);
-      double origin = Histogram.binOrigin(min, width, integerData);
+      // the same bins as Histogram and HistogramList draw for the data
+      double origin = Histogram.automaticBinOrigin(data, min, max, width, data.length, integerData);
       // bins are closed below and open above, so the largest value starts a bin of its own when
       // it lies on an edge
       int bins = Math.max(1, (int) Math.floor((max - origin) / width) + 1);

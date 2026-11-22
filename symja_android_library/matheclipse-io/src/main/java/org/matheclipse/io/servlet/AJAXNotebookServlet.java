@@ -6,12 +6,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.commonmark.Extension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -55,13 +53,13 @@ public class AJAXNotebookServlet extends HttpServlet {
    * and <code>$$...$$</code> is display mathematics. Unlike the documentation pages this needs no
    * guard against Symja's <code>$</code> system symbols, so <code>$x$</code> is a formula here.
    */
-  private static final List<Extension> EXTENSIONS =
-      Arrays.asList(MarkdownTeX.extension(false), TablesExtension.create());
+  private static final List<Extension> EXTENSIONS = GitHubMarkdown.extensions(false);
 
   private static final Parser MARKDOWN_PARSER = Parser.builder().extensions(EXTENSIONS).build();
 
   private static final HtmlRenderer MARKDOWN_RENDERER = HtmlRenderer.builder() //
       .extensions(EXTENSIONS) //
+      .attributeProviderFactory(GitHubMarkdown.taskListAttributes()) //
       .nodeRendererFactory(MarkdownTeX.rendererFactory()) //
       .escapeHtml(true) //
       .sanitizeUrls(true) //

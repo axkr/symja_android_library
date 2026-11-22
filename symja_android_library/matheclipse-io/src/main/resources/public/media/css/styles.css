@@ -834,6 +834,40 @@ li.query.textcell div.textview td {
 li.query.textcell div.textview img {
   max-width: 100%;
 }
+/* GitHub-flavoured Markdown: task lists, alerts and footnotes */
+#queries li.query.textcell div.textview ul.contains-task-list > li.task-list-item {
+  list-style-type: none;
+}
+li.query.textcell div.textview li.task-list-item input[type="checkbox"] {
+  margin: 0 0.3em 0 -1.4em;
+  vertical-align: middle;
+}
+li.query.textcell div.textview div.markdown-alert {
+  margin: 0.5em 0;
+  padding: 0.2em 1em;
+  border-left: 4px solid #d0d7de;
+}
+li.query.textcell div.textview div.markdown-alert > p {
+  margin: 0.3em 0;
+}
+li.query.textcell div.textview p.markdown-alert-title {
+  font-weight: bold;
+}
+li.query.textcell div.textview div.markdown-alert-note { border-left-color: #0969da; }
+li.query.textcell div.textview div.markdown-alert-note p.markdown-alert-title { color: #0969da; }
+li.query.textcell div.textview div.markdown-alert-tip { border-left-color: #1a7f37; }
+li.query.textcell div.textview div.markdown-alert-tip p.markdown-alert-title { color: #1a7f37; }
+li.query.textcell div.textview div.markdown-alert-important { border-left-color: #8250df; }
+li.query.textcell div.textview div.markdown-alert-important p.markdown-alert-title { color: #8250df; }
+li.query.textcell div.textview div.markdown-alert-warning { border-left-color: #9a6700; }
+li.query.textcell div.textview div.markdown-alert-warning p.markdown-alert-title { color: #9a6700; }
+li.query.textcell div.textview div.markdown-alert-caution { border-left-color: #cf222e; }
+li.query.textcell div.textview div.markdown-alert-caution p.markdown-alert-title { color: #cf222e; }
+li.query.textcell div.textview section.footnotes {
+  margin-top: 1em;
+  border-top: 1px solid #cccecb;
+  font-size: 0.9em;
+}
 li.query.textcell span.move {
   border-color: #6b8;
 }

@@ -56,7 +56,7 @@
 
 		<dependency>
 			<groupId>org.commonmark</groupId>
-			<artifactId>commonmark-ext-gfm-tables</artifactId>
+			<artifactId>commonmark-ext-github</artifactId>
 		</dependency>
 
 		<dependency>

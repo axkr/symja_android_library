@@ -290,13 +290,15 @@ public final class N extends AbstractCoreFunctionEvaluator {
     if (ast.isAST1()) {
       final long machine = engine.inputMachineNPrecision(ast);
       if (machine > 0) {
-        // a machine N(x) of the input, which an N(y, p) elsewhere in it doesn't concern
+        // a machine N(x) of the input, which an N(y, p) beside it or around it doesn't concern
         final long oldPrecision = engine.getNumericPrecision();
+        final long oldRequested = engine.setRequestedPrecision(0);
         engine.setNumericPrecision(machine);
         try {
           return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);
         } finally {
           engine.setNumericPrecision(oldPrecision);
+          engine.setRequestedPrecision(oldRequested);
         }
       }
       return org.matheclipse.core.reflection.system.N.evalN1(arg1, engine);
@@ -978,6 +980,10 @@ public final class N extends AbstractCoreFunctionEvaluator {
    */
   private static IExpr toPrecision(IExpr result, final long precision) {
     if (result instanceof ApfloatNum) {
+      if (((ApfloatNum) result).isMachineValue()) {
+        // a machine number of the expression, N(N(x) + y, p) for example: it stays one
+        return result;
+      }
       return ApfloatNum.valueOf(round(((ApfloatNum) result).apfloatValue(), precision));
     }
     if (result instanceof ApcomplexNum) {

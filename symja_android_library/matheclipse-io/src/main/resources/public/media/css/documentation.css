@@ -110,3 +110,59 @@ a img {
   margin: 0;
   padding: 0;
 }
+
+/* ------------------------------------------------- GitHub-flavoured Markdown */
+
+#docContent table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+#docContent th,
+#docContent td {
+  border: 1px solid #cccecb;
+  padding: 2px 6px;
+}
+#docContent ul.contains-task-list {
+  padding-left: 1.5em;
+}
+#docContent li.task-list-item {
+  list-style-type: none;
+}
+#docContent li.task-list-item input[type="checkbox"] {
+  margin: 0 0.3em 0 -1.4em;
+  vertical-align: middle;
+}
+#docContent div.markdown-alert {
+  margin: 0.5em 0;
+  padding: 0.2em 1em;
+  border-left: 4px solid #d0d7de;
+}
+#docContent div.markdown-alert > p {
+  margin: 0.3em 0;
+}
+#docContent p.markdown-alert-title {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+#docContent div.markdown-alert-note { border-left-color: #0969da; }
+#docContent div.markdown-alert-note p.markdown-alert-title { color: #0969da; }
+#docContent div.markdown-alert-tip { border-left-color: #1a7f37; }
+#docContent div.markdown-alert-tip p.markdown-alert-title { color: #1a7f37; }
+#docContent div.markdown-alert-important { border-left-color: #8250df; }
+#docContent div.markdown-alert-important p.markdown-alert-title { color: #8250df; }
+#docContent div.markdown-alert-warning { border-left-color: #9a6700; }
+#docContent div.markdown-alert-warning p.markdown-alert-title { color: #9a6700; }
+#docContent div.markdown-alert-caution { border-left-color: #cf222e; }
+#docContent div.markdown-alert-caution p.markdown-alert-title { color: #cf222e; }
+#docContent section.footnotes {
+  margin-top: 1.5em;
+  border-top: 1px solid #cccecb;
+  font-size: 0.9em;
+}
+#docContent section.footnotes ol {
+  padding-left: 1.5em;
+}
+#docContent sup.footnote-ref a,
+#docContent a.footnote-backref {
+  font-family: sans-serif;
+}

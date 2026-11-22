@@ -14549,6 +14549,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,2,3,4,5},{1,2,3,1}}");
     check("HistogramList({w, \"s\"})", //
         "{{},{}}");
+    check("HistogramList({})", //
+        "HistogramList({})");
     // Scott's rule rounded to the nearest of 1, 2 or 5 times a power of ten: 1.71 -> 2
     check("HistogramList({1, 2, Sqrt(6), 3, 15/4, Pi})", //
         "{{0,2,4},{1,5}}");
@@ -30360,6 +30362,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // an N(x) which a function builds while it works keeps the precision of the engine
     check("{Precision(x /. First(Solve(N(x^2 - 3, 25) == 0, x))), Precision(N(h(3/8)))}", //
         "{25,16}");
+    // a machine N inside N(x, p) stays machine
+    check("With({r = N({N(g(2/5)), 3}, 25)}, {Precision(r[[1]]), Precision(r[[2]])})", //
+        "{16,25}");
+    check("Precision(N(N(Pi) + z, 30))", //
+        "16");
     // a fraction with a denominator beyond 53 bits is rounded once
     check("N(1/10^40)", //
         "1.*10^-40");

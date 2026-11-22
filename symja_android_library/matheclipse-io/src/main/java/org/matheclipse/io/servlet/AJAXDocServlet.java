@@ -7,15 +7,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.IndentedCodeBlock;
@@ -29,6 +29,7 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.html.HtmlWriter;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -120,11 +121,7 @@ public class AJAXDocServlet extends HttpServlet {
               if (!ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
                 // Convert documentation examples from Symja to MMA syntax
                 try {
-                  ExprParser parser = new ExprParser(engine, true);
-                  IExpr expr = parser.parse(exampleCommand);
-                  if (expr != null) {
-                    exampleCommand = wolframForm.toString(expr); // expr.toMMA().trim();
-                  }
+                  exampleCommand = toWolframInput(engine, wolframForm, exampleCommand);
                 } catch (RuntimeException e) {
                   // especially SyntaxError problems
                 }
@@ -162,7 +159,8 @@ public class AJAXDocServlet extends HttpServlet {
     private void link(Link link) {
       String destination = link.getDestination();
       int index = destination.indexOf(".md");
-      if (index > 0) {
+      // an autolinked or written out URL - https://.../README.md - stays a link to that URL
+      if (index > 0 && !destination.contains(":")) {
         String functionName = destination.substring(0, index);
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         try (InputStream is = classloader.getResourceAsStream("doc/functions/" + destination)) {
@@ -235,6 +233,78 @@ public class AJAXDocServlet extends HttpServlet {
 
   }
 
+  /**
+   * Rewrite a documentation example from Symja's relaxed syntax - <code>Sin(3*Pi)</code> - into
+   * Wolfram Language input - <code>Sin[3*Pi]</code> - for a kernel which reads names with their
+   * case.
+   *
+   * <p>
+   * The relaxed parser reads a name in lower case and looks it up that way. A kernel started with
+   * case-sensitive names keeps its built-ins under their own spelling, so the lookup misses and
+   * <code>Sin</code> comes back as the global symbol <code>sin</code>. Such a symbol is put back
+   * to the built-in its name stands for before the example is printed. A name of one character
+   * keeps its case in the relaxed syntax, so <code>e</code> or <code>x</code> stays what it is.
+   */
+  static String toWolframInput(EvalEngine engine, WolframFormFactory wolframForm,
+      String example) {
+    IExpr expr = new ExprParser(engine, true).parse(example);
+    if (expr == null) {
+      return example;
+    }
+    IExpr builtins = expr.replaceAll(AJAXDocServlet::builtinOfGlobalSymbol).orElse(expr);
+    return dropMachinePrecisionMarks(wolframForm.toString(builtins));
+  }
+
+  /** A string literal, with its escaped characters. */
+  private static final Pattern STRING_LITERAL = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
+
+  /**
+   * The <code>`</code> which marks a machine real - <code>0.5`</code>,
+   * <code>1.0`*^-20</code> - but not one which a precision follows, as in
+   * <code>1.000`20</code>.
+   */
+  private static final Pattern MACHINE_PRECISION_MARK =
+      Pattern.compile("(?<![\\w`.])(\\d+\\.\\d*)`(?![\\d`])");
+
+  /**
+   * Write machine reals the way the input form of the Wolfram Language does, without the
+   * <code>`</code> that marks their precision: <code>Sin[0.5]</code> rather than
+   * <code>Sin[0.5`]</code>. String literals are left as they are.
+   */
+  static String dropMachinePrecisionMarks(String input) {
+    if (input.indexOf('`') < 0) {
+      return input;
+    }
+    StringBuilder buf = new StringBuilder(input.length());
+    Matcher strings = STRING_LITERAL.matcher(input);
+    int start = 0;
+    while (strings.find()) {
+      buf.append(MACHINE_PRECISION_MARK.matcher(input.substring(start, strings.start()))
+          .replaceAll("$1"));
+      buf.append(strings.group());
+      start = strings.end();
+    }
+    buf.append(MACHINE_PRECISION_MARK.matcher(input.substring(start)).replaceAll("$1"));
+    return buf.toString();
+  }
+
+  private static IExpr builtinOfGlobalSymbol(IExpr expr) {
+    if (expr instanceof ISymbol) {
+      ISymbol symbol = (ISymbol) expr;
+      String name = symbol.getSymbolName();
+      if (name.length() > 1 && symbol.getContext().isGlobal()) {
+        String systemName = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
+        if (systemName != null) {
+          ISymbol builtin = Context.SYSTEM.get(systemName);
+          if (builtin != null) {
+            return builtin;
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
     doPost(req, res);
@@ -292,14 +362,15 @@ public class AJAXDocServlet extends HttpServlet {
   }
 
   public static String generateHTMLString(final String markdownStr) {
-    List<Extension> EXTENSIONS = Arrays.asList( //
-        MarkdownTeX.extension(true), TablesExtension.create());
+    List<Extension> EXTENSIONS = GitHubMarkdown.extensions(true);
     Parser parser = Parser.builder() //
         .extensions(EXTENSIONS).build();
     Node document = parser.parse(markdownStr);
 
     HtmlRenderer renderer = HtmlRenderer.builder() //
-        .extensions(EXTENSIONS).nodeRendererFactory(new HtmlNodeRendererFactory() {
+        .extensions(EXTENSIONS) //
+        .attributeProviderFactory(GitHubMarkdown.taskListAttributes()) //
+        .nodeRendererFactory(new HtmlNodeRendererFactory() {
           @Override
           public NodeRenderer create(HtmlNodeRendererContext context) {
             return new DocNodeRenderer(context);

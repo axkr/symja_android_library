@@ -19,8 +19,12 @@ public class DistributionChartTest extends ExprEvaluatorTestCase {
     check("Cases(DistributionChart({{11, 12, 12, 13, 13, 12, 17}}, "
         + "ChartElementFunction -> \"HistogramDensity\"), "
         + "Rectangle({a_, b_}, {c_, d_}) :> {c - a, b}, Infinity)", //
-        "{{0.266667,10.5},{0.8,11.5},{0.533333,12.5},{0.0,13.5},{0.0,14.5},{0.0,15.5},"
-            + "{0.266667,16.5}}");
+        "{{0.266667,11.0},{0.8,12.0},{0.533333,13.0},{0.0,14.0},{0.0,15.0},{0.0,16.0},"
+            + "{0.266667,17.0}}");
+    // the bins of Histogram: two values which the width divides sit in the middle of them
+    check("Cases(DistributionChart({{0., 10.}}, ChartElementFunction -> \"HistogramDensity\"), "
+        + "Rectangle({a_, b_}, {c_, d_}) :> {c - a, b}, Infinity)", //
+        "{{0.8,-5.0},{0.8,5.0}}");
     // every dataset in its own colour
     check("Length(Union(Cases(DistributionChart({{1, 2, 2, 3}, {4, 5, 5, 6}, {2, 4, 6, 8}}, "
         + "ChartElementFunction -> \"HistogramDensity\"), _RGBColor, Infinity)))", //

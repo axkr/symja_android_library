@@ -1,17 +1,18 @@
 package org.matheclipse.io.servlet;
 
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.node.Code;
 import org.commonmark.node.CustomNode;
 import org.commonmark.node.Delimited;
-import org.commonmark.node.Emphasis;
 import org.commonmark.node.HardLineBreak;
 import org.commonmark.node.Node;
 import org.commonmark.node.SoftLineBreak;
-import org.commonmark.node.StrongEmphasis;
+import org.commonmark.node.SourceSpan;
 import org.commonmark.node.Text;
+import org.commonmark.parser.IncludeSourceSpans;
 import org.commonmark.parser.Parser;
 import org.commonmark.parser.delimiter.DelimiterProcessor;
 import org.commonmark.parser.delimiter.DelimiterRun;
@@ -139,6 +140,9 @@ public final class MarkdownTeX {
     return new Parser.ParserExtension() {
       @Override
       public void extend(Parser.Builder parserBuilder) {
+        // the source spans of the inline nodes tell an escaped character from a plain one, see
+        // isBackslashEscape()
+        parserBuilder.includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES);
         parserBuilder.customDelimiterProcessor(new TeXDelimiterProcessor(guardDollarSymbols));
       }
     };
@@ -189,8 +193,10 @@ public final class MarkdownTeX {
 
   /**
    * Recover the LaTeX source between two delimiters. The inline parser has already run over it, so
-   * an <code>_</code> or a <code>*</code> in a formula may have been turned into emphasis; the
-   * markup those nodes came from is put back here.
+   * an <code>_</code>, a <code>*</code> or a <code>~</code> in a formula may have been turned into
+   * emphasis or strikethrough; the markup those nodes came from is put back here. So is the
+   * backslash of <code>\{</code>, <code>\,</code> or <code>\\</code>, which Markdown reads as
+   * an escaped character.
    */
   static String teXSourceBetween(Node opener, Node closer) {
     StringBuilder buf = new StringBuilder();
@@ -200,9 +206,27 @@ public final class MarkdownTeX {
     return buf.toString().trim();
   }
 
+  /**
+   * A backslash in front of an ASCII punctuation character is a Markdown escape: the parser leaves
+   * a text node of the character alone, whose source is the two characters including the
+   * backslash. A character of the text itself, or one written as an entity reference, has a
+   * source of another length.
+   */
+  private static boolean isBackslashEscape(Text text) {
+    if (text.getLiteral().length() != 1) {
+      return false;
+    }
+    List<SourceSpan> spans = text.getSourceSpans();
+    return spans.size() == 1 && spans.get(0).getLength() == 2;
+  }
+
   private static void appendTeXSource(StringBuilder buf, Node node) {
     if (node instanceof Text) {
-      buf.append(((Text) node).getLiteral());
+      Text text = (Text) node;
+      if (isBackslashEscape(text)) {
+        buf.append('\\');
+      }
+      buf.append(text.getLiteral());
       return;
     }
     if (node instanceof Code) {
@@ -213,13 +237,17 @@ public final class MarkdownTeX {
       buf.append(' ');
       return;
     }
-    String delimiter = node instanceof StrongEmphasis ? "**" //
-        : node instanceof Emphasis ? "_" //
-            : "";
-    buf.append(delimiter);
+    // emphasis, strong emphasis and strikethrough know the delimiters they were written with -
+    // a_b_c and a*b*c differ in TeX, and a~b~c is a pair of non-breaking spaces there
+    Delimited delimited = node instanceof Delimited ? (Delimited) node : null;
+    if (delimited != null) {
+      buf.append(delimited.getOpeningDelimiter());
+    }
     for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
       appendTeXSource(buf, child);
     }
-    buf.append(delimiter);
+    if (delimited != null) {
+      buf.append(delimited.getClosingDelimiter());
+    }
   }
 }

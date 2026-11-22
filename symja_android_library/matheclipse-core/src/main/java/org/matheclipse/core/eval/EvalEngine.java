@@ -855,8 +855,8 @@ public class EvalEngine implements Serializable {
   private transient long fInputNumberPrecision;
 
   /**
-   * The machine <code>N(x)</code> calls of the input outside of its <code>N(y, p)</code> calls,
-   * compared by identity, or <code>null</code>. Only they evaluate with
+   * The machine <code>N(x)</code> calls of the input, also those inside its <code>N(y, p)</code>
+   * calls, compared by identity, or <code>null</code>. Only they evaluate with
    * {@link #fInputNumberPrecision}: an <code>N(x)</code> which a function builds while it works
    * keeps the precision of the engine.
    */
@@ -6967,28 +6967,32 @@ public class EvalEngine implements Serializable {
 
   /**
    * The precision the machine call <code>N(x)</code> of the input works with, or <code>0</code> to
-   * keep the precision of the engine. An <code>N(y, p)</code> elsewhere in the input raises the
-   * precision of the engine for the whole input; a machine <code>N(x)</code> of the input outside of
-   * it still asks for machine numbers. Inside an <code>N(y, p)</code>, and with a precision set in
-   * another way, it is <code>0</code>.
+   * keep the precision of the engine. An <code>N(y, p)</code> in the input raises the precision of
+   * the engine for the whole input; a machine <code>N(x)</code> of the input, beside it or inside
+   * it, still asks for machine numbers. With a precision set in another way, such as a
+   * <code>WorkingPrecision</code>, it is <code>0</code>.
    *
    * @param nCall the unevaluated call <code>N(x)</code>
    */
   public long inputMachineNPrecision(IAST nCall) {
-    if (fInputMachineNCalls == null || fRequestedPrecision != 0
-        || getNumericPrecision() != fInputPrecision || !fInputMachineNCalls.contains(nCall)) {
+    if (fInputMachineNCalls == null || !fInputMachineNCalls.contains(nCall)) {
+      return 0;
+    }
+    if (fRequestedPrecision == 0 && getNumericPrecision() != fInputPrecision) {
       return 0;
     }
     return Math.max(fInputNumberPrecision, ParserConfig.MACHINE_PRECISION - 1);
   }
 
-  /** The calls <code>N(x)</code> of <code>expr</code> which aren't inside an <code>N(y, p)</code>. */
+  /** The calls <code>N(x)</code> of <code>expr</code>, also inside an <code>N(y, p)</code>. */
   private static void collectMachineNCalls(IExpr expr, java.util.Set<IExpr> calls) {
     if (!expr.isAST()) {
       return;
     }
     final IAST ast = (IAST) expr;
     if (ast.isAST(S.N, 3)) {
+      // the precision p is no call of its own
+      collectMachineNCalls(ast.arg1(), calls);
       return;
     }
     if (ast.isAST(S.N, 2)) {

@@ -846,7 +846,8 @@ public class StatisticsFunctions {
       IAST data = ((IAST) ast.arg1())
           .select(v -> v.isReal() || (v.isNumericFunction(false) && v.isRealResult()));
       if (data.argSize() == 0) {
-        return F.list(F.CEmptyList, F.CEmptyList);
+        // entries without a real value give no bins; the empty list stays as it is
+        return ast.arg1().argSize() == 0 ? F.NIL : F.list(F.CEmptyList, F.CEmptyList);
       }
       IExpr bspec = ast.argSize() >= 2 ? ast.arg2() : S.Automatic;
       String hspec = "Count";
