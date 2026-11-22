@@ -548,6 +548,11 @@ public final class ListFunctions {
         try {
           return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
         } catch (final ReturnException e) {
+          if (e.getForm() == S.Table || !e.isFor(S.Table)) {
+            // Return(value, form) leaves the Table, the evaluation of the named construct takes
+            // the value
+            throw e;
+          }
           // A `Return` in the body of a Table is not control flow for the function around it.
           // Letting the exception through made `f() := (Table(Return(1), {2}); 9)` answer 1
           // instead of 9 - the Return escaped two levels out.

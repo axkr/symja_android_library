@@ -1958,6 +1958,82 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return engine.evaluate(F.Times(F.Power(r, a), sum));
   }
 
+  /** The largest degree of the polynomial in {@link #polynomialExponentialSeries}. */
+  private static final int MAX_EXPONENTIAL_SERIES_DEGREE = 40;
+
+  /** The largest lower limit of {@link #polynomialExponentialSeries}. */
+  private static final int MAX_EXPONENTIAL_SERIES_HEAD = 1000;
+
+  /**
+   * <code>Sum(P(k)*c^k/k!, {k, a, Infinity})</code> for a polynomial <code>P</code>: written in
+   * falling factorials, <code>P(k) = Sum(D^j P(0)/j!*k*(k-1)*...*(k-j+1), j)</code> with the
+   * forward differences <code>D^j P(0)</code>, and every falling factorial sums to
+   * <code>c^j*E^c</code>. The terms below <code>a</code> are subtracted.
+   *
+   * @return the closed form or {@link F#NIL} if <code>expr</code> has not this shape
+   */
+  private static IExpr polynomialExponentialSeries(IExpr expr, ISymbol k, IInteger from,
+      EvalEngine engine) {
+    if (!expr.isTimes()) {
+      return F.NIL;
+    }
+    boolean factorial = false;
+    final IASTAppendable base = F.TimesAlloc(2);
+    final IASTAppendable polynomial = F.TimesAlloc(expr.argSize());
+    for (IExpr factor : (IAST) expr) {
+      if (!factorial && factor.isPower() && factor.exponent().isMinusOne()
+          && factor.base().isAST(S.Factorial, 2) && factor.base().first().equals(k)) {
+        factorial = true;
+      } else if (factor.isPower() && factor.exponent().equals(k) && factor.base().isFree(k)) {
+        base.append(factor.base());
+      } else if (factor.isFree(k) || factor.isPolynomial(F.list(k))) {
+        polynomial.append(factor);
+      } else {
+        return F.NIL;
+      }
+    }
+    // the terms below the lower limit are subtracted one by one
+    if (!factorial || from.isGT(F.ZZ(MAX_EXPONENTIAL_SERIES_HEAD))) {
+      return F.NIL;
+    }
+    final IExpr c = base.oneIdentity1();
+    final IExpr p = engine.evaluate(F.Expand(polynomial.oneIdentity1()));
+    if (!p.isPolynomial(F.list(k))) {
+      return F.NIL;
+    }
+    final int n = engine.evaluate(F.Exponent(p, k)).toIntDefault();
+    if (n < 0 || n > MAX_EXPONENTIAL_SERIES_DEGREE) {
+      return F.NIL;
+    }
+    // the forward differences of P at 0
+    final IExpr[] differences = new IExpr[n + 1];
+    for (int i = 0; i <= n; i++) {
+      differences[i] = engine.evaluate(F.subst(p, k, F.ZZ(i)));
+    }
+    final IASTAppendable sum = F.PlusAlloc(n + 1);
+    for (int j = 0; j <= n; j++) {
+      // differences[0] is now the j-th difference at 0
+      sum.append(F.Times(differences[0], F.Power(c, F.ZZ(j)), F.Power(F.Factorial(F.ZZ(j)), F.CN1)));
+      for (int i = 0; i < n - j; i++) {
+        differences[i] = engine.evaluate(F.Subtract(differences[i + 1], differences[i]));
+      }
+    }
+    // the polynomial factor factored, unless the expanded one is shorter
+    final IExpr expanded = engine.evaluate(F.Expand(sum));
+    final IExpr factored = engine.evaluate(F.Factor(expanded));
+    final IExpr series = F.Times(F.Exp(c),
+        factored.leafCount() <= expanded.leafCount() ? factored : expanded);
+    if (from.isZero()) {
+      return engine.evaluate(series);
+    }
+    // the terms below the lower limit
+    final IASTAppendable head = F.PlusAlloc(from.toIntDefault());
+    for (int i = 0; i < from.toIntDefault(); i++) {
+      head.append(engine.evaluate(F.subst(expr, k, F.ZZ(i))));
+    }
+    return engine.evaluate(F.Subtract(series, head));
+  }
+
   /**
    * Evaluate the definite sum: <code>Sum(arg1, {var, from, Infinity})</code>
    *
@@ -1975,6 +2051,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
     if (expr.isZero()) {
       return F.C0;
+    }
+    if (to.isInfinity() && from.isInteger() && !from.isNegative()) {
+      IExpr exponential = polynomialExponentialSeries(expr, var, (IInteger) from, engine);
+      if (exponential.isPresent()) {
+        return exponential;
+      }
     }
     if (to.isInfinity() && expr.isPower() && expr.base().equals(var)
         && expr.exponent().isNumber()

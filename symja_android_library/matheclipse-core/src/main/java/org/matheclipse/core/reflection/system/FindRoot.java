@@ -658,10 +658,23 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     protected double doSolve() throws MathIllegalStateException {
       final double absoluteAccuracy = getAbsoluteAccuracy();
       double x0 = getStartValue();
+      // the last point, its value and slope, for the exponential model of the function
+      double xPrevious = Double.NaN;
+      double fPrevious = Double.NaN;
+      double dPrevious = Double.NaN;
       while (true) {
         final org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
             computeObjectiveValueAndDerivative1(x0);
-        final double x1 = x0 - (y0.getValue() / y0.getPartialDerivative(1));
+        final double f0 = y0.getValue();
+        final double d0 = y0.getPartialDerivative(1);
+        double x1 = x0 - (f0 / d0);
+        final double modelStep = exponentialModelStep(x0, f0, d0, xPrevious, fPrevious, dPrevious);
+        if (!Double.isNaN(modelStep)) {
+          x1 = x0 + modelStep;
+        }
+        xPrevious = x0;
+        fPrevious = f0;
+        dPrevious = d0;
         if (stepConsumer != null) {
           stepConsumer.accept(x1);
         }
@@ -673,6 +686,40 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         x0 = x1;
       }
     }
+  }
+
+  /**
+   * The step to the root of the model <code>A*E^(c*x)+B</code> fitted to the values and slopes at
+   * the last two points, if it is a much longer step than Newton's: far from the root of a steep
+   * exponential the Newton step is about <code>1/c</code> whatever the distance. The model is
+   * accepted only if the two points agree with it to one percent.
+   *
+   * @return the step, or {@link Double#NaN} to take Newton's step
+   */
+  private static double exponentialModelStep(double x, double f, double d, double xPrevious,
+      double fPrevious, double dPrevious) {
+    final double h = x - xPrevious;
+    if (!(h != 0.0) || !Double.isFinite(f) || !Double.isFinite(d) || !Double.isFinite(dPrevious)
+        || d == 0.0 || dPrevious == 0.0 || d / dPrevious <= 0.0 || d == dPrevious) {
+      return Double.NaN;
+    }
+    final double c = Math.log(d / dPrevious) / h;
+    if (!Double.isFinite(c) || c == 0.0) {
+      return Double.NaN;
+    }
+    // f - fPrevious = (d - dPrevious)/c for the model
+    final double consistency = (f - fPrevious) / (d - dPrevious) * c;
+    if (!(Math.abs(consistency - 1.0) <= 0.01)) {
+      return Double.NaN;
+    }
+    final double t = 1.0 - c * f / d;
+    if (t >= 0.1) {
+      // Newton advances at least half as far as the model: it converges
+      return Double.NaN;
+    }
+    // t <= 0: the constant B is lost in the rounding of f
+    final double step = (t > 0.0 ? Math.log(t) : Math.log(1.0e-12)) / c;
+    return Double.isFinite(step) ? step : Double.NaN;
   }
 
   /** A Newton step below this, relative to the point, is rounding noise. */

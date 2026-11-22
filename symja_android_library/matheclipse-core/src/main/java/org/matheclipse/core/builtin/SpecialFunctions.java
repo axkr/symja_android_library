@@ -3729,6 +3729,11 @@ public class SpecialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      // a negative integer order as the positive one and a finite sum
+      IExpr negative = struveNegativeIntegerOrder(true, ast.arg1(), ast.arg2(), engine);
+      if (negative.isPresent()) {
+        return negative;
+      }
       return struveImaginaryArgument(ast, F::StruveL);
     }
 
@@ -3814,6 +3819,11 @@ public class SpecialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      // a negative integer order as the positive one and a finite sum
+      IExpr negative = struveNegativeIntegerOrder(false, ast.arg1(), ast.arg2(), engine);
+      if (negative.isPresent()) {
+        return negative;
+      }
       return struveImaginaryArgument(ast, F::StruveH);
     }
 
@@ -3892,6 +3902,36 @@ public class SpecialFunctions {
     }
   }
 
+
+  /**
+   * <code>StruveH(-n, z)</code> and <code>StruveL(-n, z)</code> for an integer <code>n &gt; 0</code>:
+   * the series has no pole there, and its terms from <code>k = n</code> on are
+   * <code>(-1)^n</code> (for <code>H</code>) resp. <code>1</code> (for <code>L</code>) times the
+   * series of the order <code>n</code>, so <code>H(-n,z) = (-1)^n*H(n,z) + Sum((-1)^k*(z/2)^(2*k-n+1)
+   * /(Gamma(k+3/2)*Gamma(k-n+3/2)), {k,0,n-1})</code>, <code>L(-n,z) = L(n,z) + Sum((z/2)^(2*k-n+1)
+   * /(Gamma(k+3/2)*Gamma(k-n+3/2)), {k,0,n-1})</code>.
+   *
+   * @param h <code>true</code> for <code>StruveH</code>, <code>false</code> for <code>StruveL</code>
+   */
+  private static IExpr struveNegativeIntegerOrder(boolean h, IExpr nu, IExpr z, EvalEngine engine) {
+    if (!nu.isInteger() || !nu.isNegative()) {
+      return F.NIL;
+    }
+    final int n = -nu.toIntDefault();
+    if (n <= 0 || n > 40) {
+      return F.NIL;
+    }
+    final IASTAppendable sum = F.PlusAlloc(n + 1);
+    sum.append(h && (n & 1) == 1 ? F.Negate(F.StruveH(F.ZZ(n), z))
+        : h ? F.StruveH(F.ZZ(n), z) : F.StruveL(F.ZZ(n), z));
+    for (int k = 0; k < n; k++) {
+      final IExpr term = F.Times(F.Power(F.Times(F.C1D2, z), F.ZZ(2 * k - n + 1)),
+          F.Power(F.Gamma(F.QQ(2 * k + 3, 2)), F.CN1),
+          F.Power(F.Gamma(F.QQ(2 * (k - n) + 3, 2)), F.CN1));
+      sum.append(h && (k & 1) == 1 ? F.Negate(term) : term);
+    }
+    return engine.evaluate(sum);
+  }
 
   public static void initialize() {
     Initializer.init();

@@ -39,6 +39,7 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
@@ -2603,6 +2604,12 @@ public class EvalEngine implements Serializable {
           ve.printStackTrace();
         }
         return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (ReturnException re) {
+        if (re.getForm() == symbol) {
+          // Return(value, symbol) leaves this construct with the value
+          return re.getValue();
+        }
+        throw re;
       } catch (FlowControlException e) {
         throw e;
       } catch (SymjaMathException ve) {
@@ -3790,7 +3797,21 @@ public class EvalEngine implements Serializable {
             return evalWithoutNumericReset(released);
           }
           try {
-            return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+            if (!ReturnException.isIterationForm(headSymbol)) {
+              return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+            }
+            // a Do or Table on the fast path: Return(value, Do) has a construct to leave
+            enterIteration(headSymbol, 1);
+            try {
+              return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+            } catch (ReturnException re) {
+              if (re.getForm() == headSymbol) {
+                return re.getValue();
+              }
+              throw re;
+            } finally {
+              enterIteration(headSymbol, -1);
+            }
           } catch (LinkageError le) {
             // IFastFunctionEvaluator skips evalASTBuiltinFunction and its handler
             return awtUnavailable(ast, le);
@@ -3825,9 +3846,14 @@ public class EvalEngine implements Serializable {
       return evalLoopTraceMode(expr);
     } else {
       IExpr result = expr;
+      // an iteration construct which Return(value, form) can leave
+      final boolean iteration = expr.isAST() && ReturnException.isIterationForm(expr.head());
       try {
         fRecursionCounter++;
         stackPush(expr);
+        if (iteration) {
+          enterIteration(expr.head(), 1);
+        }
         while (true) {
           if (result.isUnevaluated()) {
             return unevaluatedArg1(result.first());
@@ -3881,6 +3907,13 @@ public class EvalEngine implements Serializable {
           }
           return iterationCounter == 0 ? F.NIL : result;
         }
+      } catch (ReturnException re) {
+        // Return(value, form) inside what Map rewrote expr to: expr is the construct
+        if (re.getForm().isPresent() && expr.isAST() && expr.head().equals(re.getForm())
+            && ReturnException.isIterationForm(re.getForm())) {
+          return re.getValue();
+        }
+        throw re;
       } catch (UnsupportedOperationException uoe) {
         if (Config.FUZZ_TESTING) {
           throw fuzzSignal(uoe);
@@ -3892,6 +3925,9 @@ public class EvalEngine implements Serializable {
         recordStackOverflow(soe);
         throw soe;
       } finally {
+        if (iteration) {
+          enterIteration(expr.head(), -1);
+        }
         stackPop();
         fRecursionCounter--;
         if (Thread.currentThread().isInterrupted()) {
@@ -5221,6 +5257,12 @@ public class EvalEngine implements Serializable {
       return evaluate(expr).isTrue();
     } catch (ThrowException | AbortException flow) {
       throw flow;
+    } catch (ReturnException re) {
+      if (re.getForm() == S.Select && isEvaluatingIteration(S.Select)) {
+        // Return(value, Select) in the predicate of Select leaves the Select
+        throw re;
+      }
+      return false;
     } catch (MathException rex) {
       return false;
     } finally {
@@ -7521,6 +7563,26 @@ public class EvalEngine implements Serializable {
 
   public void stackPush(IExpr expr) {
     fStack.push(expr);
+  }
+
+  /** How many evaluations of each iteration construct are in progress, by head. */
+  private transient java.util.IdentityHashMap<IExpr, int[]> fIterationDepth = null;
+
+  /**
+   * Whether an iteration construct with head <code>head</code> (see
+   * {@link ReturnException#isIterationForm(IExpr)}) is being evaluated, so that
+   * <code>Return(value, head)</code> has a construct to leave.
+   */
+  public boolean isEvaluatingIteration(IExpr head) {
+    final int[] depth = fIterationDepth == null ? null : fIterationDepth.get(head);
+    return depth != null && depth[0] > 0;
+  }
+
+  private void enterIteration(IExpr head, int delta) {
+    if (fIterationDepth == null) {
+      fIterationDepth = new java.util.IdentityHashMap<>();
+    }
+    fIterationDepth.computeIfAbsent(head, h -> new int[1])[0] += delta;
   }
 
   /**

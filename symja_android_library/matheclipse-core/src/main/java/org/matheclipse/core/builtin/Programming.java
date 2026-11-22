@@ -1035,6 +1035,9 @@ public final class Programming {
                     IterationLimitExceeded.throwIt(iterationCounter, input);
                   }
                 } catch (final ReturnException e) {
+                  if (!e.isFor(S.Do)) {
+                    throw e;
+                  }
                   return e.getValue();
                 } catch (final BreakException e) {
                   return S.Null;

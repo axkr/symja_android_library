@@ -1133,6 +1133,10 @@ public final class Arithmetic {
         if (base.isPositiveResult()) {
           return F.Power(base, F.Conjugate(arg1.exponent()));
         }
+        if (arg1.exponent().isInteger()) {
+          // an integer power has no branch cut: Conjugate(z^n) = Conjugate(z)^n
+          return F.Power(F.Conjugate(base), arg1.exponent());
+        }
       }
       if (arg1.isPlus()) {
         return arg1.mapThread(F.Conjugate(F.Slot1), 1);

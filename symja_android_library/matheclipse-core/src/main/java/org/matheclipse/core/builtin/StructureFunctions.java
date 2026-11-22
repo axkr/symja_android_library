@@ -2354,6 +2354,9 @@ public class StructureFunctions {
           }
           return S.Null;
         } catch (final ReturnException e) {
+          if (!e.isFor(S.Scan)) {
+            throw e;
+          }
           return e.getValue();
           // don't catch Throw[] here !
         }

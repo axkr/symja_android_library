@@ -296,7 +296,10 @@ public class RischNorman {
     integrand = tangentForm(integrand, tangentArgs, engine);
     List<IExpr> kernels = collectKernels(integrand, x);
     // exponentials with commensurable exponents are powers of one generator
-    Map<IExpr, IExpr[]> members = commonExponentials(kernels, engine);
+    Map<IExpr, IExpr[]> members = exponentBasis(kernels, x, engine);
+    if (members == null) {
+      members = commonExponentials(kernels, engine);
+    }
     if (kernels.isEmpty() || kernels.size() > MAX_KERNELS) {
       return F.NIL;
     }
@@ -740,16 +743,126 @@ public class RischNorman {
   }
 
   /**
-   * Replace the exponentials which {@link #commonExponentials(List, EvalEngine)} took out of the
-   * kernels by the powers of the dummy symbol of their generator.
+   * Exponentials of sums like <code>E^(x+x^2)</code>, <code>E^(2*x+x^2)</code> and
+   * <code>E^(3*x+x^3)</code> are products of powers of the exponentials of the terms,
+   * <code>E^x, E^(x^2), E^(x^3)</code>. If those are fewer than the exponentials, they replace
+   * them in <code>kernels</code>, each with the gcd of its coefficients.
+   *
+   * @return the replaced kernels mapped to pairs of a generator and its integer power (and a pair
+   *         {@link F#NIL} with a constant factor), or <code>null</code> if the exponentials are
+   *         not fewer than their terms
+   */
+  private static Map<IExpr, IExpr[]> exponentBasis(List<IExpr> kernels, IExpr x,
+      EvalEngine engine) {
+    final List<IExpr> exponentials = new ArrayList<>();
+    for (IExpr kernel : kernels) {
+      if (kernel.isPower() && kernel.base().isE()) {
+        exponentials.add(kernel);
+      }
+    }
+    if (exponentials.size() < 2) {
+      return null;
+    }
+    // per exponential: its terms as monomial -> rational coefficient, and its constant summand
+    final List<Map<IExpr, IRational>> terms = new ArrayList<>();
+    final List<IExpr> constants = new ArrayList<>();
+    final Map<IExpr, IRational[]> units = new LinkedHashMap<>();
+    for (IExpr exponential : exponentials) {
+      final IExpr exponent = engine.evaluate(F.Expand(exponential.exponent()));
+      final Map<IExpr, IRational> coefficients = new LinkedHashMap<>();
+      final IASTAppendable constant = F.PlusAlloc(2);
+      for (IExpr term : exponent.isPlus() ? (IAST) exponent : F.list(exponent)) {
+        if (term.isFree(x, true)) {
+          constant.append(term);
+          continue;
+        }
+        IRational coefficient = F.C1;
+        IExpr monomial = term;
+        if (term.isTimes() && term.first().isNumber()) {
+          if (!term.first().isRational()) {
+            // E^(I*x) and E^(2*I*x): complex multiples of one monomial are left to the common
+            // exponentials of rational ratio
+            return null;
+          }
+          coefficient = (IRational) term.first();
+          monomial = ((IAST) term).rest().oneIdentity1();
+        }
+        coefficients.merge(monomial, coefficient, (a, b) -> a.add(b));
+      }
+      terms.add(coefficients);
+      constants.add(constant.oneIdentity0());
+      for (Map.Entry<IExpr, IRational> entry : coefficients.entrySet()) {
+        final IRational c = entry.getValue();
+        units.merge(entry.getKey(), new IRational[] {c.numerator(), c.denominator()},
+            (a, b) -> new IRational[] {((IInteger) a[0]).gcd((IInteger) b[0]),
+                ((IInteger) a[1]).lcm((IInteger) b[1])});
+      }
+    }
+    if (units.size() >= exponentials.size()) {
+      return null;
+    }
+    final Map<IExpr, IExpr> generators = new LinkedHashMap<>();
+    final Map<IExpr, IRational> unitOf = new HashMap<>();
+    for (Map.Entry<IExpr, IRational[]> entry : units.entrySet()) {
+      final IRational unit = F.QQ((IInteger) entry.getValue()[0], (IInteger) entry.getValue()[1]);
+      unitOf.put(entry.getKey(), unit);
+      generators.put(entry.getKey(), engine.evaluate(F.Exp(F.Times(unit, entry.getKey()))));
+    }
+    final Map<IExpr, IExpr[]> members = new HashMap<>();
+    for (int i = 0; i < exponentials.size(); i++) {
+      final IExpr exponential = exponentials.get(i);
+      kernels.remove(exponential);
+      final Map<IExpr, IRational> coefficients = terms.get(i);
+      if (coefficients.size() == 1 && constants.get(i).isZero()) {
+        final Map.Entry<IExpr, IRational> only = coefficients.entrySet().iterator().next();
+        if (generators.get(only.getKey()).equals(exponential)) {
+          continue;
+        }
+      }
+      final IExpr[] pairs = new IExpr[2 * coefficients.size() + 2];
+      int k = 0;
+      for (Map.Entry<IExpr, IRational> entry : coefficients.entrySet()) {
+        pairs[k++] = generators.get(entry.getKey());
+        pairs[k++] = entry.getValue().divideBy(unitOf.get(entry.getKey())).normalize();
+      }
+      pairs[k++] = F.NIL;
+      pairs[k] = engine.evaluate(F.Exp(constants.get(i)));
+      members.put(exponential, pairs);
+    }
+    for (IExpr generator : generators.values()) {
+      if (!kernels.contains(generator)) {
+        kernels.add(generator);
+      }
+    }
+    return members;
+  }
+
+  /**
+   * Replace the exponentials which {@link #commonExponentials(List, EvalEngine)} or
+   * {@link #exponentBasis(List, IExpr, EvalEngine)} took out of the kernels by the product of the
+   * powers of the dummy symbols of their generators (and a constant factor).
    */
   private static IExpr replaceMembers(IExpr expr, Map<IExpr, IExpr[]> members,
       List<IExpr> kernels, ISymbol[] dummies) {
     IExpr result = expr;
     for (Map.Entry<IExpr, IExpr[]> entry : members.entrySet()) {
-      int index = kernels.indexOf(entry.getValue()[0]);
-      if (index >= 0) {
-        result = F.subst(result, entry.getKey(), F.Power(dummies[index], entry.getValue()[1]));
+      final IExpr[] pairs = entry.getValue();
+      final IASTAppendable product = F.TimesAlloc(pairs.length / 2);
+      boolean complete = true;
+      for (int k = 0; k + 1 < pairs.length; k += 2) {
+        if (pairs[k].isNIL()) {
+          product.append(pairs[k + 1]);
+          continue;
+        }
+        int index = kernels.indexOf(pairs[k]);
+        if (index < 0) {
+          complete = false;
+          break;
+        }
+        product.append(F.Power(dummies[index], pairs[k + 1]));
+      }
+      if (complete) {
+        result = F.subst(result, entry.getKey(), product.oneIdentity1());
       }
     }
     return result;
