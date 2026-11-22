@@ -3159,6 +3159,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testChop() {
+    // a tolerance of 0 makes only the approximate zeros exact
+    check("{Chop({0.0, 2.5, 0.0+0.0*I, 1.*^-30}, 0), Chop(-0.0, 0)}", //
+        "{{0,2.5,0,1.*10^-30},0}");
     // an exact numeric tolerance
     check("Chop({2.0*10^-7, 0.5}, E/10^6)", //
         "{0,0.5}");
@@ -42865,6 +42868,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToExpression() {
+    // the boxes of a 3D graphics of primitives
+    check("ToExpression(Graphics3DBox({Green, CuboidBox({1, 1, 1}), SphereBox({0, 0, 0}, 1/2)}, "
+        + "Boxed -> False)) // InputForm", //
+        "Graphics3D({RGBColor(0,1,0),Cuboid({1,1,1}),Sphere({0,0,0},1/2)},Boxed->False)");
+    // a box without a primitive leaves the 3D graphics without a reading
+    check("ToExpression(Graphics3DBox(GraphicsComplex3DBox({{0,0,0},{2,0,0},{0,3,0}}, "
+        + "Polygon3DBox({1,2,3}))))", //
+        "$Failed");
     // a blank line inside a comment does not end a statement; a comment on its own lines is one
     check("ToExpression(\"(*u\\n\\nv*)\\nw\", InputForm, Hold)", //
         "Hold(Null,w)");

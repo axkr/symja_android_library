@@ -385,8 +385,8 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     // boxes which have no reading are kept as their text
     assertEquals("HoldComplete[\"\\!\\(\\*FormBox[SqrtBox[\"x\"], OutputForm]\\)\"]",
         scriptExpressions("\\!\\(\\*FormBox[SqrtBox[\"x\"], OutputForm]\\)"));
-    assertEquals("HoldComplete[\"\\!\\(\\*Graphics3DBox[{}]\\)\"]",
-        scriptExpressions("\\!\\(\\*Graphics3DBox[{}]\\)"));
+    // the boxes of a 3D graphics are read like those of a 2D one
+    assertEquals("Graphics3D[List[]]", scriptExpressions("\\!\\(\\*Graphics3DBox[{}]\\)"));
   }
 
   /** <code>\( ... \)</code> without <code>\!</code> is the boxes of the linear syntax. */

@@ -1149,6 +1149,32 @@ public class ImageGeometryFunctions {
     /** The width of a graphic which doesn't state its size. */
     private static final int GRAPHICS_WIDTH = 360;
 
+    /**
+     * <code>Style(Graphics(prims, opts), directives, options)</code> is the picture drawn with the
+     * directives in front of its primitives; the options only say how it is shown.
+     */
+    private static IExpr styledGraphics(IExpr expr) {
+      while (expr.isAST(S.Style) && expr.argSize() >= 1
+          && (expr.first().isAST(S.Graphics) || expr.first().isAST(S.Graphics3D))
+          && expr.first().argSize() >= 1) {
+        IAST style = (IAST) expr;
+        IAST graphics = (IAST) style.first();
+        IASTAppendable primitives = F.ListAlloc(style.argSize() + 1);
+        for (int i = 2; i < style.size(); i++) {
+          if (!style.get(i).isRuleAST()) {
+            primitives.append(style.get(i));
+          }
+        }
+        if (primitives.argSize() == 0) {
+          expr = graphics;
+          continue;
+        }
+        primitives.append(graphics.arg1());
+        expr = graphics.setAtCopy(1, primitives);
+      }
+      return expr;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.arg2().isString()) {
@@ -1160,6 +1186,7 @@ public class ImageGeometryFunctions {
         return arg1;
       }
       final IExpr imageSize = imageSizeOption(ast);
+      arg1 = styledGraphics(arg1);
       // any other expression is drawn as a text
       IAST graphics = arg1.isAST() && (arg1.isGraphicsObject() || arg1.isAST(S.Graphics3D))
           ? (IAST) arg1

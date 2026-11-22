@@ -1774,4 +1774,26 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(Conjugate(y)^2==4, y, Reals)", //
         "y==-2||y==2");
   }
+
+  @Test
+  public void testPolynomialInAPowerOverTheReals() {
+    // a polynomial in x^g is reduced for y = x^g: the real g-th roots of each y, both signs for an
+    // even g, the sign kept for an odd g; the rational roots first, then the others by size
+    check("Reduce(x^720 - 11*x^360 + 24 == 0, x, Reals)", //
+        "x==-3^(1/360)||x==3^(1/360)||x==-2^(1/120)||x==2^(1/120)");
+    check("Reduce(x^555 + 9*x^370 + 8*x^185 == 0, x, Reals)", //
+        "x==-1||x==0||x==-2^(3/185)");
+    check("Reduce(x^420 + 5*x^210 + 4 == 0, x, Reals)", //
+        "False");
+    check("Reduce(x^240 - 6*x^120 + 5 < 0, x, Reals)", //
+        "(x>-5^(1/120)&&x<-1)||(x>1&&x<5^(1/120))");
+    check("Reduce(x^9 - 9*x^6 + 8*x^3 >= 0 && x < 3, x, Reals)", //
+        "(x>=0&&x<=1)||(x>=2&&x<3)");
+    // a polynomial whose roots weren't all found isn't reduced to False
+    check("Reduce(x^170 - 5*x^85 + 4 == 0, x)", //
+        "-5*x^85+x^170==-4");
+    // the options of Reduce apply to the polynomial in x^g too
+    check("Reduce(x^12 == 5, x, Reals, WorkingPrecision -> 20)", //
+        "x==-1.1435298360829203092||x==1.1435298360829203092");
+  }
 }

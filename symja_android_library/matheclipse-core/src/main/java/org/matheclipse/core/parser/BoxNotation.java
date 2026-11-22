@@ -902,10 +902,15 @@ public final class BoxNotation {
       return slot(graphics(ast));
     }
     if (head.equals("graphics3dbox")) {
-      // the box of a 3D image; the boxes of a 3D graphics have no reading
+      // the box of a 3D image, or of a 3D graphics of primitives
       List<IExpr> image = imageArguments(ast, "raster3dbox");
       if (image == null) {
-        throw new Unreadable();
+        if (hasUnknownBox(ast)) {
+          // a box without a primitive, such as GraphicsComplex3DBox, would stay a box inside the
+          // graphics
+          throw new Unreadable();
+        }
+        return slot(vector(ast));
       }
       StringBuilder buf = new StringBuilder("Image3D[");
       for (int i = 0; i < image.size(); i++) {
@@ -1586,6 +1591,26 @@ public final class BoxNotation {
     switch (head) {
       case "graphicsbox":
         return S.Graphics;
+      case "graphics3dbox":
+        return S.Graphics3D;
+      case "spherebox":
+        return S.Sphere;
+      case "cuboidbox":
+        return S.Cuboid;
+      case "cylinderbox":
+        return S.Cylinder;
+      case "conebox":
+        return S.Cone;
+      case "tubebox":
+        return S.Tube;
+      case "point3dbox":
+        return S.Point;
+      case "line3dbox":
+        return S.Line;
+      case "polygon3dbox":
+        return S.Polygon;
+      case "arrow3dbox":
+        return S.Arrow;
       case "pointbox":
         return S.Point;
       case "linebox":
@@ -1609,6 +1634,26 @@ public final class BoxNotation {
       default:
         return null;
     }
+  }
+
+  /** Whether a part of the box is a box which {@link #vector(IExpr)} doesn't turn into a primitive. */
+  private static boolean hasUnknownBox(IExpr box) {
+    if (!box.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) box;
+    String head = headName(ast);
+    if (head != null && head.endsWith("box") && primitive(head) == null
+        && !head.equals("tagbox") && !head.equals("stylebox") && !head.equals("filledcurvebox")
+        && !head.equals("joinedcurvebox")) {
+      return true;
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      if (hasUnknownBox(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** The graphics of a <code>GraphicsBox</code> of primitives. */

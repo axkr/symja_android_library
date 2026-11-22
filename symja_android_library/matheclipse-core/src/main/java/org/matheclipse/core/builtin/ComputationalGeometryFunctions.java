@@ -3802,7 +3802,7 @@ public class ComputationalGeometryFunctions {
      */
     private static final String[] PROPERTIES = {"Circumradius", "Dual", "EdgeCount",
         "EdgeIndices", "Edges", "FaceCount", "FaceCountRules", "FaceIndices", "Faces", "Image",
-        "Name", "NetFaces", "NetImage", "SkeletonImage", "StandardName", "VertexCoordinates",
+        "Name", "NetCoordinates", "NetFaces", "NetGraph", "NetImage", "SkeletonImage", "StandardName", "VertexCoordinates",
         "VertexCount", "Volume"};
 
     /**
@@ -4023,6 +4023,12 @@ public class ComputationalGeometryFunctions {
           return skeletonImage(vertices, faces);
         case "NetFaces":
           return netFaces(vertices, faces);
+        case "NetCoordinates": {
+          IExpr net = netFaces(vertices, faces);
+          return net.isAST(S.GraphicsComplex, 3) ? net.first() : net;
+        }
+        case "NetGraph":
+          return netGraph(vertices, faces);
         case "NetImage": {
           IExpr net = netFaces(vertices, faces);
           if (!net.isAST(S.GraphicsComplex, 3)) {
@@ -4060,6 +4066,31 @@ public class ComputationalGeometryFunctions {
         return F.Missing(S.NotAvailable);
       }
       return F.GraphicsComplex(points2D(net.points), F.Polygon(faceIndices(net.faces)));
+    }
+
+    /**
+     * <code>"NetGraph"</code>: the points of the unfolding as vertices, joined by the edges of its
+     * faces, and drawn where they lie in the unfolding.
+     */
+    private static IExpr netGraph(double[][] vertices, List<int[]> faces) {
+      PolyhedronLayouts.Net net = PolyhedronLayouts.unfold(vertices, faces);
+      if (net == null) {
+        return F.Missing(S.NotAvailable);
+      }
+      java.util.Set<Long> seen = new java.util.HashSet<Long>();
+      IASTAppendable edges = F.ListAlloc();
+      for (int[] face : net.faces) {
+        for (int k = 0; k < face.length; k++) {
+          int a = face[k];
+          int b = face[(k + 1) % face.length];
+          long key = Math.min(a, b) * (long) net.points.length + Math.max(a, b);
+          if (a != b && seen.add(key)) {
+            edges.append(F.UndirectedEdge(F.ZZ(Math.min(a, b) + 1), F.ZZ(Math.max(a, b) + 1)));
+          }
+        }
+      }
+      IAST vertexList = F.mapRange(1, net.points.length + 1, i -> F.ZZ(i));
+      return F.Graph(vertexList, edges, F.Rule(S.VertexCoordinates, points2D(net.points)));
     }
 
     /** The points as machine numbers, rounding-off noise next to 0 taken away. */

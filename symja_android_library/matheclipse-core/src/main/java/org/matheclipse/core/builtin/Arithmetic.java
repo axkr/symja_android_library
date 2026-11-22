@@ -772,6 +772,18 @@ public final class Arithmetic {
         // a magnitude below the range of numbers is below every tolerance
         return F.C0;
       }
+      if (tolerance == 0.0) {
+        // only the approximate zeros become exact ones
+        if (!x.isInexactNumber()) {
+          return F.NIL;
+        }
+        if (x.isZero()) {
+          return F.C0;
+        }
+        return x instanceof org.matheclipse.core.expression.ComplexNum
+            ? F.chopNumber((INumber) x, Double.MIN_VALUE)
+            : F.NIL;
+      }
       return x.isNumber() ? F.chopNumber((INumber) x, tolerance) : F.NIL;
     }
 
@@ -789,8 +801,8 @@ public final class Arithmetic {
             tolerance = numeric;
           }
         }
-        if (tolerance instanceof IReal && tolerance.isPositive()) {
-          delta = tolerance.evalfNaN();
+        if (tolerance instanceof IReal && (tolerance.isPositive() || tolerance.isZero())) {
+          delta = tolerance.isZero() ? 0.0 : tolerance.evalfNaN();
         } else {
           // Tolerance specification `1` must be a non-negative number.
           return Errors.printMessage(S.Chop, "tolnn", F.List(ast.arg2()), engine);

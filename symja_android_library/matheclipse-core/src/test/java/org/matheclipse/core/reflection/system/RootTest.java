@@ -562,4 +562,37 @@ public class RootTest extends ExprEvaluatorTestCase {
     check("Table(Root(Expand((#^2+9)*(#^2+2*#+2)*(#-2))&, k), {k, 5}) // N", //
         "{2.0,-1.0+I*(-1.0),-1.0+I*1.0,I*(-3.0),I*3.0}");
   }
+
+  @Test
+  public void testRootOfASparsePolynomial() {
+    // a few terms of a high degree: the canonical object at once, and its real roots by bisection
+    check("Root(#^4000 - 5*#^9 + 2 &, 2)", //
+        "Root(2-5*#1^9+#1^4000&,2,0)");
+    check("N(Root(#^4000 - 5*#^9 + 2 &, 1)) - N((2/5)^(1/9))", //
+        "0.0");
+    check("Round(10^7*(N(Root(#^4000 - 5*#^9 + 2 &, 2)) - 1))", //
+        "2757");
+    check("Reduce(x^3000 - 4*x^5 + 1 == 0, x, Reals)", //
+        "x==Root(1-4*#1^5+#1^3000&,1,0)||x==Root(1-4*#1^5+#1^3000&,2,0)");
+    // more digits than the default bisection locates
+    check("Round(10^55*(N(Root(#^4000 - 5*#^9 + 2 &, 2), 60) - 1))", //
+        "2757240463267924123711184435737986783822223787005453");
+    // a polynomial of a low degree in x^g isn't taken as a sparse one: it is left to the methods
+    // for roots in radicals
+    check("Root(#^400 - 3*#^200 + 2 &, 4)", //
+        "Root(#1^400-3*#1^200+2&,4)");
+  }
+
+  @Test
+  public void testSparsePolynomialWithAMultipleRoot() {
+    // the bisection can't separate a multiple root: the dense isolation finds the real roots
+    int degree = org.matheclipse.core.basic.Config.MAX_POLYNOMIAL_DEGREE;
+    try {
+      org.matheclipse.core.basic.Config.MAX_POLYNOMIAL_DEGREE = 400;
+      check("Reduce(x^201 - 6*x^101 + 9*x == 0, x, Reals)", //
+          "x==0||x==Root(-3*#1+#1^101&,1,0)||x==Root(-3*#1+#1^101&,3,0)");
+    } finally {
+      org.matheclipse.core.basic.Config.MAX_POLYNOMIAL_DEGREE = degree;
+    }
+  }
 }

@@ -1809,7 +1809,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
             + "3},{Prism,5},{Prism,6},{Prism,7},{Prism,8},{Prism,9},{Prism,10},{Pyramid,4},{Pyramid,\n"
             + "5},RhombicDodecahedron,RhombicTriacontahedron,Tetrahedron,TruncatedIcosahedron}");
     check("PolyhedronData(\"Properties\")", //
-        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetFaces,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetCoordinates,NetFaces,NetGraph,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
@@ -1989,7 +1989,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
         "{12,30}");
     check("EntityValue(\"Polyhedron\", \"Properties\")", //
-        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetFaces,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
+        "{Circumradius,Dual,EdgeCount,EdgeIndices,Edges,FaceCount,FaceCountRules,FaceIndices,Faces,Image,Name,NetCoordinates,NetFaces,NetGraph,NetImage,SkeletonImage,StandardName,VertexCoordinates,VertexCount,Volume}");
     // the edges are vertex index pairs, as many as EdgeCount, each joining two vertices of a face
     check("{Length(PolyhedronData(\"TruncatedIcosahedron\", \"Edges\")), "
         + "PolyhedronData(\"TruncatedIcosahedron\", \"EdgeCount\"), "
@@ -2467,5 +2467,16 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Undefined");
     check("Area(RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1)))", //
         "Undefined");
+  }
+
+  @Test
+  public void testPolyhedronDataNetGraph() {
+    // the unfolding as a graph: its points joined by the edges of the faces, a planar graph with
+    // one face more than the solid
+    check("Table(g = PolyhedronData(s, \"NetGraph\"); {Head(g), "
+        + "Length(g[[1]]) == Length(PolyhedronData(s, \"NetCoordinates\")), "
+        + "Length(g[[2]]) == Length(g[[1]]) - 1 + PolyhedronData(s, \"FaceCount\")}, "
+        + "{s, {\"Octahedron\", \"Icosahedron\"}})", //
+        "{{Graph,True,True},{Graph,True,True}}");
   }
 }

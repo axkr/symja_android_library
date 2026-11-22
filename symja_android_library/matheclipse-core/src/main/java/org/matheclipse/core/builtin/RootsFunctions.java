@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.reduce.SparseRealRoots;
 import org.matheclipse.core.reflection.system.Root;
 import org.matheclipse.core.polynomials.RealRootIsolation;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -918,7 +919,17 @@ public class RootsFunctions {
           || !polynomial.isPolynomial(F.list(variable))) {
         return F.NIL;
       }
-      IExpr[] coefficients = Root.polynomialCoefficients(F.subst(polynomial, variable, F.Slot1));
+      IExpr body = F.subst(polynomial, variable, F.Slot1);
+      SparseRealRoots.Terms terms = SparseRealRoots.of(body);
+      if (terms != null && terms.size() >= 3 && terms.degree() >= SPARSE_DEGREE) {
+        // a few terms of a high degree: the dense isolation would work on every coefficient. A
+        // multiple root, which the sparse method can't separate, is left to the dense isolation
+        IAST sparse = sparseRealRoots(terms, engine);
+        if (sparse.isPresent()) {
+          return sparse;
+        }
+      }
+      IExpr[] coefficients = Root.polynomialCoefficients(body);
       if (coefficients == null || (highDegreeOnly && !isHighDegreeGeneric(coefficients))) {
         return F.NIL;
       }
@@ -962,6 +973,94 @@ public class RootsFunctions {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
     }
+  }
+
+  /** From this degree on a polynomial of a few terms has its real roots found term by term. */
+  public static final int SPARSE_DEGREE = 200;
+
+  /**
+   * The real roots of a sparse polynomial in ascending order: <code>0</code> and the rational
+   * roots as numbers, the others as <code>Root(f, k, 0)</code> of the polynomial without the
+   * factor <code>x^e0</code>.
+   *
+   * @return {@link F#NIL} if a root seems to be multiple
+   */
+  private static IAST sparseRealRoots(SparseRealRoots.Terms terms, EvalEngine engine) {
+    List<org.apfloat.Apfloat> nonzero = SparseRealRoots.nonzeroRealRoots(terms);
+    if (nonzero == null) {
+      return F.NIL;
+    }
+    IAST function = terms.function(true, engine);
+    List<IExpr> radicals = powerRadicals(terms, engine);
+    IASTAppendable roots = F.ListAlloc(nonzero.size() + 1);
+    boolean zero = terms.zeroMultiplicity() > 0;
+    for (int k = 1; k <= nonzero.size(); k++) {
+      org.apfloat.Apfloat root = nonzero.get(k - 1);
+      if (zero && root.signum() > 0) {
+        roots.append(F.C0);
+        zero = false;
+      }
+      double value = root.doubleValue();
+      IExpr radical = F.NIL;
+      for (IExpr candidate : radicals) {
+        if (Math.abs(candidate.evalf() - value) <= 1.0e-10 * (1.0 + Math.abs(value))) {
+          radical = candidate;
+          break;
+        }
+      }
+      if (radical.isPresent()) {
+        roots.append(radical);
+        continue;
+      }
+      IExpr candidate = engine.evalQuiet(F.Rationalize(F.num(value), F.num(1.0e-12)));
+      if (candidate.isRational() && terms.isRoot((IRational) candidate)) {
+        roots.append(candidate);
+      } else {
+        roots.append(F.ternaryAST3(S.Root, function, F.ZZ(k), F.C0));
+      }
+    }
+    if (zero) {
+      roots.append(F.C0);
+    }
+    return roots;
+  }
+
+  /**
+   * The real roots in radicals of a polynomial of degree at most 4 in <code>y = x^g</code>: the
+   * real <code>g</code>-th roots of its real roots in <code>y</code>, both signs for an even
+   * <code>g</code>. Empty if the polynomial has no such form.
+   */
+  private static List<IExpr> powerRadicals(SparseRealRoots.Terms terms, EvalEngine engine) {
+    List<IExpr> radicals = new java.util.ArrayList<IExpr>();
+    long g = terms.exponentGcd();
+    if (g < 2 || terms.degreeInPower() > 4) {
+      return radicals;
+    }
+    ISymbol y = F.Dummy("y");
+    IExpr q = engine.evaluate(F.subst(terms.function(true, engine).first(), F.Slot1,
+        F.Power(y, F.QQ(1, g))));
+    IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(q, F.C0), y, S.Reals));
+    if (!solutions.isListOfLists()) {
+      return radicals;
+    }
+    IExpr exponent = F.QQ(1, g);
+    for (IExpr solution : (IAST) solutions) {
+      IExpr c = solution.first().second();
+      if (!c.isRealResult()) {
+        continue;
+      }
+      int sign = engine.evaluate(F.Sign(c)).toIntDefault();
+      if (sign > 0) {
+        IExpr r = engine.evaluate(F.Power(c, exponent));
+        radicals.add(r);
+        if (g % 2 == 0) {
+          radicals.add(engine.evaluate(F.Negate(r)));
+        }
+      } else if (sign < 0 && g % 2 == 1) {
+        radicals.add(engine.evaluate(F.Negate(F.Power(F.Negate(c), exponent))));
+      }
+    }
+    return radicals;
   }
 
   public static IAST findRoots(IExpr polynomialExpr, final IAST variables) {
@@ -1490,9 +1589,13 @@ public class RootsFunctions {
                 newResult.appendArgs(rootObjects);
               } else {
                 IAST resultList = findRoots(temp, variables);
-                if (resultList.size() > 0) {
-                  newResult.appendArgs(resultList);
+                if (resultList.isNIL() || (resultList.argSize() == 0
+                    && !engine.evaluate(F.Exponent(temp, variables.arg1())).isZero())) {
+                  // a factor whose roots weren't found: leaving it out would give too few roots,
+                  // and none at all claims that the polynomial has no root
+                  return F.NIL;
                 }
+                newResult.appendArgs(resultList);
               }
             }
           }

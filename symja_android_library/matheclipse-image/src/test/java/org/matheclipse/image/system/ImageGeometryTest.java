@@ -484,4 +484,13 @@ public class ImageGeometryTest extends AbstractTestCase {
     check("Rasterize(Graphics(Circle()), \"Bar\")", //
         "$Failed");
   }
+
+  @Test
+  public void rasterizeAStyledGraphics() {
+    // the style wraps the picture: its directives go before the primitives, its options only say
+    // how it is shown
+    check("pix = ImageData(Rasterize(Style(Graphics({Green, Disk()}), Antialiasing -> False), "
+        + "RasterSize -> {30, 30})); {pix[[15, 15]], pix[[1, 1]]}", //
+        "{{0.0,1.0,0.0},{1.0,1.0,1.0}}");
+  }
 }

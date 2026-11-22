@@ -2328,15 +2328,25 @@ public class GraphFunctions {
       return new TourMetric(dist, points, S.EuclideanDistance);
     }
 
-    /** The distances <code>f(pi, pj)</code>, which have to be real numbers. */
+    /**
+     * The distances <code>f(pi, pj)</code>, which have to be real numbers or quantities of one
+     * dimension, compared in the unit of the first one.
+     */
     private static TourMetric measured(IAST points, IExpr distanceFunction, double[][] dist,
         EvalEngine engine) {
       int n = points.argSize();
+      IExpr unit = F.NIL;
       for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
-          double value = engine
-              .evaluate(F.binaryAST2(distanceFunction, points.get(i + 1), points.get(j + 1)))
-              .evalfNaN();
+          IExpr distance = engine
+              .evaluate(F.binaryAST2(distanceFunction, points.get(i + 1), points.get(j + 1)));
+          if (distance.isAST(S.Quantity, 3)) {
+            if (unit.isNIL()) {
+              unit = distance.second();
+            }
+            distance = engine.evaluate(F.QuantityMagnitude(distance, unit));
+          }
+          double value = distance.evalfNaN();
           if (!Double.isFinite(value)) {
             return null;
           }

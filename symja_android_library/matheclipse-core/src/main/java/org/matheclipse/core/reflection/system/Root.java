@@ -28,6 +28,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reduce.SparseRealRoots;
 
 public class Root extends AbstractFunctionEvaluator {
 
@@ -205,6 +206,15 @@ public class Root extends AbstractFunctionEvaluator {
           return F.ternaryAST3(S.Root, ast.arg1(), ast.arg2(), F.C0);
         }
       }
+      if (arg1.isFunction()) {
+        SparseRealRoots.Terms terms = SparseRealRoots.of(arg1.first());
+        if (terms != null && terms.size() >= 3 && terms.degree() >= RootsFunctions.SPARSE_DEGREE
+            && (terms.exponentGcd() < 2 || terms.degreeInPower() > 4)) {
+          // a few terms of a high degree: neither radicals nor a factorization are worth it. A
+          // polynomial of degree at most 4 in x^g has its roots in radicals
+          return sparseRoot(ast, terms, engine);
+        }
+      }
       // a polynomial of a high degree is not searched for factors with roots in radicals: the
       // factorization takes much longer than the root is worth
       IExpr radical = isHighDegreePolynomial(ast) ? F.NIL
@@ -234,6 +244,60 @@ public class Root extends AbstractFunctionEvaluator {
     // Root(f, k) stays unevaluated
     // Use ToRadicals(Root(f, k)) to expand to radical form.
     return F.NIL;
+  }
+
+  /**
+   * {@code Root[f, k]} of a sparse polynomial of a high degree: the canonical object, or in numeric
+   * mode the {@code k}-th root. A real root is found term by term; a root which isn't real, or one
+   * of a polynomial with a multiple root, is left to the numeric root finder of every polynomial.
+   */
+  private static IExpr sparseRoot(final IAST ast, SparseRealRoots.Terms terms,
+      EvalEngine engine) {
+    final int k = ast.arg2().toIntDefault();
+    if (k < 1 || k > terms.degree()) {
+      return F.NIL;
+    }
+    if (engine.isNumericMode()) {
+      Apfloat root = sparseRealRoot(terms, k, engine);
+      if (root != null) {
+        if (engine.isArbitraryMode()) {
+          return org.matheclipse.core.expression.ApfloatNum
+              .valueOf(root.precision(engine.getNumericPrecision()));
+        }
+        return F.num(root.doubleValue());
+      }
+      return numericRoot(ast, engine);
+    }
+    IAST canonical = F.ternaryAST3(S.Root, terms.function(false, engine), ast.arg2(),
+        ast.isAST3() ? ast.arg3() : F.C0);
+    return canonical.equals(ast) ? F.NIL : canonical;
+  }
+
+  /**
+   * The {@code k}-th real root in ascending order, to the precision of the engine.
+   *
+   * @return {@code null} if there are fewer than {@code k} real roots or a root is multiple
+   */
+  private static Apfloat sparseRealRoot(SparseRealRoots.Terms terms, int k, EvalEngine engine) {
+    final long zeros = terms.zeroMultiplicity();
+    if (zeros > 1) {
+      return null;
+    }
+    final long digits = engine.isArbitraryMode() ? engine.getNumericPrecision() + 5
+        : SparseRealRoots.DIGITS;
+    java.util.List<Apfloat> real = SparseRealRoots.nonzeroRealRoots(terms, digits);
+    if (real == null) {
+      return null;
+    }
+    if (zeros == 1) {
+      real = new java.util.ArrayList<>(real);
+      int position = 0;
+      while (position < real.size() && real.get(position).signum() < 0) {
+        position++;
+      }
+      real.add(position, Apfloat.ZERO);
+    }
+    return k <= real.size() ? real.get(k - 1) : null;
   }
 
   /**

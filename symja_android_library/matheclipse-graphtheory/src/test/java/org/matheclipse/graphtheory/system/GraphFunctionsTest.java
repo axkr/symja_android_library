@@ -793,6 +793,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testFindShortestTourForms() {
+    // distances which are quantities are compared and summed with their units
+    check("FindShortestTour({4, 1, 8, 6}, DistanceFunction -> (Quantity(Abs(#1 - #2), \"Miles\")&))", //
+        "{Quantity(14,\"Miles\"),{1,4,3,2,1}}");
     // of the two directions the one whose second stop has the higher number
     check("FindShortestTour({{0,0},{0,2},{3,0},{3,2}})", //
         "{10,{1,3,4,2,1}}");

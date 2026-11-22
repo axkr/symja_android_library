@@ -40,6 +40,7 @@ import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.reduce.CylindricalAlgebraicDecomposition;
 import org.matheclipse.core.reduce.FactoredEquationBox;
+import org.matheclipse.core.reduce.PowerSubstitution;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
@@ -3481,7 +3482,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       ast = ast.setAtCopy(1, componentwise);
     }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.REDUCE_KEYS, options);
-    if (argSize > 0 && argSize < ast.argSize()) {
+    final boolean withOptions = argSize > 0 && argSize < ast.argSize();
+    if (withOptions) {
       ast = ast.copyUntil(argSize + 1);
     }
     // Reduce(statement) and Reduce(statement, domain): the variables are the symbols of the
@@ -3509,6 +3511,18 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // E^(I*x) > 0 for a complex x holds where Re(x) is a multiple of 2*Pi: the interval and sign
       // methods assume real-valued functions and decided it from its value at one point
       return F.NIL;
+    }
+    if (!withOptions && ast.argSize() == 3 && ast.arg3() == S.Reals
+        && (ast.arg2().isSymbol() || (ast.arg2().isList1() && ast.arg2().first().isSymbol()))) {
+      // a polynomial in x^g: reduced for y = x^g, whose degree is g times smaller. Options such
+      // as WorkingPrecision aren't passed on, so that it applies only without them
+      ISymbol x = (ISymbol) (ast.arg2().isSymbol() ? ast.arg2() : ast.arg2().first());
+      if (new VariablesSet(ast.arg1()).getVarList().argSize() == 1) {
+        IExpr substituted = PowerSubstitution.reduce(ast.arg1(), x, engine);
+        if (substituted.isPresent()) {
+          return substituted;
+        }
+      }
     }
     // `Infinity` is the default of `Reduce`: the exact result is kept
     long precision =
