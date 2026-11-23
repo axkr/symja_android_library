@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Symja on CheerpJ spike</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 1rem 2rem; max-width: 70rem; }
+  #log, #results { background: #f4f4f4; border: 1px solid #ccc; padding: .5rem; overflow: auto; max-height: 22rem; font: 12px/1.35 ui-monospace, monospace; white-space: pre-wrap; }
+  .err { color: #b00020; } .hang { color: #b00020; font-weight: bold; }
+  input[type=text] { width: 30rem; }
+  footer { margin-top: 1.5rem; color: #555; }
+</style>
+</head>
+<body>
+<h1>Symja on CheerpJ (library mode, Web Worker; runtime and jar mode from the query)</h1>
+<p>
+  <label>Java version <select id="version"><option>17</option><option>21</option></select></label>
+  <button id="start">Start</button>
+  <span id="status">idle</span>
+</p>
+<p>
+  <input type="text" id="expr" value="Integrate(x^2*Sin(x),x)" disabled>
+  <button id="eval" disabled>Eval</button>
+</p>
+<div id="log"></div>
+<h3>Results</h3>
+<pre id="results"></pre>
+<!-- "Built with CheerpJ" is a condition of CheerpJ's Community licence: keep it visible. -->
+<footer>Built with <a href="https://cheerpj.com">CheerpJ</a>, a WebAssembly JVM by Leaning Technologies (Community licence).</footer>
+<script>
+/*
+ * Page side of the Symja CheerpJ spike.
+ *
+ * Chain: this page <-> spike-worker.js (Web Worker) <-> CheerpJ <-> range-server.mjs <-> jars.
+ * The page owns the UI and a watchdog; the worker does the loading and calling. The results end up
+ * in window.spikeResults and window.spikeDone is set last, so another agent or script can poll
+ * for the flag and then read the JSON without parsing the DOM.
+ *
+ * Query parameters: version=17|21 (Java version for CheerpJ), auto=1 (start without a click),
+ * loader=<build or URL> (CheerpJ runtime; default 5.0), jars=range|static (how jars reach CheerpJ,
+ * see spike-worker.js; default range), jarcache=http|api (static mode only: HTTP cache or Cache
+ * Storage API for the jars; default http).
+ */
+(() => {
+  const params = new URLSearchParams(location.search);
+  const $ = (id) => document.getElementById(id);
+  const t0 = performance.now();
+  // Watchdog budgets. The first load downloads the CheerpJ runtime and the jars cold over a possibly
+  // slow link, so steps 1-6 together get a generous 10 minutes. Every later call is one Java call
+  // that should be seconds, so 3 minutes means "stuck". Without a deadline a hang would leave the
+  // page waiting forever and the results gathered so far would never be published.
+  const STEP_BUDGET_MS = 600000;  // steps 1-6 together
+  const CALL_BUDGET_MS = 180000;  // each later call
+  // A self test takes at most a few seconds on a desktop JVM (the slowest waits 2 s on purpose),
+  // so one silent for a minute has hung; the shorter budget keeps a run with hangs short, since
+  // every hung self test costs a whole worker restart anyway.
+  const SELFTEST_BUDGET_MS = 60000;
+
+  const sel = $('version');
+  sel.value = params.get('version') === '21' ? '21' : '17';
+
+  /**
+   * The CheerpJ loader URL from ?loader=. A bare build name such as 20261119_3844 (a nightly) or
+   * 5.0 is expanded to Leaning's CDN layout. Only that CDN is accepted: the worker runs the loader
+   * with importScripts, so a free URL in the query would let any link run any script on this origin.
+   * @returns {string|undefined} the URL, or undefined for the worker's default (5.0)
+   */
+  function loaderParam() {
+    const v = params.get('loader');
+    if (!v) return undefined;
+    const CDN = 'https://cjrtnc.leaningtech.com/';
+    if (/^[\w.]+$/.test(v)) return CDN + v + '/loader.js';
+    if (v.startsWith(CDN) && v.endsWith('/loader.js')) return v;
+    throw new Error('loader must be a build name or a ' + CDN + '... loader.js URL: ' + v);
+  }
+
+  /**
+   * Append a timestamped line (seconds since page load) to the log pane.
+   * @param {string} msg text of the line
+   * @param {string} [cls] optional CSS class, 'err' or 'hang'
+   */
+  function log(msg, cls) {
+    const d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = '[' + ((performance.now() - t0) / 1000).toFixed(2) + 's] ' + msg;
+    $('log').appendChild(d);
+    $('log').scrollTop = $('log').scrollHeight;
+  }
+
+  // R is the object that becomes window.spikeResults. It is filled incrementally, message by
+  // message, so a hang or crash keeps everything posted before it.
+  let worker, timer, started = false, finished = false;
+  let phase = 'startup', current = null;
+  // gen counts workers: 0 is the first, full run; each hung self test starts the next one.
+  // queue holds the self tests not yet answered, so a restart knows what is left to run.
+  let gen = 0, queue = [];
+  // restarts: one entry per replacement worker, with its own load timings, so that the cold
+  // numbers of the first worker in R.timings are never overwritten by a warm reload.
+  const R = { version: 17, loader: null, jars: 'range', jarCache: 'http', userAgent: navigator.userAgent, timings: {}, init: null, benchmark: [], selfTest: [], restarts: [], stats: null, errors: [], hung: null };
+
+  // Steps 1-6; they share one budget because the early ones (loader, jars) are the slow ones.
+  // jarDownload and jarCopy exist only in jars=static mode.
+  const EARLY = new Set(['loader', 'cheerpjInit', 'classpath', 'jarDownload', 'jarCopy', 'cheerpjRunLibrary', 'classResolved', 'init']);
+  /**
+   * (Re)start the single watchdog timer.
+   * @param {number} ms deadline in milliseconds
+   * @param {string} what step name recorded as the hung step if the deadline passes
+   */
+  function arm(ms, what) {
+    clearTimeout(timer);
+    timer = setTimeout(() => hang(what, ms), ms);
+  }
+  /**
+   * The deadline passed: record which step hung and kill the worker; terminate() is the only way
+   * to stop a worker stuck inside CheerpJ. A hung self test is itself a result (the behaviour it
+   * probes does not work), so it is recorded as a failed test and a fresh worker runs the rest of
+   * the queue; it also leaves a live kernel for the Eval box. Any other hang ends the run, and
+   * whatever was collected is published.
+   */
+  function hang(what, ms) {
+    if (finished) return;
+    if (what.startsWith('selfTest:')) {
+      const name = what.slice('selfTest:'.length);
+      R.selfTest.push({ name, pass: false, hung: true, millis: null, wallMillis: ms, detail: 'no answer within ' + ms / 1000 + ' s; worker terminated' });
+      queue = queue.filter(n => n !== name);
+      log('HUNG in self test "' + name + '" after ' + ms / 1000 + 's; restarting the worker for: ' + (queue.join(', ') || '(no tests left, kernel only)'), 'hang');
+      worker.terminate();
+      setResults();
+      gen++;
+      R.restarts.push({ afterHungTest: name, selfTests: queue.slice(), timings: {}, init: null });
+      $('expr').disabled = true; $('eval').disabled = true;
+      spawn({ benchmarks: false, selfTests: queue.slice() });
+      return;
+    }
+    R.hung = { step: what, afterSeconds: ms / 1000 };
+    log('HUNG at step "' + what + '" after ' + ms / 1000 + 's; terminating worker', 'hang');
+    worker.terminate();
+    finish();
+  }
+  /** Show the current results object as JSON in the #results pane. */
+  function setResults() { $('results').textContent = JSON.stringify(R, null, 2); }
+
+  /**
+   * End of the run, normal or not: fetch the server's statistics, publish window.spikeResults,
+   * then set window.spikeDone. The stats (requests and bytes per path) show what one visit costs,
+   * which is what decides the hosting plan. Idempotent, because both a hang and a worker error
+   * can lead here.
+   */
+  async function finish() {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    try { R.stats = await (await fetch('/__stats', { cache: 'no-store' })).json(); }
+    catch (e) { R.stats = { error: String(e) }; }
+    setResults();
+    window.spikeResults = R;
+    window.spikeDone = true;
+    $('status').textContent = R.hung ? 'hung' : (R.errors.length ? 'finished with errors' : 'done');
+    log('finished');
+  }
+
+  /** Start the run once: lock the controls and start the first worker, which runs everything. */
+  function start() {
+    if (started) return;
+    started = true;
+    // A number, not the select's string "17": cheerpjInit({version}) expects a number.
+    R.version = Number(sel.value);
+    R.loader = loaderParam() || null;
+    R.jars = params.get('jars') === 'static' ? 'static' : 'range';
+    R.jarCache = params.get('jarcache') === 'api' ? 'api' : 'http';
+    sel.disabled = true; $('start').disabled = true;
+    $('status').textContent = 'running';
+    spawn({});
+  }
+
+  /**
+   * Start a worker of the current generation, arm the start-up watchdog and send it the start
+   * command. The worker keeps CheerpJ's loading and the Java calls off the main thread (the page
+   * stays responsive) and can be terminated if it hangs.
+   * @param {{benchmarks?: boolean, selfTests?: string[]}} opts passed on to the worker's run()
+   */
+  function spawn(opts) {
+    const g = gen;
+    // Timings and init results of a restarted worker go to its R.restarts entry.
+    const timingsOf = () => (g === 0 ? R.timings : R.restarts[g - 1].timings);
+    worker = new Worker('spike-worker.js');
+    arm(STEP_BUDGET_MS, 'startup (steps 1-6)');
+    worker.onerror = (e) => {
+      if (g !== gen) return;
+      R.errors.push({ step: current, message: e.message || 'worker error', stack: '' });
+      log('worker error: ' + e.message, 'err'); finish();
+    };
+    /**
+     * Messages from spike-worker.js, posted as each result is ready (not in one batch at the end).
+     * Each one is stored in R straight away and re-arms the watchdog for the next call.
+     */
+    worker.onmessage = (ev) => {
+      // A terminated worker posts nothing more, but guard anyway: only the current one counts.
+      if (g !== gen) return;
+      const m = ev.data;
+      switch (m.type) {
+        case 'stepStart':
+          current = m.step;
+          log('start ' + m.step);
+          if (m.step.startsWith('selfTest:')) { phase = 'late'; arm(SELFTEST_BUDGET_MS, m.step); }
+          else if (!EARLY.has(m.step) && m.step !== 'userEval') { phase = 'late'; arm(CALL_BUDGET_MS, m.step); }
+          else if (m.step === 'userEval') arm(CALL_BUDGET_MS, m.step);
+          break;
+        case 'step':
+          timingsOf()[m.step] = m.millis;
+          log(m.step + ' done in ' + m.millis + ' ms');
+          // After init the 600 s budget for steps 1-6 is over; each later call gets its own 180 s.
+          if (m.step === 'init') { /* early phase over; next stepStart re-arms */ clearTimeout(timer); arm(CALL_BUDGET_MS, 'benchmarkInputs'); }
+          break;
+        case 'info':
+          // Two kinds: the classpath list, and in static mode the total bytes downloaded.
+          if (m.classpath) log('classpath: ' + m.classpath.join(', '));
+          if (m.jarBytes !== undefined) {
+            const t = g === 0 ? R : R.restarts[g - 1];
+            t.jarBytes = m.jarBytes; t.jarsFromCacheApi = m.fromCacheApi;
+            log('jar bytes: ' + m.jarBytes + ', from Cache Storage: ' + m.fromCacheApi + ' jars');
+          }
+          break;
+        case 'init':
+          if (g === 0) R.init = m.value; else R.restarts[g - 1].init = m.value;
+          log('init: ' + JSON.stringify(m.value));
+          $('expr').disabled = false; $('eval').disabled = false; setResults(); break;
+        case 'benchmark':
+          R.benchmark.push(Object.assign({ wallMillis: m.wallMillis }, m.value));
+          log('eval#' + m.index + ' ' + JSON.stringify(m.value)); setResults(); arm(CALL_BUDGET_MS, 'eval#' + (m.index + 1)); break;
+        case 'selfTestNames': queue = m.names.slice(); break;
+        case 'selfTest':
+          R.selfTest.push(Object.assign({ wallMillis: m.wallMillis }, m.value));
+          queue = queue.filter(n => n !== m.name);
+          // Guards the gap until the next stepStart; not a 'selfTest:' name, so a hang here ends the run.
+          log('selfTest ' + JSON.stringify(m.value)); setResults(); arm(CALL_BUDGET_MS, 'after selfTest ' + m.name); break;
+        case 'userEval':
+          clearTimeout(timer);
+          log('eval: ' + JSON.stringify(m.value)); break;
+        case 'error':
+          R.errors.push({ step: m.step, message: m.error.message, stack: m.error.stack });
+          log('ERROR in ' + m.step + ': ' + m.error.message + '\n' + m.error.stack, 'err'); setResults(); break;
+        case 'fatal':
+          R.errors.push({ step: current, message: m.error.message, stack: m.error.stack });
+          finish(); break;
+        case 'done': log('done'); worker.__done = true; finish(); break;
+      }
+    };
+    worker.postMessage({ cmd: 'start', version: R.version, loader: R.loader || undefined, jars: R.jars, jarCache: R.jarCache, benchmarks: opts.benchmarks, selfTests: opts.selfTests });
+  }
+
+  $('start').onclick = start;
+  // Eval is only enabled after init succeeded; it reuses the same worker, so it is one more Java call.
+  $('eval').onclick = () => {
+    if (!worker || R.hung) return;
+    log('eval> ' + $('expr').value);
+    worker.postMessage({ cmd: 'eval', input: $('expr').value });
+  };
+  $('expr').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('eval').click(); });
+  if (params.get('auto') === '1') start();
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ package org.matheclipse.io.servlet;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -161,8 +162,7 @@ public class AJAXDynamicServlet extends HttpServlet {
   private static String evaluate(EvalEngine engine, String sessionID, String id, int controlIndex,
       JsonNode value, int actionIndex, org.matheclipse.core.interfaces.IExpr point, long poll,
       boolean refresh, StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    Future<String> task = executor.submit(() -> {
+    Callable<String> work = () -> {
       try {
         EvalEngine.set(engine);
         ObjectNode answer;
@@ -182,7 +182,18 @@ public class AJAXDynamicServlet extends HttpServlet {
         LOGGER.debug("Dynamic update failed", ex);
         return JSONBuilder.createJSONErrorString("Error: " + ex.getMessage());
       }
-    });
+    };
+    if (Config.CHEEPRJ) {
+      // in the browser a Future cannot time out; see CallingThreadLimit
+      try {
+        return CallingThreadLimit.call(engine, work,
+            JSONBuilder.createJSONErrorString("Timeout exceeded. Calculation aborted!"));
+      } catch (Exception ex) {
+        return JSONBuilder.createJSONErrorString("Timeout exceeded. Calculation aborted!");
+      }
+    }
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    Future<String> task = executor.submit(work);
     try {
       return task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000L, TimeUnit.MILLISECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {

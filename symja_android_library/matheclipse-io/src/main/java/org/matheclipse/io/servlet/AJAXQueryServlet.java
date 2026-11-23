@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -407,9 +408,7 @@ public class AJAXQueryServlet extends HttpServlet {
     // on it, and an evaluation abandoned on a thread that has already ended never reaches that
     // loop. Clearing here means a leftover abort cannot take out the next thing the user types.
     engine.clearStopRequest();
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    Future<String[]> task = executor.submit(() -> {
+    Callable<String[]> work = () -> {
       String[] temp;
       try {
         temp = evaluateString(engine, inputString, numericMode, function, outWriter, errorWriter);
@@ -420,7 +419,19 @@ public class AJAXQueryServlet extends HttpServlet {
         temp = JSONBuilder.createJSONError("RuntimeException: " + rex.getMessage());
       }
       return temp;
-    });
+    };
+    if (Config.CHEEPRJ) {
+      // in the browser a Future cannot time out; see CallingThreadLimit
+      try {
+        return CallingThreadLimit.call(engine, work,
+            JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!"));
+      } catch (Exception ex) {
+        return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
+      }
+    }
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    Future<String[]> task = executor.submit(work);
 
     try {
       return task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
@@ -972,8 +983,12 @@ public class AJAXQueryServlet extends HttpServlet {
       ToggleFeature.COMPILE = true;
       ToggleFeature.COMPILE_PRINT = true;
       Config.UNPROTECT_ALLOWED = false;
-      // disable threads for JAS only on google appengine
-      Config.JAS_NO_THREADS = false;
+      // disable threads for JAS only on google appengine - and in the browser kernel (CheerpJ),
+      // whose threads all share the page's one thread: there it keeps the value the kernel set
+      // before this ran, instead of switching JAS's thread pool back on
+      if (!Config.CHEEPRJ) {
+        Config.JAS_NO_THREADS = false;
+      }
       Config.JAVA_UNSAFE = true;
       // Config.THREAD_FACTORY =
       // com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
