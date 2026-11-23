@@ -1,0 +1,182 @@
+/*
+ * kernel.css - look of the in-browser kernel's status chip and the "Built with CheerpJ" credit.
+ *
+ * Loaded by kernel.js (which adds a <link> for /kernel.css if the page does not carry one), so the
+ * notebook page itself stays byte-for-byte the page the servlet version serves. Nothing here
+ * restyles an existing element: every rule is scoped to an id/class that kernel.js creates.
+ *
+ * Fits the page's own look (media/css/styles.css): sans-serif, the grey #3f3f3f / #cccecb palette,
+ * small rounded controls, Font Awesome icons. Colours below are the only new ones, and each marks
+ * a kernel state:   amber = loading   green = ready   blue = busy   red = error.
+ */
+
+/* ---- the status chip, inside #headerright -------------------------------------------------- */
+
+/* #headerright is a flex row (search box, docs icon); the chip is one more auto-sized item that
+   sits just left of the docs icon. It never grows, so the search box keeps absorbing the slack. */
+#kernelstatus {
+  position: relative;           /* anchors the progress bar along its bottom edge */
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  box-sizing: border-box;
+  height: 26px;
+  margin: 3px 0.6em 0 0.3em;
+  padding: 0 0.7em;
+  overflow: hidden;             /* clips the progress bar to the rounded corners */
+  border: 1px solid #cccecb;
+  border-radius: 13px;
+  background-color: #fff;
+  color: #666;
+  font-family: sans-serif;
+  font-size: 0.75em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Fallback when the page has no #headerright: float in the top right corner instead. */
+#kernelstatus.kernel-floating {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  margin: 0;
+}
+
+/* the coloured dot that says which state we are in at a glance */
+#kernelstatus .kernel-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.55em;
+  border-radius: 50%;
+  background-color: #cccecb;
+}
+#kernelstatus[data-state="loading"] .kernel-dot,
+#kernelstatus[data-state="restarting"] .kernel-dot {
+  background-color: #e0a800;
+  animation: kernel-pulse 1.2s ease-in-out infinite;
+}
+#kernelstatus[data-state="ready"] .kernel-dot {
+  background-color: #3c9d4e;
+}
+#kernelstatus[data-state="busy"] .kernel-dot {
+  background-color: #2f7fd1;
+  animation: kernel-pulse 0.8s ease-in-out infinite;
+}
+#kernelstatus[data-state="error"] .kernel-dot {
+  background-color: #cc3333;
+}
+@keyframes kernel-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+#kernelstatus .kernel-label {
+  /* a long progress text ("Downloading jars: 31 of 58 MB") must not push the header around */
+  max-width: 22em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#kernelstatus[data-state="error"] {
+  color: #a02222;
+  border-color: #e6b3b3;
+}
+
+/* Stop / Retry: same flat look as the toolbar buttons, only shown when it can do something */
+#kernelstatus .kernel-btn {
+  flex: none;
+  margin: 0 -0.3em 0 0.6em;
+  padding: 3px 0.6em;
+  border: 1px solid #cccecb;
+  border-radius: 10px;
+  background-color: #f6f6f5;
+  color: #3f3f3f;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+#kernelstatus .kernel-btn:hover {
+  background-color: #3f3f3f;
+  border-color: #3f3f3f;
+  color: #fff;
+}
+#kernelstatus .kernel-btn:focus-visible {
+  outline: 2px solid #2f7fd1;
+  outline-offset: 1px;
+}
+#kernelstatus .kernel-btn[hidden] {
+  display: none;
+}
+#kernelstatus .kernel-btn .fa {
+  margin-right: 0.3em;
+}
+
+/* the thin progress bar along the bottom edge of the chip, shown only while loading */
+#kernelstatus .kernel-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  display: none;
+}
+#kernelstatus[data-state="loading"] .kernel-bar,
+#kernelstatus[data-state="restarting"] .kernel-bar {
+  display: block;
+}
+#kernelstatus .kernel-bar > i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background-color: #e0a800;
+  transition: width 0.25s ease;
+}
+/* total size unknown: a short segment sweeps back and forth instead of a filled bar */
+#kernelstatus .kernel-bar.indeterminate > i {
+  width: 30%;
+  animation: kernel-sweep 1.4s ease-in-out infinite;
+}
+@keyframes kernel-sweep {
+  0%   { margin-left: -30%; }
+  100% { margin-left: 100%; }
+}
+
+/* narrow screens: header space is scarce, so keep the dot and the button, drop the words */
+@media (max-width: 640px) {
+  #kernelstatus .kernel-label {
+    display: none;
+  }
+  #kernelstatus .kernel-dot {
+    margin-right: 0;
+  }
+}
+
+/* ---- the credit ----------------------------------------------------------------------------- */
+
+/* CheerpJ's licence asks for visible attribution, so the link is fixed to the viewport and cannot
+   be scrolled away. It is small and half transparent so it does not compete with the notebook;
+   z-index 5 keeps it above cells but below the page's popups (10) and tooltips (10). */
+#kernel-credit {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  z-index: 5;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #666;
+  font-family: sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  text-decoration: none;
+  opacity: 0.8;
+}
+#kernel-credit:hover,
+#kernel-credit:focus-visible {
+  opacity: 1;
+  color: #3f3f3f;
+  text-decoration: underline;
+}

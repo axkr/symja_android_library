@@ -11,7 +11,7 @@
 	<artifactId>matheclipse-web</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>Feasibility spike: Symja in the browser with CheerpJ (static entry points for JavaScript)</description>
+	<description>Symja in the browser with CheerpJ: the spike entry points and the notebook kernel (static entry points for JavaScript)</description>
 
 	<licenses>
 		<license>
@@ -23,29 +23,194 @@
 	</licenses>
 
 	<properties>
-		<!-- No maven.compiler.release here on purpose: the parent's default, release 11, stays.
-		matheclipse-core is built for 11 as well, and a CheerpJ JVM is only known to run what a
-		Java 11 class library needs; setting 21 (as matheclipse-jar does for matheclipse-astro)
-		would raise the class-file version of the one class which this module adds without any
-		benefit. -->
+		<!-- Release 17, not the parent's 11 and not matheclipse-io's 21. The browser kernel runs on
+		CheerpJ with cheerpjInit({version: 17}): Java 17 starts several times faster there than 21
+		(see the spike notes), and a Java 17 JVM refuses any class file newer than version 61. The
+		sources of matheclipse-io are compiled into this module (see build-helper below) and use
+		nothing newer than Java 11, so 17 costs nothing; matheclipse-io itself is release 21 only
+		because it depends on matheclipse-astro (Orekit), which the browser leaves out. -->
+		<maven.compiler.release>17</maven.compiler.release>
 		<!-- This project is not intended to be published -->
 		<deployment.suppress>true</deployment.suppress>
-		<!-- the flat jar directory which the browser loads -->
+		<!-- the flat jar directory which the spike page loads -->
 		<site.jars.dir>${project.build.directory}/site/jars</site.jars.dir>
+		<!-- The spike's jar set is no longer written by default: target/site/ is read by the speed
+		measurement and by the Cloudflare deploy, and a package run of the notebook kernel would
+		otherwise replace it with the larger jar set below. -Dspike.skip=false writes it again. -->
+		<spike.skip>true</spike.skip>
+		<!-- the flat jar directory which the notebook page loads: the kernel and its runtime jars -->
+		<notebook.jars.dir>${project.build.directory}/notebook/jars</notebook.jars.dir>
+		<!-- where the notebook servlets come from; compiled here at release 17 -->
+		<io.sources.dir>${project.basedir}/../matheclipse-io/src/main/java</io.sources.dir>
 	</properties>
 
 	<dependencies>
-		<!-- The only dependency. The runtime classpath of the browser is whatever this pulls in
-		transitively; matheclipse-io (servlets, Jetty) is deliberately not part of it. -->
+		<!-- The runtime classpath of the browser kernel is exactly the compile and runtime scoped
+		dependencies below (and what they pull in transitively); copy-dependencies copies them into
+		target/notebook/jars. They are matheclipse-io's own dependencies, declared here one by one
+		instead of depending on the matheclipse-io artifact, whose classes are release 21: its
+		sources are compiled into this module instead. -->
+		<!-- Exclusions keep the jar set the browser downloads small: CheerpJ on a static site
+		fetches every jar whole before the first evaluation (Cloudflare ignores HTTP Range), so each
+		megabyte is paid on every cold start. Each one was checked against the code that uses it
+		(see notebook-kernel-java.md in the shared notes for the probes):
+		- RoaringBitmap: a direct dependency of matheclipse-core that only matheclipse-dataset's
+		  vendored tablesaw uses; nothing in core, external or the kept modules loads it.
+		choco-solver stays, with what it brings (trove4j, automaton, sizeof, args4j; 4.9 MB):
+		integer Solve and FindInstance fall back to it (ChocoConvert.integerSolve) after the
+		polynomial, linear and reduce paths - Solve({x+y+z==6,x*y*z==6,x>0,y>0,z>0},{x,y,z},
+		Integers), for one - and without it such a cell shows a NoClassDefFoundError instead of
+		its solutions. -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-core</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.roaringbitmap</groupId>
+					<artifactId>RoaringBitmap</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- trove4j is not needed by the image module: it comes through boofcv-ip -> ddogleg, where
+		only ddogleg's chainrule package (Jacobian chain graphs of its optimizers) names it, and no
+		image function of Symja reaches that package (checked: GradientFilter, Dilation,
+		ImageAdjust answer the same with and without it). The exclusion here only keeps the image
+		module from asking for it; choco-solver, which does use it, still brings it in.
+		The TwelveMonkeys ImageIO plugins (0.9 MB, runtime scope) are javax.imageio service
+		providers for more JPEG/TIFF variants, WebP, PNM and BMP. Without them ImageIO uses the
+		JDK's own readers and writers (PNG, JPEG, GIF, BMP, TIFF); WebP and PNM files cannot be
+		imported. ImageIO also loads every plugin it finds on the first image, which this spares. -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-image</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>net.sf.trove4j</groupId>
+					<artifactId>trove4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.twelvemonkeys.imageio</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- jgrapht-io stays although only the DOT, GraphML and CSV export of a Graph names it:
+		GraphExpr catches its ExportException, so the class GraphExpr - every Graph(..) result -
+		cannot be loaded without it (tried: Graph({1->2}) answered NoClassDefFoundError). -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-graphtheory</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-compile</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-internal</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-jsgraphics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- log4j-core and the ThreadLocalNotifyingAppender: Symja's messages (Power::infy, ...)
+		reach the JSON of a cell only through that appender, see ServletLogging -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- the Markdown cells of POST /ajax/notebook/ -->
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-github</artifactId>
+		</dependency>
+		<!-- The servlets extend HttpServlet, so the servlet API has to load in the browser too; the
+		kernel calls their doGet/doPost itself, there is no container. The version is the one
+		undertow-servlet brings to the server. -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+		</dependency>
+
+		<!-- Compile classpath only. The io sources name these (the Undertow launcher, and IOInit's
+		optional modules, which it skips at run time when they are missing), but the browser kernel
+		never loads them: Undertow is a server, and astro (Orekit, Java 21), chem, bio, nlp and
+		dataset are large optional modules. provided keeps them out of target/notebook/jars. -->
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-servlet</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-astro</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-chem</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-bio</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-nlp</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- matheclipse-dataset (Dataset, SemanticImport, the vendored tablesaw with fastutil,
+		icu4j, poi, arrow, ...) is 64 MB of the browser download on its own. IOInit skips it when it
+		is missing ("not on the classpath - skipped"); without it Import("data.csv") answers a plain
+		list instead of a table, and Dataset/SemanticImport stay unevaluated. -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-dataset</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<!-- matheclipse-io's sources become a second source root of this module, so they are
+			compiled here with release 17 (see maven.compiler.release) and end up in this module's
+			jar next to the kernel. matheclipse-io's own build (release 21) is untouched. Only the
+			Java sources are taken: the io resources are the server's web page and documentation,
+			which the static site serves itself. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.6.1</version>
+				<executions>
+					<execution>
+						<id>add-io-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${io.sources.dir}</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- The jars stay separate files in one flat directory, not a fat or shaded jar:
 			CheerpJ loads each jar lazily with HTTP Range requests and fetches only the parts that
 			the running code needs, so one jar per library keeps the first download small and
@@ -70,6 +235,23 @@
 							<includeScope>runtime</includeScope>
 							<useBaseVersion>false</useBaseVersion>
 							<overWriteSnapshots>true</overWriteSnapshots>
+							<skip>${spike.skip}</skip>
+						</configuration>
+					</execution>
+					<!-- The notebook kernel's jar set: every compile and runtime scoped dependency,
+					flat, under its plain file name. provided (Undertow, astro, chem, bio, nlp) is
+					not part of the runtime scope and so never copied. -->
+					<execution>
+						<id>copy-notebook-jars</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${notebook.jars.dir}</outputDirectory>
+							<includeScope>runtime</includeScope>
+							<useBaseVersion>false</useBaseVersion>
+							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
 				</executions>
@@ -91,6 +273,7 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
+							<skip>${spike.skip}</skip>
 							<target>
 								<copy file="${project.build.directory}/${project.build.finalName}.jar" todir="${site.jars.dir}" overwrite="true" />
 								<!-- every jar but this module's own, which is written first below -->
@@ -100,6 +283,41 @@
 									<mapper type="flatten" />
 								</pathconvert>
 								<echo file="${site.jars.dir}/classpath.txt" message="${project.build.finalName}.jar${line.separator}${otherJarNames}${line.separator}" />
+							</target>
+						</configuration>
+					</execution>
+					<!-- The notebook jar directory is emptied first: copy-dependencies only adds
+					files, so a jar dropped from the dependencies (or an old version of one) would
+					otherwise stay behind and be listed in classpath.txt, and the browser would
+					download it. prepare-package runs before the copy in package. -->
+					<execution>
+						<id>clean-notebook-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete dir="${notebook.jars.dir}" quiet="true" />
+							</target>
+						</configuration>
+					</execution>
+					<!-- The same for the notebook kernel: its jar (the kernel, the io servlets and
+					the spike class) goes first in classpath.txt, then the dependencies. -->
+					<execution>
+						<id>notebook-classpath</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy file="${project.build.directory}/${project.build.finalName}.jar" todir="${notebook.jars.dir}" overwrite="true" />
+								<fileset id="notebookJars" dir="${notebook.jars.dir}" includes="*.jar" excludes="${project.build.finalName}.jar" />
+								<pathconvert refid="notebookJars" property="notebookJarNames" pathsep="${line.separator}">
+									<mapper type="flatten" />
+								</pathconvert>
+								<echo file="${notebook.jars.dir}/classpath.txt" message="${project.build.finalName}.jar${line.separator}${notebookJarNames}${line.separator}" />
 							</target>
 						</configuration>
 					</execution>
