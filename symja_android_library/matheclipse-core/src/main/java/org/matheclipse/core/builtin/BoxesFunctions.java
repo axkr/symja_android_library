@@ -217,6 +217,24 @@ public class BoxesFunctions {
       }
     }
 
+    /**
+     * The boxes of the scripts <code>ast.arg2(), ast.arg3(), ...</code>: one script, or a row of
+     * the scripts separated by commas.
+     */
+    private static IExpr scriptRow(final IAST ast, final IExpr form, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        return standardFormRecursive(ast.arg2(), 0, form, engine);
+      }
+      IASTAppendable scripts = F.ListAlloc(2 * ast.argSize());
+      for (int i = 2; i < ast.size(); i++) {
+        if (i > 2) {
+          scripts.append(F.$str(","));
+        }
+        scripts.append(standardFormRecursive(ast.get(i), 0, form, engine));
+      }
+      return F.RowBox(scripts);
+    }
+
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence,
         final IExpr form, final EvalEngine engine) {
       IExpr boxes = upValueBoxes(expr, form, engine);
@@ -1137,16 +1155,9 @@ public class BoxesFunctions {
       }
       if (ast.isAST(S.Subscript) && ast.argSize() >= 2) {
         // Subscript(x, i, j, ...): the indices as a row with commas below the base
-        IASTAppendable indices = F.ListAlloc(2 * ast.argSize());
-        for (int i = 2; i < ast.size(); i++) {
-          if (i > 2) {
-            indices.append(F.$str(","));
-          }
-          indices.append(standardFormRecursive(ast.get(i), 0, form, engine));
-        }
         return F.binaryAST2(S.SubscriptBox,
             standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine),
-            indices.argSize() == 1 ? indices.arg1() : F.RowBox(indices));
+            scriptRow(ast, form, engine));
       }
       if (ast.isAST(S.SuperStar, 2) || ast.isAST(S.SuperDagger, 2)) {
         // x^* and x^†: the mark is the superscript
@@ -1158,6 +1169,19 @@ public class BoxesFunctions {
         return F.binaryAST2(S.SuperscriptBox,
             standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine),
             standardFormRecursive(ast.arg2(), 0, form, engine));
+      }
+      if ((ast.isAST(S.Overscript) || ast.isAST(S.Underscript)) && ast.argSize() >= 2) {
+        // the script is set above or below the base, so the base needs no parentheses; more than
+        // one script is a row with commas
+        return F.binaryAST2(ast.isAST(S.Overscript) ? S.OverscriptBox : S.UnderscriptBox,
+            standardFormRecursive(ast.arg1(), 0, form, engine), scriptRow(ast, form, engine));
+      }
+      if (ast.isAST(S.Underoverscript, 4)) {
+        // the first script below, the second above the base
+        return F.ternaryAST3(S.UnderoverscriptBox,
+            standardFormRecursive(ast.arg1(), 0, form, engine),
+            standardFormRecursive(ast.arg2(), 0, form, engine),
+            standardFormRecursive(ast.arg3(), 0, form, engine));
       }
       if (ast.isAST(S.Subsuperscript, 4)) {
         IExpr base = standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine);

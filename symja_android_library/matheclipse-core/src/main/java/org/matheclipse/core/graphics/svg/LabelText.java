@@ -194,12 +194,12 @@ public final class LabelText {
       return scriptBase(expr.first()) + (expr.isAST(S.Subscript) ? "_" : "^")
           + scriptText(expr.second());
     }
-    if (expr.isAST(S.Subsuperscript, 4)) {
-      // x with the subscript first, then the superscript
-      String sub = script(of(expr.second()), SUB_FROM, SUB_TO);
-      String sup = script(of(((IAST) expr).arg3()), SUPER_FROM, SUPER_TO);
-      return scriptBase(expr.first()) + (sub != null ? sub : "_" + scriptText(expr.second()))
-          + (sup != null ? sup : "^" + scriptText(((IAST) expr).arg3()));
+    if (expr.isAST(S.Subsuperscript, 4) || expr.isAST(S.Underoverscript, 4)) {
+      // x with the subscript first, then the superscript; on one line the limits below and
+      // above a base are written as scripts, like those of an inline sum
+      IExpr over = ((IAST) expr).arg3();
+      return scriptBase(expr.first()) + subAndSuperscript(of(expr.second()), of(over),
+          scriptText(expr.second()), scriptText(over));
     }
     if (expr.isAST(S.SuperStar, 2) || expr.isAST(S.SuperDagger, 2)) {
       // x* and x\u2020: the mark follows the base
@@ -306,6 +306,20 @@ public final class LabelText {
    * A script written after a caret or an underscore, in parentheses unless it is a symbol or a
    * natural number: <code>x^(1/3)</code>, <code>x^(-2)</code>.
    */
+  /**
+   * A subscript and a superscript in script characters; if one of them has no such characters,
+   * both are written plain, after an underscore and a caret, so that the two read alike.
+   */
+  private static String subAndSuperscript(String sub, String sup, String plainSub,
+      String plainSup) {
+    String subGlyphs = script(sub, SUB_FROM, SUB_TO);
+    String supGlyphs = script(sup, SUPER_FROM, SUPER_TO);
+    if (subGlyphs != null && supGlyphs != null) {
+      return subGlyphs + supGlyphs;
+    }
+    return "_" + plainSub + "^" + plainSup;
+  }
+
   private static String scriptText(IExpr script) {
     String text = of(script);
     return script.isSymbol() || (script.isInteger() && !script.isNegative()) ? text
@@ -748,11 +762,10 @@ public final class LabelText {
       return (index != null ? index : "") + "\u221A"
           + (radicand.length() > 1 ? "(" + radicand + ")" : radicand);
     }
-    if (box.isAST(S.SubsuperscriptBox, 4)) {
-      String sub = script(boxes(box.second()), SUB_FROM, SUB_TO);
-      String sup = script(boxes(((IAST) box).arg3()), SUPER_FROM, SUPER_TO);
-      return boxes(box.first()) + (sub != null ? sub : "_" + boxes(box.second()))
-          + (sup != null ? sup : "^" + boxes(((IAST) box).arg3()));
+    if (box.isAST(S.SubsuperscriptBox, 4) || box.isAST(S.UnderoverscriptBox, 4)) {
+      String under = boxes(box.second());
+      String over = boxes(((IAST) box).arg3());
+      return boxes(box.first()) + subAndSuperscript(under, over, under, over);
     }
     if (box.isAST(S.GridBox) && box.argSize() >= 1 && box.first().isList()) {
       // one line per row

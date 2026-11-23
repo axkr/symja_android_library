@@ -877,6 +877,73 @@ public final class BoxNotation {
     return buf == null ? text : buf.toString();
   }
 
+  /**
+   * The source of a script set above or below a base: an expression, or a mark such as a hat or a
+   * bar as a string. A row with commas is one script per piece.
+   */
+  private String scriptSource(IExpr box) {
+    List<IExpr> pieces = commaPieces(box);
+    if (pieces != null) {
+      StringBuilder buf = new StringBuilder();
+      for (int i = 0; i < pieces.size(); i++) {
+        buf.append(i == 0 ? "" : ", ").append(scriptSource(pieces.get(i)));
+      }
+      return buf.toString();
+    }
+    String source = source(box);
+    return isMark(source) ? quoted(source) : source;
+  }
+
+  /**
+   * The pieces between the <code>","</code> items of a row, or <code>null</code> if the box is no
+   * row with a comma.
+   */
+  private static List<IExpr> commaPieces(IExpr box) {
+    if (!box.isAST(S.RowBox, 2) || !box.first().isList()) {
+      return null;
+    }
+    IAST items = (IAST) box.first();
+    List<IExpr> pieces = new ArrayList<>();
+    IASTAppendable piece = F.ListAlloc();
+    for (int i = 1; i < items.size(); i++) {
+      IExpr item = items.get(i);
+      if (item.isString(",")) {
+        pieces.add(piece.argSize() == 1 ? piece.arg1() : F.RowBox(piece));
+        piece = F.ListAlloc();
+      } else {
+        piece.append(item);
+      }
+    }
+    if (pieces.isEmpty()) {
+      return null;
+    }
+    pieces.add(piece.argSize() == 1 ? piece.arg1() : F.RowBox(piece));
+    return pieces;
+  }
+
+  /**
+   * Whether the source of a script is a mark rather than an expression: empty, one character which
+   * is no letter or digit, text which doesn't parse, or a pattern such as <code>_</code> or
+   * <code>__</code>.
+   */
+  private boolean isMark(String source) {
+    String text = source.trim();
+    if (text.isEmpty()) {
+      return true;
+    }
+    if (text.length() == 1) {
+      char ch = text.charAt(0);
+      if (!Character.isLetterOrDigit(ch) || Character.getType(ch) == Character.MODIFIER_LETTER) {
+        return true;
+      }
+    }
+    try {
+      return !parser.parse(source).isFreeOfPatterns();
+    } catch (SyntaxError e) {
+      return true;
+    }
+  }
+
   /** Whether the source draws nothing: the base of a prefix script is such a text. */
   private static boolean drawsNothing(String source) {
     return source.trim().isEmpty();
@@ -947,13 +1014,18 @@ public final class BoxNotation {
         break;
       case "overscriptbox":
         if (size == 2) {
-          // the mark is a hat or a bar, no code: a bare _ would be read as a pattern
-          return "Overscript[" + source(args.get(0)) + ", " + quoted(source(args.get(1))) + "]";
+          return "Overscript[" + source(args.get(0)) + ", " + scriptSource(args.get(1)) + "]";
         }
         break;
       case "underscriptbox":
         if (size == 2) {
-          return "Underscript[" + source(args.get(0)) + ", " + quoted(source(args.get(1))) + "]";
+          return "Underscript[" + source(args.get(0)) + ", " + scriptSource(args.get(1)) + "]";
+        }
+        break;
+      case "underoverscriptbox":
+        if (size == 3) {
+          return "Underoverscript[" + source(args.get(0)) + ", " + scriptSource(args.get(1))
+              + ", " + scriptSource(args.get(2)) + "]";
         }
         break;
       case "sqrtbox":

@@ -703,4 +703,29 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
         + "Max(Cases(Normal(g), Polygon(p_) :> Max(Abs(Times @@@ p)), Infinity))>0.99", //
         "True");
   }
+
+  @Test
+  public void testUnderoverscriptLabelAndSmallTicks() {
+    // limits below and above a base are written as scripts on one line
+    check("StringCases(ExportString(Graphics(Text(Underoverscript(\"P\", \"j=0\", \"m\"))),\"SVG\"),"
+        + "RegularExpression(\">P[^<>]*<\"))", //
+        "{>P\u2C7C\u208C\u2080\u1D50<}");
+    // a limit without script characters: both limits plain, after an underscore and a caret
+    check("StringCases(ExportString(Graphics(Text(Underoverscript(\"Q\", \"y\u2208B\", \"m\"))),\"SVG\"),"
+        + "RegularExpression(\">Q[^<>]*<\"))", //
+        "{>Q_(y\u2208B)^(m)<}");
+    // an infinite value has no tick label
+    org.junit.jupiter.api.Assertions.assertEquals("",
+        org.matheclipse.core.graphics.svg.TickGenerator.format(Double.POSITIVE_INFINITY, 1.0));
+    // tick labels from 10^-5 on in decimals, smaller and large ones as powers of ten
+    check("Union(StringCases(ExportString(Plot(t, {t, -0.00002, 0.00002}),\"SVG\"),"
+        + "RegularExpression(\">[-0-9.\u00D7\u207B\u2070\u00B9\u00B2\u00B3\u2074-\u2079]+<\")))", //
+        "{>0<,>-0.00001<,>0.00001<,>-0.00002<,>0.00002<}");
+    check("MemberQ(StringCases(ExportString(Plot(t, {t, 0, 4*^-6}),\"SVG\"),"
+        + "RegularExpression(\">[^<>]*<\")), \">2\u00D710\u207B\u2076<\")", //
+        "True");
+    check("MemberQ(StringCases(ExportString(Plot(t, {t, 0, 4*^7}),\"SVG\"),"
+        + "RegularExpression(\">[^<>]*<\")), \">2\u00D710\u2077<\")", //
+        "True");
+  }
 }

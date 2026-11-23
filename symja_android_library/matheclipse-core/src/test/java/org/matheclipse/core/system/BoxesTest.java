@@ -459,4 +459,42 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToString(TraditionalForm(z^5)) // InputForm", //
         "\"\\!\\(\\*FormBox[SuperscriptBox[\\\"z\\\", \\\"5\\\"], TraditionalForm]\\)\"");
   }
+
+  @Test
+  public void testUnderAndOverScriptBoxes() {
+    // a script above or below the base, the base without parentheses
+    check("ToBoxes(Underoverscript(p, q, r))", //
+        "UnderoverscriptBox(p,q,r)");
+    check("ToBoxes(Overscript(u + v, w))", //
+        "OverscriptBox(RowBox({u,+,v}),w)");
+    check("ToBoxes(Underscript(Max, k))", //
+        "UnderscriptBox(Max,k)");
+    check("ToBoxes(Underoverscript(p, q, r), TraditionalForm)", //
+        "FormBox(UnderoverscriptBox(p,q,r),TraditionalForm)");
+    // two scripts are no Underoverscript
+    check("ToBoxes(Underoverscript(p, q))", //
+        "RowBox({Underoverscript,[,RowBox({p,,,q}),]})");
+    // more than one script above or below is a row with commas
+    check("ToBoxes(Overscript(a, b, c))", //
+        "OverscriptBox(a,RowBox({b,,,c}))");
+    check("ToBoxes(Underscript(a, b, c, d))", //
+        "UnderscriptBox(a,RowBox({b,,,c,,,d}))");
+    // the boxes read back as the expression; a mark stays a string
+    check("ToExpression(UnderoverscriptBox(\"a\", RowBox({\"k\", \"+\", \"1\"}), \"n\"))", //
+        "Underoverscript(a,1+k,n)");
+    check("ToExpression(OverscriptBox(\"z\", \"k\")) // InputForm", //
+        "Overscript(z,k)");
+    check("ToExpression(UnderscriptBox(\"z\", \"~\")) // InputForm", //
+        "Underscript(z,\"~\")");
+    // several scripts read back as several arguments
+    check("ToExpression(ToBoxes(Underscript(a, b, c))) // InputForm", //
+        "Underscript(a,b,c)");
+    check("ToExpression(OverscriptBox(\"z\", RowBox({\"k\", \",\", \"_\"}))) // InputForm", //
+        "Overscript(z,k,\"_\")");
+    // an empty script and a blank sequence stay strings
+    check("ToExpression(OverscriptBox(\"z\", \"\")) // InputForm", //
+        "Overscript(z,\"\")");
+    check("ToExpression(UnderoverscriptBox(\"z\", \"__\", \"m\")) // InputForm", //
+        "Underoverscript(z,\"__\",m)");
+  }
 }

@@ -217,6 +217,9 @@ public final class TickGenerator {
    * carry just enough decimals to be distinct and no trailing zeros beyond that.
    */
   public static String format(double value, double step) {
+    if (!Double.isFinite(value)) {
+      return "";
+    }
     if (value == 0.0) {
       return "0";
     }
@@ -227,8 +230,12 @@ public final class TickGenerator {
       decimals = Math.max(0, Math.min(10, decimals));
     }
     double absValue = Math.abs(value);
-    if (absValue >= 1e6 || (absValue < 1e-4 && absValue > 0)) {
+    if (absValue >= 1e6 || (absValue < SMALLEST_DECIMAL && absValue > 0)) {
       return scientific(value);
+    }
+    if (absValue < 1e-4) {
+      // a value from 10^-5 on is written in decimals, with the digits it needs
+      decimals = Math.max(decimals, 5);
     }
     BigDecimal rounded = BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP);
     return trimZeros(rounded.toPlainString());
@@ -243,22 +250,39 @@ public final class TickGenerator {
       return "0";
     }
     double absValue = Math.abs(value);
-    if (absValue >= 1e6 || absValue < 1e-4) {
+    if (absValue >= 1e6 || absValue < SMALLEST_DECIMAL) {
       return scientific(value);
     }
     BigDecimal rounded = new BigDecimal(value, new MathContext(6, RoundingMode.HALF_UP));
     return trimZeros(rounded.toPlainString());
   }
 
+  /**
+   * The smallest magnitude written in decimals, a little below <code>10^-5</code> so that a computed
+   * tick at <code>10^-5</code> counts.
+   */
+  private static final double SMALLEST_DECIMAL = 1e-5 * (1 - 1e-9);
+
+  /** A value as <code>mantissa×10ⁿ</code>, the exponent in superscript digits. */
   private static String scientific(double value) {
-    String s = String.format(Locale.US, "%.3g", value);
-    // %g keeps trailing zeros in the mantissa, which read as false precision
-    if (s.contains("e")) {
-      String[] parts = s.split("e");
-      return trimZeros(parts[0]) + "e" + Integer.parseInt(parts[1]);
-    }
-    return trimZeros(s);
+    String s = String.format(Locale.US, "%.2e", value);
+    // the mantissa without trailing zeros, which read as false precision
+    String[] parts = s.split("e");
+    return trimZeros(parts[0]) + "\u00D710" + superscript(Integer.parseInt(parts[1]));
   }
+
+  private static String superscript(int exponent) {
+    String digits = Integer.toString(exponent);
+    StringBuilder result = new StringBuilder(digits.length());
+    for (int i = 0; i < digits.length(); i++) {
+      char c = digits.charAt(i);
+      result.append(c == '-' ? '\u207B' : SUPERSCRIPT_DIGITS.charAt(c - '0'));
+    }
+    return result.toString();
+  }
+
+  private static final String SUPERSCRIPT_DIGITS =
+      "\u2070\u00B9\u00B2\u00B3\u2074\u2075\u2076\u2077\u2078\u2079";
 
   private static String trimZeros(String s) {
     if (s.indexOf('.') < 0) {
