@@ -47,6 +47,7 @@
 		<module>matheclipse-jar</module>
 		<module>tools</module>
 		<module>matheclipse-md2html</module>
+		<module>matheclipse-web</module>
 		<!-- Deployed modules -->
 		<module>matheclipse-external</module>
 		<module>matheclipse-parser</module>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-web</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Feasibility spike: Symja in the browser with CheerpJ (static entry points for JavaScript)</description>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License, Version 3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+			<distribution>repo</distribution>
+			<comments>A free, copyleft license for software and other kinds of works</comments>
+		</license>
+	</licenses>
+
+	<properties>
+		<!-- No maven.compiler.release here on purpose: the parent's default, release 11, stays.
+		matheclipse-core is built for 11 as well, and a CheerpJ JVM is only known to run what a
+		Java 11 class library needs; setting 21 (as matheclipse-jar does for matheclipse-astro)
+		would raise the class-file version of the one class which this module adds without any
+		benefit. -->
+		<!-- This project is not intended to be published -->
+		<deployment.suppress>true</deployment.suppress>
+		<!-- the flat jar directory which the browser loads -->
+		<site.jars.dir>${project.build.directory}/site/jars</site.jars.dir>
+	</properties>
+
+	<dependencies>
+		<!-- The only dependency. The runtime classpath of the browser is whatever this pulls in
+		transitively; matheclipse-io (servlets, Jetty) is deliberately not part of it. -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- The jars stay separate files in one flat directory, not a fat or shaded jar:
+			CheerpJ loads each jar lazily with HTTP Range requests and fetches only the parts that
+			the running code needs, so one jar per library keeps the first download small and
+			lets the browser cache every library on its own. A fat jar would be one 40 MB file
+			to cache and re-download whenever any class changes.
+
+			copy-dependencies copies every runtime dependency jar (transitive ones included, no
+			compile-only or test jars) into target/site/jars, under its plain file name. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.7.0</version>
+				<executions>
+					<execution>
+						<id>copy-site-jars</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${site.jars.dir}</outputDirectory>
+							<includeScope>runtime</includeScope>
+							<useBaseVersion>false</useBaseVersion>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- The antrun step runs after copy-dependencies, both bound to the package phase in pom
+			order, so the jar of this module (built by the jar plugin earlier in the phase) exists.
+			It adds that jar to the same directory and writes classpath.txt: one file name per
+			line, this module's jar first and then the others, which is the list a loader turns
+			into the CheerpJ class path. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>site-classpath</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy file="${project.build.directory}/${project.build.finalName}.jar" todir="${site.jars.dir}" overwrite="true" />
+								<!-- every jar but this module's own, which is written first below -->
+								<fileset id="otherJars" dir="${site.jars.dir}" includes="*.jar" excludes="${project.build.finalName}.jar" />
+								<!-- the flatten mapper reduces the absolute paths to bare file names -->
+								<pathconvert refid="otherJars" property="otherJarNames" pathsep="${line.separator}">
+									<mapper type="flatten" />
+								</pathconvert>
+								<echo file="${site.jars.dir}/classpath.txt" message="${project.build.finalName}.jar${line.separator}${otherJarNames}${line.separator}" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
