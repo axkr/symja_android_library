@@ -11,7 +11,7 @@
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Error Prone checks for the Symja code base (build-time only, not shipped).</description>
 	<properties>
-		<errorprone.version>2.52.0</errorprone.version>
+		<errorprone.version>2.53.0</errorprone.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 	<build>
