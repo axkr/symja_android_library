@@ -655,12 +655,17 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
-        IExpr[] result = {S.Null};
-        ast.forEach(x -> result[0] = engine.evaluate(x));
-        return result[0];
+      final int argSize = ast.argSize();
+      IExpr result = S.Null;
+      for (int i = 1; i <= argSize; i++) {
+        if (i == argSize && i > 1 && ast.get(i) == S.Null) {
+          // "expr;" - the input history keeps the value of expr
+          engine.setSuppressedOutput(result);
+          return S.Null;
+        }
+        result = engine.evaluate(ast.get(i));
       }
-      return S.Null;
+      return result;
     }
 
     @Override

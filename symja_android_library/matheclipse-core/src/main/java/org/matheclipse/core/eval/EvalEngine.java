@@ -1094,6 +1094,15 @@ public class EvalEngine implements Serializable {
   private transient IExpr fAnswer = null;
 
   /**
+   * The last top-level input of the form <code>CompoundExpression(..., expr, Null)</code> (an input
+   * ending with <code>;</code>) and the value of <code>expr</code>. The output history stores this
+   * value instead of the <code>Null</code> such an input returns.
+   */
+  private transient IExpr fSuppressedOutputInput = null;
+
+  private transient IExpr fSuppressedOutput = null;
+
+  /**
    * If <code>fCopiedEngine != null</code> the <code>fCopiedEngine</code> engine is used in function
    * <code>
    * TimeConstrained</code> to stop a thread after <code>T</code> seconds.
@@ -1283,6 +1292,14 @@ public class EvalEngine implements Serializable {
    * @param outExpr the output expression, which is the result of the <code>inExpr</code>
    */
   public void addInOut(IExpr inExpr, IExpr outExpr) {
+    final IExpr suppressedInput = fSuppressedOutputInput;
+    final IExpr suppressedOutput = fSuppressedOutput;
+    fSuppressedOutputInput = null;
+    fSuppressedOutput = null;
+    if (outExpr == S.Null && suppressedInput != null && suppressedInput == inExpr) {
+      // "expr;" only hides the value of expr, % and Out still refer to it
+      outExpr = suppressedOutput;
+    }
     // remember the last result
     if (outExpr != null && outExpr.isPresent()) {
       fAnswer = outExpr;
@@ -3444,6 +3461,8 @@ public class EvalEngine implements Serializable {
   public final boolean evalEqual(final IExpr lhs, final IExpr rhs) {
     try {
       return evaluate(F.Equal(lhs, rhs)).isTrue();
+    } catch (AbortException | TimeoutException flow) {
+      throw flow;
     } catch (MathException fce) {
       return false;
     }
@@ -4465,6 +4484,8 @@ public class EvalEngine implements Serializable {
         return evalHoldPattern((IAST) expr).orElse(expr);
       }
       return expr;
+    } catch (AbortException | TimeoutException flow) {
+      throw flow;
     } catch (MathException ce) {
       return expr;
     } finally {
@@ -5264,7 +5285,9 @@ public class EvalEngine implements Serializable {
     fEvalLHSMode = false;
     try {
       return evaluate(expr).isTrue();
-    } catch (ThrowException | AbortException flow) {
+    } catch (ThrowException | AbortException | TimeoutException flow) {
+      // a time limit passed while the test ran: answering False would end a While loop early
+      // with whatever value its variables had at that moment
       throw flow;
     } catch (ReturnException re) {
       if (re.getForm() == S.Select && isEvaluatingIteration(S.Select)) {
@@ -6185,6 +6208,8 @@ public class EvalEngine implements Serializable {
   public final void init() {
     initInstance();
     fAnswer = null;
+    fSuppressedOutputInput = null;
+    fSuppressedOutput = null;
     fAssumptions = null;
     fOutputSizeLimit = Config.SHORTEN_STRING_LENGTH;
     fEvalLHSMode = false;
@@ -6342,6 +6367,29 @@ public class EvalEngine implements Serializable {
    */
   public final boolean isOutListDisabled() {
     return fOutListDisabled;
+  }
+
+  /**
+   * Called by a <code>CompoundExpression</code> whose last argument is <code>Null</code> with the
+   * value of the argument before that <code>Null</code>. Only the outermost evaluation counts: if
+   * it is a <code>CompoundExpression</code> ending with <code>Null</code> (an input ending with
+   * <code>;</code>), the value is remembered, and {@link #addInOut(IExpr, IExpr)} stores it as the
+   * output of that input. Compound statements inside definitions and scoping constructs are not
+   * remembered.
+   *
+   * @param value the value of the argument before the trailing <code>Null</code>
+   */
+  public final void setSuppressedOutput(IExpr value) {
+    if (!fOutListDisabled && fStack.size() == 1) {
+      // the evaluation frame of the input itself; its expression is the input as it was given,
+      // even if the evaluation of held arguments has rewritten the CompoundExpression since
+      final IExpr input = fStack.peekLast();
+      if (input.head() == S.CompoundExpression && input.argSize() > 1
+          && ((IAST) input).last() == S.Null) {
+        fSuppressedOutputInput = input;
+        fSuppressedOutput = value;
+      }
+    }
   }
 
   /**

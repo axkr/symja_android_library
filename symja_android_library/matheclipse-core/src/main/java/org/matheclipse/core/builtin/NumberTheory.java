@@ -405,6 +405,11 @@ public final class NumberTheory {
           }
           final int bn = n.toIntDefault();
           if (bn >= 0) {
+            int iterationLimit = engine.getIterationLimit();
+            if (iterationLimit > 0 && iterationLimit < bn) {
+              // the polynomial has bn+1 terms, each with a power of x
+              IterationLimitExceeded.throwIt(bn, ast);
+            }
             // http://fungrim.org/entry/555e10/
             return F.sum(
                 k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,

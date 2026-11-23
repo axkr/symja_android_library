@@ -2352,6 +2352,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "3933894934399351348240918411922863059423248058823372368106375/16566");
     check("BernoulliB(42)", //
         "1520097643918070802691/1806");
+    // above the binomial cache the numerator comes from the zeta value
+    check("{Mod(Numerator(BernoulliB(1200)), 10^12), Denominator(BernoulliB(1200)), "
+        + "Negative(BernoulliB(1200))}", //
+        "{734309812143,42107247672297314156359710,True}");
+    check("{Mod(Numerator(BernoulliB(1002)), 10^12), Denominator(BernoulliB(1002)), "
+        + "Negative(BernoulliB(1002))}", //
+        "{884986969097,42,False}");
+    check("Mod(Numerator(BernoulliB(254)), 10^12) + Denominator(BernoulliB(252))", //
+        "707042277437");
     check("Table(BernoulliB(k), {k, 0, 20})", //
         "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66,0,-691/2730,0,7/6,0,-3617/510,0,43867/\n"
             + "798,0,-174611/330}");
@@ -32299,6 +32308,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2+2*x*y+y^2");
     check("Out(2)", //
         "3.14159265358979323846264338328");
+  }
+
+  @Test
+  public void testOutAfterSemicolon() {
+    // a trailing ; hides the value, but % and Out still refer to it
+    check("Table(k^3, {k, 3});", //
+        "");
+    check("Reverse(%)", //
+        "{27,8,1}");
+    check("Total(%%)", //
+        "36");
+    check("w1 = 11; w2 = 13;", //
+        "");
+    check("% * 2", //
+        "26");
+    check("Out(-2)", //
+        "13");
+    // a held argument rewritten before the evaluation of the input
+    check("Evaluate(Range(2, 6, 2));", //
+        "");
+    check("% + 1", //
+        "{3,5,7}");
+    // only the input itself: an inner CompoundExpression ending with ; still gives Null
+    check("g(m_) := (m + 1;); g(6)", //
+        "");
+    check("{%}", //
+        "{Null}");
+    check("g(7)", //
+        "");
+    check("{%}", //
+        "{Null}");
   }
 
 

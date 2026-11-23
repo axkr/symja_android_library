@@ -7,9 +7,12 @@ import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.special.Gamma;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
@@ -210,6 +213,13 @@ public abstract class AbstractFractionSym implements IFraction {
     if (n > Config.MAX_AST_SIZE) {
       throw new ASTElementLimitExceeded(n);
     }
+    if (n > BinomialCache.MAX_N) {
+      long iterationLimit = EvalEngine.get().getIterationLimit();
+      if (iterationLimit > 0 && iterationLimit * 10L < n) {
+        IterationLimitExceeded.throwIt(n, F.BernoulliB(F.ZZ(n)));
+      }
+      return bernoulliNumberFromZeta(n);
+    }
     IFraction[] bernoulli = new IFraction[n + 1];
     bernoulli[0] = FractionSym.ONE;
     bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
@@ -245,6 +255,108 @@ public abstract class AbstractFractionSym implements IFraction {
 
     }
     return bernoulli[n].normalize();
+  }
+
+  /**
+   * The Bernoulli number <code>B(n)</code> for an even <code>n &gt; 2</code> from
+   * <code>|B(n)| = 2 n! Zeta(n) / (2 Pi)^n</code>. The denominator is the product of the primes
+   * <code>p</code> with <code>(p-1) | n</code> (von Staudt-Clausen), so the numerator is the integer
+   * nearest to <code>|B(n)|</code> times the denominator; the zeta value is the Euler product over
+   * the primes whose power still counts at the precision of the numerator.
+   *
+   * @param n an even number greater than 2
+   */
+  private static IRational bernoulliNumberFromZeta(int n) {
+    final EvalEngine engine = EvalEngine.get();
+    BigInteger denominator = BigInteger.ONE;
+    for (int d = 1; (long) d * d <= n; d++) {
+      if ((d & 0x3FF) == 0) {
+        engine.checkTimeLimit();
+      }
+      if (n % d == 0) {
+        if (isSmallPrime(d + 1)) {
+          denominator = denominator.multiply(BigInteger.valueOf(d + 1));
+        }
+        int e = n / d;
+        if (e != d && isSmallPrime(e + 1)) {
+          denominator = denominator.multiply(BigInteger.valueOf(e + 1));
+        }
+      }
+    }
+    double log10Value = FastMath.log10(2.0)
+        + Gamma.logGamma(n + 1.0) / FastMath.log(10.0)
+        - n * FastMath.log10(2.0 * FastMath.PI)
+        + denominator.bitLength() * FastMath.log10(2.0);
+    long precision = (long) FastMath.ceil(log10Value) + 30L;
+
+    // 2 n! D / (2 Pi)^n first: the largest numbers of the computation, so a value beyond the size
+    // the arbitrary precision arithmetic allows fails before the zeta product is spent
+    Apfloat twoPi = ApfloatMath.pi(precision).multiply(new Apfloat(2L, precision));
+    Apfloat value = new Apfloat(
+        factorial(1, n, engine).multiply(denominator).shiftLeft(1), precision)
+        .divide(ApfloatMath.pow(twoPi, n));
+    // zeta(n) = prod 1/(1 - p^-n); the correction p^-n/(1 - p^-n) of a prime is about
+    // 10^-(n log10 p) and needs only the digits which are left of the precision
+    final double log10Bound = precision + 10;
+    Apfloat zeta = new Apfloat(1L, precision);
+    for (int p = 2; n * FastMath.log10(p) < log10Bound; p++) {
+      if (isSmallPrime(p)) {
+        engine.checkTimeLimit();
+        long termPrecision = (long) FastMath.ceil(log10Bound - n * FastMath.log10(p)) + 10L;
+        Apfloat t = ApfloatMath.pow(new Apfloat(p, termPrecision), -n);
+        Apfloat correction = t.divide(new Apfloat(1L, termPrecision).subtract(t));
+        zeta = zeta.add(zeta.precision(termPrecision).multiply(correction));
+      }
+    }
+    value = value.multiply(zeta);
+    Apint nearest =
+        value.add(new Apfloat("0.5", precision)).floor();
+    if (ApfloatMath.abs(value.subtract(nearest)).compareTo(new Apfloat("0.001", precision)) > 0) {
+      throw new ArithmeticException("BernoulliB(" + n + "): the numerator isn't near an integer");
+    }
+    BigInteger numerator = nearest.toBigInteger();
+    if (n % 4 == 0) {
+      numerator = numerator.negate();
+    }
+    return valueOf(numerator, denominator);
+  }
+
+  /**
+   * The product <code>lo * (lo+1) * ... * hi</code> by binary splitting, checking the time limit
+   * between the partial products.
+   */
+  private static BigInteger factorial(int lo, int hi, EvalEngine engine) {
+    if (hi - lo < 64) {
+      engine.checkTimeLimit();
+      long product = 1L;
+      BigInteger result = BigInteger.ONE;
+      for (int k = lo; k <= hi; k++) {
+        if (product > Long.MAX_VALUE / k) {
+          result = result.multiply(BigInteger.valueOf(product));
+          product = 1L;
+        }
+        product *= k;
+      }
+      return result.multiply(BigInteger.valueOf(product));
+    }
+    final int mid = (lo + hi) >>> 1;
+    return factorial(lo, mid, engine).multiply(factorial(mid + 1, hi, engine));
+  }
+
+  /** Trial division for the small numbers of {@link #bernoulliNumberFromZeta(int)}. */
+  private static boolean isSmallPrime(int p) {
+    if (p < 2) {
+      return false;
+    }
+    if (p % 2 == 0) {
+      return p == 2;
+    }
+    for (int d = 3; d * d <= p; d += 2) {
+      if (p % d == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
