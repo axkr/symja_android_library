@@ -5,8 +5,13 @@
 # Steps: validate inputs -> assemble target/cf-site/ -> wrangler deploy.
 # The notebook (built by tools/build-notebook-site.sh into target/notebook-site/)
 # is served at "/", and the CheerpJ spike stays reachable at "/spike".
-# Credentials come from matheclipse-web/.env (git-ignored) and are loaded only
-# inside this script; the file is never printed and tracing is never enabled.
+# Credentials: matheclipse-web/.env (git-ignored; CF_ACCOUNT_ID, CF_WORKER_TOKEN)
+# if it exists, otherwise the macOS login Keychain, where they are stored once with
+#   security add-generic-password -a "$USER" -s symja-cf-account-id -w
+#   security add-generic-password -a "$USER" -s symja-cf-worker-token -w
+# (-w last makes security prompt for the value, so it never reaches the shell
+# history). They are loaded only inside this script and passed only to wrangler;
+# they are never printed and tracing is never enabled.
 #
 # Usage: tools/deploy-cloudflare.sh [--assemble-only]
 #   --assemble-only  build and validate target/cf-site/ but do not deploy
@@ -75,13 +80,33 @@ if [ "${1:-}" = "--assemble-only" ]; then
   exit 0
 fi
 
-# Load credentials silently and map them to the names wrangler expects.
-set -a
-# shellcheck disable=SC1091
-. "$ROOT/.env"
-set +a
-export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
-export CLOUDFLARE_API_TOKEN="$CF_WORKER_TOKEN"
+# Load the credentials silently: from .env if present, else from the Keychain.
+# The item names can be overridden (only useful to test the missing-item path).
+ACCOUNT_ITEM="${SYMJA_CF_ACCOUNT_ITEM:-symja-cf-account-id}"
+TOKEN_ITEM="${SYMJA_CF_TOKEN_ITEM:-symja-cf-worker-token}"
+CF_ACCOUNT_ID=""
+CF_WORKER_TOKEN=""
+if [ -f "$ROOT/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT/.env"
+  set +a
+elif command -v security > /dev/null 2>&1; then
+  # stderr is dropped so a missing item reports only through the check below.
+  CF_ACCOUNT_ID="$(security find-generic-password -s "$ACCOUNT_ITEM" -w 2> /dev/null || true)"
+  CF_WORKER_TOKEN="$(security find-generic-password -s "$TOKEN_ITEM" -w 2> /dev/null || true)"
+fi
+if [ -z "$CF_ACCOUNT_ID" ] || [ -z "$CF_WORKER_TOKEN" ]; then
+  cat >&2 <<EOF
+ERROR: no Cloudflare credentials. Either create $ROOT/.env with
+CF_ACCOUNT_ID and CF_WORKER_TOKEN, or store them in the macOS Keychain:
+  security add-generic-password -a "\$USER" -s $ACCOUNT_ITEM -w
+  security add-generic-password -a "\$USER" -s $TOKEN_ITEM -w
+EOF
+  exit 1
+fi
 
+# Hand them to wrangler under the names it expects, and to nothing else.
 cd "$ROOT/cloudflare"
-npx --yes "$WRANGLER" deploy
+CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID" CLOUDFLARE_API_TOKEN="$CF_WORKER_TOKEN" \
+  npx --yes "$WRANGLER" deploy

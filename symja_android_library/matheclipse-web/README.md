@@ -31,7 +31,13 @@ Here `src/main/notebook/kernel*.js` hand those requests to a Web Worker running 
 
 5. Open <http://localhost:8787/>.
 
-`tools/deploy-cloudflare.sh` deploys `target/notebook-site/` to Cloudflare.
+`tools/deploy-cloudflare.sh` deploys `target/notebook-site/` to Cloudflare (`--assemble-only` stops before the upload).
+It takes the account ID and API token from `matheclipse-web/.env` (`CF_ACCOUNT_ID`, `CF_WORKER_TOKEN`; git-ignored) or, when that file is missing, from the macOS Keychain items `symja-cf-account-id` and `symja-cf-worker-token`:
+
+    security add-generic-password -a "$USER" -s symja-cf-account-id -w
+    security add-generic-password -a "$USER" -s symja-cf-worker-token -w
+
+Each command prompts for the value, so it never lands in the shell history.
 
 ## Spike
 
