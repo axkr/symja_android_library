@@ -1,0 +1,14 @@
+// Assets-only Cloudflare Worker for the Symja CheerpJ spike: no "main" script
+// and no bindings, so Cloudflare just serves the static folder.
+// No secrets or account id here; tools/deploy-cloudflare.sh supplies them
+// through environment variables at deploy time.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The name decides the hostname: <name>.<account-subdomain>.workers.dev
+  "name": "symja-web",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    // Relative to this file; assembled by tools/deploy-cloudflare.sh.
+    "directory": "../target/cf-site"
+  }
+}
