@@ -530,7 +530,11 @@ public class ApcomplexTrigMath
         // A part which is zero stays exact
         z = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(workingPrecision),
                           z.imag().signum() == 0 ? z.imag() : z.imag().precision(workingPrecision));
-        Apcomplex w = one(z).divide(z);
+        // 1 / z as conj(z) / |z|^2, part by part: a division of the complex numbers rounds a part
+        // much smaller than the other one to zero, which puts a point next to a cut onto it
+        Apfloat norm = z.real().multiply(z.real()).add(z.imag().multiply(z.imag()));
+        Apcomplex w = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().divide(norm),
+                                    z.imag().signum() == 0 ? z.imag() : z.imag().negate().divide(norm));
         if (w.imag().signum() == 0)
         {
             // On the real axis, where the cuts are: the convention of the library for a real argument

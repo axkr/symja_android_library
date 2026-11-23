@@ -283,6 +283,13 @@ public class ApcomplexNum implements IComplexNum {
    */
   private ApcomplexNum sumResult(final Apcomplex value, final Object operand) {
     if (!isTracked(this) && !isTracked(operand)) {
+      if (isZeroValue(value) && !isZeroValue(fApcomplex)) {
+        // the operands cancel: a zero to the accuracy of the operands, not an exact zero
+        final double accuracy = Math.min(accuracy10(), errorAccuracy(operand));
+        if (Double.isFinite(accuracy)) {
+          return valueOf(value, accuracy);
+        }
+      }
       return new ApcomplexNum(operandDigits(value, this, operand));
     }
     final double a1 = errorAccuracy(this);
@@ -1046,13 +1053,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum cos() {
     PrecisionLoss.periodic(fApcomplex.real());
-    return valueOf(h().cos(fApcomplex));
+    return overflowing(() -> h().cos(fApcomplex), fApcomplex.imag());
   }
 
   @Override
   public ApcomplexNum cosh() {
     PrecisionLoss.periodic(fApcomplex.imag());
-    return valueOf(h().cosh(fApcomplex));
+    return overflowing(() -> h().cosh(fApcomplex), fApcomplex.real());
   }
 
   // private static Apcomplex erf(Apcomplex x, FixedPrecisionApfloatHelper h) {
@@ -1267,7 +1274,20 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum exp() {
     PrecisionLoss.periodic(fApcomplex.imag());
-    return valueOf(h().exp(fApcomplex));
+    final org.apfloat.FixedPrecisionApcomplexHelper h = h();
+    final Apfloat im = fApcomplex.imag();
+    if (im.scale() > 1) {
+      // E^re*(Cos(im)+I*Sin(im)): the digits of a large imaginary part in front of the decimal
+      // point are no digits of the phase, so the reduction gets as many more
+      final long precision = h.precision();
+      final Apfloat phase = im.precision(precision + im.scale() + 5);
+      final Apfloat magnitude =
+          ApfloatMath.exp(fApcomplex.real().precision(precision + 5));
+      return valueOf(new Apcomplex(
+          magnitude.multiply(ApfloatMath.cos(phase)).precision(precision),
+          magnitude.multiply(ApfloatMath.sin(phase)).precision(precision)));
+    }
+    return valueOf(h.exp(fApcomplex));
   }
 
   @Override
@@ -2232,7 +2252,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum sin() {
     PrecisionLoss.periodic(fApcomplex.real());
-    return valueOf(h().sin(fApcomplex));
+    return overflowing(() -> h().sin(fApcomplex), fApcomplex.imag());
   }
 
   @Override
@@ -2354,8 +2374,81 @@ public class ApcomplexNum implements IComplexNum {
     return precision;
   }
 
+  /**
+   * The sign of <code>part</code> if it is so large that <code>E^(-2*Abs(part))</code> is below
+   * the last digit of the precision: there <code>Tan</code> is <code>I*Sign(Im(z))</code>,
+   * <code>Sec</code> is <code>0</code> and so on, while their quotients of exponentials overflow.
+   *
+   * @return <code>-1</code> or <code>1</code>, or <code>0</code> for a part of ordinary size
+   */
+  private int largePart(Apfloat part) {
+    if (part.signum() == 0) {
+      return 0;
+    }
+    final long precision = partPrecision();
+    // E^(-2*y) < 10^-(precision+5) for y > (precision+5)*Log(10)/2
+    final double limit = (precision + 5) * 1.1513 + 1.0;
+    if (part.scale() > 18 || Math.abs(part.doubleValue()) > limit) {
+      return part.signum();
+    }
+    return 0;
+  }
+
+  /** The precision of the parts: the one of the engine, at most the one of this number. */
+  private long partPrecision() {
+    final long precision = Math.min(h().precision(), fApcomplex.precision());
+    return precision == Apfloat.INFINITE ? zeroPrecision(fApcomplex) : precision;
+  }
+
+  /** <code>re + I*im</code> with the precision of this number. */
+  private ApcomplexNum exactParts(int re, int im) {
+    final long precision = partPrecision();
+    return valueOf(new Apcomplex(new Apfloat(re, precision), new Apfloat(im, precision)));
+  }
+
+  /**
+   * <code>(re + I*im)*E^(factor*z)</code>, the reciprocal of a circular or hyperbolic function whose
+   * argument has a large part: one of its two exponentials is below the last digit. A magnitude the
+   * library cannot represent is an <code>Underflow()</code>.
+   */
+  private IExpr dominantExponential(Apcomplex factor, int re, int im) {
+    final long precision = partPrecision();
+    final Apcomplex exponent = factor.multiply(fApcomplex);
+    if (exponent.real().scale() > 18) {
+      return F.Underflow();
+    }
+    try {
+      final Apcomplex value =
+          valueOf(exponent.precision(fApcomplex.precision())).exp().apcomplexValue();
+      return valueOf(value
+          .multiply(new Apcomplex(new Apfloat(re, precision), new Apfloat(im, precision))));
+    } catch (ArithmeticException ae) {
+      return F.Underflow();
+    }
+  }
+
+  /**
+   * A sine or cosine of a huge imaginary part, or a hyperbolic one of a huge real part, whose
+   * exponential the library cannot represent: an overflow, not a division by zero.
+   */
+  private ApcomplexNum overflowing(java.util.function.Supplier<Apcomplex> function,
+      Apfloat part) {
+    try {
+      return valueOf(function.get());
+    } catch (ArithmeticException ae) {
+      if (largePart(part) != 0) {
+        throw new org.apfloat.OverflowException("Overflow");
+      }
+      throw ae;
+    }
+  }
+
   @Override
   public IExpr cot() {
+    final int large = largePart(fApcomplex.imag());
+    if (large != 0) {
+      return exactParts(0, -large);
+    }
     PrecisionLoss.periodic(fApcomplex.real());
     Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, true);
     if (nearZero != null) {
@@ -2366,18 +2459,32 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sec() {
+    final int large = largePart(fApcomplex.imag());
+    if (large != 0) {
+      // 1/Cos(z) = 2*E^(I*s*z)/(1+E^(2*I*s*z)) with s = Sign(Im(z))
+      return dominantExponential(new Apcomplex(Apfloat.ZERO, new Apfloat(large)), 2, 0);
+    }
     PrecisionLoss.periodic(fApcomplex.real());
     return reciprocalTrig(ApcomplexTrigMath::sec, fApcomplex);
   }
 
   @Override
   public IExpr csc() {
+    final int large = largePart(fApcomplex.imag());
+    if (large != 0) {
+      // 1/Sin(z) = -2*I*s*E^(I*s*z)/(1-E^(2*I*s*z)) with s = Sign(Im(z))
+      return dominantExponential(new Apcomplex(Apfloat.ZERO, new Apfloat(large)), 0, -2 * large);
+    }
     PrecisionLoss.periodic(fApcomplex.real());
     return reciprocalTrig(ApcomplexTrigMath::csc, fApcomplex);
   }
 
   @Override
   public IExpr coth() {
+    final int large = largePart(fApcomplex.real());
+    if (large != 0) {
+      return exactParts(large, 0);
+    }
     PrecisionLoss.periodic(fApcomplex.imag());
     Apcomplex nearZero = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, true);
     if (nearZero != null) {
@@ -2388,12 +2495,22 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr sech() {
+    final int large = largePart(fApcomplex.real());
+    if (large != 0) {
+      // 1/Cosh(z) = 2*E^(-s*z)/(1+E^(-2*s*z)) with s = Sign(Re(z))
+      return dominantExponential(new Apcomplex(new Apfloat(-large)), 2, 0);
+    }
     PrecisionLoss.periodic(fApcomplex.imag());
     return reciprocalTrig(ApcomplexTrigMath::sech, fApcomplex);
   }
 
   @Override
   public IExpr csch() {
+    final int large = largePart(fApcomplex.real());
+    if (large != 0) {
+      // 1/Sinh(z) = 2*s*E^(-s*z)/(1-E^(-2*s*z)) with s = Sign(Re(z))
+      return dominantExponential(new Apcomplex(new Apfloat(-large)), 2 * large, 0);
+    }
     PrecisionLoss.periodic(fApcomplex.imag());
     return reciprocalTrig(ApcomplexTrigMath::csch, fApcomplex);
   }
@@ -2440,6 +2557,10 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum tan() {
+    final int large = largePart(fApcomplex.imag());
+    if (large != 0) {
+      return exactParts(0, large);
+    }
     PrecisionLoss.periodic(fApcomplex.real());
     Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), true, false);
     if (nearPole != null) {
@@ -2450,6 +2571,10 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum tanh() {
+    final int large = largePart(fApcomplex.real());
+    if (large != 0) {
+      return exactParts(large, 0);
+    }
     PrecisionLoss.periodic(fApcomplex.imag());
     Apcomplex nearPole = nearPoleQuotient(fApcomplex.real(), fApcomplex.imag(), false, false);
     if (nearPole != null) {

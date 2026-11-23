@@ -133,6 +133,10 @@ public final class MachineFallback {
         // beyond the range of an arbitrary precision number too
         return result;
       }
+      if (result.isAST(S.Underflow, 1)) {
+        // below the range of an arbitrary precision number: the machine underflow to zero
+        return F.CD0;
+      }
       return F.NIL;
     } catch (org.apfloat.OverflowException oe) {
       // beyond the range of an arbitrary precision number too

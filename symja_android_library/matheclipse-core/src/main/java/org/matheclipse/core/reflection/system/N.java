@@ -23,6 +23,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -877,8 +878,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
     }
     // the result of the evaluation before, in the digits of the precision
     IExpr previous = null;
+    // the arguments of the functions are exact also as numbers: Cos(10^90) or E^(I*7^90)
+    final boolean exactArguments = hasExactArguments(expr);
     // a result which was zero, because every digit was lost
     IExpr zero = null;
+    // a nested evaluation resets the periodic losses of the enclosing one
+    final long periodicBefore = PrecisionLoss.periodicLost(engine);
+    final long roundedBefore = PrecisionLoss.periodicRounded(engine);
     final long before = PrecisionLoss.start(engine);
     final long beforeMachine = machine ? PrecisionLoss.startMachine(engine) : 0L;
     try {
@@ -927,9 +933,14 @@ public final class N extends AbstractCoreFunctionEvaluator {
         if (zero == null && lost >= working && rounded.isZero()) {
           zero = rounded;
         }
+        // a periodic function's argument kept no digit after its radix point: evaluations which
+        // agree may have rounded it to the same integer, Cos(10^90+1/3) to Cos(10^90)
+        final boolean noFraction =
+            !exactArguments && PrecisionLoss.periodicRounded(engine) >= working;
         boolean limit = false;
         if (needed > working) {
-          if (previous != null && !rounded.isZero() && agree(previous, rounded, precision)) {
+          if (previous != null && !noFraction && !rounded.isZero()
+              && agree(previous, rounded, precision)) {
             // the loss did not reach the result: the one of the evaluation before is as good
             result = previous;
           } else if (working < maxPrecision) {
@@ -943,7 +954,15 @@ public final class N extends AbstractCoreFunctionEvaluator {
             // Still no digit which is right: what is left of a difference that was zero is the
             // noise of its operands, and the difference is zero as far as can be seen
             result = zero != null && lost >= working - GUARD_DIGITS ? zero : rounded;
-            if (result.isNumber() && result.isZero()) {
+            if (noFraction && result.isNumber() && !result.isZero()) {
+              // no digit is known: a zero of the size of the value, which a bounded function
+              // keeps below 1
+              result = zeroOfSize(((INumber) result).apcomplexValue());
+            } else if (PrecisionLoss.periodicLost(engine) >= PrecisionLoss.THRESHOLD
+                && previous instanceof INumber && result.isInexactNumber() && !result.isZero()) {
+              // a periodic function lost digits: those in which the last two evaluations agree
+              result = agreedDigits((INumber) previous, (INumber) result, precision);
+            } else if (result.isNumber() && result.isZero()) {
               // zero to the accuracy which was reached: the digits of the precision on terms near
               // 10^20 leave an error near 10^(20-precision)
               result = ApfloatNum.zero(maxPrecision - termScale(expr, engine));
@@ -975,6 +994,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
         PrecisionLoss.stopMachine(engine, beforeMachine);
       }
       PrecisionLoss.stop(engine, before);
+      PrecisionLoss.restorePeriodic(engine, periodicBefore, roundedBefore);
     }
   }
 
@@ -1016,6 +1036,116 @@ public final class N extends AbstractCoreFunctionEvaluator {
   }
 
   /**
+   * Test if every argument of a function in the expression is a Gaussian integer of sums,
+   * products and powers with non-negative integer exponents: its numeric value has no digit
+   * after the radix point which a working precision could round away.
+   */
+  private static boolean hasExactArguments(IExpr expr) {
+    if (!expr.isAST()) {
+      return true;
+    }
+    final IAST ast = (IAST) expr;
+    if (ast.isPower() && ast.base().isE()) {
+      return isGaussianIntegerArithmetic(ast.exponent());
+    }
+    if (ast.isPlusTimesPower()) {
+      return ast.forAll(N::hasExactArguments);
+    }
+    return ast.forAll(N::isGaussianIntegerArithmetic);
+  }
+
+  private static boolean isGaussianIntegerArithmetic(IExpr expr) {
+    if (expr.isInteger()) {
+      return true;
+    }
+    if (expr.isComplex()) {
+      return ((IComplex) expr).re().isInteger() && ((IComplex) expr).im().isInteger();
+    }
+    if (expr.isPower()) {
+      return expr.exponent().isInteger() && !expr.exponent().isNegative()
+          && isGaussianIntegerArithmetic(expr.base());
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(N::isGaussianIntegerArithmetic);
+    }
+    return false;
+  }
+
+  /** A zero of the size of a number of which no digit is known; below 1 for a bounded function. */
+  private static IExpr zeroOfSize(Apcomplex value) {
+    return ApfloatNum.zero(Math.min(0.0, -(double) value.scale()));
+  }
+
+  /**
+   * The digits of a result in which the evaluation with fewer working digits before agrees with
+   * it, at most the precision. The difference of the two is an error of each part of a complex
+   * result: a part much smaller than the other one has fewer of these digits.
+   */
+  private static IExpr agreedDigits(INumber before, INumber result, final long precision) {
+    final Apcomplex y = result.apcomplexValue();
+    final Apcomplex difference = y.subtract(before.apcomplexValue());
+    if (difference.isZero()) {
+      return result;
+    }
+    final double accuracy = Math.floor(-log10Abs(difference));
+    if (accuracy + log10Abs(y) <= 0.0) {
+      return zeroOfSize(y);
+    }
+    if (y.imag().signum() == 0) {
+      final long agreed = (long) Math.floor(accuracy + log10Abs(y));
+      return agreed >= precision ? result : ApfloatNum.valueOf(y.real().precision(agreed));
+    }
+    if (agreedPart(y.real(), accuracy, precision) == y.real()
+        && agreedPart(y.imag(), accuracy, precision) == y.imag()) {
+      return result;
+    }
+    return ApcomplexNum.valueOf(new Apcomplex(agreedPart(y.real(), accuracy, precision),
+        agreedPart(y.imag(), accuracy, precision)));
+  }
+
+  /**
+   * A part with the digits it has to an accuracy, at most the precision; the part itself if it
+   * has all of them, zero if none.
+   */
+  private static Apfloat agreedPart(Apfloat part, double accuracy, long precision) {
+    if (part.signum() == 0) {
+      return part;
+    }
+    final long digits = (long) Math.floor(accuracy + log10Abs(part));
+    if (digits >= precision) {
+      return part;
+    }
+    return digits <= 0 ? Apfloat.ZERO : part.precision(digits);
+  }
+
+  /** The decimal logarithm of the absolute value of a number other than zero. */
+  private static double log10Abs(Apcomplex z) {
+    final Apfloat size = ApcomplexMath.abs(z.precision(Math.min(z.precision(), 20L)));
+    // log10 of size = scale + log10 of the mantissa in [0.1, 1)
+    return size.scale() + Math.log10(ApfloatMath.scale(size, -size.scale()).doubleValue());
+  }
+
+  /** Test if a difference is less than two units of the digit at <code>10^last</code>. */
+  private static boolean withinUnits(Apfloat size, long last) {
+    return size.signum() == 0 || size.scale() < last + 1
+        || (size.scale() == last + 1 && ApfloatMath.scale(size, -last).doubleValue() <= 2.0);
+  }
+
+  /**
+   * Test if a part of two complex results agrees in the digits of the precision at its own size,
+   * or both are below the last digit of the larger number.
+   */
+  private static boolean partAgrees(Apfloat a, Apfloat b, Apfloat difference, long last,
+      long precision) {
+    final long scale = Math.max(a.signum() == 0 ? Long.MIN_VALUE : a.scale(),
+        b.signum() == 0 ? Long.MIN_VALUE : b.scale());
+    if (scale <= last) {
+      return true;
+    }
+    return withinUnits(ApfloatMath.abs(difference.precision(10)), scale - precision);
+  }
+
+  /**
    * Whether two results are the same in the digits of the precision: numbers which differ by no
    * more than the last digit, in expressions which are equal otherwise.
    */
@@ -1032,9 +1162,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
       }
       // less than two units of the last digit of the larger number
       final long last = Math.max(x.scale(), y.scale()) - precision;
-      final Apfloat size = ApcomplexMath.abs(difference.precision(10));
-      return size.scale() < last + 1
-          || (size.scale() == last + 1 && ApfloatMath.scale(size, -last).doubleValue() <= 2.0);
+      if (!withinUnits(ApcomplexMath.abs(difference.precision(10)), last)) {
+        return false;
+      }
+      // a part which is not noise below that digit has the digits of the precision itself: an
+      // imaginary part 0.6 next to a real part 10^10
+      return partAgrees(x.real(), y.real(), difference.real(), last, precision)
+          && partAgrees(x.imag(), y.imag(), difference.imag(), last, precision);
     }
     if (a.isAST() && b.isAST()) {
       final IAST x = (IAST) a;

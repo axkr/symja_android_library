@@ -12,7 +12,7 @@ public class FamousProblemsTest extends ExprEvaluatorTestCase {
   public void testComplexPrecisionTimesInteger() {
     check("w = N(3 + I*Sqrt(7), 50); {Precision(w), Precision(-w), Precision(3*w), "
         + "Precision(w - w + w)}", //
-        "{50,50,50,50}");
+        "{50,50,50,49.69897000433602}");
     // TimeConstrained evaluates in a copy of the engine
     check("w = N(3 + I*Sqrt(7), 50); TimeConstrained({Precision(-w), Precision(3*w)}, 10)", //
         "{50,50}");

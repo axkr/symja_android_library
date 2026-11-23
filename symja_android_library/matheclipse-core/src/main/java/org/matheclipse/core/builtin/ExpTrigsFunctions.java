@@ -1754,6 +1754,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       return F.num(Math.cos(arg1));
     }
 
@@ -2109,6 +2110,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       return F.num(1.0D / Math.sin(arg1));
     }
 
@@ -2254,7 +2256,15 @@ public class ExpTrigsFunctions {
     @Override
     public @AllowNIL IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
+        if (ast.arg1() instanceof ApcomplexNum) {
+          // a huge imaginary part: the reciprocal of an overflowing sine
+          return ((ApcomplexNum) ast.arg1()).csc();
+        }
         IExpr z = ast.arg1().sin();
+        if (z.isOverflow()) {
+          // the reciprocal of a value beyond the range is below the machine range
+          return F.CD0;
+        }
         if (F.isExactZero(z)) {
           return F.CComplexInfinity;
         }
@@ -2479,6 +2489,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       double denom = Math.sin(arg1);
       if (F.isZero(denom)) {
         return F.CComplexInfinity;
@@ -2787,6 +2798,12 @@ public class ExpTrigsFunctions {
           if (result.isInfinite()) {
             return F.Overflow();
           }
+          if (isExactZeroOfInexact(result) && !z.isZero()) {
+            // below the range of the exponent of an arbitrary precision number
+            // Underflow occurred in computation.
+            Errors.printMessage(S.General, "unfl", F.List(), engine);
+            return F.Underflow();
+          }
           if (z instanceof Num && result instanceof Num
               && Double.isFinite(((Num) z).doubleValue())) {
             // an underflow to a subnormal number or to 0.0 is reported as Exp(z)
@@ -2803,12 +2820,35 @@ public class ExpTrigsFunctions {
         // CPD-OFF closed-form tables per function
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
+        } catch (org.apfloat.OverflowException oe) {
+          // beyond the range of the exponent of an arbitrary precision number; unevaluated Exp
+          // would become E^z and come back here
+          // Overflow occurred in computation.
+          Errors.printMessage(S.General, "ovfl", F.List(), engine);
+          return F.Overflow();
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(ast.topHead(), rex, engine);
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * An arbitrary precision zero without precision: the library's result for an exponential
+     * below the range of its exponent.
+     */
+    private static boolean isExactZeroOfInexact(IExpr result) {
+      if (result instanceof ApfloatNum) {
+        final Apfloat value = ((ApfloatNum) result).apfloatValue();
+        return value.signum() == 0 && value.precision() == Apfloat.INFINITE;
+      }
+      if (result instanceof ApcomplexNum) {
+        final Apcomplex value = ((ApcomplexNum) result).apcomplexValue();
+        return value.real().signum() == 0 && value.imag().signum() == 0
+            && value.precision() == Apfloat.INFINITE;
+      }
+      return false;
     }
 
     @Override
@@ -3399,6 +3439,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       return F.num(1.0D / Math.cos(arg1));
     }
 
@@ -3541,8 +3582,17 @@ public class ExpTrigsFunctions {
         if (z.equals(F.CPiHalf)) {
           return F.CComplexInfinity;
         }
+        if (z instanceof ApcomplexNum) {
+          // a huge imaginary part: the reciprocal of an overflowing cosine
+          return ((ApcomplexNum) z).sec();
+        }
         try {
-          return z.cos().reciprocal();
+          final IExpr cos = z.cos();
+          if (cos.isOverflow()) {
+            // the reciprocal of a value beyond the range is below the machine range
+            return F.CD0;
+          }
+          return cos.reciprocal();
         } catch (ArithmeticException ae) {
           // the cosine vanishes at the precision of the argument: a pole
           return F.CComplexInfinity;
@@ -3739,6 +3789,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       return num(Math.sin(arg1));
     }
 
@@ -4279,6 +4330,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      PrecisionLoss.periodicMachine(arg1);
       return F.num(Math.tan(arg1));
     }
 

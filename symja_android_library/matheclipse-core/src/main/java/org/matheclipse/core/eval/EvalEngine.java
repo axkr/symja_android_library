@@ -4255,6 +4255,15 @@ public class EvalEngine implements Serializable {
   transient long fPrecisionLoss = -1L;
 
   /**
+   * The part of {@link #fPrecisionLoss} which periodic functions reported: the digits of their
+   * arguments before the radix point.
+   */
+  transient long fPeriodicLoss = 0L;
+
+  /** The part of {@link #fPeriodicLoss} of arguments which were rounded to an integer. */
+  transient long fPeriodicRounded = 0L;
+
+  /**
    * The digits which sums of machine numbers have lost in the numeric evaluation in progress, or
    * <code>-1</code> while none is tracked - see {@link PrecisionLoss#machineSum(EvalEngine, IExpr,
    * IExpr, IExpr)}.

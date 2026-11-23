@@ -4543,6 +4543,12 @@ public final class Arithmetic {
     // }
 
     private static IExpr e2ApcomplexArg(final ApcomplexNum base, final ApcomplexNum exponent) {
+      if (exponent.apcomplexValue().imag().scale() > 1 && base.apcomplexValue().imag().signum() == 0
+          && ApfloatNum.isEulerE(base.apcomplexValue().real())) {
+        // E^z as one exponential: Exp(z*Log(e)) multiplies the rounding of Log(e) by a large
+        // imaginary part of z
+        return exponent.exp();
+      }
       return base.pow(exponent);
     }
 
@@ -5442,6 +5448,20 @@ public final class Arithmetic {
      */
     private static @AllowNIL IExpr powerEBase(final IExpr exponent) {
       // E^exponent_
+      if (exponent instanceof ApcomplexNum) {
+        // one complex exponential: as Exp(exponent*Log(E)) the rounding of Log(E) was multiplied
+        // by the size of a large imaginary part
+        try {
+          final ApcomplexNum result = ((ApcomplexNum) exponent).exp();
+          if (result.isZero() && result.apcomplexValue().precision() == Apfloat.INFINITE) {
+            return outOfRange(false);
+          }
+          return result;
+        } catch (OverflowException oex) {
+          // beyond the range of the exponent of an arbitrary precision number
+          return outOfRange(true);
+        }
+      }
       if (exponent.isLog()) {
         // E^Log(x_) := x
         return exponent.first();

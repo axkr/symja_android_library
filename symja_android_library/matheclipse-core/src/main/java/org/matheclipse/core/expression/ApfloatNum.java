@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.external.apfloat.ApfloatSignificance;
@@ -2783,9 +2784,30 @@ public class ApfloatNum implements INum {
     return h.pow(base, exponent);
   }
 
+  /** Whether this number is Euler's number <code>E</code> to its precision. */
+  private boolean isEulerE() {
+    return isEulerE(fApfloat);
+  }
+
+  /** Whether <code>x</code> is Euler's number <code>E</code> to its precision. */
+  public static boolean isEulerE(Apfloat x) {
+    final long precision = x.precision();
+    if (precision == Apfloat.INFINITE || x.compareTo(new Apfloat(2)) <= 0
+        || x.compareTo(new Apfloat(3)) >= 0) {
+      return false;
+    }
+    return x.equals(ApfloatMath.exp(new Apfloat(1, precision)));
+  }
+
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
+      final Apcomplex exponent = ((IComplexNum) that).apcomplexValue();
+      if (exponent.imag().scale() > 1 && isEulerE()) {
+        // E^z as one exponential: Exp(z*Log(e)) multiplies the rounding of Log(e) by a large
+        // imaginary part of z
+        return ApcomplexNum.valueOf(exponent).exp();
+      }
       ApcomplexNum.periodicPower(fApfloat, ((IComplexNum) that).apcomplexValue());
       return F.complexNum(h().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
     }
@@ -3009,6 +3031,31 @@ public class ApfloatNum implements INum {
    * complex one where the function of a real argument is not real, and <code>ComplexInfinity
    * </code> at a pole.
    */
+  /**
+   * <code>2*sign*E^(-Abs(x))</code>, the value of <code>Sech(x)</code> or <code>Csch(x)</code> if
+   * <code>E^(-2*Abs(x))</code> is below the last digit of <code>x</code>; an
+   * <code>Underflow()</code> if the library cannot represent it.
+   *
+   * @return {@link F#NIL} for an argument of ordinary size
+   */
+  @AllowNIL
+  private IExpr reciprocalHyperbolicTail(int sign) {
+    final long precision = fApfloat.precision();
+    if (fApfloat.scale() <= 18 && (precision == Apfloat.INFINITE
+        || Math.abs(fApfloat.doubleValue()) <= (precision + 5) * 1.1513 + 1.0)) {
+      return F.NIL;
+    }
+    if (fApfloat.scale() > 18) {
+      return F.Underflow();
+    }
+    try {
+      return valueOf(ApfloatMath.exp(ApfloatMath.abs(fApfloat).negate())
+          .multiply(new Apfloat(2 * sign, precision)));
+    } catch (ArithmeticException ae) {
+      return F.Underflow();
+    }
+  }
+
   private static IExpr reciprocalTrig(UnaryOperator<Apfloat> real,
       UnaryOperator<Apcomplex> complex, Apfloat x) {
     try {
@@ -3044,11 +3091,19 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sech() {
+    final IExpr tail = reciprocalHyperbolicTail(1);
+    if (tail.isPresent()) {
+      return tail;
+    }
     return reciprocalTrig(ApfloatTrigMath::sech, ApcomplexTrigMath::sech, fApfloat);
   }
 
   @Override
   public IExpr csch() {
+    final IExpr tail = reciprocalHyperbolicTail(fApfloat.signum());
+    if (tail.isPresent()) {
+      return tail;
+    }
     return reciprocalTrig(ApfloatTrigMath::csch, ApcomplexTrigMath::csch, fApfloat);
   }
 

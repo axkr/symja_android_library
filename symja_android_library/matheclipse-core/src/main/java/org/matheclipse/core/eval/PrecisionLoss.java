@@ -48,11 +48,40 @@ public final class PrecisionLoss {
   /** Forget the loss reported so far; tracking goes on. */
   public static void reset(EvalEngine engine) {
     engine.fPrecisionLoss = 0L;
+    engine.fPeriodicLoss = 0L;
+    engine.fPeriodicRounded = 0L;
   }
 
   /** The largest loss reported since the start or the last reset: digits, or {@link #TOTAL}. */
   public static long lost(EvalEngine engine) {
     return engine.fPrecisionLoss;
+  }
+
+  /**
+   * The largest loss which a periodic function reported since the start or the last reset: the
+   * digits before the radix point of its argument.
+   */
+  public static long periodicLost(EvalEngine engine) {
+    return engine.fPeriodicLoss;
+  }
+
+  /**
+   * The largest loss of a periodic function whose argument was rounded to an integer since the
+   * start or the last reset. Two evaluations with different working digits may agree only because
+   * both rounded the argument to the same integer: <code>10^90+1/3</code> with 30 or 60 digits is
+   * <code>10^90</code>.
+   */
+  public static long periodicRounded(EvalEngine engine) {
+    return engine.fPeriodicRounded;
+  }
+
+  /**
+   * Set the periodic losses back to values which {@link #periodicLost(EvalEngine)} and
+   * {@link #periodicRounded(EvalEngine)} returned before a nested evaluation, which resets them.
+   */
+  public static void restorePeriodic(EvalEngine engine, long lost, long rounded) {
+    engine.fPeriodicLoss = lost;
+    engine.fPeriodicRounded = rounded;
   }
 
   /** Set the tracking back to the state which {@link #start(EvalEngine)} returned. */
@@ -92,6 +121,28 @@ public final class PrecisionLoss {
   /** Set the tracking of machine sums back to the state which startMachine() returned. */
   public static void stopMachine(EvalEngine engine, long before) {
     engine.fMachineLoss = before;
+  }
+
+  /**
+   * Report the digits which a periodic function of a machine number loses, while
+   * {@link #startMachine(EvalEngine)} tracks them: those before the radix point of an argument
+   * which a double holds only rounded. An integer below 2^53 is exact.
+   *
+   * @param argument the real argument of a circular function
+   */
+  public static void periodicMachine(double argument) {
+    final EvalEngine engine = EvalEngine.get();
+    if (engine.fMachineLoss < 0L || !Double.isFinite(argument)) {
+      return;
+    }
+    final double size = Math.abs(argument);
+    if (size < 10.0 || (size < 0x1p53 && argument == Math.rint(argument))) {
+      return;
+    }
+    final long digits = (long) Math.floor(Math.log10(size)) + 1L;
+    if (digits >= THRESHOLD && digits > engine.fMachineLoss) {
+      engine.fMachineLoss = digits;
+    }
   }
 
   /** The binary digits a machine sum has to lose before it is reported: two decimal digits. */
@@ -232,6 +283,18 @@ public final class PrecisionLoss {
       final long digits = argument.scale();
       if (digits >= THRESHOLD) {
         report(digits);
+        final EvalEngine engine = EvalEngine.get();
+        if (engine.fPrecisionLoss >= 0L) {
+          if (digits > engine.fPeriodicLoss) {
+            engine.fPeriodicLoss = digits;
+          }
+          // An exact integer keeps all its digits beyond the precision, 7^90 with 20 digits.
+          // Fewer stored digits than before the radix point are a rounded argument.
+          if (digits > engine.fPeriodicRounded
+              && argument.precision(Apfloat.INFINITE).size() < digits) {
+            engine.fPeriodicRounded = digits;
+          }
+        }
       }
     }
   }

@@ -20,6 +20,7 @@ import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
 import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -838,6 +839,7 @@ public class Num implements INum {
 
   @Override
   public INum cos() {
+    PrecisionLoss.periodicMachine(value);
     return valueOf(Math.cos(value));
   }
 
@@ -2705,6 +2707,7 @@ public class Num implements INum {
 
   @Override
   public INum sin() {
+    PrecisionLoss.periodicMachine(value);
     return valueOf(Math.sin(value));
   }
 
@@ -2841,6 +2844,7 @@ public class Num implements INum {
 
   @Override
   public INum tan() {
+    PrecisionLoss.periodicMachine(value);
     return valueOf(Math.tan(value));
   }
 

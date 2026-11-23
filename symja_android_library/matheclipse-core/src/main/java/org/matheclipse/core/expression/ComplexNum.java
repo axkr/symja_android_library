@@ -17,6 +17,7 @@ import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
 import org.matheclipse.external.apfloat.ApcomplexExpIntegralMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -834,6 +835,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public ComplexNum cos() {
+    PrecisionLoss.periodicMachine(fComplex.getReal());
     return valueOf(fComplex.cos());
   }
 
@@ -2184,6 +2186,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public ComplexNum sin() {
+    PrecisionLoss.periodicMachine(fComplex.getReal());
     return valueOf(fComplex.sin());
   }
 
@@ -2283,6 +2286,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public ComplexNum tan() {
+    PrecisionLoss.periodicMachine(fComplex.getReal());
     return valueOf(fComplex.tan());
   }
 

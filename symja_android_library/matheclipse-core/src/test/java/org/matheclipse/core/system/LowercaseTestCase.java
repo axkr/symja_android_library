@@ -22837,10 +22837,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTanCotNextToPole() {
+    // the difference is a zero of the accuracy of the values
     check("Tan(N(-Pi/2 + 10^-8, 40) + 10^-9*I) - N(Tan(-Pi/2 + 10^-8 + 10^-9*I), 40)", //
-        "0");
+        "0.0*10^-32");
     check("Cot(N(10^-9, 40) + 10^-8*I) - N(Cot(10^-9 + 10^-8*I), 40)", //
-        "0");
+        "0.0*10^-32");
     check("Tan(N(Pi/2, 50))", //
         "ComplexInfinity");
     // not one digit is known of a value next to a zero: a zero of an accuracy, not a pole
