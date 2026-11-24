@@ -6343,7 +6343,7 @@ public final class NumberTheory {
       if (n <= 0 || n > 103000000) {
         throw new IllegalArgumentException("Prime(" + n + ") is out of domain");
       }
-      return (int) Primality.prime(n);
+      return (int) PrimeCount.nthPrime(n);
     }
 
     @Override

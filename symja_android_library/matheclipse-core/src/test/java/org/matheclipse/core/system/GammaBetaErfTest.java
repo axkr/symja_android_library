@@ -1810,6 +1810,32 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testQPochhammerSeries() {
+    // the infinite product as a series where q vanishes
+    check("Series(QPochhammer(t),{t,0,9})", //
+        "1-t-t^2+t^5+t^7+O(t)^10");
+    check("Series(QPochhammer(t^2,t),{t,0,7})", //
+        "1-t^2-t^3-t^4+t^7+O(t)^8");
+    check("Series(QPochhammer(3,t^3),{t,0,7})", //
+        "-2+6*t^3+6*t^6+O(t)^8");
+    check("Series(1/QPochhammer(t),{t,0,8})", //
+        "1+t+2*t^2+3*t^3+5*t^4+7*t^5+11*t^6+15*t^7+22*t^8+O(t)^9");
+    check("CoefficientList(QPochhammer(t)+O(t)^16, t)", //
+        "{1,-1,-1,0,0,1,0,1,0,0,0,0,-1,0,0,-1}");
+    check("Series(QPochhammer(c,t),{t,0,2})", //
+        "1-c+(-1+c)*c*t+(-1+c)*c*t^2+O(t)^3");
+    // symbolic coefficients are factored
+    check("Series(QPochhammer(c,t),{t,0,3})", //
+        "1-c+(-1+c)*c*t+(-1+c)*c*t^2-(1-c)^2*c*t^3+O(t)^4");
+    // a pole of the first argument
+    check("Series(QPochhammer(2/t,t),{t,0,2})", //
+        "2/t-5-2*t+6*t^2+O(t)^3");
+    // the factor 1 - t^(-1)*t^1 vanishes
+    check("Series(QPochhammer(1/t,t),{t,0,3})", //
+        "O(t)^4");
+  }
+
+  @Test
   public void testQPochhammer() {
     check("QPochhammer(0)", //
         "1");

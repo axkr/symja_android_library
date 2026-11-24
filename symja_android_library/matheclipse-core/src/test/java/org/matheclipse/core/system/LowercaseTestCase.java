@@ -3405,6 +3405,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testCoefficient() {
+    // the coefficient of a power of the variable
+    check("Coefficient(y*x^3 + 4*x^6 - x^9, x^3)", //
+        "y");
+    check("Coefficient(y*x^3 + 4*x^6 - x^9, x^3, 2)", //
+        "4");
+    check("Coefficient(b*x^4 + x^5, x^4)", //
+        "b");
+    check("Coefficient(u*x^4 + 9*x^2 + 2, x^4, 0)", //
+        "2");
+    check("Coefficient(x^5 + 3*x^2, x^2, 5/2)", //
+        "1");
+    check("Coefficient(w*x^3 + x, x^(-3), -1)", //
+        "w");
+    check("Coefficient(Expand(Product(1-x^k,{k,1,30})), x^#)& /@ {15, 22, 23}", //
+        "{-1,1,0}");
     check("Coefficient(x+y+z, x+y)", //
         "1");
 
@@ -27348,6 +27363,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testLambertW() {
     check("LambertW(x)", //
         "ProductLog(x)");
+    // the branch k as first argument
+    check("LambertW(-1, z)", //
+        "ProductLog(-1,z)");
+    check("LambertW(-1, -1/E)", //
+        "-1");
+    check("N(LambertW(-1, -1/5))", //
+        "-2.54264");
+    check("LambertW(2, 3, 4)", //
+        "LambertW(2,3,4)");
   }
 
 
@@ -35342,6 +35366,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrime() {
+    // consecutive indices read the primes from one sieved table
+    check("Total(Prime(Range(15000)))", //
+        "1166716881");
+    check("Prime(Range(3510, 3515))", //
+        "{32717,32719,32749,32771,32779,32783}");
+    check("{Prime(999999), Prime(10^6), Prime(10^6+1)}", //
+        "{15485857,15485863,15485867}");
     check("Prime(171)", //
         "1019");
     check("Prime(172)", //
@@ -43676,6 +43707,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTuples() {
+    // the depth of the evaluation doesn't grow with the number of tuples
+    check("Length(Tuples(Table({c,d}, 11)))", //
+        "2048");
+    check("Count(Tuples(Table({0,1}, 10)), _?(OrderedQ(#, LessEqual)&))", //
+        "11");
+    check("Tuples({{u,v},{1,2,3}})", //
+        "{{u,1},{u,2},{u,3},{v,1},{v,2},{v,3}}");
+    check("Tuples({{u},{}})", //
+        "{}");
+    check("Tuples({})", //
+        "{{}}");
+    check("Tuples({0,1}, 15)", //
+        "Tuples({0,1},15)");
     // the tuples of length 2*2 arranged as 2x2 arrays
     check("Tuples({0, 1}, {2, 2}) // Length", //
         "16");

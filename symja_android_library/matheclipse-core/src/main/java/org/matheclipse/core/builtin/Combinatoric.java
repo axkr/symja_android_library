@@ -1535,10 +1535,7 @@ public final class Combinatoric {
         if (list.exists(x -> !x.isAST())) {
           return F.NIL;
         }
-        IASTAppendable result = F.ListAlloc(16);
-        IAST temp = F.List();
-        tuplesOfListsRecursive(list, 1, result, temp, ast, engine);
-        return result;
+        return tuplesOfLists(list);
 
       } else if (ast.isAST2() && arg1.isAST() && ast.arg2().isList()) {
         // Tuples(list, {n1, n2, ...}): the tuples of length n1*n2*... as arrays of these dimensions
@@ -1578,6 +1575,17 @@ public final class Combinatoric {
       } else if (ast.isAST2() && arg1.isAST()) {
         int k = ast.arg2().toMachineInt();
         if (k >= 0) {
+          final int base = arg1.argSize();
+          if (base > 1) {
+            // the number of tuples base^k
+            long count = 1;
+            for (int i = 0; i < k; i++) {
+              count *= base;
+              if (count > Config.MAX_AST_SIZE) {
+                ASTElementLimitExceeded.throwIt(count);
+              }
+            }
+          }
           IASTAppendable result = F.ListAlloc(16);
           IAST temp = F.ast(arg1.head());
           tuples((IAST) arg1, k, result, temp, ast, engine);
@@ -1593,34 +1601,42 @@ public final class Combinatoric {
     }
 
     /**
-     * Generate all tuples from a list of lists.
+     * All tuples which take their <code>i</code>-th element from the <code>i</code>-th list, in
+     * lexicographic order of the positions; generated iteratively, so the depth of the evaluation
+     * doesn't depend on the number of lists or tuples.
      *
-     * @param originalList the list of lists
-     * @param k
-     * @param result the result list
-     * @param subResult the current subList which should be inserted in the result list
-     * @param ast
-     * @param engine
+     * @param lists the list of lists
+     * @return the list of tuples
      */
-    private void tuplesOfListsRecursive(final IAST originalList, final int k, IASTAppendable result,
-        IAST subResult, IAST ast, EvalEngine engine) {
-      if (k == originalList.size()) {
-        result.append(subResult);
-        return;
-      }
-      final int recursionLimit = engine.getRecursionLimit();
-      if (recursionLimit > 0) {
-        int counter = engine.incRecursionCounter();
-        if (counter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(counter, ast);
+    private static IAST tuplesOfLists(final IAST lists) {
+      final int m = lists.argSize();
+      long count = 1;
+      for (int i = 1; i <= m; i++) {
+        count *= lists.get(i).argSize();
+        if (count == 0) {
+          return F.CEmptyList;
+        }
+        if (count > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(count);
         }
       }
-      IASTAppendable temp;
-      IAST subAST = (IAST) originalList.get(k);
-      for (int j = 1; j < subAST.size(); j++) {
-        temp = subResult.copyAppendable(1);
-        temp.append(subAST.get(j));
-        tuplesOfListsRecursive(originalList, k + 1, result, temp, ast, engine);
+      IASTAppendable result = F.ListAlloc((int) count);
+      // the position of the current element in each list
+      final int[] index = new int[m + 1];
+      java.util.Arrays.fill(index, 1);
+      while (true) {
+        IASTAppendable tuple = F.ListAlloc(m);
+        for (int i = 1; i <= m; i++) {
+          tuple.append(((IAST) lists.get(i)).get(index[i]));
+        }
+        result.append(tuple);
+        int i = m;
+        while (i >= 1 && ++index[i] > lists.get(i).argSize()) {
+          index[i--] = 1;
+        }
+        if (i == 0) {
+          return result;
+        }
       }
     }
   }
