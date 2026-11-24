@@ -541,6 +541,11 @@ public final class PrimitiveCollector {
       case ID.PointSize:
         style.pointRadius = namedPointSize(value) * imageWidth / 2.0;
         break;
+      case ID.Dashing:
+        // Dashing -> d sets the dashes like the directive Dashing(d); a rule for AbsoluteDashing
+        // is not a directive and is ignored
+        applyDashing(F.unaryAST1(S.Dashing, value), style, imageWidth);
+        break;
       default:
         break;
     }

@@ -21,7 +21,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * {@link #HUE} and {@link #GRAYSCALE} are computed. Every other gradient interpolates linearly
- * between the evenly spaced rows of the table <code>/img/colorscheme/&lt;name&gt;.csv</code>.
+ * between the evenly spaced rows of the table <code>/img/colorscheme/&lt;name&gt;.csv</code>, or
+ * between the positions its rows give in a leading column.
  *
  * @see ColorDataLists
  */
@@ -116,9 +117,9 @@ public enum ColorDataGradients implements Function<IExpr, IExpr> {
   AURORA,
   /** red, blue, cyan, green, yellow, orange, each followed by a paler band of the same hue */
   BRIGHT_BANDS,
-  /** blue, pale yellow, red - an approximation of Mathematica's TemperatureMap */
+  /** blue, white, pale yellow, red - 13 evenly spaced colours */
   TEMPERATURE_MAP,
-  /** dark blue, green, yellow, orange, dark red - an approximation of the DarkRainbow gradient */
+  /** dark blue, green, yellow, orange, dark red - 11 evenly spaced colours */
   DARK_RAINBOW,
   /*
    * The remaining gradients of the standard collection, each a table of evenly spaced colours named
@@ -192,6 +193,23 @@ public enum ColorDataGradients implements Function<IExpr, IExpr> {
   }
 
   /**
+   * Whether the color jumps somewhere: a table whose rows give positions, two of them the same.
+   */
+  public boolean hasSteps() {
+    if (kind != Kind.TABLE) {
+      return false;
+    }
+    IAST rows = table();
+    for (int i = 2; i < rows.size(); i++) {
+      IAST row = (IAST) rows.get(i);
+      if (row.argSize() == 5 && row.arg1().evalf() == ((IAST) rows.get(i - 1)).arg1().evalf()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * The color at <code>scalar</code>.
    *
    * @param scalar a number in <code>[0, 1]</code>; a table gradient clamps any other finite number
@@ -212,6 +230,12 @@ public enum ColorDataGradients implements Function<IExpr, IExpr> {
 
   private IExpr interpolate(IExpr scalar) {
     final IAST rows = table();
+    if (rows.isEmpty()) {
+      return transparent();
+    }
+    if (((IAST) rows.arg1()).argSize() == 5) {
+      return interpolateAtPositions(rows, scalar.evalfNaN());
+    }
     final int last = rows.argSize() - 1;
     double value = scalar.multiply((double) last).evalfNaN();
     if (!Double.isFinite(value)) {
@@ -230,6 +254,42 @@ public enum ColorDataGradients implements Function<IExpr, IExpr> {
     double weight = 1.0 - remain;
     IASTAppendable result = F.ListAlloc(lower.argSize());
     for (int i = 1; i < lower.size(); i++) {
+      result.append(F.num(weight * lower.get(i).evalf() + remain * upper.get(i).evalf()));
+    }
+    return result;
+  }
+
+  /**
+   * The color at <code>value</code> of a table whose rows <code>{position, r, g, b, a}</code> are
+   * sorted by position. Two rows at the same position make a sharp step; the color at the step is
+   * the one of the later row.
+   */
+  private static IExpr interpolateAtPositions(IAST rows, double value) {
+    if (!Double.isFinite(value)) {
+      return transparent();
+    }
+    int below = 1;
+    for (int i = 2; i < rows.size(); i++) {
+      if (((IAST) rows.get(i)).arg1().evalf() <= value) {
+        below = i;
+      } else {
+        break;
+      }
+    }
+    IAST lower = (IAST) rows.get(below);
+    if (below == rows.argSize()) {
+      return lower.rest();
+    }
+    IAST upper = (IAST) rows.get(below + 1);
+    double from = lower.arg1().evalf();
+    double to = upper.arg1().evalf();
+    if (value <= from || to <= from) {
+      return lower.rest();
+    }
+    double remain = (value - from) / (to - from);
+    double weight = 1.0 - remain;
+    IASTAppendable result = F.ListAlloc(4);
+    for (int i = 2; i < lower.size(); i++) {
       result.append(F.num(weight * lower.get(i).evalf() + remain * upper.get(i).evalf()));
     }
     return result;
@@ -331,7 +391,8 @@ public enum ColorDataGradients implements Function<IExpr, IExpr> {
   }
 
   /**
-   * Read a table of colors, one row <code>r,g,b,a</code> per line, from a class path resource. A
+   * Read a table of colors, one row <code>r,g,b,a</code> per line, from a class path resource; a
+   * row <code>position,r,g,b,a</code> places its color at a position in <code>[0, 1]</code>. A
    * component with a decimal point or an exponent is read as a machine number, every other one as
    * an integer.
    *

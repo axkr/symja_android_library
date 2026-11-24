@@ -80,11 +80,13 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
     IExpr arg1 = functionAst.arg1();
     IExpr arg2 = functionAst.arg2();
 
-    if (!arg1.isString() || !arg2.isString()) {
+    if (!(arg1.isString() || arg1.isInteger()) || !arg2.isString()) {
       return F.NIL;
     }
 
-    String name = arg1.toString();
+    // an indexed scheme goes by its number
+    String name = arg1.isInteger() ? String.format(Locale.US, "_%03d", arg1.toIntDefault(-1))
+        : arg1.toString();
     String type = arg2.toString();
 
     IExpr param = applicationAst.arg1();

@@ -195,6 +195,8 @@ public class Errors {
       "cfeval", "The ColorFunction of `1` did not evaluate to a color; using the default coloring.", //
       "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //
       "cfshade", "`1` is not a known shading scheme for `2`; using Automatic.", //
+      "cfun",
+      "The value of the option ColorFunction -> `1` is not a valid color function or a gradient ColorData entity.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "colconv", "`1` should be one of RGBColor, Hue, CMYKColor or GrayLevel.", //
       "color", "`1` is not a valid color or gray-level specification.", //
