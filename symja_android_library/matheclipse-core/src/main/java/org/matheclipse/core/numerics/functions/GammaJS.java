@@ -201,8 +201,19 @@ public class GammaJS extends JS {
     if (x < 0 || x > 1) {
       throw new ArgumentTypeException("x range wrong: " + x);
     }
-    return org.hipparchus.special.Beta.regularizedBeta(x, y, z);
+    // a continued fraction which hasn't converged after this many steps throws instead of looping
+    return org.hipparchus.special.Beta.regularizedBeta(x, y, z, BETA_EPSILON,
+        BETA_MAX_ITERATIONS);
   }
+
+  /** The relative accuracy of {@link #betaRegularized(double, double, double)}. */
+  private static final double BETA_EPSILON = 1.0e-14;
+
+  /**
+   * The most steps of the continued fraction of {@link #betaRegularized(double, double, double)},
+   * enough for parameters up to about <code>10^12</code> at the mean of the distribution.
+   */
+  private static final int BETA_MAX_ITERATIONS = 10_000_000;
 
   public static double betaRegularized(double x, double y, double z, double w) {
     return beta(x, y, z, w) / beta(z, w);

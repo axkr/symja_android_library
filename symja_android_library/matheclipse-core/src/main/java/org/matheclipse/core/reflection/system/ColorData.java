@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -51,7 +52,7 @@ public class ColorData extends AbstractFunctionEvaluator {
         IASTAppendable charting = F.ListAlloc(72);
         for (int[] run : CHARTING) {
           for (int n = run[0]; n <= run[1]; n++) {
-            if (colorListLength(String.format(Locale.US, "_%03d", n)) > 0) {
+            if (ColorDataLists.of(n) != null) {
               charting.append(F.ZZ(n));
             }
           }
@@ -114,10 +115,11 @@ public class ColorData extends AbstractFunctionEvaluator {
       }
     } else if (arg1.isInteger()) {
       int n = arg1.toIntDefault(-1);
-      if (n >= 0) {
-        String name = String.format(Locale.US, "_%03d", n);
-        colorDataFunction = findIndexedScheme(name);
+      if (ColorDataLists.of(n) == null) {
+        // `1` is not a known entity, class or tag for `2`. Use `2`[] for a list of entities.
+        return Errors.printMessage(S.ColorData, "notent", F.list(arg1, S.ColorData), engine);
       }
+      colorDataFunction = findIndexedScheme(n);
     }
 
     if (colorDataFunction.isPresent()) {
@@ -127,11 +129,21 @@ public class ColorData extends AbstractFunctionEvaluator {
       }
       if (ast.isAST2() && ast.arg2().toString().equals("ColorList")
           && ((IAST) colorDataFunction).arg2().toString().equals("Indexed")) {
-        int length = colorListLength(((IAST) colorDataFunction).arg1().toString());
-        if (length > 0) {
-          final IExpr function = colorDataFunction;
-          return F.mapRange(1, length + 1,
-              i -> engine.evaluate(F.unaryAST1(function, F.ZZ(i))));
+        ColorDataLists scheme =
+            ColorDataLists.of(((IAST) colorDataFunction).arg1().toIntDefault(-1));
+        if (scheme != null) {
+          return scheme.colorList();
+        }
+      }
+      if (ast.isAST2() && ast.arg2().isString("Image")) {
+        IAST function = (IAST) colorDataFunction;
+        if (function.arg2().toString().equals("Indexed")) {
+          ColorDataLists scheme = ColorDataLists.of(function.arg1().toIntDefault(-1));
+          if (scheme != null) {
+            return swatches(scheme.colorList());
+          }
+        } else if (function.arg2().toString().equals("Gradients")) {
+          return gradientStrip(function, engine);
         }
       }
       if (ast.isAST2()) {
@@ -176,6 +188,58 @@ public class ColorData extends AbstractFunctionEvaluator {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * A strip of swatches, one unit square per color in order, each with a faint edge and drawn one
+   * printer's point smaller at its upper right corner: the first cell is
+   * <code>{c1, EdgeForm(Opacity(0.1)), Rectangle({1, 0}, Offset({-1, -1}, {2, 1}))}</code>.
+   */
+  private static IExpr swatches(IAST colors) {
+    int n = colors.argSize();
+    IAST edge = F.unaryAST1(S.EdgeForm, F.unaryAST1(S.Opacity, F.num(0.1)));
+    IAST shift = F.list(F.CN1, F.CN1);
+    IASTAppendable cells = F.ListAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      IAST rectangle = F.binaryAST2(S.Rectangle, F.list(F.ZZ(i), F.C0),
+          F.binaryAST2(S.Offset, shift, F.list(F.ZZ(i + 1), F.C1)));
+      cells.append(F.list(colors.get(i), edge, rectangle));
+    }
+    return F.function(S.Graphics, cells, F.Rule(S.ImageSize, F.ZZ(250)),
+        F.Rule(S.ContentSelectable, S.False), F.Rule(S.PlotRangePadding, S.None),
+        F.Rule(S.AspectRatio, F.QQ(1, 10)));
+  }
+
+  /** The number of samples of a gradient strip, one per hundredth of its range. */
+  private static final int GRADIENT_STRIP_SAMPLES = 101;
+
+  /**
+   * A gradient sampled evenly over its range and shown as one row of a raster over the unit square,
+   * from its low end on the left to its high end on the right, drawn eight times as wide as high.
+   *
+   * @return {@link F#NIL} if the gradient gives a color that is not <code>RGBColor</code>
+   */
+  private static IExpr gradientStrip(IAST function, EvalEngine engine) {
+    IExpr range = function.argSize() >= 3 ? function.arg3() : F.CEmptyList;
+    double min = range.isList2() ? range.first().evalfNaN() : 0.0;
+    double max = range.isList2() ? range.second().evalfNaN() : 1.0;
+    if (Double.isNaN(min) || Double.isNaN(max)) {
+      return F.NIL;
+    }
+    IASTAppendable row = F.ListAlloc(GRADIENT_STRIP_SAMPLES);
+    for (int k = 0; k < GRADIENT_STRIP_SAMPLES; k++) {
+      double value = min + (max - min) * k / (GRADIENT_STRIP_SAMPLES - 1);
+      IExpr color = engine.evaluate(F.unaryAST1(function, F.num(value)));
+      if (!color.isAST(S.RGBColor) || color.argSize() < 3) {
+        return F.NIL;
+      }
+      row.append(F.list(color.first(), color.second(), ((IAST) color).arg3()));
+    }
+    IAST unitSquare = F.list(F.list(F.C0, F.C0), F.list(F.C1, F.C1));
+    IExpr raster = F.binaryAST2(S.Raster, F.list(row), unitSquare);
+    return F.function(S.Graphics, F.list(raster), F.Rule(S.ImageSize, F.ZZ(250)),
+        F.Rule(S.ContentSelectable, S.False), F.Rule(S.AspectRatio, F.QQ(1, 8)),
+        F.Rule(S.PlotRange, F.list(F.list(F.C0, F.C1), F.list(F.C0, F.C1))));
   }
 
   /** The name of the default gradient of density plots in the 2014 plot theme. */
@@ -282,25 +346,11 @@ public class ColorData extends AbstractFunctionEvaluator {
     return rgb;
   }
 
-  /**
-   * The number of colors <code>ColorData(scheme, "ColorList")</code> lists for an indexed scheme.
-   *
-   * @return <code>-1</code> if <code>name</code> names no indexed scheme
-   */
-  private static int colorListLength(String name) {
-    try {
-      return ColorDataLists.valueOf(name).colorListLength();
-    } catch (IllegalArgumentException unknownScheme) {
-      return -1;
-    }
-  }
-
-  private IExpr findIndexedScheme(String name) {
-    try {
-      return createColorDataFunction(name, "Indexed", ColorDataLists.valueOf(name).range());
-    } catch (Exception e) {
-      return F.NIL;
-    }
+  /** <code>ColorDataFunction(n, "Indexed", range)</code>, or {@link F#NIL} for no such scheme. */
+  private static IExpr findIndexedScheme(int n) {
+    ColorDataLists scheme = ColorDataLists.of(n);
+    return scheme == null ? F.NIL
+        : F.ternaryAST3(S.ColorDataFunction, F.ZZ(n), F.stringx("Indexed"), scheme.range());
   }
 
   private IExpr findScheme(String name) {
@@ -319,9 +369,7 @@ public class ColorData extends AbstractFunctionEvaluator {
 
     // Try Indexed by name (integer string)
     try {
-      int n = Integer.parseInt(name);
-      String idxName = String.format(Locale.US, "_%03d", n);
-      return findIndexedScheme(idxName);
+      return findIndexedScheme(Integer.parseInt(name));
     } catch (NumberFormatException e) {
     }
 

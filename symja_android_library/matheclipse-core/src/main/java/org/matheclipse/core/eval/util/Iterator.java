@@ -7,8 +7,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.Context;
@@ -932,7 +932,12 @@ public class Iterator {
     public int allocHint() {
       IRational temp =
           ((IRational) lowerLimit).subtract((IRational) upperLimit).divideBy((IRational) step);
-      IInteger hint = temp.numerator().div(temp.denominator());
+      IInteger hint = temp.numerator().div(temp.denominator()).abs();
+      if (hint.isGT(F.ZZ(Integer.MAX_VALUE - 16))) {
+        // more elements than one list can hold
+        ASTElementLimitExceeded.checkMemory(Long.MAX_VALUE);
+        return Integer.MAX_VALUE - 16;
+      }
       int alloc = hint.toInt();
       if (alloc < 0) {
         return (-alloc) + 1;
@@ -1185,8 +1190,9 @@ public class Iterator {
       }
       checkAppropriateBounds(list, lowerLimit, upperLimit, step);
       return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
-    } catch (LimitException le) {
-      throw le;
+    } catch (FlowControlException fce) {
+      // a limit, or Throw, Abort, Return, Break in a bound leaves the iterating function
+      throw fce;
     } catch (ArgumentTypeException atex) {
       throw atex;
     } catch (RuntimeException rex) {

@@ -297,6 +297,17 @@ public final class Programming {
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IAST blockVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
       if (blockVariablesList.isPresent()) {
+        final java.util.Set<IExpr> locals = new java.util.HashSet<IExpr>();
+        for (int i = 1; i < blockVariablesList.size(); i++) {
+          IExpr variable = blockVariablesList.get(i);
+          IExpr symbol = variable.isSymbol() ? variable : variable.first();
+          if (!locals.add(symbol)) {
+            // a second local with the same name would be saved twice and the outer value lost on
+            // the way out
+            // Duplicate local variable `1` found in local variable specification `2`.
+            return Errors.printMessage(S.Block, "dup", F.list(symbol, blockVariablesList), engine);
+          }
+        }
         IExpr localized = evaluateWithLocalizedFormalSymbols(ast, blockVariablesList, engine);
         if (localized.isPresent()) {
           return localized;
@@ -655,12 +666,17 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
-        IExpr[] result = {S.Null};
-        ast.forEach(x -> result[0] = engine.evaluate(x));
-        return result[0];
+      final int argSize = ast.argSize();
+      IExpr result = S.Null;
+      for (int i = 1; i <= argSize; i++) {
+        if (i == argSize && i > 1 && ast.get(i) == S.Null) {
+          // "expr;" - the input history keeps the value of expr
+          engine.setSuppressedOutput(result);
+          return S.Null;
+        }
+        result = engine.evaluate(ast.get(i));
       }
-      return S.Null;
+      return result;
     }
 
     @Override
@@ -1118,7 +1134,6 @@ public final class Programming {
     @Override
     public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
-      final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
       boolean numericMode = engine.isNumericMode();
       try {
         IExpr f = ast.arg1();
@@ -1145,6 +1160,8 @@ public final class Programming {
         if (maxIterations == 0) {
           return ast.arg2();
         } else {
+          final BiPredicate<IExpr, IExpr> sameTest =
+              fixedPointTest(option[0], maxIterations, engine);
           IExpr current = ast.arg2();
           long iterationCounter = 0;
           IExpr last;
@@ -1174,6 +1191,30 @@ public final class Programming {
       setOptions(newSymbol, S.SameTest, S.Automatic);
     }
 
+  }
+
+  /**
+   * The test with which <code>FixedPoint</code> and <code>FixedPointList</code> compare the last
+   * and the new element.
+   * <p>
+   * With a finite number of steps two expressions with different hash codes are not the same
+   * without a closer look: <code>f(f(...f(x)...))</code> and <code>f(...f(x)...)</code> are told
+   * apart at once, where the comparison walks down the whole chain and stops at the recursion
+   * limit. Without such a number the walk stays: its limit ends an iteration whose elements only
+   * grow.
+   *
+   * @param sameTestOption the value of the <code>SameTest</code> option
+   * @param maxIterations the number of steps, <code>Integer.MAX_VALUE</code> for no limit
+   */
+  private static BiPredicate<IExpr, IExpr> fixedPointTest(final IExpr sameTestOption,
+      final int maxIterations, final EvalEngine engine) {
+    final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(sameTestOption, engine);
+    if (sameTestOption != S.Automatic || maxIterations == Integer.MAX_VALUE) {
+      return sameTest;
+    }
+    // only numbers compare with a tolerance; for an expression isSame() is equals()
+    return (x, y) -> !(x.isAST() && y.isAST() && x.hashCode() != y.hashCode())
+        && sameTest.test(x, y);
   }
 
   /**
@@ -1251,7 +1292,6 @@ public final class Programming {
     @Override
     public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
-      final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
       boolean numericMode = engine.isNumericMode();
       try {
         IExpr f = ast.arg1();
@@ -1278,6 +1318,7 @@ public final class Programming {
         if (iterations == 0) {
           return F.list(ast.arg2());
         }
+        final BiPredicate<IExpr, IExpr> sameTest = fixedPointTest(option[0], iterations, engine);
         IASTAppendable list = F.ListAlloc(iterations < 100 ? iterations : 32);
         list.append(current);
 

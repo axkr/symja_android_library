@@ -99,8 +99,8 @@ public final class PrimeCount {
     if (n < 1) {
       throw new IllegalArgumentException("nthPrime(" + n + ")");
     }
-    if (n <= 1_000_000L) {
-      return Primality.prime(n);
+    if (n <= TABLE_INDEX) {
+      return tabulatedPrime((int) n);
     }
     double estimate = inverseRiemannR(n);
     if (estimate > 2.0 * MAX_X) {
@@ -120,6 +120,34 @@ public final class PrimeCount {
       return primeAbove(x, n - count);
     }
     return primeAtOrBelow(x, count - n + 1);
+  }
+
+  /** Up to this index {@link #nthPrime(long)} reads the primes from a table. */
+  private static final int TABLE_INDEX = 1_000_000;
+
+  /** The first primes, grown by {@link #tabulatedPrime(int)} on demand up to TABLE_INDEX. */
+  private static volatile int[] primeTable = new int[0];
+
+  /**
+   * The <code>n</code>-th prime for <code>n &lt;= TABLE_INDEX</code> from a table which is sieved
+   * again with at least twice the length when <code>n</code> is beyond its end, so that a loop over
+   * consecutive indices sieves only a few times.
+   */
+  private static long tabulatedPrime(int n) {
+    int[] table = primeTable;
+    if (n > table.length) {
+      synchronized (PrimeCount.class) {
+        table = primeTable;
+        if (n > table.length) {
+          int target = Math.min(TABLE_INDEX, Math.max(Math.max(n, 2 * table.length), 4096));
+          // p(t) < t*(log(t) + log(log(t))) for t >= 6
+          double t = target;
+          table = primesUpTo((int) (t * (Math.log(t) + Math.log(Math.log(t)))) + 3);
+          primeTable = table;
+        }
+      }
+    }
+    return table[n - 1];
   }
 
   /** The <code>k</code>-th prime <code>&gt; x</code>. */

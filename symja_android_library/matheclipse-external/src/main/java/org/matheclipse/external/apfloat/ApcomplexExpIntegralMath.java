@@ -87,6 +87,15 @@ public class ApcomplexExpIntegralMath
     public static Apcomplex expIntegralE(FixedPrecisionApfloatHelper h, Apcomplex n, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
+        if (z.imag().signum() == 0 && z.real().signum() > 0 && n.imag().signum() == 0
+            && n.real().compareTo(new Apfloat(LARGE_ORDER, Apfloat.INFINITE, n.radix())) >= 0)
+        {
+            Apfloat value = largeOrder(h, n.real(), z.real());
+            if (value != null)
+            {
+                return value;
+            }
+        }
         if (z.real().signum() >= 0)
         {
             return h.expIntegralE(n, z);
@@ -113,6 +122,91 @@ public class ApcomplexExpIntegralMath
             return expIntegralE(h, n.conj(), x).conj();
         }
         return h.expIntegralE(n, z);
+    }
+
+    /**
+     * Exponential integral E<sub><i>n</i></sub>(<i>x</i>) for a real order and a real positive
+     * argument by the real apfloat routine of the helper, or by a continued fraction for a large
+     * order, where that routine sums about <i>n</i> terms.
+     *
+     * @param h The helper, which gives the precision.
+     * @param n The order.
+     * @param x The argument, positive.
+     *
+     * @return E<sub><i>n</i></sub>(<i>x</i>).
+     *
+     * @throws ArithmeticException If the apfloat routine has no value.
+     */
+
+    public static Apfloat expIntegralE(FixedPrecisionApfloatHelper h, Apfloat n, Apfloat x)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        if (x.signum() > 0 && n.compareTo(new Apfloat(LARGE_ORDER, Apfloat.INFINITE, n.radix())) >= 0)
+        {
+            Apfloat value = largeOrder(h, n, x);
+            if (value != null)
+            {
+                return value;
+            }
+        }
+        return h.expIntegralE(n, x);
+    }
+
+    // The smallest real order for which a real positive argument goes through the continued fraction of largeOrder()
+    private static final long LARGE_ORDER = 1000;
+
+    /**
+     * E<sub><i>n</i></sub>(<i>x</i>) for a large real order <i>n</i> and a real <i>x</i> &gt; 0, by the
+     * continued fraction<p>
+     *
+     * E<sub><i>n</i></sub>(<i>x</i>) = <i>e</i><sup>-<i>x</i></sup> / (<i>x</i> + <i>n</i> - 1 <i>n</i> /
+     * (<i>x</i> + <i>n</i> + 2 - 2 (<i>n</i> + 1) / (<i>x</i> + <i>n</i> + 4 - ...))),<p>
+     *
+     * which holds for every <i>n</i> and <i>x</i> &gt; 0. Its <i>k</i>-th quotient is about
+     * <i>k</i> / <i>n</i>, so a large order needs only a few terms, where the general routine sums a
+     * series of about <i>n</i> terms. The terms are all of one sign, so nothing cancels.
+     *
+     * @param h The helper, which gives the precision.
+     * @param n The order, at least {@link #LARGE_ORDER}.
+     * @param x The argument, positive.
+     *
+     * @return E<sub><i>n</i></sub>(<i>x</i>), or <code>null</code> if the fraction did not converge.
+     */
+
+    private static Apfloat largeOrder(FixedPrecisionApfloatHelper h, Apfloat n, Apfloat x)
+    {
+        long precision = h.precision();
+        long working = precision + 10;
+        FixedPrecisionApfloatHelper w = new FixedPrecisionApfloatHelper(working);
+        Apfloat one = new Apfloat(1, Apfloat.INFINITE, x.radix());
+        Apfloat two = new Apfloat(2, Apfloat.INFINITE, x.radix());
+        Apfloat tolerance = ApfloatMath.scale(one, -working);
+        Apfloat b = w.add(x, n);
+        // modified Lentz algorithm
+        Apfloat f = b;
+        Apfloat c = b;
+        Apfloat d = Apfloat.ZERO;
+        long maxTerms = 10 * working + 1000;
+        for (long k = 1; k <= maxTerms; k++)
+        {
+            Apfloat kk = new Apfloat(k, Apfloat.INFINITE, x.radix());
+            Apfloat a = w.multiply(kk, w.add(n, w.subtract(kk, one))).negate();
+            b = w.add(b, two);
+            d = w.add(b, w.multiply(a, d));
+            c = w.add(b, w.divide(a, c));
+            if (d.signum() == 0 || c.signum() == 0)
+            {
+                return null;
+            }
+            d = w.divide(one, d);
+            Apfloat delta = w.multiply(c, d);
+            f = w.multiply(f, delta);
+            if (ApfloatMath.abs(w.subtract(delta, one)).compareTo(tolerance) <= 0)
+            {
+                return h.divide(w.exp(x.negate()), f);
+            }
+        }
+        return null;
     }
 
     /**

@@ -485,4 +485,40 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         + "pf(0.5,7.0)", //
         3.0 * Math.exp(0.5), 1.0e-5);
   }
+
+  @Test
+  public void testNDSolveTinyTimeScale() {
+    // ranges of a few 10^-14 are far shorter than the smallest step an ordinary range may take
+    check("s=NDSolve({y'(t)==-y(t)/10^-14,y(0)==2},y,{t,0,4*10^-14});"
+        + "Abs((y(2*10^-14)/.First(s))-2*Exp(-2.0))<10^-6", //
+        "True");
+    check("w=2*10^14;s=NDSolve({p'(t)==q(t),q'(t)==-w^2*p(t),p(0)==0,q(0)==w},{p,q},"
+        + "{t,0,3*10^-14});Abs((p(2*10^-14)/.First(s))-Sin(4.0))<10^-6", //
+        "True");
+  }
+
+  @Test
+  public void testNDSolveEventLocatorLogicalEvent() {
+    // a logical event happens where its truth value changes; without an action the integration
+    // stops at the first one
+    check("s=NDSolve({y'(t)==2*t,y(0)==0},y,{t,0,5},"
+        + "Method->{\"EventLocator\",\"Event\":>y(t)>9||y(t)<-4});"
+        + "Round(1000*y(\"Domain\")/.First(s))", //
+        "{{0,3000}}");
+    check("s=NDSolve({y'(t)==-1,y(0)==0},y,{t,0,5},"
+        + "Method->{\"EventLocator\",\"Event\":>y(t)<-2.5});"
+        + "Round(1000*y(\"Domain\")/.First(s))", //
+        "{{0,2500}}");
+    // an equation event happens where both sides are equal
+    check("s=NDSolve({y'(t)==2,y(0)==0},y,{t,0,10},"
+        + "Method->{\"EventLocator\",\"Event\":>y(t)==5});"
+        + "Round(1000*y(\"Domain\")/.First(s))", //
+        "{{0,2500}}");
+    // with an action the integration goes on, and the action runs at every change of the truth
+    // value, when it turns true and when it turns false again
+    check("r=Reap(NDSolve({y'(t)==Cos(t),y(0)==0},y,{t,0,10},"
+        + "Method->{\"EventLocator\",\"Event\":>y(t)>0.5,\"EventAction\":>Sow(t)}));"
+        + "{Round(1000*r[[2,1]]),y(\"Domain\")/.r[[1,1]]}", //
+        "{{524,2618,6807,8901},{{0.0,10.0}}}");
+  }
 }

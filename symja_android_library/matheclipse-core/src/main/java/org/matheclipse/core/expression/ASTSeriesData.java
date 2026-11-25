@@ -899,6 +899,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       result = new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
+    } else if (function.isAST(S.QPochhammer, 3) && n >= 0
+        && (result = qPochhammerSeries((IAST) function, x, x0, n, direction, engine)) != null) {
+      // the infinite product truncated where its factors are 1 up to the order n
     } else if (function.isAST2() && n >= 0 && function.first().isInteger()
         && (result = specialFunctionSeries((IAST) function, x, x0, n, direction, engine)) != null) {
       // from the power series of the function: its derivatives at 0 are no closed forms
@@ -958,6 +961,73 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
         return new ASTSeriesData(result.expansionVariable(), result.expansionPoint(), newList,
             newNMin, targetTruncate, pDen);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The series of the infinite product <code>QPochhammer(a, q) == Product(1 - a*q^k, {k, 0, Infinity})</code>
+   * where <code>q</code> vanishes at the expansion point: the factor <code>1 - a*q^k</code> is
+   * <code>1 + O(x^(m+1))</code> once the order of <code>a*q^k</code> exceeds <code>m</code>, so
+   * only the factors before it are multiplied. If <code>a</code> has a pole, the first factors have
+   * poles too and all factors are expanded to the order <code>m = n</code> plus the sum of these
+   * pole orders. Symbolic coefficients are factored.
+   *
+   * @return <code>null</code> if <code>q</code> doesn't vanish at the point
+   */
+  private static ASTSeriesData qPochhammerSeries(final IAST function, IExpr x, IExpr x0,
+      final int n, final int direction, EvalEngine engine) {
+    final IExpr a = function.arg1();
+    final IExpr q = function.arg2();
+    ASTSeriesData qSeries = seriesDataRecursive(q, x, x0, n, direction, engine);
+    if (qSeries == null || qSeries.puiseuxDenominator() != 1) {
+      return null;
+    }
+    int leadQ = actualMinExponent(qSeries);
+    if (!F.isPresent(leadQ) || leadQ < 1) {
+      return null;
+    }
+    ASTSeriesData aSeries = seriesDataRecursive(a, x, x0, n, direction, engine);
+    if (aSeries == null || aSeries.puiseuxDenominator() != 1) {
+      return null;
+    }
+    int leadA = actualMinExponent(aSeries);
+    if (!F.isPresent(leadA)) {
+      // a vanishes up to the order n
+      leadA = n + 1;
+    }
+    // the orders of the poles of the factors 1 - a*q^k
+    long poleOrders = 0;
+    for (long order = leadA; order < 0; order += leadQ) {
+      poleOrders -= order;
+    }
+    if (n + poleOrders > Integer.MAX_VALUE / 2) {
+      return null;
+    }
+    final int m = (int) (n + poleOrders);
+    ASTSeriesData result = null;
+    for (int k = 0; leadA + (long) k * leadQ <= m; k++) {
+      engine.checkTimeLimit();
+      IExpr factor = engine.evaluate(F.Subtract(F.C1, F.Times(a, F.Power(q, F.ZZ(k)))));
+      if (factor.isZero()) {
+        // a*q^k == 1: the product vanishes
+        return seriesDataRecursive(F.C0, x, x0, n, direction, engine);
+      }
+      ASTSeriesData factorSeries = seriesDataRecursive(factor, x, x0, m, direction, engine);
+      if (factorSeries == null) {
+        return null;
+      }
+      result = result == null ? factorSeries : result.timesPS(factorSeries);
+    }
+    if (result == null) {
+      // every factor is 1 up to the order n
+      return seriesDataRecursive(F.C1, x, x0, n, direction, engine);
+    }
+    for (int i = result.minExponent(); i <= n && i < result.truncateOrder(); i++) {
+      IExpr coefficient = result.coefficient(i);
+      if (!coefficient.isNumber()) {
+        result.setCoeff(i, engine.evaluate(F.Factor(coefficient)));
       }
     }
     return result;

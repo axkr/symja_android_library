@@ -264,7 +264,8 @@ public class AttributeFunctions {
       ISymbol symbol = x;
       if (!symbol.hasProtectedAttribute()) {
         symbol.addAttributes(Attribute.PROTECTED);
-        result.append(x);
+        // the name: the symbol itself would evaluate to its value in the result
+        result.append(F.$str(symbol.toString()));
       }
     }
 
@@ -296,7 +297,7 @@ public class AttributeFunctions {
       ISymbol symbol = (ISymbol) x;
       if (symbol.hasProtectedAttribute()) {
         symbol.clearAttributes(Attribute.PROTECTED);
-        result.append(x);
+        result.append(F.$str(symbol.toString()));
       }
     }
 
@@ -372,7 +373,8 @@ public class AttributeFunctions {
         if (arg.isSymbol()) {
           if (((ISymbol) arg).hasProtectedAttribute()) {
             // Tag `1` in `2` is Protected. - the evaluation around it goes on
-            Errors.printMessage(S.SetAttributes, "write", F.list(arg), EvalEngine.get());
+            Errors.printMessage(S.SetAttributes, "write", F.list(arg, F.Attributes(arg)),
+                EvalEngine.get());
             return S.$Failed;
           }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
@@ -428,7 +430,8 @@ public class AttributeFunctions {
      */
     private static boolean addAttributes(final ISymbol sym, ISymbol attribute) {
       if (sym.hasProtectedAttribute()) {
-        Errors.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
+        Errors.printMessage(S.SetAttributes, "write", F.list(sym, F.Attributes(sym)),
+            EvalEngine.get());
         throw new FailedException();
       }
       Attribute known = Attribute.of(attribute);
