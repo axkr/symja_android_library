@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.AbstractAST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -117,10 +118,23 @@ public class SimplifyUtil extends VisitorExpr {
     @Override
     public long visit(IAST list) {
       long sum = 0;
-      for (int i = fHeadOffset; i < list.size(); i++) {
-        sum += list.get(i).accept(this);
+      IAST ast = list;
+      while (true) {
+        final int last = ast.size() - 1;
+        for (int i = fHeadOffset; i < last; i++) {
+          sum += ast.get(i).accept(this);
+        }
+        if (last < fHeadOffset) {
+          return sum;
+        }
+        final IExpr lastArg = ast.get(last);
+        if (lastArg instanceof AbstractAST) {
+          // a chain f(f(f(...))) is counted in a loop, not with one Java frame per level
+          ast = (IAST) lastArg;
+          continue;
+        }
+        return sum + lastArg.accept(this);
       }
-      return sum;
     }
 
     @Override

@@ -106,6 +106,12 @@ final public class GraphGraphics {
    * shape, <code>None</code> for no vertex shapes, or {@link F#NIL} for the default shapes
    */
   private IExpr vertexRenderingFunction = F.NIL;
+
+  /**
+   * A <code>VertexShapeFunction</code> which is a function: it is called with the position, the
+   * vertex and the size <code>{w, h}</code> of the vertex, and returns its primitives.
+   */
+  private IExpr vertexShapeFunction = F.NIL;
   /** the edge passed to the {@link #edgeRenderingFunction} is an <code>UndirectedEdge</code> */
   private boolean undirectedRenderedEdges = false;
   private final IAST options;
@@ -311,7 +317,7 @@ final public class GraphGraphics {
         hasCoords = true;
       } else if (list.argSize() > 0 && list.arg1().isRuleAST()) {
         for (IExpr rule : list) {
-          if (rule.isRuleAST()) {
+          if (rule.isRuleAST() && g.containsVertex(((IAST) rule).arg1())) {
             IExpr v = ((IAST) rule).arg1();
             IExpr c = ((IAST) rule).arg2();
             if (c.isList()) {
@@ -335,6 +341,28 @@ final public class GraphGraphics {
         for (IExpr v : g.vertexSet()) {
           IAST p = (IAST) points.get(i++);
           vertexCoords.put(v, new double[] {p.arg1().evalf(), p.arg2().evalf()});
+        }
+        return;
+      }
+    }
+
+    if (hasCoords && vertexCoords.size() < g.vertexSet().size()) {
+      // the vertices without given coordinates are where GraphEmbedding puts them
+      IExpr layoutOption = getOption(S.GraphLayout);
+      IExpr embedding = layoutOption.isPresent() ? layoutOption : S.Automatic;
+      IAST layout = GraphLayouts.coordinates(g, embedding);
+      if (layout.isNIL()) {
+        IExpr name =
+            embedding.isList() && embedding.argSize() > 0 ? embedding.first() : embedding;
+        layout = vertexCoordinates(g, name.isString() ? name.toString() : "");
+      }
+      if (layout.isPresent() && layout.argSize() == g.vertexSet().size()) {
+        int i = 1;
+        for (IExpr v : g.vertexSet()) {
+          IExpr p = layout.get(i++);
+          if (!vertexCoords.containsKey(v) && p.isList2()) {
+            vertexCoords.put(v, new double[] {p.first().evalf(), p.second().evalf()});
+          }
         }
         return;
       }
@@ -1097,7 +1125,9 @@ final public class GraphGraphics {
     }
 
     IExpr shape = getOption(S.VertexShapeFunction);
-    if (shape.isString()) {
+    if (shape.isFunction() || (shape.isSymbol() && !shape.isBuiltInSymbol())) {
+      this.vertexShapeFunction = shape;
+    } else if (shape.isString()) {
       String name = shape.toString().replace("\"", "");
       if (name.equals("Diamond") || name.equals("Square") || name.equals("Triangle")
           || name.equals("Rectangle")) {
@@ -1446,6 +1476,12 @@ final public class GraphGraphics {
           // the function draws the vertex at its position
           vertexPrimitives.append(EvalEngine.get()
               .evaluate(F.binaryAST2(vertexRenderingFunction, point(p[0], p[1]), v)));
+        } else if (vertexShapeFunction.isPresent()) {
+          double size = 2.0 * vertexRadius(v, distance);
+          IExpr shape = EvalEngine.get().evaluate(F.ternaryAST3(vertexShapeFunction,
+              point(p[0], p[1]), v, F.List(F.num(size), F.num(size))));
+          IExpr style = GraphExpr.vertexProperty(vertexStyles, v);
+          vertexPrimitives.append(style.isPresent() ? F.List(style, shape) : shape);
         } else {
           IExpr shape = vertexPrimitive(p, vertexRadius(v, distance), distance);
           IExpr style = GraphExpr.vertexProperty(vertexStyles, v);

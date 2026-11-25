@@ -507,6 +507,8 @@ public class Errors {
       "nonegs", "Surd is not defined for even roots of negative values.", //
       "nolast", "`1` has zero length and no last element.", //
       "nomost", "Cannot take Most of expression `1` with length zero.", //
+      "nomem",
+      "The current computation was aborted because there was insufficient memory available to complete the computation.", //
       "nomthd", "There is no method `1` for `2` objects.", //
       "nojoin", "The datasets have no column in common to join on.", //
       "nonn1",
@@ -752,6 +754,7 @@ public class Errors {
       "take", "Cannot take positions `1` through `2` in `3`.", //
       "takeeigen", "Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.", //
       "targ", "Argument `1` at position `2` is not List or SparseArray.", //
+      "toomany", "The length of the output of `1` should be a machine integer.", //
       "tbnval",
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //

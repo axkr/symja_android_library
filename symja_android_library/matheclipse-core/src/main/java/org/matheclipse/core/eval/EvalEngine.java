@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -242,6 +243,18 @@ public class EvalEngine implements Serializable {
    * stays one if none of its symbols has a newer value, see {@link #isFixedPoint(IAST, boolean)}.
    */
   private static final AtomicLong HARD_EPOCH = new AtomicLong(1L);
+
+  /**
+   * The number of threads which run {@link #withDeferredEpoch(Runnable)}. While it is zero
+   * {@link #incEpoch()} does not look at {@link #EPOCH_DEFERRAL}.
+   */
+  private static final AtomicInteger EPOCH_DEFERRING_THREADS = new AtomicInteger();
+
+  /**
+   * For a thread which runs {@link #withDeferredEpoch(Runnable)}: one flag, set when the thread
+   * made a change which moves the epoch. <code>null</code> for every other thread.
+   */
+  private static final ThreadLocal<boolean[]> EPOCH_DEFERRAL = new ThreadLocal<boolean[]>();
 
   /**
    * A fixed point stamp is the epoch shifted left by this, with the numeric modes in which the
@@ -1323,8 +1336,45 @@ public class EvalEngine implements Serializable {
    * and can respond accordingly.
    */
   public final static void incEpoch() {
+    if (EPOCH_DEFERRING_THREADS.get() > 0) {
+      final boolean[] deferral = EPOCH_DEFERRAL.get();
+      if (deferral != null) {
+        deferral[0] = true;
+        return;
+      }
+    }
     final long epoch = SYSTEM_EPOCH.incrementAndGet();
     HARD_EPOCH.accumulateAndGet(epoch, Math::max);
+  }
+
+  /**
+   * Run <code>installer</code> and move the epoch once at its end instead of for every change it
+   * makes. For the rules which are installed in the background at start-up: an epoch move per rule
+   * left every fixed point stamp stale during the first seconds of a session, so stored deep
+   * expressions were evaluated again level by level and could exceed the recursion limit. The
+   * installed rules are only read once the installation has finished. Only the changes of the
+   * calling thread are deferred; the changes of other threads move the epoch at once.
+   *
+   * @param installer the code which installs the rules
+   */
+  public static void withDeferredEpoch(final Runnable installer) {
+    if (EPOCH_DEFERRAL.get() != null) {
+      // nested: the outermost call moves the epoch
+      installer.run();
+      return;
+    }
+    final boolean[] deferral = new boolean[1];
+    EPOCH_DEFERRAL.set(deferral);
+    EPOCH_DEFERRING_THREADS.incrementAndGet();
+    try {
+      installer.run();
+    } finally {
+      EPOCH_DEFERRING_THREADS.decrementAndGet();
+      EPOCH_DEFERRAL.remove();
+      if (deferral[0]) {
+        incEpoch();
+      }
+    }
   }
 
   /**
@@ -2008,7 +2058,10 @@ public class EvalEngine implements Serializable {
       } else {
         isNumericFunction = numericFunction;
       }
-      final boolean isNumericArgument = ast.isNumericArgument(true);
+      // every use below needs a numeric function or a power: the test walks all nested lists, so
+      // evaluating {{{...}}} level by level used to cost the square of the depth
+      final boolean isNumericArgument =
+          (isNumericFunction || ast.isPower()) && ast.isNumericArgument(true);
       if (isNumericArgument && ast.isPower() && ast.base() == S.E
           && ast.exponent().isInexactNumber()) {
         // E^x with a computed inexact exponent is the same Exp(x) as the literal E^(-700.) below:
@@ -4043,33 +4096,43 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  private static boolean valuesUnchangedSince(final IAST ast, final long epoch) {
-    final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
-    // only the list classes which drop their flags on every change may remember the answer
-    boolean numbersOrStrings =
-        size > 1 && (ast instanceof org.matheclipse.core.expression.HMArrayList
-            || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
-    for (int i = 0; i < size; i++) {
-      final IExpr x = i == 0 ? ast.head() : ast.getRule(i);
-      if (i > 0 && numbersOrStrings && !(x.isNumber() || x instanceof IStringX)) {
-        numbersOrStrings = false;
-      }
-      if (x instanceof IAST) {
-        if (!valuesUnchangedSince((IAST) x, epoch)) {
+  private static boolean valuesUnchangedSince(IAST ast, final long epoch) {
+    // the last argument of a chain like f(f(f(...))) is followed in a loop, not recursively: a
+    // stored chain can be deeper than the Java stack
+    while (true) {
+      final int size = ast.hasFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS) ? 1 : ast.size();
+      // only the list classes which drop their flags on every change may remember the answer
+      boolean numbersOrStrings =
+          size > 1 && (ast instanceof org.matheclipse.core.expression.HMArrayList
+              || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
+      IAST next = null;
+      for (int i = 0; i < size; i++) {
+        final IExpr x = i == 0 ? ast.head() : ast.getRule(i);
+        if (i > 0 && numbersOrStrings && !(x.isNumber() || x instanceof IStringX)) {
+          numbersOrStrings = false;
+        }
+        if (x instanceof IAST) {
+          if (i == size - 1) {
+            next = (IAST) x;
+          } else if (!valuesUnchangedSince((IAST) x, epoch)) {
+            return false;
+          }
+        } else if (x instanceof ISymbol) {
+          if (((ISymbol) x).getValueEpoch() > epoch) {
+            return false;
+          }
+        } else if (!(x.isNumber() || x instanceof IStringX || x instanceof IPatternObject)) {
           return false;
         }
-      } else if (x instanceof ISymbol) {
-        if (((ISymbol) x).getValueEpoch() > epoch) {
-          return false;
-        }
-      } else if (!(x.isNumber() || x instanceof IStringX || x instanceof IPatternObject)) {
-        return false;
       }
+      if (next == null) {
+        if (numbersOrStrings) {
+          ast.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
+        }
+        return true;
+      }
+      ast = next;
     }
-    if (numbersOrStrings) {
-      ast.addFlag(Flag.ARGS_ARE_NUMBERS_OR_STRINGS);
-    }
-    return true;
   }
 
   /**

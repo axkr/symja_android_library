@@ -1647,7 +1647,8 @@ public class ApfloatNum implements INum {
     if (z instanceof IReal && ((IReal) z).isPositive()) {
       // real only for z>0; a z<0 is on the cut
       try {
-        return valueOf(h().expIntegralE(fApfloat, ((IReal) z).apfloatValue()));
+        return valueOf(
+            ApcomplexExpIntegralMath.expIntegralE(h(), fApfloat, ((IReal) z).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }

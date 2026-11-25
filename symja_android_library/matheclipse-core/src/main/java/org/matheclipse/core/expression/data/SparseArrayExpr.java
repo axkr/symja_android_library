@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -2868,6 +2869,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public IASTMutable normal(int[] dimension) {
     if (dimension.length > 0) {
+      final long[] lengths = new long[dimension.length];
+      for (int i = 0; i < dimension.length; i++) {
+        lengths[i] = dimension[i];
+      }
+      ASTElementLimitExceeded.checkAllocation(lengths);
       IASTMutable result = Tensors.build(index -> getIndex(index), dimension);
       if (fDimension.length == 1) {
         // result.addFlag(Flag.IS_VECTOR);

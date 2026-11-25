@@ -1556,7 +1556,8 @@ public class Symbol implements ISymbol, Serializable {
       result[0] = assignedValue;
       IExpr value = assignedValue;
       final boolean association = value.isAssociation();
-      if (association && isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE)) {
+      final boolean protectedValue = hasProtectedValue();
+      if (association && (protectedValue || isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE))) {
         // The functions change an association in place, and this one may be known elsewhere: it
         // was assigned from outside - `b = a` gives both variables the same object - or it was
         // read since. The test used to be isAST(), which an association answers with false, so
@@ -1564,6 +1565,11 @@ public class Symbol implements ISymbol, Serializable {
         value = ((IAssociation) value).copy();
       }
       IExpr calculatedResult = function.apply(value);
+      if (calculatedResult.isPresent() && protectedValue && refusesNewValue(this, engine)) {
+        // the new value is computed and returned, but the variable keeps its old one
+        result[1] = calculatedResult;
+        return result;
+      }
       if (calculatedResult.isPresent()) {
         // a value function may keep the association it is told about
         final boolean handedOut = fValueFunction != null;
@@ -1590,6 +1596,21 @@ public class Symbol implements ISymbol, Serializable {
   }
   // CPD-ON
 
+  /**
+   * Print <code>Set::wrsym</code> if the value of <code>symbol</code> is protected: the functions
+   * which change a value in place compute and return the new value, but do not assign it.
+   *
+   * @return <code>true</code> if the value must not be changed
+   */
+  static boolean refusesNewValue(ISymbol symbol, EvalEngine engine) {
+    if (symbol.hasProtectedValue()) {
+      // Symbol `1` is Protected.
+      Errors.printMessage(S.Set, "wrsym", F.list(symbol), engine);
+      return true;
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
@@ -1603,7 +1624,9 @@ public class Symbol implements ISymbol, Serializable {
       ast.set(1, result[0]);
       IExpr calculatedResult = engine.evaluate(ast); // F.binaryAST2(this, symbolValue, value));
       if (calculatedResult != null) {
-        assignValue(calculatedResult, false);
+        if (!refusesNewValue(this, engine)) {
+          assignValue(calculatedResult, false);
+        }
         result[1] = calculatedResult;
         return result;
       }

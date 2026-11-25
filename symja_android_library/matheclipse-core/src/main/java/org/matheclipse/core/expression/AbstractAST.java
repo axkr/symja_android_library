@@ -2105,19 +2105,38 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int depth(boolean includeHeads) {
-    int maxDepth = 1;
-    int d;
+    // A chain like f(f(f(...))) or {{{...}}} can be deeper than the Java stack allows to recurse:
+    // the last argument is followed in a loop, only the others are measured recursively.
     final int start = includeHeads ? 0 : 1;
-    for (int i = start; i < size(); i++) {
-      // an association is atomic but counts as a level: Depth(<|a-><|b->1|>|>) == 3
-      if (get(i).isAST() || get(i).isAssociation()) {
-        d = get(i).depth(includeHeads);
-        if (d > maxDepth) {
-          maxDepth = d;
+    int result = 0;
+    int level = 0;
+    IAST ast = this;
+    while (true) {
+      int maxDepth = 1;
+      IAST next = null;
+      final int size = ast.size();
+      for (int i = start; i < size; i++) {
+        final IExpr arg = ast.get(i);
+        // an association is atomic but counts as a level: Depth(<|a-><|b->1|>|>) == 3
+        if (arg.isAST() || arg.isAssociation()) {
+          if (i == size - 1 && arg instanceof AbstractAST && !arg.isAssociation()) {
+            next = (IAST) arg;
+          } else {
+            final int d = arg.depth(includeHeads);
+            if (d > maxDepth) {
+              maxDepth = d;
+            }
+          }
         }
       }
+      // the depth of ast is at least 1 + maxDepth, and ast is level levels below this
+      result = Math.max(result, level + 1 + maxDepth);
+      if (next == null) {
+        return result;
+      }
+      level++;
+      ast = next;
     }
-    return ++maxDepth;
   }
 
   /** {@inheritDoc} */

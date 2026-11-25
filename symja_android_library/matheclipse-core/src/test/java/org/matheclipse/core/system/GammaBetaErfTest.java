@@ -131,9 +131,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
     check("BetaRegularized(0.99,ByteArray(1),1009)", //
         "BetaRegularized(0.99,ByteArray(1),1009)");
-    // slow
+    // I_x(1/2, b) is 1 to machine precision for a huge b
     check("BetaRegularized({0.25,0.5,0.75},0.5,2147483647)", //
-        "{BetaRegularized(0.25,0.5,2.14748*10^9),BetaRegularized(0.5,0.5,2.14748*10^9),BetaRegularized(0.75,0.5,2.14748*10^9)}");
+        "{1.0,1.0,1.0}");
 
     checkNumeric("BetaRegularized(-1.5707963267948966,-I,-I)", //
         "0.8506422193103679+I*(-1.41891817181187441)");
@@ -148,9 +148,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("BetaRegularized(1,a,42)", //
         "1");
 
-    // TODO get Indeterminate
     check("BetaRegularized(10^20., 10^30., 10.^20.)", //
-        "BetaRegularized(1.*10^20,1.*10^30,1.*10^20)");
+        "Indeterminate");
 
     check("BetaRegularized({0.25, 0.5, 0.75}, 2.5, 0.5)", //
         "{0.0117248,0.0755868,0.25317}");

@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.KPermutationsIterable;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.MutableInt;
@@ -1489,40 +1488,49 @@ public final class Combinatoric {
   private static final class Tuples extends AbstractFunctionEvaluator {
 
     /**
-     * Generate all n-tuples form a list.
+     * All <code>n</code>-tuples of the elements of <code>originalList</code>, with the head of
+     * <code>originalList</code>, the last position running fastest. The tuples are counted through
+     * like an odometer, so a long tuple needs no recursion.
      *
-     * @param originalList
-     * @param n
-     * @param result
-     * @param subResult
-     * @param ast
-     * @param engine
+     * @param originalList the elements
+     * @param n the length of each tuple
+     * @param engine the evaluation engine
+     * @return the list of tuples
      */
-    private static void tuples(final IAST originalList, final int n, IASTAppendable result,
-        IAST subResult, IAST ast, EvalEngine engine) {
-      if (n == 0) {
-        result.append(subResult);
-        return;
+    private static IASTAppendable tuples(final IAST originalList, final int n,
+        EvalEngine engine) {
+      final IExpr head = originalList.head();
+      final int base = originalList.argSize();
+      long count = 1L;
+      for (int i = 0; i < n && count > 0L; i++) {
+        count = count > Long.MAX_VALUE / Math.max(base, 1) ? Long.MAX_VALUE : count * base;
       }
-      final int recursionLimit = engine.getRecursionLimit();
-
-      try {
-
-        if (recursionLimit > 0) {
-          int counter = engine.incRecursionCounter();
-          if (counter > recursionLimit) {
-            RecursionLimitExceeded.throwIt(counter, ast);
-          }
+      ASTElementLimitExceeded.checkAllocation(count, n);
+      if (count > Integer.MAX_VALUE - 8) {
+        // more tuples than one list can hold
+        ASTElementLimitExceeded.throwIt(count);
+      }
+      IASTAppendable result = F.ListAlloc((int) count);
+      if (count == 0L) {
+        return result;
+      }
+      final int[] index = new int[n];
+      java.util.Arrays.fill(index, 1);
+      while (true) {
+        IASTAppendable tuple = F.ast(head, n);
+        for (int i = 0; i < n; i++) {
+          tuple.append(originalList.get(index[i]));
         }
-        for (int j = 1; j < originalList.size(); j++) {
-          IASTAppendable temp = subResult.appendClone(originalList.get(j));
-          // temp.append(originalList.get(j));
-          tuples(originalList, n - 1, result, temp, ast, engine);
+        result.append(tuple);
+        int position = n - 1;
+        while (position >= 0 && index[position] == base) {
+          index[position--] = 1;
         }
-      } finally {
-        if (recursionLimit > 0) {
-          engine.decRecursionCounter();
+        if (position < 0) {
+          return result;
         }
+        index[position]++;
+        engine.checkTimeLimit();
       }
     }
 
@@ -1566,8 +1574,7 @@ public final class Combinatoric {
         if (dims.argSize() == 0) {
           return F.NIL;
         }
-        IASTAppendable result = F.ListAlloc(16);
-        tuples((IAST) arg1, k, result, F.ast(arg1.head()), ast, engine);
+        IASTAppendable result = tuples((IAST) arg1, k, engine);
         if (dims.argSize() == 1) {
           return result;
         }
@@ -1576,20 +1583,11 @@ public final class Combinatoric {
         int k = ast.arg2().toMachineInt();
         if (k >= 0) {
           final int base = arg1.argSize();
-          if (base > 1) {
-            // the number of tuples base^k
-            long count = 1;
-            for (int i = 0; i < k; i++) {
-              count *= base;
-              if (count > Config.MAX_AST_SIZE) {
-                ASTElementLimitExceeded.throwIt(count);
-              }
-            }
+          if (base > 1 && k * Math.log(base) >= Long.SIZE * Math.log(2.0)) {
+            // The length of the output of `1` should be a machine integer.
+            return Errors.printMessage(S.Tuples, "toomany", F.list(ast), engine);
           }
-          IASTAppendable result = F.ListAlloc(16);
-          IAST temp = F.ast(arg1.head());
-          tuples((IAST) arg1, k, result, temp, ast, engine);
-          return result;
+          return tuples((IAST) arg1, k, engine);
         }
       }
       return F.NIL;
