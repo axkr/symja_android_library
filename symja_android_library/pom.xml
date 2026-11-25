@@ -108,6 +108,18 @@
 			</snapshots>
 		</repository>
 		<repository>
+			<!-- Hipparchus release candidates are staged here under the final
+			version number before they reach Maven Central. -->
+			<id>orekit-releases</id>
+			<url>https://packages.orekit.org/repository/maven-releases/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>maven-central-snapshots</id>
 			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 			<layout>default</layout>
@@ -122,7 +134,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.release>11</maven.compiler.release>
+		<maven.compiler.release>21</maven.compiler.release>
 		<release.build>false</release.build>
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
@@ -290,56 +302,55 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-core</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-filtering</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-geometry</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-stat</artifactId>
-				<version>4.1</version>
+				<version>5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
 				<version>1.5.3</version>
 			</dependency>
-			<!-- Orekit is only used by the matheclipse-astro module. It is
-			compiled for Java 21, which is why that module and everything
-			depending on it raise maven.compiler.release to 21. -->
+			<!-- Orekit is only used by the matheclipse-astro module. Like
+			Hipparchus 5 it is compiled for Java 21, the release of all modules. -->
 			<dependency>
 				<groupId>org.orekit</groupId>
 				<artifactId>orekit</artifactId>

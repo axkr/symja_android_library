@@ -119,7 +119,7 @@ async function loadStatic(jars, jarCache) {
 
 /**
  * The whole spike run: steps 1-9 of the brief, in order.
- * @param {number} version Java version for CheerpJ, 17 or 21. It must be a number: cheerpjInit
+ * @param {number} version Java version for CheerpJ, 21 (Hipparchus 5 needs it). It must be a number: cheerpjInit
  *   expects one, and the page converts the select's string value before sending.
  * @param {{loader?: string, jars?: 'range'|'static', jarCache?: 'http'|'api', benchmarks?: boolean, selfTests?: string[]|null}} [opts]
  *   loader: the CheerpJ loader URL (default DEFAULT_LOADER).

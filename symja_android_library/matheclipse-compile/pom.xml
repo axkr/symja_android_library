@@ -23,10 +23,6 @@
 		</license>
 	</licenses>
 
-	<!-- No maven.compiler.release override here on purpose: Janino 3.1.x and
-	JavaPoet both target Java 8, so this module inherits the release 11 default
-	of the parent POM and stays usable from any Java 11 consumer. -->
-
 	<dependencies>
 
 		<dependency>

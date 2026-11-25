@@ -7,7 +7,7 @@
 [![Build Master Snapshot](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml/badge.svg)](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.matheclipse/matheclipse?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/matheclipse/)
 
-**Note**: this repository contains the **Java 11** sources of the core modules. A minimal Android app example can be found in the [symja-example repository ](https://github.com/axkr/symja-example):
+**Note**: this repository contains the **Java 21** sources of the core modules (Hipparchus 5 requires Java 21). A minimal Android app example can be found in the [symja-example repository ](https://github.com/axkr/symja-example):
 
 <img src="https://github.com/axkr/symja-example/blob/main/docs/img_1.png" width="200" height="auto"> <img src="https://github.com/axkr/symja-example/blob/main/docs/img_2.png" width="200" height="auto">
 
@@ -217,7 +217,7 @@ How to use Maven is described in the [Maven wiki page](https://github.com/axkr/s
 
 ### Getting started
 
-First, you'll need a Java Development Kit (JDK) compatible with Java 11 or later.
+First, you'll need a Java Development Kit (JDK) compatible with Java 21 or later.
 
 The Integrated Development Environment (IDE) Eclipse is shipped with a suitable JDK, so you don't have to install a JDK by yourself.
 Install and open the latest version of the Eclipse development IDE for Java Developers:

@@ -25,9 +25,10 @@ self.KERNEL_CONFIG = {
 
   /**
    * Java version handed to cheerpjInit. A number, not a string: cheerpjInit rejects strings.
-   * 17, not 21: the first cheerpjRunLibrary on Java 21 measured 4-8 s against 0.6-2.5 s.
+   * 21: Hipparchus 5 is compiled for Java 21 (class file version 65), which a Java 17 JVM refuses,
+   * although the first cheerpjRunLibrary on Java 21 measured 4-8 s against 0.6-2.5 s on 17.
    */
-  javaVersion: 17,
+  javaVersion: 21,
 
   /**
    * Directory of the jars on the site, with the trailing slash. The build script writes every jar

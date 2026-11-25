@@ -24,9 +24,6 @@
 		</license>
 	</licenses>
 
-	<!-- No maven.compiler.release override: the module generates strings only
-	and inherits the release 11 default of the parent POM. -->
-
 	<dependencies>
 
 		<!-- The JavaScript libraries themselves are not dependencies: the pages

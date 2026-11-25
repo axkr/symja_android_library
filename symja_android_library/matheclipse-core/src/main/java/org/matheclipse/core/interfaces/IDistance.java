@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import org.hipparchus.clustering.distance.DistanceMeasure;
+import org.hipparchus.distance.DistanceMeasure;
 import org.matheclipse.core.eval.EvalEngine;
 
 public interface IDistance extends DistanceMeasure {

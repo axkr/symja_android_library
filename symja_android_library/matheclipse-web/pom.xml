@@ -23,13 +23,9 @@
 	</licenses>
 
 	<properties>
-		<!-- Release 17, not the parent's 11 and not matheclipse-io's 21. The browser kernel runs on
-		CheerpJ with cheerpjInit({version: 17}): Java 17 starts several times faster there than 21
-		(see the spike notes), and a Java 17 JVM refuses any class file newer than version 61. The
-		sources of matheclipse-io are compiled into this module (see build-helper below) and use
-		nothing newer than Java 11, so 17 costs nothing; matheclipse-io itself is release 21 only
-		because it depends on matheclipse-astro (Orekit), which the browser leaves out. -->
-		<maven.compiler.release>17</maven.compiler.release>
+		<!-- The parent's release 21. Hipparchus 5 is compiled for Java 21 (class file version 65),
+		so the browser kernel runs on CheerpJ with cheerpjInit({version: 21}), although Java 17
+		started several times faster there (see the spike notes). -->
 		<!-- This project is not intended to be published -->
 		<deployment.suppress>true</deployment.suppress>
 		<!-- the flat jar directory which the spike page loads -->
@@ -43,7 +39,7 @@
 		<!-- the same jars shrunk by ProGuard (execution notebook-proguard); the notebook site's default -->
 		<notebook.jars.min.dir>${project.build.directory}/notebook/jars-min</notebook.jars.min.dir>
 		<notebook.shrink.skip>false</notebook.shrink.skip>
-		<!-- where the notebook servlets come from; compiled here at release 17 -->
+		<!-- where the notebook servlets come from; compiled here a second time -->
 		<io.sources.dir>${project.basedir}/../matheclipse-io/src/main/java</io.sources.dir>
 	</properties>
 
@@ -191,8 +187,8 @@
 	<build>
 		<plugins>
 			<!-- matheclipse-io's sources become a second source root of this module, so they are
-			compiled here with release 17 (see maven.compiler.release) and end up in this module's
-			jar next to the kernel. matheclipse-io's own build (release 21) is untouched. Only the
+			compiled here a second time and end up in this module's jar next to the kernel.
+			matheclipse-io's own build is untouched. Only the
 			Java sources are taken: the io resources are the server's web page and documentation,
 			which the static site serves itself. -->
 			<plugin>
@@ -362,7 +358,7 @@
 								<mkdir dir="${pg.out}" />
 								<mkdir dir="${pg.dir}" />
 								<!-- -injars <jar>(filter) followed by -outjars <jars-min>/<same name>, per jar.
-								The filter drops what a Java 17 class path never reads (multi-release
+								The filter drops what the CheerpJ class path never reads (multi-release
 								versions, module-info) and signature files that no longer match. -->
 								<fileset id="pgJars" dir="${notebook.jars.dir}" includes="*.jar" />
 								<pathconvert refid="pgJars" property="pgJarPairs" pathsep="${line.separator}">

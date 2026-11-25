@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Check that every class of a flat jar directory loads on a Java 17 JVM.
+"""Check that every class of a flat jar directory loads on a Java 21 JVM.
 
-The notebook kernel runs on CheerpJ with cheerpjInit({version: 17}), and a Java 17 JVM refuses a
-class file newer than major version 61. One such class in any of the jars of
+The notebook kernel runs on CheerpJ with cheerpjInit({version: 21}), and a Java 21 JVM refuses a
+class file newer than major version 65. One such class in any of the jars of
 target/notebook/jars is enough to make the page fail - and only when that class is first used, so
 the failure would not show at start-up. This reads the header of every .class entry of every jar
 and reports, per jar, the highest major version, flagging anything above the limit.
 
-Two kinds of entries are listed separately rather than flagged, because a Java 17 JVM never loads
-them as classes: META-INF/versions/<n>/** of a multi-release jar for n > 17 (picked only by a JVM
+Two kinds of entries are listed separately rather than flagged, because a Java 21 JVM never loads
+them as classes: META-INF/versions/<n>/** of a multi-release jar for n > 21 (picked only by a JVM
 of that version or newer), and module-info.class (read only on the module path; CheerpJ loads
 the jars on the class path).
 
-Usage: check-class-versions.py [jar-dir] [--max 61]
-Exit status 1 if a class that a Java 17 JVM would load is newer than the limit.
+Usage: check-class-versions.py [jar-dir] [--max 65]
+Exit status 1 if a class that a Java 21 JVM would load is newer than the limit.
 """
 
 import os
@@ -22,8 +22,8 @@ import struct
 import sys
 import zipfile
 
-# Java 17 = class file major version 61
-DEFAULT_MAX = 61
+# Java 21 = class file major version 65
+DEFAULT_MAX = 65
 MR_ENTRY = re.compile(r"^META-INF/versions/(\d+)/")
 
 
@@ -56,7 +56,7 @@ def check_jar(path, limit):
             if major is None:
                 continue
             mr = MR_ENTRY.match(name)
-            if mr and int(mr.group(1)) > 17:
+            if mr and int(mr.group(1)) > 21:
                 # used only by a newer JVM than the browser's
                 versioned[mr.group(1)] = max(versioned.get(mr.group(1), 0), major)
                 continue

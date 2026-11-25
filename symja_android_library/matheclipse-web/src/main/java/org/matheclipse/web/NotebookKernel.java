@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The kernel of the notebook page, running in the visitor's browser on CheerpJ (a WebAssembly
- * JVM, Java 17) instead of on a server.
+ * JVM, Java 21) instead of on a server.
  *
  * <p>
  * The page (<code>index.html</code> and <code>media/js/*</code> of matheclipse-io) talks to its
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <code>manipulate</code>, <code>dynamic</code> and <code>tracedialog</code>,
  * {@link #upload(String, byte[])} and {@link #download(String)} for the files of the session. The
  * answers are made by the servlets themselves (see {@link BrowserNotebook}), compiled into this
- * module at Java 17.
+ * module.
  *
  * <p>
  * Only strings and byte arrays cross the boundary: CheerpJ passes a JavaScript string as a

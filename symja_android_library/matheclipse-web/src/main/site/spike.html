@@ -15,7 +15,7 @@
 <body>
 <h1>Symja on CheerpJ (library mode, Web Worker; runtime and jar mode from the query)</h1>
 <p>
-  <label>Java version <select id="version"><option>17</option><option>21</option></select></label>
+  <label>Java version <select id="version"><option>21</option></select></label>
   <button id="start">Start</button>
   <span id="status">idle</span>
 </p>
@@ -37,7 +37,7 @@
  * in window.spikeResults and window.spikeDone is set last, so another agent or script can poll
  * for the flag and then read the JSON without parsing the DOM.
  *
- * Query parameters: version=17|21 (Java version for CheerpJ), auto=1 (start without a click),
+ * Query parameters: version=21 (Java version for CheerpJ; Hipparchus 5 needs 21), auto=1 (start without a click),
  * loader=<build or URL> (CheerpJ runtime; default 5.0), jars=range|static (how jars reach CheerpJ,
  * see spike-worker.js; default range), jarcache=http|api (static mode only: HTTP cache or Cache
  * Storage API for the jars; default http).
@@ -58,7 +58,7 @@
   const SELFTEST_BUDGET_MS = 60000;
 
   const sel = $('version');
-  sel.value = params.get('version') === '21' ? '21' : '17';
+  sel.value = '21';
 
   /**
    * The CheerpJ loader URL from ?loader=. A bare build name such as 20261119_3844 (a nightly) or
@@ -97,7 +97,7 @@
   let gen = 0, queue = [];
   // restarts: one entry per replacement worker, with its own load timings, so that the cold
   // numbers of the first worker in R.timings are never overwritten by a warm reload.
-  const R = { version: 17, loader: null, jars: 'range', jarCache: 'http', userAgent: navigator.userAgent, timings: {}, init: null, benchmark: [], selfTest: [], restarts: [], stats: null, errors: [], hung: null };
+  const R = { version: 21, loader: null, jars: 'range', jarCache: 'http', userAgent: navigator.userAgent, timings: {}, init: null, benchmark: [], selfTest: [], restarts: [], stats: null, errors: [], hung: null };
 
   // Steps 1-6; they share one budget because the early ones (loader, jars) are the slow ones.
   // jarDownload and jarCopy exist only in jars=static mode.
@@ -164,7 +164,7 @@
   function start() {
     if (started) return;
     started = true;
-    // A number, not the select's string "17": cheerpjInit({version}) expects a number.
+    // A number, not the select's string "21": cheerpjInit({version}) expects a number.
     R.version = Number(sel.value);
     R.loader = loaderParam() || null;
     R.jars = params.get('jars') === 'static' ? 'static' : 'range';

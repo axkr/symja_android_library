@@ -27,11 +27,6 @@
 		</license>
 	</licenses>
 
-	<!-- No maven.compiler.release override here on purpose: the port is plain
-	Java 11 without third party libraries, so this module inherits the release 11
-	default of the parent POM. The module is optional: matheclipse-io, -api and -jar
-	don't depend on it. A deployment adds the jar and IOInit installs it. -->
-
 	<dependencies>
 
 		<dependency>

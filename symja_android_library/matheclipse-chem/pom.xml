@@ -23,11 +23,6 @@
 		</license>
 	</licenses>
 
-	<!-- No maven.compiler.release override here on purpose: CDK 2.12 targets
-	release 8, so this module inherits the release 11 default of the parent POM
-	and stays usable from any Java 11 consumer. This is a deliberate difference
-	from matheclipse-astro, which needs 21 because of Orekit. -->
-
 	<dependencies>
 
 		<dependency>

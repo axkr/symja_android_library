@@ -11,11 +11,6 @@
 	<artifactId>matheclipse-io</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
-		<!-- Depends on matheclipse-astro, which is compiled for Java 21 because
-		of Orekit. matheclipse-core stays on the release 11 default. -->
-		<maven.compiler.release>21</maven.compiler.release>
-	</properties>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>The Symja io module</description>
 

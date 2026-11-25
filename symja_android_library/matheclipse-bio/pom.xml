@@ -23,10 +23,6 @@
 		</license>
 	</licenses>
 
-	<!-- No maven.compiler.release override here on purpose: BioJava 7.x is
-	built for Java 11, so this module inherits the release 11 default of the
-	parent POM and stays usable from any Java 11 consumer. -->
-
 	<dependencies>
 
 		<dependency>

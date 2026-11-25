@@ -23,12 +23,6 @@
 		</license>
 	</licenses>
 
-	<properties>
-		<!-- Orekit 14.x is compiled for Java 21 and uses records, so this module
-		and every module which depends on it cannot use the release 11 default
-		of the parent POM. matheclipse-core stays on 11 and is unaffected. -->
-		<maven.compiler.release>21</maven.compiler.release>
-	</properties>
 
 	<dependencies>
 

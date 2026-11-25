@@ -67,6 +67,6 @@ Without `-Dspike.skip=false`, only the notebook jars are written and the spike p
 The server supports HTTP Range requests (required by CheerpJ), never compresses, serves `/jars/*` from `target/site/jars/` and the rest from `src/main/site/`.
 `--no-store` disables caching so every jar load is cold. Stats are at `/__stats` (`?reset=1` clears them).
 
-Open <http://localhost:8787/spike.html?version=17&auto=1> (`version` is 17 or 21; without `auto=1` press Start).
+Open <http://localhost:8787/spike.html?version=21&auto=1> (`version` is 21, the only Java version that loads Hipparchus 5; without `auto=1` press Start).
 
 Built with CheerpJ (Community licence).

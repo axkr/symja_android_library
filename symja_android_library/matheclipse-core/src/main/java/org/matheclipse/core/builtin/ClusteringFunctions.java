@@ -7,10 +7,10 @@ import java.util.Locale;
 import org.hipparchus.clustering.Cluster;
 import org.hipparchus.clustering.Clusterer;
 import org.hipparchus.clustering.DBSCANClusterer;
-import org.hipparchus.clustering.DoublePoint;
+import org.hipparchus.util.DoublePoint;
 import org.hipparchus.clustering.KMeansPlusPlusClusterer;
 import org.hipparchus.clustering.MultiKMeansPlusPlusClusterer;
-import org.hipparchus.clustering.distance.DistanceMeasure;
+import org.hipparchus.distance.DistanceMeasure;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.stat.StatUtils;
@@ -217,7 +217,7 @@ public class ClusteringFunctions {
     private static final long serialVersionUID = 6257588266259496269L;
 
     static final DistanceMeasure distance =
-        new org.hipparchus.clustering.distance.CanberraDistance();
+        new org.hipparchus.distance.CanberraDistance();
 
     @Override
     public double compute(double[] arg0, double[] arg1) throws MathIllegalArgumentException {
@@ -504,7 +504,7 @@ public class ClusteringFunctions {
 
     static final DistanceMeasure distance =
         // CPD-OFF per-metric closed form
-        new org.hipparchus.clustering.distance.EuclideanDistance();
+        new org.hipparchus.distance.EuclideanDistance();
 
     @Override
     public double compute(double[] arg0, double[] arg1) throws MathIllegalArgumentException {
@@ -543,9 +543,9 @@ public class ClusteringFunctions {
         final List<DoublePoint> clusterPoints = clusters.get(j).getPoints();
         if (isListOfLists) {
           return F.mapRange(0, clusterPoints.size(),
-              i -> new ASTRealVector(clusterPoints.get(i).getPoint().clone(), false));
+              i -> new ASTRealVector(clusterPoints.get(i).values().clone(), false));
         }
-        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).getPoint()[0]));
+        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).values()[0]));
       });
     }
 
@@ -804,7 +804,7 @@ public class ClusteringFunctions {
 
     static final DistanceMeasure distance =
         // CPD-OFF per-metric closed form
-        new org.hipparchus.clustering.distance.ManhattanDistance();
+        new org.hipparchus.distance.ManhattanDistance();
 
     @Override
     public double compute(double[] arg0, double[] arg1) throws MathIllegalArgumentException {
