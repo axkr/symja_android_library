@@ -940,12 +940,18 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       result[0] = assignedValue;
       IExpr value = assignedValue;
       final boolean association = value.isAssociation();
-      if (association && isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE)) {
+      final boolean protectedValue = hasProtectedValue();
+      if (association && (protectedValue || isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE))) {
         // see Symbol#reassignSymbolValue(): an association which may be known elsewhere is copied
         // before the function changes it in place
         value = ((IAssociation) value).copy();
       }
       IExpr calculatedResult = function.apply(value);
+      if (calculatedResult.isPresent() && protectedValue && Symbol.refusesNewValue(this, engine)) {
+        // the new value is computed and returned, but the variable keeps its old one
+        result[1] = calculatedResult;
+        return result;
+      }
       if (calculatedResult.isPresent()) {
         assignValue(calculatedResult, false);
         if (association && calculatedResult == value && fValue == calculatedResult) {
@@ -977,7 +983,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       ast.set(1, temp);
       IExpr calculatedResult = engine.evaluate(ast); // F.binaryAST2(this, symbolValue, value));
       if (calculatedResult != null) {
-        assignValue(calculatedResult, false);
+        if (!Symbol.refusesNewValue(this, engine)) {
+          assignValue(calculatedResult, false);
+        }
         result[1] = calculatedResult;
         return result;
       }

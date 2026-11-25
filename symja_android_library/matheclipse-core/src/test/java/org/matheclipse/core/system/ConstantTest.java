@@ -126,10 +126,11 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "Hold(Out(4))");
     check("Out(0)", //
         "Out(0)");
+    // the ; hides the value 0, Out keeps it
     check("Sin(Pi);", //
         "");
     check("%", //
-        "");
+        "0");
     check("Definition(Out)", "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
         + "\n" //
         + "Out(2)=42\n" //
@@ -148,9 +149,9 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         + "\n" //
         + "Out(10)=Out(0)\n" //
         + "\n" //
-        + "Out(11)=Null\n" //
+        + "Out(11)=0\n" //
         + "\n" //
-        + "Out(12)=Null");
+        + "Out(12)=0");
   }
 
   @Test

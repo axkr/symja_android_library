@@ -118,6 +118,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           new double[] {range.arg2().evalfNaN()}, new double[] {range.arg3().evalfNaN()});
       functions = PlotShapeProbe.split(
           bodyAsSampled(functions, ast.arg1(), heldBody, probes, engine), probes, 3, false, engine);
+      PlotColorFunction.Builder curveColors = Plot3DTools.plotColors(
+          PlotColorFunction.Family.PARAMETRIC_3D, options, S.ParametricPlot3D, engine);
       for (int i = 0; i < functions.size(); i++) {
         // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
         // the tooltip back around the finished primitive, the way Plot3D labels one of several
@@ -130,7 +132,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           builder.setStyle(each.style);
         }
         createCurveGeometry(each.datum, range, samples[0], engine, builder,
-            options[Plot3DTools.X_EVALUATION_MONITOR], region);
+            options[Plot3DTools.X_EVALUATION_MONITOR], region, curveColors);
         IExpr complex = builder.build();
         if (complex.isPresent()) {
           graphicsList.append(each.wrapTooltip(complex));
@@ -162,17 +164,23 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     return held;
   }
 
+  /**
+   * Sample a curve into the builder. With a {@code ColorFunction} every line carries the colours of
+   * its points as {@code VertexColors}, the arguments scaled over the extent of the curve and the
+   * parameter range.
+   */
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,
-      GraphicsComplexBuilder builder, IExpr monitor, RegionFunctionFilter region) {
+      GraphicsComplexBuilder builder, IExpr monitor, RegionFunctionFilter region,
+      PlotColorFunction.Builder colorBuilder) {
     ISymbol uVar = (ISymbol) range.arg1();
-    double uMin = range.arg2().evalfNaN();
-    double uMax = range.arg3().evalfNaN();
-    if (Double.isNaN(uMin) || Double.isNaN(uMax) || uMax <= uMin) {
+    double[] bounds = increasing(range.arg2().evalfNaN(), range.arg3().evalfNaN());
+    if (bounds == null) {
       return;
     }
+    double uMin = bounds[0];
+    double uMax = bounds[1];
     double step = (uMax - uMin) / (pointsCount - 1);
-    IASTAppendable currentLine = F.ListAlloc(pointsCount);
-
+    double[][] points = new double[pointsCount][];
     for (int i = 0; i < pointsCount; i++) {
       engine.checkTimeLimit();
       double u = uMin + i * step;
@@ -182,21 +190,52 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         // parametrisation has no value at is not
         point = null;
       }
+      points[i] = point;
+    }
+    PlotColorFunction colorMap = null;
+    if (colorBuilder != null) {
+      double[] box = Plot3DTools.extentOf(new double[][][] {points});
+      colorMap =
+          colorBuilder.ranges(box[0], box[1], box[2], box[3], box[4], box[5], uMin, uMax).build();
+    }
+
+    IASTAppendable currentLine = F.ListAlloc(pointsCount);
+    IASTAppendable currentColors = colorMap == null ? F.NIL : F.ListAlloc(pointsCount);
+    for (int i = 0; i < pointsCount; i++) {
+      double[] point = points[i];
       if (point != null) {
         currentLine.append(F.ZZ(builder.addVertex(point[0], point[1], point[2], null, null)));
+        if (colorMap != null) {
+          currentColors.append(colorMap.color(point[0], point[1], point[2], uMin + i * step));
+        }
       } else if (currentLine.argSize() > 0) {
         // the curve is broken where it has no value, rather than jumped across
-        appendLine(builder, currentLine);
+        appendLine(builder, currentLine, currentColors);
         currentLine = F.ListAlloc(pointsCount);
+        currentColors = colorMap == null ? F.NIL : F.ListAlloc(pointsCount);
       }
     }
-    appendLine(builder, currentLine);
+    appendLine(builder, currentLine, currentColors);
+  }
+
+  /**
+   * The range from its lower to its upper end: a range written downwards is sampled the same way
+   * as the one written upwards; {@code null} for an empty or non-numeric range.
+   */
+  static double[] increasing(double from, double to) {
+    if (Double.isNaN(from) || Double.isNaN(to) || from == to) {
+      return null;
+    }
+    return from < to ? new double[] {from, to} : new double[] {to, from};
   }
 
   /** A run of a single point is not a line and would draw nothing, so it is dropped. */
-  private static void appendLine(GraphicsComplexBuilder builder, IASTAppendable line) {
+  private static void appendLine(GraphicsComplexBuilder builder, IASTAppendable line,
+      IAST colors) {
     if (line.argSize() >= 2) {
-      builder.addPrimitive(F.Line(line));
+      builder.addPrimitive(
+          colors.isPresent() ? F.binaryAST2(S.Line, line, F.Rule(S.VertexColors, colors))
+              : F.Line(line));
     }
   }
 
@@ -213,15 +252,16 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       PlotColorFunction.Builder colorBuilder, IExpr meshOption, IExpr meshStyle, IExpr monitor,
       RegionFunctionFilter region, IExpr meshFunctions, IExpr meshShading) {
     ISymbol uVar = (ISymbol) uRange.arg1();
-    double uMin = uRange.arg2().evalfNaN();
-    double uMax = uRange.arg3().evalfNaN();
     ISymbol vVar = (ISymbol) vRange.arg1();
-    double vMin = vRange.arg2().evalfNaN();
-    double vMax = vRange.arg3().evalfNaN();
-    if (Double.isNaN(uMin) || Double.isNaN(uMax) || Double.isNaN(vMin) || Double.isNaN(vMax)
-        || uMax <= uMin || vMax <= vMin) {
+    double[] uBounds = increasing(uRange.arg2().evalfNaN(), uRange.arg3().evalfNaN());
+    double[] vBounds = increasing(vRange.arg2().evalfNaN(), vRange.arg3().evalfNaN());
+    if (uBounds == null || vBounds == null) {
       return null;
     }
+    double uMin = uBounds[0];
+    double uMax = uBounds[1];
+    double vMin = vBounds[0];
+    double vMax = vBounds[1];
     double uStep = (uMax - uMin) / (uCount - 1);
     double vStep = (vMax - vMin) / (vCount - 1);
 

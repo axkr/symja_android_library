@@ -333,26 +333,33 @@ public class Predicates {
    * identical.
    */
   public static boolean isSameQ(IExpr x, IExpr y) {
-    if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
-      return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
-    }
-    // a data object like a Dataset holds more than its arguments: it is compared as a whole
-    if (x.isAST() && y.isAST() && x.size() == y.size() && !x.isSparseArray()
-        && !y.isSparseArray() && !(x instanceof IASTDataset) && !(y instanceof IASTDataset)) {
-      if (x == y) {
-        return true;
+    // the last argument is compared in the loop, not recursively: a chain like f(f(f(...))) can be
+    // deeper than the Java stack
+    while (true) {
+      if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
+        return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
       }
-      // the inexact real numbers in the arguments, as {0.3} === {0.1+0.2}
-      IAST xAST = (IAST) x;
-      IAST yAST = (IAST) y;
-      for (int i = 0; i < xAST.size(); i++) {
-        if (!isSameQ(xAST.get(i), yAST.get(i))) {
-          return false;
+      // a data object like a Dataset holds more than its arguments: it is compared as a whole
+      if (x.isAST() && y.isAST() && x.size() == y.size() && !x.isSparseArray()
+          && !y.isSparseArray() && !(x instanceof IASTDataset) && !(y instanceof IASTDataset)) {
+        if (x == y) {
+          return true;
         }
+        // the inexact real numbers in the arguments, as {0.3} === {0.1+0.2}
+        IAST xAST = (IAST) x;
+        IAST yAST = (IAST) y;
+        final int last = xAST.size() - 1;
+        for (int i = 0; i < last; i++) {
+          if (!isSameQ(xAST.get(i), yAST.get(i))) {
+            return false;
+          }
+        }
+        x = xAST.get(last);
+        y = yAST.get(last);
+        continue;
       }
-      return true;
+      return x.isSame(y);
     }
-    return x.isSame(y);
   }
 
   /**

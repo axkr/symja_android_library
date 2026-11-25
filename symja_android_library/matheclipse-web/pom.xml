@@ -40,6 +40,9 @@
 		<spike.skip>true</spike.skip>
 		<!-- the flat jar directory which the notebook page loads: the kernel and its runtime jars -->
 		<notebook.jars.dir>${project.build.directory}/notebook/jars</notebook.jars.dir>
+		<!-- the same jars shrunk by ProGuard (execution notebook-proguard); the notebook site's default -->
+		<notebook.jars.min.dir>${project.build.directory}/notebook/jars-min</notebook.jars.min.dir>
+		<notebook.shrink.skip>false</notebook.shrink.skip>
 		<!-- where the notebook servlets come from; compiled here at release 17 -->
 		<io.sources.dir>${project.basedir}/../matheclipse-io/src/main/java</io.sources.dir>
 	</properties>
@@ -137,7 +140,7 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<version>6.0.0</version>
+			<version>6.1.0</version>
 		</dependency>
 
 		<!-- Compile classpath only. The io sources name these (the Undertow launcher, and IOInit's
@@ -264,7 +267,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>site-classpath</id>
@@ -299,6 +302,9 @@
 						<configuration>
 							<target>
 								<delete dir="${notebook.jars.dir}" quiet="true" />
+								<!-- and the shrunk set: a run with -Dnotebook.shrink.skip=true must not
+								leave a stale one behind for build-notebook-site.sh to publish -->
+								<delete dir="${notebook.jars.min.dir}" quiet="true" />
 							</target>
 						</configuration>
 					</execution>
@@ -321,7 +327,77 @@
 							</target>
 						</configuration>
 					</execution>
+					<!-- ProGuard shrinks the notebook jar set into target/notebook/jars-min, which is
+					what build-notebook-site.sh publishes (the browser downloads every jar whole, so
+					unused classes cost every cold start). One run, one output jar per input jar:
+					the file names, classpath.txt, each library's browser cache entry and each jar's
+					own META-INF/services files stay as they are. The rules, and why each class that
+					is reached only by name is kept, are in src/main/proguard/notebook.pro; this
+					execution only generates the -injars/-outjars pairs and the JDK library jars
+					(absolute paths) into target/proguard/jars.pro. Declared after notebook-classpath,
+					so it runs after it in the package phase. -Dnotebook.shrink.skip=true skips it.
+
+					ProGuard reads the JDK's jmods as library classes, so Maven has to run on a JDK
+					that ships them (JEP 493 builds such as Temurin 25 do not; Homebrew's openjdk
+					and GraalVM do). -->
+					<execution>
+						<id>notebook-proguard</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<skip>${notebook.shrink.skip}</skip>
+							<target>
+								<property name="pg.dir" location="${project.build.directory}/proguard" />
+								<property name="pg.out" location="${notebook.jars.min.dir}" />
+								<fail message="ProGuard needs the JDK's jmods, but ${java.home}/jmods/java.base.jmod does not exist. Run Maven on a JDK that ships jmods, or skip the shrinking with -Dnotebook.shrink.skip=true.">
+									<condition>
+										<not>
+											<available file="${java.home}/jmods/java.base.jmod" />
+										</not>
+									</condition>
+								</fail>
+								<delete dir="${pg.out}" quiet="true" />
+								<mkdir dir="${pg.out}" />
+								<mkdir dir="${pg.dir}" />
+								<!-- -injars <jar>(filter) followed by -outjars <jars-min>/<same name>, per jar.
+								The filter drops what a Java 17 class path never reads (multi-release
+								versions, module-info) and signature files that no longer match. -->
+								<fileset id="pgJars" dir="${notebook.jars.dir}" includes="*.jar" />
+								<pathconvert refid="pgJars" property="pgJarPairs" pathsep="${line.separator}">
+									<regexpmapper from="^(.*[/\\])([^/\\]+\.jar)$" to="-injars \1\2(!META-INF/versions/**,!module-info.class,!META-INF/*.SF,!META-INF/*.DSA,!META-INF/*.RSA)${line.separator}-outjars ${pg.out}/\2" handledirsep="true" />
+								</pathconvert>
+								<fileset id="pgJmods" dir="${java.home}/jmods" includes="java.*.jmod,jdk.*.jmod" />
+								<pathconvert refid="pgJmods" property="pgLibs" pathsep="${line.separator}">
+									<regexpmapper from="^(.*)$" to="-libraryjars \1(!**.jar;!module-info.class)" />
+								</pathconvert>
+								<echo file="${pg.dir}/jars.pro" message="${pgJarPairs}${line.separator}${pgLibs}${line.separator}-printmapping ${pg.dir}/mapping.txt${line.separator}-printusage ${pg.dir}/usage.txt${line.separator}-printseeds ${pg.dir}/seeds.txt${line.separator}" />
+								<java classname="proguard.ProGuard" classpathref="maven.plugin.classpath" fork="true" failonerror="true" maxmemory="3g" output="${pg.dir}/proguard.log" logError="true">
+									<arg value="-include" />
+									<arg file="${pg.dir}/jars.pro" />
+									<arg value="-include" />
+									<arg file="${project.basedir}/src/main/proguard/notebook.pro" />
+								</java>
+								<copy file="${notebook.jars.dir}/classpath.txt" todir="${pg.out}" />
+							</target>
+						</configuration>
+					</execution>
 				</executions>
+				<dependencies>
+					<!-- ProGuard, on the classpath of the notebook-proguard execution
+					(maven.plugin.classpath). -->
+					<dependency>
+						<groupId>com.guardsquare</groupId>
+						<artifactId>proguard-base</artifactId>
+						<version>7.9.1</version>
+					</dependency>
+					<dependency>
+						<groupId>com.guardsquare</groupId>
+						<artifactId>proguard-core</artifactId>
+						<version>9.3.2</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

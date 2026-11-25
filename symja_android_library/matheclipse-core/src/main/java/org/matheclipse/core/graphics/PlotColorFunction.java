@@ -9,7 +9,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.ColorData;
 
 /**
  * The {@code ColorFunction} of a plot: which colour a sample gets.
@@ -110,6 +112,11 @@ public final class PlotColorFunction {
   private final boolean gradient;
   private final boolean clamped;
   private final boolean scaled;
+  /**
+   * Whether the colour jumps at exact values (an indexed scheme, a gradient with sharp steps), so
+   * a cache key must not round the value.
+   */
+  private final boolean stepped;
   private final Sink sink;
   private final double[] lo;
   private final double[] hi;
@@ -128,6 +135,7 @@ public final class PlotColorFunction {
     this.gradient = builder.gradient;
     this.clamped = builder.clamped;
     this.scaled = builder.scaled;
+    this.stepped = builder.stepped;
     this.sink = builder.sink;
     this.lo = builder.lo;
     this.hi = builder.hi;
@@ -163,6 +171,7 @@ public final class PlotColorFunction {
     private IExpr function = F.NIL;
     private boolean gradient = false;
     private boolean clamped = true;
+    private boolean stepped = false;
     private Sink sink = Sink.DIRECTIVE;
     private DoubleFunction<IExpr> fallback = t -> F.NIL;
 
@@ -245,17 +254,43 @@ public final class PlotColorFunction {
         }
         function = resolved;
         gradient = true;
+        stepped = hasSteps(resolved);
       } else if (spec == S.Hue || spec == S.GrayLevel) {
         // a colour head of one number colours by the argument a colour scheme is applied to; it is
         // defined for every number, Hue going round its circle, so nothing is cut to 0..1
         function = spec;
         gradient = true;
         clamped = false;
+      } else if (spec.isInteger() || isIndexedScheme(spec)) {
+        // an indexed colour scheme, by its number or as ColorData(n): the scaled value v picks
+        // the colour nearest to position 1 + (length - 1) * v, so the first and the last colour
+        // get half a step each
+        IExpr number = spec.isInteger() ? spec : spec.first();
+        ColorDataLists scheme = ColorDataLists.of(number.toIntDefault(-1));
+        if (scheme == null) {
+          // The value of the option ColorFunction -> `1` is not a valid color function or a
+          // gradient ColorData entity.
+          Errors.printMessage(plotSymbol, "cfun", F.list(spec), engine);
+          return null;
+        }
+        if (!scaled) {
+          // unscaled values are no positions in the list, so the scheme colours nothing and the
+          // plot keeps its default colours
+          return null;
+        }
+        // a scheme without end (1, 63, 94 ... 112) spreads the colours its ColorList shows
+        IAST colors = scheme.colorList();
+        IInteger length = F.ZZ(colors.argSize());
+        IExpr part = F.Round(F.Plus(F.C1, F.Times(F.Plus(length, F.CN1), F.Slot1)));
+        function = F.Function(F.Part(colors, F.Max(F.C1, F.Min(length, part))));
+        gradient = true;
+        stepped = true;
       } else if (spec.isAST(S.ColorDataFunction)) {
         // a ColorDataFunction only ever answers to one argument, so it is a gradient however it
         // was spelled
         function = spec;
         gradient = true;
+        stepped = hasSteps(spec);
       } else {
         function = spec;
       }
@@ -266,6 +301,23 @@ public final class PlotColorFunction {
         return null;
       }
       return colorFunction;
+    }
+
+    /** Whether a <code>ColorDataFunction</code> names a gradient with sharp steps. */
+    private static boolean hasSteps(IExpr colorDataFunction) {
+      if (colorDataFunction.isAST(S.ColorDataFunction) && colorDataFunction.argSize() >= 2
+          && colorDataFunction.first().isString()
+          && colorDataFunction.second().isString("Gradients")) {
+        ColorDataGradients g = ColorData.gradientNamed(colorDataFunction.first().toString());
+        return g != null && g.hasSteps();
+      }
+      return false;
+    }
+
+    /** Whether <code>spec</code> is <code>ColorDataFunction(n, "Indexed", ...)</code>. */
+    private static boolean isIndexedScheme(IExpr spec) {
+      return spec.isAST(S.ColorDataFunction) && spec.argSize() >= 2 && spec.first().isInteger()
+          && spec.second().isString("Indexed");
     }
 
     /** @return {@code ColorData(name)} when the name is one, {@code null} otherwise */
@@ -339,8 +391,14 @@ public final class PlotColorFunction {
 
   private IExpr cached(double[] coordinates) {
     long key = 0L;
-    for (int i = 0; i < family.arity; i++) {
-      key = key * 1000003L + Math.round(scale(i + 1, value(coordinates, i + 1)) * CACHE_GRID);
+    if (stepped) {
+      // a stepped colouring is a gradient: its one value, unrounded, is the key
+      key = Double.doubleToLongBits(
+          scale(family.gradientSlot, value(coordinates, family.gradientSlot)));
+    } else {
+      for (int i = 0; i < family.arity; i++) {
+        key = key * 1000003L + Math.round(scale(i + 1, value(coordinates, i + 1)) * CACHE_GRID);
+      }
     }
     IExpr hit = cache.get(key);
     if (hit != null) {

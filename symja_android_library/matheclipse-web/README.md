@@ -13,9 +13,16 @@ The notebook page (`index.html` and `media/js/*` of matheclipse-io) normally tal
 Here `src/main/notebook/kernel*.js` hand those requests to a Web Worker running CheerpJ.
 `NotebookKernel` (`call`, `upload`, `download`) answers them through `BrowserNotebook`, which runs the real matheclipse-io servlets' `doGet`/`doPost` with stand-in request, session and response objects.
 
-1. Build the kernel jars into `matheclipse-web/target/notebook/jars/`:
+1. Build the kernel jars into `matheclipse-web/target/notebook/jars/`, and the ProGuard-shrunk copies into `matheclipse-web/target/notebook/jars-min/`:
 
        mvn -pl matheclipse-web -am package -DskipTests
+
+   The browser downloads every jar in full before the first evaluation, so the site publishes the shrunk set (about 26 MB instead of 50 MB).
+   ProGuard removes unused classes and members from all jars and renames the classes of third-party libraries; Symja's own classes keep their names.
+   The rules live in `src/main/proguard/notebook.pro`, including every class that is reached only by name: `Class.forName`, reflection, service files, log4j plugins, and the Java source that `Compile` generates at run time.
+   A new class reached that way needs a rule there.
+   ProGuard reads the JDK's `jmods`, so Maven must run on a JDK that ships them (Homebrew openjdk, GraalVM; not Temurin 25).
+   `-Dnotebook.shrink.skip=true` skips the step; `target/proguard/` holds the log, `mapping.txt`, `usage.txt` and `seeds.txt`.
 
 2. Export the documentation pane as static JSON into `matheclipse-web/target/notebook/doc-json/` (or skip this step and pass `--mock` in step 3):
 
@@ -24,6 +31,8 @@ Here `src/main/notebook/kernel*.js` hand those requests to a Web Worker running 
 3. Assemble the static site in `matheclipse-web/target/notebook-site/`:
 
        matheclipse-web/tools/build-notebook-site.sh
+
+   It takes the jars from `jars-min/`; `--full-jars` takes the unshrunk `jars/` instead, which tells a ProGuard problem apart from any other.
 
 4. Serve it:
 

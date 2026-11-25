@@ -530,6 +530,13 @@ public class PolynomialFunctions {
         }
         return F.C0;
       }
+      if (arg2.isPower() && arg2.base().isSymbol() && arg2.exponent().isRational()
+          && !arg2.exponent().isZero()
+          && (ast.isAST2() || (ast.isAST3() && ast.arg3().isRational()))) {
+        // the coefficient of (x^m)^k is the coefficient of x^(m*k)
+        IExpr k = ast.isAST3() ? ast.arg3() : F.C1;
+        return F.Coefficient(ast.arg1(), arg2.base(), arg2.exponent().times(k));
+      }
       // list of variable expressions extracted from the second argument
       IASTAppendable listOfVariables = null;
       // array of corresponding exponents for the list of variables

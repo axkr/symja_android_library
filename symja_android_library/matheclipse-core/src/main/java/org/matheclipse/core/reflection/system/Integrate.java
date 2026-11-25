@@ -175,7 +175,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       final boolean packageMode = engine.isPackageMode();
       engine.setPackageMode(true);
       try {
-        loadRules(engine);
+        EvalEngine.withDeferredEpoch(() -> loadRules(engine));
       } finally {
         engine.setPackageMode(packageMode);
       }
