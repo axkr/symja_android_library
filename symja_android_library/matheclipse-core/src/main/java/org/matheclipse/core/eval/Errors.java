@@ -658,6 +658,8 @@ public class Errors {
       "rapp", "Root approximation `1` is not a number.", //
       "invrt", "`1` is not equal to a root of `2`.", //
       "trsp", "Nonpolynomial root specification `1` is not a list with two elements.", //
+      "ratnz",
+      "Solve was unable to solve the system with inexact coefficients. The answer was obtained by solving a corresponding exact system and numericizing the result.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //

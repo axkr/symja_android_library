@@ -1966,6 +1966,16 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Whether the exponent of <code>Power(base, exponent)</code> stays exact under <code>N</code>: a
+   * rational number, of a base which isn't a numeric quantity. <code>N(a^2 + 1/3*b)</code> is
+   * <code>a^2 + 0.333333*b</code> and <code>N(x^(2/3))</code> stays <code>x^(2/3)</code>, while
+   * <code>N(2^x)</code> is <code>2.0^x</code> and <code>N(x^Pi)</code> is <code>x^3.14159</code>.
+   */
+  private static boolean isExactExponentKept(IAST ast, IExpr exponent) {
+    return ast.isPower() && exponent.isRational() && !ast.base().isNumericArgument(true);
+  }
+
+  /**
    * Evaluate the arguments of the given ast, taking the attributes <code>
    * HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
    *
@@ -2091,6 +2101,10 @@ public class EvalEngine implements Serializable {
             final boolean nMode = localNumericMode;
             for (int i = 2; i < ast.size(); i++) {
               IExpr arg = ast.get(i);
+              if (i == 2 && (nMode || fNumericMode) && isExactExponentKept(ast, arg)) {
+                // x^2 and Sqrt(x) keep their exact exponent: only the base is numericized
+                continue;
+              }
               if (!hasSpecialArg || !arg.isUnevaluated()) {
                 selectNumericMode(attributes, ISymbol.NHOLDREST, nMode);
                 rlist = evalArg(rlist, ast, arg, i, isNumericFunction);

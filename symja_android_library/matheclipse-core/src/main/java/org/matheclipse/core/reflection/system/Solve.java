@@ -4692,6 +4692,123 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The relative distance within which a machine number which isn't a small fraction is replaced
+   * by the simplest fraction, in {@link #withRationalizedParameters}.
+   */
+  private static final double RATIONALIZED_PARAMETER_TOLERANCE = 1.0e-15;
+
+  /**
+   * A system with machine number coefficients and symbolic parameters besides its variables is
+   * solved with its machine numbers rationalized, and the solutions are numericized:
+   * <code>Solve({(x-a)^2+y^2==1, y==0.5*x}, {x,y})</code>. The elimination with machine numbers
+   * leaves such a system unsolved, answers with spurious imaginary parts of rounding size, or loses
+   * a branch of a square root. The exact system is solved only then: when the machine solutions
+   * failed, carry such imaginary parts, or are fewer than the product of the degrees of the
+   * polynomial equations allows; and its solutions replace the machine ones only if they are more.
+   *
+   * @param ast the <code>Solve(eqns, vars)</code> or <code>NSolve(eqns, vars)</code> call
+   * @param result the solutions of the elimination with machine numbers, or {@link F#NIL}
+   * @return <code>result</code> unless the system is of this kind and its exact solution succeeds
+   */
+  static IExpr withRationalizedParameters(IAST ast, IExpr result, EvalEngine engine) {
+    if (ast.argSize() < 2 || ast.argSize() > 3 || !ast.arg2().isList()
+        || engine.isArbitraryMode()) {
+      return result;
+    }
+    final IExpr equations = ast.arg1();
+    boolean failed = !result.isList() || !(result.isEmptyList() || result.isListOfLists());
+    boolean noise = !failed && result.has(x -> x.isInexactNumber() && x.isComplexNumeric(), false)
+        && equations.isFree(x -> x.isComplex() || x.isComplexNumeric() || x == S.I, false);
+    final IAST variables = (IAST) ast.arg2();
+    if (!variables.forAll(x -> x.isSymbol())
+        || new VariablesSet(equations).getVarList().forAll(x -> variables.contains(x))) {
+      // no parameter
+      return result;
+    }
+    if (!failed && !noise) {
+      long bound = bezoutBound(equations, variables, engine);
+      if (bound < 0 || result.argSize() >= bound) {
+        // as many solutions as the system can have, or no polynomial system to count them for
+        return result;
+      }
+    }
+    try {
+      // a number which isn't a small fraction becomes the simplest fraction within a relative
+      // rounding error, rather than its exact binary value with a denominator of 2^52, which
+      // would blow up the coefficients of the solutions
+      IExpr exactEquations = equations.replaceAll(x -> {
+        if (!x.isInexactNumber() || !x.isMachineNumber() || !x.isReal()) {
+          return F.NIL;
+        }
+        IExpr fraction = faithfulFraction((INumber) x, engine);
+        if (fraction.isPresent()) {
+          return fraction;
+        }
+        double tolerance = Math.abs(((INumber) x).reDoubleValue()) * RATIONALIZED_PARAMETER_TOLERANCE;
+        return engine.evalQuiet(F.Rationalize(x, F.num(tolerance)));
+      }).orElse(equations);
+      if (!exactEquations.isFree(x -> x.isInexactNumber(), false)) {
+        return result;
+      }
+      IAST solve = ast.apply(S.Solve).setAtCopy(1, exactEquations);
+      IExpr exact = TimeLimits.call(engine, () -> engine.evalQuiet(solve),
+          MachineProfile.millis(RATIONALIZED_SOLVE_MILLIS), () -> F.NIL);
+      if (!exact.isList() || !(exact.isEmptyList() || exact.isListOfLists())) {
+        return result;
+      }
+      if (!failed && !noise && exact.argSize() <= result.argSize()) {
+        return result;
+      }
+      IExpr numeric = engine.evalN(exact);
+      // Solve was unable to solve the system with inexact coefficients. The answer was obtained by
+      // solving a corresponding exact system and numericizing the result.
+      Errors.printMessage(S.Solve, "ratnz", F.CEmptyList, engine);
+      return numeric;
+    } catch (LimitException le) {
+      throw le;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return result;
+    }
+  }
+
+  /**
+   * The product of the total degrees in <code>variables</code> of the polynomial equations, the
+   * most isolated solutions they can have.
+   *
+   * @return <code>-1</code> if an equation isn't a polynomial equation in the variables
+   */
+  private static long bezoutBound(IExpr equations, IAST variables, EvalEngine engine) {
+    IAST list = equations.isList() ? (IAST) equations : F.list(equations);
+    final ISymbol t = F.Dummy("t");
+    IASTAppendable scaling = F.ListAlloc(variables.argSize());
+    for (IExpr v : variables) {
+      scaling.append(F.Rule(v, F.Times(t, v)));
+    }
+    long bound = 1L;
+    for (IExpr equation : list) {
+      if (!equation.isEqual()) {
+        return -1L;
+      }
+      IExpr difference = engine.evalQuiet(F.Subtract(equation.first(), equation.second()));
+      if (!difference.isPolynomial(variables)) {
+        return -1L;
+      }
+      int degree = engine
+          .evalQuiet(F.Exponent(difference.replaceAll(scaling).orElse(difference), t))
+          .toIntDefault();
+      if (degree < 1) {
+        return -1L;
+      }
+      bound *= degree;
+      if (bound > Integer.MAX_VALUE) {
+        return -1L;
+      }
+    }
+    return bound;
+  }
+
+  /**
    * The units in the last place by which a machine number may differ from the fraction it is
    * rationalized to, for the fraction to stand for it.
    */
@@ -5997,6 +6114,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
     if (isNumericArgument) {
       result = withRationalizedSolutions(ast, result, false, true, engine);
+      result = withRationalizedParameters(ast, result, engine);
     }
     // the rules of every solution in the order of the variables, which the elimination of the
     // radicals or the numerical methods do not keep

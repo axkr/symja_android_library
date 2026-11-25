@@ -137,6 +137,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       if (!solveData.isCompleteSolutions()) {
         result = Solve.withRationalizedSolutions(ast, result, true, false, engine);
       }
+      result = Solve.withRationalizedParameters(ast, result, engine);
       return distinctSolutions(result,
           ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }
