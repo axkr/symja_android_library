@@ -17,14 +17,17 @@
 #   kernel-config.js kernel.js kernel-worker.js kernel.css
 #       copied from src/main/notebook/
 #   jars/<stem>-<sha256 first 8 hex>.jar + jars/classpath.txt
-#       from target/notebook/jars/; content-hashed names let the browser cache
+#       from target/notebook/jars-min/ (the ProGuard-shrunk jar set the Maven
+#       build writes; --full-jars takes target/notebook/jars/ instead);
+#       content-hashed names let the browser cache
 #       jars forever (a changed jar always gets a new URL).
 #   doc-json/...
 #       from target/notebook/doc-json/ (produced by tools/doc-export).
 #
 # How to run (from any directory):
-#   matheclipse-web/tools/build-notebook-site.sh [--mock]
+#   matheclipse-web/tools/build-notebook-site.sh [--mock] [--full-jars]
 #   --mock lets the page be tried with ?kernel=mock before the real jars/docs exist.
+#   --full-jars publishes the unshrunk jars (to tell a ProGuard problem from others).
 #   Environment: NOTEBOOK_MODULE_DIR overrides the module root (used only to
 #   test this script against a scratch copy of the layout).
 #
@@ -45,21 +48,24 @@ PROTOTYPE_TAG='<script type="text/javascript" src="/media/js/prototype/prototype
 NOTEBOOK_FILES="kernel-config.js kernel.js kernel-worker.js kernel.css"
 
 MOCK=0
+FULL_JARS=0
 STAGE=""
 
 # usage - print the help text (stdout for -h, stderr for errors via caller).
 usage() {
   cat <<'USAGE'
-Usage: build-notebook-site.sh [--mock] [-h|--help]
+Usage: build-notebook-site.sh [--mock] [--full-jars] [-h|--help]
 
 Assembles matheclipse-web/target/notebook-site/ from:
   1. ../matheclipse-io/src/main/resources/public/   (copied; index.html patched)
   2. src/main/notebook/                              (kernel-config.js kernel.js
                                                       kernel-worker.js kernel.css)
-  3. target/notebook/jars/                           (hashed names + classpath.txt)
+  3. target/notebook/jars-min/                       (hashed names + classpath.txt;
+                                                      the ProGuard-shrunk jars)
   4. target/notebook/doc-json/                       (copied as is)
 
 Options:
+  --full-jars take part 3 from target/notebook/jars/ (unshrunk) instead
   --mock      tolerate missing parts 3 and 4: create an empty jars/ folder with an
               empty classpath.txt and a placeholder doc-json/index.json, so the
               page can be tested with ?kernel=mock. Loud warning is printed.
@@ -181,7 +187,7 @@ mock_jars() {
 # original order. Order matters (Java classpath precedence), hence we iterate
 # classpath.txt rather than the directory.
 copy_jars() {
-  local missing_msg="missing jars: $JARS_SRC/classpath.txt (run the jar build in module matheclipse-web / the kernel-packaging session that produces target/notebook/jars/)."
+  local missing_msg="missing jars: $JARS_SRC/classpath.txt (run mvn -pl matheclipse-web -am package -DskipTests from symja_android_library/)."
   if [ ! -f "$JARS_SRC/classpath.txt" ]; then
     if [ "$MOCK" -eq 1 ]; then
       mock_jars
@@ -309,6 +315,7 @@ main() {
   for arg in "$@"; do
     case "$arg" in
       --mock) MOCK=1 ;;
+      --full-jars) FULL_JARS=1 ;;
       -h|--help) usage; exit 0 ;;
       *) echo "ERROR: unknown argument '$arg'" >&2; usage >&2; exit 2 ;;
     esac
@@ -325,7 +332,14 @@ main() {
   PUBLIC_SRC="$ROOT/../matheclipse-io/src/main/resources/public"
   CORE_PUBLIC_SRC="$ROOT/../matheclipse-core/src/main/resources/public"
   NOTEBOOK_SRC="$ROOT/src/main/notebook"
-  JARS_SRC="$ROOT/target/notebook/jars"
+  if [ "$FULL_JARS" -eq 1 ]; then
+    JARS_SRC="$ROOT/target/notebook/jars"
+  else
+    JARS_SRC="$ROOT/target/notebook/jars-min"
+    if [ "$MOCK" -eq 0 ] && [ ! -f "$JARS_SRC/classpath.txt" ] && [ -f "$ROOT/target/notebook/jars/classpath.txt" ]; then
+      die "no shrunk jars in $JARS_SRC (the Maven build ran with -Dnotebook.shrink.skip=true?). Rebuild without it, or pass --full-jars to publish the unshrunk jars."
+    fi
+  fi
   DOCS_SRC="$ROOT/target/notebook/doc-json"
   OUT="$ROOT/target/notebook-site"
 
