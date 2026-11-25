@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -102,14 +103,40 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
       return F.C1;
     }
 
-    if (n.isNumber() && a.isNumber() && q.isNumber()
-        && (n.isInexactNumber() || a.isInexactNumber() || q.isInexactNumber())
-        && !(n.isReal() && ((IReal) n).isNumIntValue())) {
-      // (a;q)_n == (a;q)_Infinity/(a*q^n;q)_Infinity inside of the unit disk
+    if (n.isReal() && ((IReal) n).isNumIntValue() && ((IReal) n).isLE(F.ZZ(-MAX_EXPANSION))
+        && a.isNumber() && q.isNumber() && (a.isInexactNumber() || q.isInexactNumber())
+        && !q.isZero()) {
+      // a negative n which is too large to expand:
+      // (a;q)_(-m) == (-q/a)^m*q^(m*(m-1)/2) / (q/a;q)_m inside of the unit disk; the factor in
+      // front is one exponential, its two powers alone overflow and underflow
       IExpr absQ = engine.evaluate(F.Abs(F.N(q)));
       if (absQ.isReal() && ((IReal) absQ).isLT(F.C1)) {
-        return F.Divide(F.binaryAST2(S.QPochhammer, a, q),
-            F.binaryAST2(S.QPochhammer, F.Times(a, F.Power(q, n)), q));
+        IInteger m = ((IReal) n).roundExpr().negate();
+        IExpr qa = engine.evaluate(F.Divide(q, a));
+        IExpr denominator = engine.evaluate(F.ternaryAST3(S.QPochhammer, qa, q, m));
+        if (denominator.isZero()) {
+          // a factor 1 - a/q^k of the product is zero: a pole, whatever the factor in front is
+          return F.CComplexInfinity;
+        }
+        IExpr factor = engine.evalQuiet(F.Times(F.Power(F.CN1, m),
+            F.Exp(F.Plus(F.Times(m, F.Log(qa)),
+                F.Times(m.multiply(m.subtract(F.C1)).shiftRight(1), F.Log(q))))));
+        return F.Divide(factor, denominator);
+      }
+      return F.NIL;
+    }
+
+    if (n.isNumber() && a.isNumber() && q.isNumber()
+        && (n.isInexactNumber() || a.isInexactNumber() || q.isInexactNumber())
+        && !(n.isReal() && ((IReal) n).isNumIntValue()
+            && ((IReal) n).isLT(F.ZZ(MAX_EXPANSION)))) {
+      // (a;q)_n == (a;q)_Infinity/(a*q^n;q)_Infinity inside of the unit disk, also for a positive
+      // integer n which is too large to expand the product
+      IExpr absQ = engine.evaluate(F.Abs(F.N(q)));
+      if (absQ.isReal() && ((IReal) absQ).isLT(F.C1)) {
+        // q^n of a large n underflows to 0 without a message: (0;q)_Infinity is 1
+        IExpr aqn = engine.evalQuiet(F.Times(a, F.Power(q, n)));
+        return F.Divide(F.binaryAST2(S.QPochhammer, a, q), F.binaryAST2(S.QPochhammer, aqn, q));
       }
       return F.NIL;
     }

@@ -225,7 +225,8 @@ public class PlotColorFunctionTest {
 
   @Test
   public void testAFunctionThatNeverAnswersBuildsNothing() {
-    assertNull(build(Family.CURVE_2D, "42", 0, 1, 0, 1));
+    // 42 numbers an indexed colour scheme, 4200 does not
+    assertNull(build(Family.CURVE_2D, "4200", 0, 1, 0, 1));
     assertNull(build(Family.CURVE_2D, "\"not a color\"", 0, 1, 0, 1));
     assertNull(build(Family.FIELD_2D, "Sin(#)&", 0, 1));
   }
@@ -329,6 +330,26 @@ public class PlotColorFunctionTest {
     }
     assertEquals(afterProbe + 1, evaluator.eval("cfCount").toIntDefault(-1),
         "fifty identical samples should cost exactly one evaluation between them");
+  }
+
+  /**
+   * A colouring that jumps at exact values must not share a cached colour between two values on
+   * either side of the jump, however close they are.
+   */
+  @Test
+  public void testSteppedColoringsAreNotCachedAcrossAStep() {
+    // 74 has 10 colours: the step from the first to the second lies at 1/18 = 0.05556
+    PlotColorFunction indexed = build(Family.FIELD_2D, "74", 0, 1);
+    Color below = colorOf(indexed, 0.0555);
+    Color above = colorOf(indexed, 0.0556);
+    assertFalse(below.equals(above), "0.0555 and 0.0556 lie in different bins");
+    assertEquals(colorOf(build(Family.FIELD_2D, "74", 0, 1), 0.0556), above);
+    // BrightBands steps at 0.152941
+    PlotColorFunction bands = build(Family.FIELD_2D, "\"BrightBands\"", 0, 1);
+    Color left = colorOf(bands, 0.1529);
+    Color right = colorOf(bands, 0.1530);
+    assertEquals(colorOf(build(Family.FIELD_2D, "\"BrightBands\"", 0, 1), 0.1530), right);
+    assertFalse(left.equals(right), "0.1529 and 0.1530 lie on either side of a step");
   }
 
   @Test

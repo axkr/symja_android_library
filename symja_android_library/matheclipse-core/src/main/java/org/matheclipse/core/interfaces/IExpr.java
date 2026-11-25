@@ -1190,6 +1190,13 @@ public interface IExpr
     if (Config.MAX_AST_SIZE < size) {
       ASTElementLimitExceeded.throwIt(size);
     }
+    if (startPosition == 0) {
+      final long[] lengths = new long[arr.length];
+      for (int i = 0; i < arr.length; i++) {
+        lengths[i] = arr[i];
+      }
+      ASTElementLimitExceeded.checkAllocation(lengths);
+    }
     if (arr.length - 1 == startPosition) {
       IExpr[] exprArr = new IExpr[size];
       for (int i = 0; i < size; i++) {

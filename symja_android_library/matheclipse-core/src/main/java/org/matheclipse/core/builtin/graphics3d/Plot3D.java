@@ -76,13 +76,18 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           || (!(yMax instanceof INum))) {
         return F.NIL;
       }
-      final double xMinD = ((INum) xMin).getRealPart();
-      final double xMaxD = ((INum) xMax).getRealPart();
-      final double yMinD = ((INum) yMin).getRealPart();
-      final double yMaxD = ((INum) yMax).getRealPart();
-      if (xMaxD <= xMinD || yMaxD <= yMinD) {
+      // a range written downwards is sampled the same way as the one written upwards
+      final double[] xBounds = ParametricPlot3D.increasing(((INum) xMin).getRealPart(),
+          ((INum) xMax).getRealPart());
+      final double[] yBounds = ParametricPlot3D.increasing(((INum) yMin).getRealPart(),
+          ((INum) yMax).getRealPart());
+      if (xBounds == null || yBounds == null) {
         return F.NIL;
       }
+      final double xMinD = xBounds[0];
+      final double xMaxD = xBounds[1];
+      final double yMinD = yBounds[0];
+      final double yMaxD = yBounds[1];
 
       final ISymbol xVar = (ISymbol) lst1.arg1();
       final ISymbol yVar = (ISymbol) lst2.arg1();

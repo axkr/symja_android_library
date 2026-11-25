@@ -3839,6 +3839,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
 
     /** The largest step the integrator may take, and the interval events are checked over. */
     double maxStep = 100.0;
+    /**
+     * The length of the integration range where it is shorter than one, otherwise one: the
+     * smallest steps the integrators may take shrink with it, so that a range much shorter than
+     * {@link #MIN_STEP} can still be integrated.
+     */
+    double shortRangeFactor = 1.0;
+
+    /** The smallest step the adaptive integrators may take. */
+    double minStep = MIN_STEP;
 
     /**
      * <code>MaxStepSize</code>, or {@link Double#NaN} for the default, a tenth of the requested
@@ -3975,6 +3984,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         settings.maxStep = settings.maxStepSize;
       } else if (range > 0.0) {
         settings.maxStep = Math.min(settings.maxStep, range / 10.0);
+      }
+      if (range > 0.0 && range < 1.0) {
+        settings.shortRangeFactor = range;
+        settings.minStep = MIN_STEP * range;
       }
       return settings;
     }
@@ -4201,18 +4214,18 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       AdaptiveStepsizeIntegrator integrator;
       switch (timeIntegration) {
         case "Adams":
-          integrator = new AdamsMoultonIntegrator(4, MIN_STEP, maxStep, absoluteTolerance,
+          integrator = new AdamsMoultonIntegrator(4, minStep, maxStep, absoluteTolerance,
               relativeTolerance);
           break;
         case "Extrapolation":
-          integrator = new GraggBulirschStoerIntegrator(MIN_STEP, maxStep, absoluteTolerance,
+          integrator = new GraggBulirschStoerIntegrator(minStep, maxStep, absoluteTolerance,
               relativeTolerance);
           break;
         default:
           integrator = differenceOrder > 0 && differenceOrder <= 5
-              ? new DormandPrince54Integrator(MIN_STEP, maxStep, absoluteTolerance,
+              ? new DormandPrince54Integrator(minStep, maxStep, absoluteTolerance,
                   relativeTolerance)
-              : new DormandPrince853Integrator(MIN_STEP, maxStep, absoluteTolerance,
+              : new DormandPrince853Integrator(minStep, maxStep, absoluteTolerance,
                   relativeTolerance);
       }
       if (!Double.isNaN(startingStepSize)) {
@@ -4238,8 +4251,9 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         EvalEngine engine) {
       double absolute = goalsGiven ? absoluteTolerance : Math.max(absoluteTolerance, STIFF_TOLERANCE);
       double relative = goalsGiven ? relativeTolerance : Math.max(relativeTolerance, STIFF_TOLERANCE);
-      double minStep = STIFF_MIN_STEP * Math.max(1.0, Math.max(Math.abs(system.t0), Math.abs(target)));
-      RosenbrockIntegrator integrator = new RosenbrockIntegrator(minStep, maxStep, absolute,
+      double stiffMinStep = STIFF_MIN_STEP * shortRangeFactor
+          * Math.max(1.0, Math.max(Math.abs(system.t0), Math.abs(target)));
+      RosenbrockIntegrator integrator = new RosenbrockIntegrator(stiffMinStep, maxStep, absolute,
           relative, SymbolicJacobian.create(system, engine), engine::checkTimeLimit);
       if (!Double.isNaN(startingStepSize)) {
         integrator.setInitialStepSize(Math.min(startingStepSize, maxStep));
@@ -4267,7 +4281,19 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         result.addAll(detectors);
       }
       for (int i = 0; i < events.length; i++) {
-        ODEEventDetector detector = new EventLocator(system, engine, events[i], eventCondition,
+        IExpr event = events[i];
+        if (event.isAST() && !event.isFree(x -> x.equals(system.timeVar)
+            || (x.isSymbol() && java.util.Arrays.asList(system.functions).contains(x)), true)
+            && !WhenEventDetector.isRealValued(event, system)) {
+          // a logical event, x(t) > 2 || x(t) < -1, happens wherever its truth value changes: a
+          // function which is positive exactly where it holds changes its sign there; an equation
+          // x(t) == 3 is the difference of its sides
+          IExpr function = event.isEqual() && event.argSize() == 2
+              ? WhenEventDetector.equationFunction(event.first(), event.second(), system.timeVar)
+              : WhenEventDetector.inequalityFunction(event);
+          event = function.isPresent() ? function : F.If(event, F.C1, F.CN1);
+        }
+        ODEEventDetector detector = new EventLocator(system, engine, event, eventCondition,
             eventAction, createSolver(), maxStep, eventMaxIterations);
         if (direction != 0) {
           detector = new EventSlopeFilter<>(detector, direction > 0 //

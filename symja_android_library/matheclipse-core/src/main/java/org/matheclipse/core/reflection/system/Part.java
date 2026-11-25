@@ -1158,7 +1158,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
         } else {
           if (symbol.hasProtectedValue()) {
-            return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
+            // Symbol `1` is Protected.
+            Errors.printMessage(builtinSymbol, "wrsym", F.list(symbol), engine);
+            return builtinSymbol == S.Set ? rightHandSide : S.$Failed;
           }
           try {
             ISparseArray sparse = null;

@@ -195,6 +195,8 @@ public class Errors {
       "cfeval", "The ColorFunction of `1` did not evaluate to a color; using the default coloring.", //
       "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //
       "cfshade", "`1` is not a known shading scheme for `2`; using Automatic.", //
+      "cfun",
+      "The value of the option ColorFunction -> `1` is not a valid color function or a gradient ColorData entity.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "colconv", "`1` should be one of RGBColor, Hue, CMYKColor or GrayLevel.", //
       "color", "`1` is not a valid color or gray-level specification.", //
@@ -505,6 +507,8 @@ public class Errors {
       "nonegs", "Surd is not defined for even roots of negative values.", //
       "nolast", "`1` has zero length and no last element.", //
       "nomost", "Cannot take Most of expression `1` with length zero.", //
+      "nomem",
+      "The current computation was aborted because there was insufficient memory available to complete the computation.", //
       "nomthd", "There is no method `1` for `2` objects.", //
       "nojoin", "The datasets have no column in common to join on.", //
       "nonn1",
@@ -656,6 +660,8 @@ public class Errors {
       "rapp", "Root approximation `1` is not a number.", //
       "invrt", "`1` is not equal to a root of `2`.", //
       "trsp", "Nonpolynomial root specification `1` is not a list with two elements.", //
+      "ratnz",
+      "Solve was unable to solve the system with inexact coefficients. The answer was obtained by solving a corresponding exact system and numericizing the result.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //
@@ -748,6 +754,7 @@ public class Errors {
       "take", "Cannot take positions `1` through `2` in `3`.", //
       "takeeigen", "Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.", //
       "targ", "Argument `1` at position `2` is not List or SparseArray.", //
+      "toomany", "The length of the output of `1` should be a machine integer.", //
       "tbnval",
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //

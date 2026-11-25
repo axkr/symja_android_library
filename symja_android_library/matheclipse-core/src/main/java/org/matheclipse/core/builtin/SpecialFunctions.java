@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.external.apfloat.ApcomplexParabolicCylinderMath;
+import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import org.matheclipse.external.apfloat.ApcomplexCoulombMath;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -35,7 +36,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -554,21 +554,32 @@ public class SpecialFunctions {
               double zd = engine.evalDouble(z);
               double ad = engine.evalDouble(a);
               double bd = engine.evalDouble(b);
-              int iterationLimit = EvalEngine.get().getIterationLimit();
-              int aInt = (int) ad;
-              if (aInt > iterationLimit && iterationLimit > 0) {
-                IterationLimitExceeded.throwIt(aInt, ast.topHead());
+              if (Math.max(ad, bd) > 1.0e4 && zd > 0.0 && zd < 1.0) {
+                // the factor in front of the continued fraction is the exponential of terms of
+                // the size of a and b, which leave too few correct digits in double arithmetic
+                Apfloat value = ApcomplexBetaMath.betaRegularized(new Apfloat(zd),
+                    new Apfloat(ad), new Apfloat(bd), Config.MACHINE_PRECISION + 4);
+                if (value != null) {
+                  return F.num(value.doubleValue());
+                }
               }
-              int nInt = (int) bd;
-              if (nInt > iterationLimit && iterationLimit > 0) {
-                IterationLimitExceeded.throwIt(nInt, ast.topHead());
-              }
-              // TODO improve with regularizedIncompleteBetaFunction() ???
-              // https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
+              // the continued fraction needs about sqrt(max(a, b)) steps next to the mean of the
+              // distribution and only a few elsewhere, so large parameters need no guard
               return F.num(GammaJS.betaRegularized(zd, ad, bd));
             } catch (ValidateException ve) {
               // from org.matheclipse.core.eval.EvalEngine.evalDouble()
             }
+          }
+          if (z.isReal() && a.isReal() && b.isReal()) {
+            // the quotient of the incomplete and the complete beta function cancels for large
+            // parameters: the continued fraction of the regularized function itself
+            Apfloat value = ApcomplexBetaMath.betaRegularized(((IReal) z).apfloatValue(),
+                ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue(),
+                engine.getNumericPrecision());
+            if (value != null) {
+              return F.num(value);
+            }
+            engine.checkTimeLimit();
           }
           if (z.isNumber() && a.isNumber() && b.isNumber()) {
             return functionExpand(ast, engine);
