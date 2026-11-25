@@ -500,6 +500,9 @@ public final class ListFunctions {
     /** The position of the iterator which didn't determine its values, or <code>-1</code>. */
     private int fInvalidIterator = -1;
 
+    /** The number of elements the enclosing levels of the table under construction will hold. */
+    private long fEnclosingElements = 1L;
+
     private final IExpr[] fCurrentIndex;
 
     private final ISymbol[] fCurrentVariable;
@@ -633,6 +636,23 @@ public final class ListFunctions {
      * @return
      */
     private IExpr createGenericTable(final IIterator<IExpr> iter, final int index,
+        final int allocationHint, IExpr arg1, IExpr arg2) {
+      final long enclosingElements = fEnclosingElements;
+      if (allocationHint > 1) {
+        // the elements of this level in every row of the enclosing levels
+        final long elements = enclosingElements > Long.MAX_VALUE / allocationHint ? Long.MAX_VALUE
+            : enclosingElements * allocationHint;
+        ASTElementLimitExceeded.checkMemory(elements);
+        fEnclosingElements = elements;
+      }
+      try {
+        return createGenericTableRows(iter, index, allocationHint, arg1, arg2);
+      } finally {
+        fEnclosingElements = enclosingElements;
+      }
+    }
+
+    private IExpr createGenericTableRows(final IIterator<IExpr> iter, final int index,
         final int allocationHint, IExpr arg1, IExpr arg2) {
       final IASTAppendable result = fPrototypeList
           .copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint + 8 : 8));
@@ -1290,6 +1310,15 @@ public final class ListFunctions {
         }
 
         if (iterList.size() > 0) {
+          if (head != S.Plus && head != S.Times) {
+            // a sum or a product is accumulated, every other array is built in full
+            final long[] lengths = new long[iterList.size()];
+            for (int i = 0; i < lengths.length; i++) {
+              // the hint of both array iterators is their length + 2
+              lengths[i] = iterList.get(i).allocHint() - 2L;
+            }
+            ASTElementLimitExceeded.checkAllocation(lengths);
+          }
           final IAST list = F.ast(arg1);
           // the empty sum or product stands for a dimension of length 0
           final IExpr empty = head == S.Plus ? F.C0 : head == S.Times ? F.C1 : F.NIL;
@@ -6711,6 +6740,7 @@ public final class ListFunctions {
       if (ast.isAST1() && ast.arg1().isReal()) {
         int size = ast.arg1().toIntDefault();
         if (F.isPresent(size)) {
+          ASTElementLimitExceeded.checkMemory(size);
           return IAST.range(size + 1);
         }
         if (ast.arg1().isReal()) {
@@ -8974,6 +9004,25 @@ public final class ListFunctions {
           ast = ast.setAtCopy(2, F.ZZ(Math.min(n, ((IAST) ast.arg1()).argSize())));
         }
       }
+      if (ast.isAST2() && ast.arg1().isASTOrAssociation()) {
+        IExpr from = F.NIL;
+        IExpr to = F.NIL;
+        final IExpr spec = ast.arg2();
+        if (spec.isInteger()) {
+          from = spec.isNegative() ? spec : F.C1;
+          to = spec.isNegative() ? F.CN1 : spec;
+        } else if ((spec.isList2() || spec.isList3()) && spec.first().isInteger()
+            && spec.second().isInteger()) {
+          from = spec.first();
+          to = spec.second();
+        }
+        if (from.isPresent() && (((IInteger) from).abs().isGT(F.ZZ(Integer.MAX_VALUE))
+            || ((IInteger) to).abs().isGT(F.ZZ(Integer.MAX_VALUE)))) {
+          // a position beyond a machine integer is beyond every list
+          // Cannot take positions `1` through `2` in `3`.
+          return Errors.printMessage(S.Take, "take", F.List(from, to, ast.arg1()), engine);
+        }
+      }
       try {
         final ISequence[] sequ =
             Sequence.createSequences(ast, 2, ast.size(), "take", S.Take, engine);
@@ -10229,6 +10278,12 @@ public final class ListFunctions {
       // a negative length pads on the opposite side of this level
       PerLevelIntSpec lengths = PerLevelIntSpec.create(nExpr);
       if (lengths == null) {
+        // a length beyond a machine integer is a size no memory can hold
+        final IAST lengthList = nExpr.isList() ? (IAST) nExpr : F.list(nExpr);
+        if (lengthList
+            .exists(x -> x.isInteger() && ((IInteger) x).abs().isGT(F.ZZ(Integer.MAX_VALUE)))) {
+          ASTElementLimitExceeded.checkMemory(Long.MAX_VALUE);
+        }
         return F.NIL;
       }
       dims = lengths.toArray();
@@ -10274,6 +10329,11 @@ public final class ListFunctions {
     }
 
     IExpr rootHead = list.isAST() ? list.head() : S.List;
+    final long[] sizes = new long[dims.length];
+    for (int i = 0; i < dims.length; i++) {
+      sizes[i] = dims[i];
+    }
+    ASTElementLimitExceeded.checkAllocation(sizes);
 
     return padRecursive(list, dims, margins, padElements, 0, isLeftArr, rootHead);
   }

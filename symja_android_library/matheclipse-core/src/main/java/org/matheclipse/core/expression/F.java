@@ -8256,6 +8256,7 @@ public class F extends S {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
     }
+    ASTElementLimitExceeded.checkAllocation(n, m);
     IASTAppendable matrix = mapRange(0, n, i -> mapRange(0, m, j -> biFunction.apply(i, j)));
     // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
     // isMatrix() must be used!

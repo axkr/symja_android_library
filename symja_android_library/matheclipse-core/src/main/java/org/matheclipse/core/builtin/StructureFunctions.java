@@ -1111,19 +1111,29 @@ public class StructureFunctions {
      * and everything in those heads are left out.
      */
     private static long leavesWithoutHeads(IExpr expr) {
-      if (expr instanceof IPatternObject) {
-        return leavesWithoutHeads(((IPatternObject) expr).toFullFormAST());
-      }
-      if (expr.isAST()) {
-        IAST list = (IAST) expr;
-        long count = 0L;
-        for (int i = 1; i < list.size(); i++) {
-          count += leavesWithoutHeads(list.get(i));
+      long count = 0L;
+      // the last argument is followed in the loop: a chain f(f(f(...))) needs no Java frame per
+      // level
+      while (true) {
+        if (expr instanceof IPatternObject) {
+          expr = ((IPatternObject) expr).toFullFormAST();
+          continue;
         }
-        return count;
+        if (expr.isAST()) {
+          IAST list = (IAST) expr;
+          final int last = list.size() - 1;
+          if (last < 1) {
+            return count;
+          }
+          for (int i = 1; i < last; i++) {
+            count += leavesWithoutHeads(list.get(i));
+          }
+          expr = list.get(last);
+          continue;
+        }
+        // a fraction or a complex number counts its two parts and its head
+        return count + (expr.isAtom() && expr.leafCount() > 1L ? expr.leafCount() - 1L : 1L);
       }
-      // a fraction or a complex number counts its two parts and its head
-      return expr.isAtom() && expr.leafCount() > 1L ? expr.leafCount() - 1L : 1L;
     }
 
     /**
@@ -1131,18 +1141,23 @@ public class StructureFunctions {
      * <code>x_</code> is <code>Pattern(x, Blank())</code> and has 3.
      */
     private static long leafCount(IExpr expr) {
-      if (expr instanceof IPatternObject) {
-        return leafCount(((IPatternObject) expr).toFullFormAST());
-      }
-      if (expr.isAST() && !expr.isFree(x -> x instanceof IPatternObject, true)) {
-        IAST list = (IAST) expr;
-        long count = 0L;
-        for (int i = 0; i < list.size(); i++) {
-          count += leafCount(list.get(i));
+      long count = 0L;
+      while (true) {
+        if (expr instanceof IPatternObject) {
+          expr = ((IPatternObject) expr).toFullFormAST();
+          continue;
         }
-        return count;
+        if (expr.isAST()) {
+          IAST list = (IAST) expr;
+          final int last = list.size() - 1;
+          for (int i = 0; i < last; i++) {
+            count += leafCount(list.get(i));
+          }
+          expr = list.get(last);
+          continue;
+        }
+        return count + expr.leafCount();
       }
-      return expr.leafCount();
     }
 
     @Override

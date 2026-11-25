@@ -71,4 +71,24 @@ public class NumericRangeEdgesTest extends ExprEvaluatorTestCase {
     check("Integrate(1/(Log(x)+Log(x^3)),x)", //
         "LogIntegral(x)/4");
   }
+
+  @Test
+  public void testNKeepsExactExponentsOfSymbolicBases() {
+    // an integer exponent and the 1/2 of a square root stay exact; only the base and the
+    // coefficients become numbers
+    check("FullForm(N(u^3-2/7*v))", //
+        "Plus(Power(u, 3), Times(-0.2857142857142857`, v))");
+    check("FullForm(N(Sqrt(w^2+5/3)))", //
+        "Power(Plus(1.6666666666666667`, Power(w, 2)), Rational(1,2))");
+    check("FullForm(N(1/(1+t)^2+Cos(t)^-1))", //
+        "Plus(Power(Plus(1.0`, t), -2), Sec(t))");
+    // every rational exponent stays exact
+    check("FullForm(N(r^(2/5)+s^(-7/3)))", //
+        "Plus(Power(r, Rational(2,5)), Power(s, Rational(-7,3)))");
+    // a numeric base is numericized with its exponent, and so is an exponent which isn't rational
+    check("FullForm(N(q^E))", //
+        "Power(q, 2.718281828459045`)");
+    check("FullForm(N(3^k+Pi^2))", //
+        "Plus(9.869604401089358`, Power(3.0`, k))");
+  }
 }

@@ -196,17 +196,17 @@ public class ColorDataTablesTest {
   public void testDecimalCells() {
     IAST first = (IAST) ColorDataGradients.PASTEL.apply(F.C0);
     assertTrue(first.arg1().isReal() && !first.arg1().isInteger(), first.toString());
-    assertEquals(194.3, first.arg1().evalf(), 0.0);
+    assertEquals(0.761959 * 255, first.arg1().evalf(), 1.0e-12);
     assertTrue(first.arg4().isInteger(), first.toString());
   }
 
-  /** Halfway between the first two rows of the 16 rows of the table. */
+  /** Halfway between the first two rows of the 12 rows of the table. */
   @Test
   public void testInterpolation() {
-    IAST middle = (IAST) ColorDataGradients.PASTEL.apply(F.QQ(1, 30));
-    assertEquals((194.3 + 203.23) / 2, middle.arg1().evalf(), 1.0e-12);
-    assertEquals((120.06 + 141.53) / 2, middle.arg2().evalf(), 1.0e-12);
-    assertEquals((239.85 + 242.22) / 2, middle.arg3().evalf(), 1.0e-12);
+    IAST middle = (IAST) ColorDataGradients.PASTEL.apply(F.QQ(1, 22));
+    assertEquals((0.761959 + 0.809695) / 2 * 255, middle.arg1().evalf(), 1.0e-12);
+    assertEquals((0.470832 + 0.585618) / 2 * 255, middle.arg2().evalf(), 1.0e-12);
+    assertEquals((0.940597 + 0.953269) / 2 * 255, middle.arg3().evalf(), 1.0e-12);
     assertEquals(255.0, middle.arg4().evalf(), 1.0e-12);
   }
 

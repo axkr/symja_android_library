@@ -728,4 +728,127 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
         + "RegularExpression(\">[^<>]*<\")), \">2\u00D710\u2077<\")", //
         "True");
   }
+
+  @Test
+  public void testReversedRangesIn3DPlots() {
+    // a range written downwards is sampled like the one written upwards
+    check("ParametricPlot3D({Sin(s), s, Cos(s)}, {s, 2, -0.5}) === "
+        + "ParametricPlot3D({Sin(s), s, Cos(s)}, {s, -0.5, 2})", //
+        "True");
+    check("ParametricPlot3D({u, v, u*v}, {u, 1, 0}, {v, 3, 1}) === "
+        + "ParametricPlot3D({u, v, u*v}, {u, 0, 1}, {v, 1, 3})", //
+        "True");
+    check("Plot3D(x - y^2, {x, 1, -2}, {y, 2, 0}) === Plot3D(x - y^2, {x, -2, 1}, {y, 0, 2})", //
+        "True");
+  }
+
+  @Test
+  public void testSpaceCurveColorFunction() {
+    // a space curve takes the colours of its ColorFunction, point by point
+    check("Length(DeleteDuplicates(Cases(ParametricPlot3D({Sin(s), Cos(s), s/2}, {s, 0, 4}, "
+        + "ColorFunction -> \"TemperatureMap\"), _RGBColor, Infinity))) > 50", //
+        "True");
+    check("Length(DeleteDuplicates(Cases(ParametricPlot3D({Sin(s), Cos(s), s/2}, {s, 0, 4}, "
+        + "ColorFunction -> (Hue(#4)&), ColorFunctionScaling -> False), _Hue, Infinity))) > 50", //
+        "True");
+    // the number of an indexed scheme cuts the height into equal parts, one colour of the scheme
+    // each, from the lowest to the highest point
+    check("c = Cases(ParametricPlot3D({Sin(s), Cos(s), s}, {s, 0, 5}, ColorFunction -> 3), "
+        + "Line(_, VertexColors -> v_) :> v, Infinity)[[1]]; "
+        + "{Complement(c, ColorData(3, \"ColorList\")), First(c) == ColorData(3, 1), "
+        + "Last(c) == ColorData(3, 10)}", //
+        "{{},True,True}");
+    check("ParametricPlot3D({Cos(s), s, Sin(s)}, {s, 0, 3}, ColorFunction -> 74) === "
+        + "ParametricPlot3D({Cos(s), s, Sin(s)}, {s, 0, 3}, ColorFunction -> ColorData(74))", //
+        "True");
+    // a number without a scheme leaves the default colouring
+    check("Head(Plot(s, {s, 0, 1}, ColorFunction -> 777))", //
+        "Graphics");
+    // a scaled value v picks the colour nearest to position 1 + 9 v of the 10 colours, so the
+    // first and the last colour cover half a step each: 3 of the 51 samples each
+    check("v = First(Cases(Plot(s, {s, 0, 1}, ColorFunction -> 74, PlotPoints -> 51, "
+        + "MaxRecursion -> 0), (VertexColors -> c_List) :> c, Infinity)); "
+        + "{Length(v), Count(v, ColorData(74, 1)), Count(v, ColorData(74, 10))}", //
+        "{51,3,3}");
+    // unscaled values pick no colour of a scheme
+    check("Cases(Plot(0.3, {s, 0, 2}, ColorFunction -> ColorData(74), "
+        + "ColorFunctionScaling -> False), _Hue, Infinity)", //
+        "{}");
+  }
+
+  @Test
+  public void testDashingRuleInPrimitiveList() {
+    // Dashing -> d in a primitive list dashes the lines after it like Dashing(d)
+    check("StringContainsQ(ExportString(Graphics({Dashing -> {0.03, 0.01}, "
+        + "Line({{0, 1}, {2, 0}})}), \"SVG\"), \"dasharray\")", //
+        "True");
+    // a rule for AbsoluteDashing is not a directive: the line stays solid
+    check("StringContainsQ(ExportString(Graphics({AbsoluteDashing -> 3, "
+        + "Line({{0, 1}, {2, 0}})}), \"SVG\"), \"dasharray\")", //
+        "False");
+  }
+
+  @Test
+  public void testTemperatureMapGradient() {
+    // 13 evenly spaced colours, blended linearly between neighbours
+    check("Map(Norm(Take(List @@ ColorData(\"TemperatureMap\")[#[[1]]], 3) - #[[2]]) < 10^-12 &, "
+        + "{{0, {0.178927, 0.305394, 0.933501}}, {0.3, {0.748934, 0.8037922, 0.9756104}}, "
+        + "{0.5, {0.984192, 0.987731, 0.911643}}, {1, {0.817319, 0.134127, 0.164218}}})", //
+        "{True,True,True,True}");
+  }
+
+  @Test
+  public void testGradientTables() {
+    // AvocadoColors blends 5 evenly spaced colours: 1/8 is halfway between the first two
+    check("Norm(Take(List @@ ColorData(\"AvocadoColors\")[1/8], 3) - {0, 0.2214295, 0.0374628}) "
+        + "< 10^-12", //
+        "True");
+    // BrightBands places its colours at positions, with a sharp step where two share one
+    check("Map(Norm(Take(List @@ ColorData(\"BrightBands\")[#[[1]]], 3) - #[[2]]) < 10^-5 &, "
+        + "{{0.15, {0.99812, 0.592859, 0.740136}}, {0.16, {0.41734, 0.320792, 0.999983}}})", //
+        "{True,True}");
+    // exactly at a step the colour after the step
+    check("Take(List @@ ColorData(\"BrightBands\")[0.152941], 3)", //
+        "{0.400595,0.302083,1.0}");
+  }
+
+  @Test
+  public void testColorDataSwatchImage() {
+    // a strip of one square per colour of the scheme, in the colours as the scheme gives them
+    check("Head(ColorData(58, \"Image\"))", //
+        "Graphics");
+    check("Cases(ColorData(58, \"Image\"), {c_, _EdgeForm, _Rectangle} :> c, Infinity) == "
+        + "ColorData(58, \"ColorList\")", //
+        "True");
+    check("Cases(ColorData(74, \"Image\"), {c_Hue, _EdgeForm, _Rectangle} :> c, Infinity) // Length", //
+        "10");
+    check("g = ColorData(0, \"Image\"); {g[[1]], Options(g) === {ImageSize -> 250, "
+        + "ContentSelectable -> False, PlotRangePadding -> None, AspectRatio -> 1/10}}", //
+        "{{{GrayLevel(0),EdgeForm(Opacity(0.1)),Rectangle({1,0},Offset({-1,-1},{2,1}))}},True}");
+    // a gradient is sampled over its range
+    // a gradient is a raster of 101 samples over the unit square
+    check("Cases(ColorData(\"SolarColors\", \"Image\"), Raster(d_, r_) :> {Dimensions(d), r}, Infinity)", //
+        "{{{1,101,3},{{0,0},{1,1}}}}");
+    check("Options(ColorData(\"VisibleSpectrum\", \"Image\")) === {ImageSize->250, "
+        + "ContentSelectable->False, AspectRatio->1/8, PlotRange->{{0,1},{0,1}}}", //
+        "True");
+  }
+
+  @Test
+  public void testIndexedColorSchemes() {
+    check("ColorData(\"Indexed\") == Range(0, 119)", //
+        "True");
+    check("ColorData(120)", //
+        "ColorData(120)");
+    check("ColorData(21)", //
+        "ColorDataFunction(21,Indexed,{1,10,1})");
+    check("{ColorData(34, \"Range\"), ColorData(34, 1), ColorData(34, 7) == ColorData(34, 1)}", //
+        "{{1,6,1},RGBColor(0.4,0.32549,0.290196),True}");
+    check("Map(Length(ColorData(#, \"ColorList\")) &, {2, 11, 26, 42, 43})", //
+        "{9,8,8,4,9}");
+    // the colours on a circle of a lightness plane, spaced by the golden ratio, without end
+    check("{ColorData(95, \"Range\"), Length(ColorData(95, \"ColorList\")), "
+        + "Norm(List @@ ColorData(95, 3) - {0.315656, 0.739838, 0.687294}) < 10^-6}", //
+        "{{1,Infinity,1},15,True}");
+  }
 }

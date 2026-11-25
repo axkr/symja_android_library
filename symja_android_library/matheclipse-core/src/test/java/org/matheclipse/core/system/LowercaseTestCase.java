@@ -2352,6 +2352,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "3933894934399351348240918411922863059423248058823372368106375/16566");
     check("BernoulliB(42)", //
         "1520097643918070802691/1806");
+    // above the binomial cache the numerator comes from the zeta value
+    check("{Mod(Numerator(BernoulliB(1200)), 10^12), Denominator(BernoulliB(1200)), "
+        + "Negative(BernoulliB(1200))}", //
+        "{734309812143,42107247672297314156359710,True}");
+    check("{Mod(Numerator(BernoulliB(1002)), 10^12), Denominator(BernoulliB(1002)), "
+        + "Negative(BernoulliB(1002))}", //
+        "{884986969097,42,False}");
+    check("Mod(Numerator(BernoulliB(254)), 10^12) + Denominator(BernoulliB(252))", //
+        "707042277437");
     check("Table(BernoulliB(k), {k, 0, 20})", //
         "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66,0,-691/2730,0,7/6,0,-3617/510,0,43867/\n"
             + "798,0,-174611/330}");
@@ -3396,6 +3405,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testCoefficient() {
+    // the coefficient of a power of the variable
+    check("Coefficient(y*x^3 + 4*x^6 - x^9, x^3)", //
+        "y");
+    check("Coefficient(y*x^3 + 4*x^6 - x^9, x^3, 2)", //
+        "4");
+    check("Coefficient(b*x^4 + x^5, x^4)", //
+        "b");
+    check("Coefficient(u*x^4 + 9*x^2 + 2, x^4, 0)", //
+        "2");
+    check("Coefficient(x^5 + 3*x^2, x^2, 5/2)", //
+        "1");
+    check("Coefficient(w*x^3 + x, x^(-3), -1)", //
+        "w");
+    check("Coefficient(Expand(Product(1-x^k,{k,1,30})), x^#)& /@ {15, 22, 23}", //
+        "{-1,1,0}");
     check("Coefficient(x+y+z, x+y)", //
         "1");
 
@@ -24185,6 +24209,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{2,3},{3,2},{5,1}},FactorInteger(360,0),FactorInteger(x,2)}");
     check("{FactorInteger(360, 10^20), FactorInteger(-360, 10^20)}", //
         "{{{2,3},{3,2},{5,1}},{{-5,1},{2,3},{3,2}}}");
+    // a small prime factor is split off without factoring the hard rest
+    check("n = NextPrime(10^12)*NextPrime(10^50)*NextPrime(10^51); "
+        + "f = TimeConstrained(FactorInteger(n, 2), 5); "
+        + "{f[[1]], Length(f), Times @@ (#[[1]]^#[[2]]& /@ f) == n}", //
+        "{{1000000000039,1},2,True}");
+    check("n = 7*NextPrime(10^9)*NextPrime(10^50)*NextPrime(10^51); "
+        + "f = TimeConstrained(FactorInteger(n, 3), 5); "
+        + "{Most(f), Length(f), Times @@ (#[[1]]^#[[2]]& /@ f) == n}", //
+        "{{{7,1},{1000000007,1}},3,True}");
+    check("FactorInteger(65537^2*65539*1000003, 2)", //
+        "{{65537,2},{65539196617,1}}");
+    check("FactorInteger(65537^2*65539*1000003, 3)", //
+        "{{65537,2},{65539,1},{1000003,1}}");
+    // a rest which is a prime power keeps its prime and exponent
+    check("FactorInteger(65537^2*65539^3, 2)", //
+        "{{65537,2},{65539,3}}");
+    check("FactorInteger((65537*65539)^2, 2)", //
+        "{{65537,2},{65539,2}}");
+    check("FactorInteger(65539^3*1000003^2*1000033, 3)", //
+        "{{65539,3},{1000003,2},{1000033,1}}");
+    check("FactorInteger(1/(65537^2*65539^3), 2)", //
+        "{{65537,-2},{65539,-3}}");
     // the cofactor of two 41-digit primes is not factored when there is no room to split it
     check("FactorInteger(6*NextPrime(10^40)*NextPrime(10^41), 3)", //
         "{{2,1},{3,1},{1000000000000000000000000000000000000013190000000000000000000000000000000000013\\\n"
@@ -27339,6 +27385,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testLambertW() {
     check("LambertW(x)", //
         "ProductLog(x)");
+    // the branch k as first argument
+    check("LambertW(-1, z)", //
+        "ProductLog(-1,z)");
+    check("LambertW(-1, -1/E)", //
+        "-1");
+    check("N(LambertW(-1, -1/5))", //
+        "-2.54264");
+    check("LambertW(2, 3, 4)", //
+        "LambertW(2,3,4)");
   }
 
 
@@ -32301,6 +32356,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.14159265358979323846264338328");
   }
 
+  @Test
+  public void testOutAfterSemicolon() {
+    // a trailing ; hides the value, but % and Out still refer to it
+    check("Table(k^3, {k, 3});", //
+        "");
+    check("Reverse(%)", //
+        "{27,8,1}");
+    check("Total(%%)", //
+        "36");
+    check("w1 = 11; w2 = 13;", //
+        "");
+    check("% * 2", //
+        "26");
+    check("Out(-2)", //
+        "13");
+    // a held argument rewritten before the evaluation of the input
+    check("Evaluate(Range(2, 6, 2));", //
+        "");
+    check("% + 1", //
+        "{3,5,7}");
+    // only the input itself: an inner CompoundExpression ending with ; still gives Null
+    check("g(m_) := (m + 1;); g(6)", //
+        "");
+    check("{%}", //
+        "{Null}");
+    check("g(7)", //
+        "");
+    check("{%}", //
+        "{Null}");
+  }
+
 
   @Test
   public void testUnderflow() {
@@ -35302,6 +35388,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrime() {
+    // consecutive indices read the primes from one sieved table
+    check("Total(Prime(Range(15000)))", //
+        "1166716881");
+    check("Prime(Range(3510, 3515))", //
+        "{32717,32719,32749,32771,32779,32783}");
+    check("{Prime(999999), Prime(10^6), Prime(10^6+1)}", //
+        "{15485857,15485863,15485867}");
     check("Prime(171)", //
         "1019");
     check("Prime(172)", //
@@ -43636,6 +43729,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTuples() {
+    // the depth of the evaluation doesn't grow with the number of tuples
+    check("Length(Tuples(Table({c,d}, 11)))", //
+        "2048");
+    check("Count(Tuples(Table({0,1}, 10)), _?(OrderedQ(#, LessEqual)&))", //
+        "11");
+    check("Tuples({{u,v},{1,2,3}})", //
+        "{{u,1},{u,2},{u,3},{v,1},{v,2},{v,3}}");
+    check("Tuples({{u},{}})", //
+        "{}");
+    check("Tuples({})", //
+        "{{}}");
+    check("Tuples({0,1}, 15)", //
+        "Tuples({0,1},15)");
     // the tuples of length 2*2 arranged as 2x2 arrays
     check("Tuples({0, 1}, {2, 2}) // Length", //
         "16");

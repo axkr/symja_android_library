@@ -3054,11 +3054,17 @@ public class ExpTrigsFunctions {
     }
   }
 
-  private static final class LambertW extends AbstractArg1 {
+  private static final class LambertW extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr e1ObjArg(final IExpr o) {
-      return F.ProductLog(o);
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // LambertW(z) and LambertW(k, z) for the branch k
+      return ast.isAST1() ? F.ProductLog(ast.arg1()) : F.ProductLog(ast.arg1(), ast.arg2());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

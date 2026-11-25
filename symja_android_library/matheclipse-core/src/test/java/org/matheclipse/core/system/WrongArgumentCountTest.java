@@ -180,7 +180,7 @@ public class WrongArgumentCountTest extends ExprEvaluatorTestCase {
     assertEquals("t |", evalWithMessages("_ /. Verbatim(_)->t"));
     assertEquals("{1,cnd(-1)} |", evalWithMessages("cnd(x_) := x /; x > 0; {cnd(1), cnd(-1)}"));
     // an assignment to a protected head is refused and defines nothing
-    assertEquals("1 | Set: Symbol HoldPattern is Protected.",
+    assertEquals("1 | Set: Tag HoldPattern in HoldPattern() is Protected.",
         evalWithMessages("HoldPattern() = 1"));
     assertEquals("{} |", evalWithMessages("DownValues(HoldPattern)"));
   }
