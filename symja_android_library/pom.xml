@@ -97,6 +97,19 @@
 	</distributionManagement>
 
 	<repositories>
+		<!-- Maven Central first: the repositories are queried in this order, and Central would
+		otherwise come after all of them. Only what Central doesn't have, such as the Hipparchus
+		release candidate below, is looked up in the Orekit repositories. -->
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>orekit</id>
 			<url>https://packages.orekit.org/repository/maven-snapshots/</url>
@@ -109,7 +122,9 @@
 		</repository>
 		<repository>
 			<!-- Hipparchus release candidates are staged here under the final
-			version number before they reach Maven Central. -->
+			version number before they reach Maven Central. Builds which depend on
+			Symja need this repository too until Hipparchus 5.0 is on Central (see
+			readme.md, Maven Usage). -->
 			<id>orekit-releases</id>
 			<url>https://packages.orekit.org/repository/maven-releases/</url>
 			<releases>

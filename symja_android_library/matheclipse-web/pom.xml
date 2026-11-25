@@ -333,9 +333,11 @@
 					(absolute paths) into target/proguard/jars.pro. Declared after notebook-classpath,
 					so it runs after it in the package phase. -Dnotebook.shrink.skip=true skips it.
 
-					ProGuard reads the JDK's jmods as library classes, so Maven has to run on a JDK
-					that ships them (JEP 493 builds such as Temurin 25 do not; Homebrew's openjdk
-					and GraalVM do). -->
+					ProGuard reads the JDK's classes as library classes: from the jmods of a JDK that
+					ships them (Homebrew's openjdk), otherwise from a jar which
+					src/main/proguard/JrtLibraryJar.java exports from the runtime image through the
+					jrt: file system, once per Java version into target/proguard (a JRE such as
+					Eclipse's JustJ, a JEP 493 JDK such as Temurin 25 or GraalVM 25). -->
 					<execution>
 						<id>notebook-proguard</id>
 						<phase>package</phase>
@@ -344,16 +346,24 @@
 						</goals>
 						<configuration>
 							<skip>${notebook.shrink.skip}</skip>
-							<target>
+							<target xmlns:if="ant:if" xmlns:unless="ant:unless">
 								<property name="pg.dir" location="${project.build.directory}/proguard" />
 								<property name="pg.out" location="${notebook.jars.min.dir}" />
-								<fail message="ProGuard needs the JDK's jmods, but ${java.home}/jmods/java.base.jmod does not exist. Run Maven on a JDK that ships jmods, or skip the shrinking with -Dnotebook.shrink.skip=true.">
-									<condition>
+								<available property="pg.jmods" file="${java.home}/jmods/java.base.jmod" />
+								<property name="pg.jdk.jar" location="${pg.dir}/jdk-${java.version}.jar" />
+								<condition property="pg.export.jdk">
+									<and>
 										<not>
-											<available file="${java.home}/jmods/java.base.jmod" />
+											<isset property="pg.jmods" />
 										</not>
-									</condition>
-								</fail>
+										<not>
+											<available file="${pg.jdk.jar}" />
+										</not>
+									</and>
+								</condition>
+								<java if:set="pg.export.jdk" sourcefile="${project.basedir}/src/main/proguard/JrtLibraryJar.java" fork="true" failonerror="true">
+									<arg file="${pg.jdk.jar}" />
+								</java>
 								<delete dir="${pg.out}" quiet="true" />
 								<mkdir dir="${pg.out}" />
 								<mkdir dir="${pg.dir}" />
@@ -364,10 +374,11 @@
 								<pathconvert refid="pgJars" property="pgJarPairs" pathsep="${line.separator}">
 									<regexpmapper from="^(.*[/\\])([^/\\]+\.jar)$" to="-injars \1\2(!META-INF/versions/**,!module-info.class,!META-INF/*.SF,!META-INF/*.DSA,!META-INF/*.RSA)${line.separator}-outjars ${pg.out}/\2" handledirsep="true" />
 								</pathconvert>
-								<fileset id="pgJmods" dir="${java.home}/jmods" includes="java.*.jmod,jdk.*.jmod" />
-								<pathconvert refid="pgJmods" property="pgLibs" pathsep="${line.separator}">
+								<fileset if:set="pg.jmods" id="pgJmods" dir="${java.home}/jmods" includes="java.*.jmod,jdk.*.jmod" />
+								<pathconvert if:set="pg.jmods" refid="pgJmods" property="pgLibs" pathsep="${line.separator}">
 									<regexpmapper from="^(.*)$" to="-libraryjars \1(!**.jar;!module-info.class)" />
 								</pathconvert>
+								<property unless:set="pg.jmods" name="pgLibs" value="-libraryjars ${pg.jdk.jar}" />
 								<echo file="${pg.dir}/jars.pro" message="${pgJarPairs}${line.separator}${pgLibs}${line.separator}-printmapping ${pg.dir}/mapping.txt${line.separator}-printusage ${pg.dir}/usage.txt${line.separator}-printseeds ${pg.dir}/seeds.txt${line.separator}" />
 								<java classname="proguard.ProGuard" classpathref="maven.plugin.classpath" fork="true" failonerror="true" maxmemory="3g" output="${pg.dir}/proguard.log" logError="true">
 									<arg value="-include" />
