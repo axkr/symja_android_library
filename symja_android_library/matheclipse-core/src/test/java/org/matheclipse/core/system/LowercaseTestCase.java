@@ -10466,7 +10466,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "Method->\"SequentialQuadratic\"))) < 10^-7", //
         "True");
 
-    // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' ...
+    // message: Constraints in {x!=0} are not all equality or inequality constraints ...
     check("FindMinimum({x+y, x^2+y^2<=1, x!=0}, {{x,0.5},{y,0.5}})", //
         "FindMinimum({x+y,x^2+y^2<=1,x!=0},{{x,0.5},{y,0.5}})");
     // z is no variable of the search

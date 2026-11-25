@@ -256,8 +256,6 @@ public class Errors {
       "eqin", "`1` should be an equation or inequality.", //
       "eqineq",
       "Constraints in `1` are not all equality or inequality constraints. Constraints with Unequal(!=) are not supported.", //
-      "eqgele",
-      "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
       "eqn", "`1` is not an equation.", //
       "error", "`1`", // without terminating '.'
       "estmd", "Unable to estimate a reference distribution from the data.", //
@@ -490,6 +488,7 @@ public class Errors {
       "nmint", "`1` is not a machine-sized integer.", //
       "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
+      "njnum", "The Jacobian is not a matrix of numbers at `1` = `2`.", //
       "nnintprm",
       "Parameter `1` at position `2` in `3` is expected to be a non-negative integer.", //
       "nnum", "The function value `1` is not a number at `2` = `3`.", //

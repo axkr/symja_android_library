@@ -231,6 +231,130 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFindMinimumDomainConstraints() {
+    // a region is the inequalities of RegionMember
+    check("FindMinimum({x - y, Element({x, y}, Disk({1, 1}, 2))}, {x, y})", //
+        "{-2.82843,{x->-0.414214,y->2.41421}}");
+    check("FindMaximum(x*y, Element({x, y}, Rectangle({-1, -2}, {3, 4})))", //
+        "{12.0,{x->3.0,y->4.0}}");
+    // a variable with a value is no start value of the region specification
+    check("b = 5; FindMinimum(a^2 + b^2, Element({a, b}, Disk({2, 2}, 1)))[[1]]", //
+        "3.34315");
+    check("FindMinimum({(x - 4)^2 + y^2, " //
+        + "Element({x, y}, Triangle({{0, 0}, {2, 0}, {0, 3}}))}, {x, y})", //
+        "{4.0,{x->2.0,y->0.0}}");
+    // a vector inequality compares the components; a scalar side every component
+    check("FindMaximum({2*x + y, VectorLessEqual({{x, y}, {5, 7}})}, {x, y})", //
+        "{17.0,{x->5.0,y->7.0}}");
+    check("FindMinimum({x^2 + y^2 + z^2, VectorGreater({{x, y, z}, 2})}, {x, y, z})", //
+        "{12.0,{x->2.0,y->2.0,z->2.0}}");
+    // the cone of the componentwise order; another cone is no list of inequalities
+    check("FindMinimum({x + y, " //
+        + "VectorGreaterEqual({{x, y}, {4, -1}}, \"NonNegativeCone\")}, {x, y})", //
+        "{3.0,{x->4.0,y->-1.0}}");
+    check("Check(FindMinimum({x + y, VectorGreaterEqual({x, 1}, \"NormCone\")}, {x, y}), " //
+        + "eqineq, FindMinimum::eqineq)", //
+        "eqineq");
+    // Interval and IntervalData of a single variable, also as the search specification
+    check("FindMinimum(Exp(x) - 3*x, Element(x, Interval({2, 5})))", //
+        "{1.38906,{x->2.0}}");
+    check("FindMaximum({Sin(x), Element(x, IntervalData({0, Less, LessEqual, 1}))}, {x, 1/2})", //
+        "{0.841471,{x->1.0}}");
+    check("FindMinimum({(x + 2)^2, " //
+        + "Element(x, IntervalData({-1, LessEqual, Less, Infinity}))}, {x, 3})", //
+        "{1.0,{x->-1.0}}");
+    // Element(..., Reals) is no restriction
+    check("FindMinimum({(x - 1)^2 + (y - 2)^2, Element(x | y, Reals) && x == y}, {x, y})", //
+        "{0.5,{x->1.5,y->1.5}}");
+  }
+
+  @Test
+  public void testFindMinimumConstraintMessages() {
+    // FindMinimum::eqineq names the constraint which is no relation:
+    // Constraints in {x!=y} are not all equality or inequality constraints. ...
+    check("FindMinimum({x^2 + y^2, x + y >= 1 && x != y}, {x, y})", //
+        "FindMinimum({x^2+y^2,x+y>=1&&x!=y},{x,y})");
+    check("Check(FindMinimum({x^2 + y^2, x + y >= 1 && x != y}, {x, y}), " //
+        + "eqineq, FindMinimum::eqineq)", //
+        "eqineq");
+    // relations which are no real numbers at the start point are FindMinimum::nrnum, not eqineq:
+    // a symbol which is no variable of the search - The Function value {0.75-w^2} ...
+    check("Check(FindMinimum({x + y, x^2 + w^2 <= 1}, {{x, 1/2}, {y, 1/2}}), " //
+        + "nrnum, FindMinimum::nrnum)", //
+        "nrnum");
+    check("Check(FindMinimum({x + y, x^2 + w^2 <= 1}, {{x, 1/2}, {y, 1/2}}), " //
+        + "eqineq, FindMinimum::eqineq)", //
+        "FindMinimum({x+y,x^2+w^2<=1},{{x,1/2},{y,1/2}})");
+    // the default start {2., 2.} is outside the real domain of Sqrt
+    check("Check(FindMinimum(x - y, " //
+        + "Element({x, y}, ImplicitRegion(Sqrt(4 - x^2 - y^2) >= 1, {x, y}))), " //
+        + "nrnum, FindMinimum::nrnum)", //
+        "nrnum");
+    check("Check(FindMinimum({x + y, Log(x) >= -1 && y >= 0}, {{x, -2}, {y, 1}}), " //
+        + "nrnum, FindMinimum::nrnum)", //
+        "nrnum");
+  }
+
+  @Test
+  public void testFindMinimumInequalityChains() {
+    // a chain of different relations is Inequality(a, LessEqual, y, Less, b)
+    check("FindMaximum({x + 3*y, -1 <= x <= 2 && 0 <= y < 1}, {x, y})", //
+        "{5.0,{x->2.0,y->1.0}}");
+    check("FindMinimum({(x - 3)^2 + y^2, 0 < x <= 2 && -1 <= y < 1}, {x, y})", //
+        "{1.0,{x->2.0,y->0.0}}");
+    check("FindMinimum({(x - 1)^2 + (y - 2)^2, 0 <= x < y <= 1}, {x, y})", //
+        "{1.0,{x->1.0,y->1.0}}");
+    check("FindMaximum({Sin(x), 0 < x <= 1}, {x, 1/2})", //
+        "{0.841471,{x->1.0}}");
+    check("FindMinimum({x^2 + y^2, x + y == 1 < 2*y}, {x, y})", //
+        "{0.5,{x->0.5,y->0.5}}");
+    // the WorkingPrecision refinement and NMinimize read the chain too:
+    // {x, y} = {8, 2}/Sqrt(17), the value 21 - 4*Sqrt(17)
+    check("FindMinimum({(x - 4)^2 + (y - 1)^2, 1 < x^2 + y^2 <= 4}, {x, y}, " //
+        + "WorkingPrecision -> 20)", //
+        "{4.5075774975293578007,{x->1.9402850002906637882,y->0.48507125007266594704}}");
+    check("NMinimize({(x - 4)^2 + (y - 1)^2, 1 <= x^2 + y^2 <= 4}, {x, y})", //
+        "{4.50758,{x->1.94029,y->0.485071}}");
+  }
+
+  @Test
+  public void testStrictConstraintRefinedOnItsBoundary() {
+    // a strict inequality is read as the non-strict one, also by the WorkingPrecision refinement:
+    // {x, y} = {8, 2}/Sqrt(17), the value 21 - 4*Sqrt(17)
+    check("FindMinimum({(x - 4)^2 + (y - 1)^2, x^2 + y^2 < 4}, {x, y}, WorkingPrecision -> 20)", //
+        "{4.5075774975293578007,{x->1.9402850002906637882,y->0.48507125007266594704}}");
+    // {x, y} = -{1, 2}*Sqrt(3/5), the value -Sqrt(15)
+    check("NMinimize({x + 2*y, x^2 + y^2 < 3}, {x, y}, WorkingPrecision -> 20)", //
+        "{-3.8729833462074168852,{x->-0.77459666924148337704,y->-1.5491933384829667541}}");
+  }
+
+  @Test
+  public void testRegionConstraintsRefinedAndGlobal() {
+    // WorkingPrecision refines the machine point on the boundary of the region:
+    // {x, y} = {8, 2}/Sqrt(17), the value 21 - 4*Sqrt(17)
+    check("FindMinimum((x - 4)^2 + (y - 1)^2, Element({x, y}, Disk({0, 0}, 2)), " //
+        + "WorkingPrecision -> 25)", //
+        "{4.507577497529357800714361,{x->1.940285000290663788151252,"
+            + "y->0.4850712500726659470378129}}");
+    // x = y = z = Sqrt(3), the value 3*Sqrt(3)
+    check("FindMaximum({x + y + z, Element({x, y, z}, Ball({0, 0, 0}, 3))}, {x, y, z}, " //
+        + "WorkingPrecision -> 20)", //
+        "{5.1961524227066318806,{x->1.7320508075688772935,y->1.7320508075688772935,"
+            + "z->1.7320508075688772935}}");
+    // NMinimize and NMaximize hand the region to the local search:
+    // {x, y} = {1 - 3/Sqrt(5), 6/Sqrt(5)}, the value 1 - 3*Sqrt(5)
+    check("NMinimize({x - 2*y, Element({x, y}, Disk({1, 0}, 3))}, {x, y})", //
+        "{-5.7082,{x->-0.341641,y->2.68328}}");
+    check("NMinimize({x - 2*y, Element({x, y}, Disk({1, 0}, 3))}, {x, y}, " //
+        + "WorkingPrecision -> 20)", //
+        "{-5.7082039324993690892,{x->-0.34164078649987381785,y->2.6832815729997476357}}");
+    check("NMaximize({x*y*z, Element({x, y, z}, Cuboid({0, 0, 0}, {1, 2, 3}))}, {x, y, z})", //
+        "{6.0,{x->1.0,y->2.0,z->3.0}}");
+    check("FindArgMin((x + 1)^2 + y^2, Element({x, y}, Rectangle({0, -1}, {2, 1})))", //
+        "{0.0,0.0}");
+  }
+
+  @Test
   public void testNMinimizeAlternatives() {
     // {4., {x -> -2.}} - the first of two equal optima
     check("NMinimize({x^2, x <= -2 || x >= 2}, x)", //

@@ -127,7 +127,22 @@ import org.matheclipse.core.numerics.optim.LocalConstrainedMinimizer;
  * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
  * <code>x^2+y^2&lt;3</code> need the &quot;SequentialQuadratic&quot; method and must be
  * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
- * <code>&lt;=</code> and <code>&gt;=</code>.
+ * <code>&lt;=</code> and <code>&gt;=</code>. A constraint can also be
+ * <code>Element({x,y,...}, region)</code> (the inequalities of <code>RegionMember</code>),
+ * <code>Element(x, Interval({a,b}))</code>,
+ * <code>Element(x, IntervalData({a,Less,LessEqual,b}))</code>,
+ * <code>Element(x, Reals)</code> or a vector inequality like
+ * <code>VectorGreaterEqual({{x,y},{a,b}})</code>.
+ * </p>
+ *
+ * <pre>
+ * <code>FindMinimum(f, Element({x, y, ...}, region))
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * is the search for a local minimum in the <code>region</code>, the same as
+ * <code>FindMinimum({f, Element({x, y, ...}, region)}, {x, y, ...})</code>.
  * </p>
  * <p>
  * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen
@@ -236,6 +251,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    ast = domainSpecification(ast);
     try {
       IExpr result = findExtremum(ast, goalType(), engine, options);
       int precision =
@@ -289,6 +305,32 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The search specification <code>Element({x, y, ...}, domain)</code> as the variables
+   * <code>{x, y, ...}</code> with the constraint <code>Element({x, y, ...}, domain)</code>:
+   * <code>FindMinimum(f, Element({x,y}, Disk()))</code> is
+   * <code>FindMinimum({f, Element({x,y}, Disk())}, {x,y})</code>.
+   *
+   * @return <code>ast</code> itself if its second argument has not this form
+   */
+  private static IAST domainSpecification(IAST ast) {
+    if (ast.argSize() < 2 || !ast.arg2().isAST(S.Element, 3)) {
+      return ast;
+    }
+    IAST element = (IAST) ast.arg2();
+    if (!isVariables(element.first()) || element.first().isAlternatives()) {
+      return ast;
+    }
+    IExpr problem = ast.arg1().isList() ? ((IAST) ast.arg1()).appendClone(element)
+        : F.list(ast.arg1(), element);
+    // one specification {x} per variable: a plain list {x, y} would be read as {x, xstart} if y
+    // has a numeric value
+    IExpr variables = element.first().isList()
+        ? ((IAST) element.first()).mapThread(x -> F.list(x))
+        : element.first();
+    return ast.setAtCopy(1, problem).setAtCopy(2, variables);
+  }
+
+  /**
    * A machine extremum <code>rules</code> of <code>function</code> under <code>constraints</code>
    * refined to <code>precision</code> digits: Newton's method on the Lagrange conditions
    * <code>grad(f) + Sum(lambda_i*grad(g_i)) == 0</code>, <code>g_i == 0</code> of the equations
@@ -307,7 +349,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     IAST variables = F.mapRange(1, n + 1, i -> rules.get(i).first());
     java.util.List<IExpr> relations = new java.util.ArrayList<IExpr>();
     for (IExpr constraint : constraints) {
-      if (!collectRelations(engine.evaluate(constraint), relations)) {
+      if (!collectRelations(engine.evaluate(constraint), relations, engine)) {
         return F.NIL;
       }
     }
@@ -331,10 +373,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       boolean isEquation = relation.isEqual();
       if (isEquation || Math.abs(value) <= 1.0e-7 * (1.0 + scale)) {
-        if (relation.isAST(S.Less) || relation.isAST(S.Greater)) {
-          // a strict inequality: the extremum is no point of its boundary
-          return F.NIL;
-        }
+        // a strict inequality is read as the non-strict one, like the machine search does, so its
+        // boundary is where the extremum is refined
         active.append(g);
         inequality.add(!isEquation);
       }
@@ -406,13 +446,18 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
    *
    * @return <code>false</code> if a part isn't a relation of two sides
    */
-  private static boolean collectRelations(IExpr constraint, java.util.List<IExpr> relations) {
+  private static boolean collectRelations(IExpr constraint, java.util.List<IExpr> relations,
+      EvalEngine engine) {
     if (constraint.isTrue()) {
       return true;
     }
+    IExpr expanded = expandConstraint(constraint, engine);
+    if (expanded != constraint) {
+      return collectRelations(expanded, relations, engine);
+    }
     if (constraint.isAnd() || constraint.isList()) {
       for (IExpr part : (IAST) constraint) {
-        if (!collectRelations(part, relations)) {
+        if (!collectRelations(part, relations, engine)) {
           return false;
         }
       }
@@ -588,7 +633,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     IASTAppendable constraints = F.ast(S.And, relationList.argSize());
     for (int i = 2; i < relationList.size(); i++) {
       // the constraints are held: Thread(vars >= 0) is a list of constraints
-      appendConstraints(engine.evaluate(relationList.get(i)), constraints);
+      appendConstraints(engine.evaluate(relationList.get(i)), constraints, engine);
     }
     if (automaticMethod && !specBounds && constraints.argSize() > 0) {
       // a linear objective with linear constraints is a linear program
@@ -648,9 +693,13 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         && !createLinearConstraints(constraints, varsList, engine, optimizationData)
         && !createNonlinearConstraints(constraints, varsList, initialValues, engine,
             optimizationData)) {
-      // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
-      // constraints. Constraints with Unequal(!=) are not supported.
-      return Errors.printMessage(head, "eqgele", F.List(constraints), engine);
+      IAST unreadable = constraints.filter(F.ListAlloc(), c -> !isRelations(c));
+      if (unreadable.argSize() > 0) {
+        // Constraints in `1` are not all equality or inequality constraints. Constraints with
+        // Unequal(!=) are not supported.
+        return Errors.printMessage(head, "eqineq", F.List(unreadable), engine);
+      }
+      return nonNumericConstraints(head, constraints, varsList, initialValues, engine);
     }
 
     if (simpleBounds != null) {
@@ -1008,15 +1057,210 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     return F.list(F.num(maximize ? -result.value : result.value), ruleList);
   }
 
-  /** Append the conditions of a conjunction or a list of constraints. */
-  private static void appendConstraints(IExpr relation, IASTAppendable constraints) {
+  /**
+   * Append the conditions of a conjunction or a list of constraints, with the constraints which
+   * {@link #expandConstraint(IExpr, EvalEngine)} rewrites as relations replaced by these relations.
+   */
+  private static void appendConstraints(IExpr relation, IASTAppendable constraints,
+      EvalEngine engine) {
     if (relation.isAnd() || relation.isList()) {
       for (IExpr arg : (IAST) relation) {
-        appendConstraints(arg, constraints);
+        appendConstraints(arg, constraints, engine);
       }
     } else if (!relation.isTrue()) {
-      constraints.append(relation);
+      IExpr expanded = expandConstraint(relation, engine);
+      if (expanded != relation) {
+        appendConstraints(expanded, constraints, engine);
+      } else {
+        constraints.append(relation);
+      }
     }
+  }
+
+  /**
+   * The message for relations which the constrained search can't take at the start point: the
+   * values <code>g(x0)</code> of the constraints <code>g(x) &gt;= 0</code>,
+   * <code>h(x) == 0</code> if one of them is no real number (a symbol which is no variable of the
+   * search, a point outside the real domain of a function), otherwise the Jacobian matrix of the
+   * constraints.
+   *
+   * @return {@link F#NIL}
+   */
+  private static IExpr nonNumericConstraints(ISymbol head, IAST constraints, IAST varsList,
+      double[] initialValues, EvalEngine engine) {
+    IAST startPoint = F.mapRange(1, varsList.size(), i -> F.num(initialValues[i - 1]));
+    IAST startRules = F.mapRange(1, varsList.size(),
+        i -> F.Rule(varsList.get(i), F.num(initialValues[i - 1])));
+    IASTAppendable values = F.ListAlloc(constraints.argSize());
+    boolean real = true;
+    for (IExpr constraint : constraints) {
+      IAST relation = (IAST) constraint;
+      final boolean less = relation.isAST(S.Less) || relation.isAST(S.LessEqual);
+      for (int j = 1; j < relation.argSize(); j++) {
+        IExpr difference = less ? F.Subtract(relation.get(j + 1), relation.get(j))
+            : F.Subtract(relation.get(j), relation.get(j + 1));
+        IExpr value = engine.evalN(F.subst(difference, startRules));
+        real &= value.isReal();
+        values.append(value);
+      }
+    }
+    if (!real) {
+      // The Function value `1` is not a real number at `2`=`3`.
+      return Errors.printMessage(head, "nrnum", F.List(values, varsList, startPoint), engine);
+    }
+    // The Jacobian is not a matrix of numbers at `1` = `2`.
+    return Errors.printMessage(head, "njnum", F.List(varsList, startPoint), engine);
+  }
+
+  /**
+   * A constraint which is no relation, rewritten as relations:
+   * <ul>
+   * <li>a chain of different relations <code>Inequality(a, LessEqual, x, Less, b)</code>, the form
+   * of <code>a &lt;= x &lt; b</code>, is <code>a &lt;= x &amp;&amp; x &lt; b</code>,</li>
+   * <li><code>Element(x, Reals)</code> (also for a list or alternatives of variables) is
+   * <code>True</code>,</li>
+   * <li><code>Element(x, Interval({a, b}))</code> is <code>a &lt;= x &lt;= b</code>, and
+   * <code>Element(x, IntervalData({a, Less, LessEqual, b}))</code> is
+   * <code>a &lt; x &lt;= b</code> with the ends of the interval,</li>
+   * <li><code>Element({x, y, ...}, region)</code> is the condition
+   * <code>RegionMember(region, {x, y, ...})</code> if that is a conjunction of relations,</li>
+   * <li>the vector inequalities <code>VectorGreaterEqual({u, v})</code>,
+   * <code>VectorGreater({u, v})</code>, <code>VectorLessEqual({u, v})</code> and
+   * <code>VectorLess({u, v})</code>, also with the cone <code>"NonNegativeCone"</code> or
+   * <code>Automatic</code> as second argument, are the inequalities of the components; a scalar
+   * side is compared with every component of the other side.</li>
+   * </ul>
+   *
+   * @return <code>constraint</code> itself (the same reference) if it has none of these forms
+   */
+  private static IExpr expandConstraint(IExpr constraint, EvalEngine engine) {
+    if (constraint.isAST(S.Inequality) && constraint.argSize() >= 3
+        && constraint.argSize() % 2 == 1) {
+      // Inequality(a, op1, b, op2, c, ...) is op1(a, b) && op2(b, c) && ...
+      IASTAppendable and = F.ast(S.And, constraint.argSize() / 2);
+      for (int i = 2; i < constraint.argSize(); i += 2) {
+        IExpr operator = constraint.get(i);
+        if (operator != S.Equal && operator != S.Less && operator != S.LessEqual
+            && operator != S.Greater && operator != S.GreaterEqual) {
+          return constraint;
+        }
+        and.append(F.binaryAST2(operator, constraint.get(i - 1), constraint.get(i + 1)));
+      }
+      return conjunction(and);
+    }
+    if (constraint.isAST(S.Element, 3)) {
+      IExpr variables = constraint.first();
+      IExpr domain = constraint.second();
+      if (domain == S.Reals && isVariables(variables)) {
+        return S.True;
+      }
+      if (domain.isAST(S.Interval, 2) && domain.first().isList2() && variables.isVariable()) {
+        IExpr lower = domain.first().first();
+        IExpr upper = domain.first().second();
+        IASTAppendable and = F.ast(S.And, 2);
+        if (!lower.isNegativeInfinity()) {
+          and.append(F.LessEqual(lower, variables));
+        }
+        if (!upper.isInfinity()) {
+          and.append(F.LessEqual(variables, upper));
+        }
+        return conjunction(and);
+      }
+      if (domain.isAST(S.IntervalData, 2) && domain.first().isList()
+          && domain.first().argSize() == 4
+          && variables.isVariable()) {
+        // IntervalData({a, Less|LessEqual, Less|LessEqual, b}): a single piece, open or closed ends
+        IAST piece = (IAST) domain.first();
+        IExpr lowerEnd = piece.arg2();
+        IExpr upperEnd = piece.arg3();
+        if ((lowerEnd == S.Less || lowerEnd == S.LessEqual)
+            && (upperEnd == S.Less || upperEnd == S.LessEqual)) {
+          IASTAppendable and = F.ast(S.And, 2);
+          if (!piece.arg1().isNegativeInfinity()) {
+            and.append(F.binaryAST2(lowerEnd, piece.arg1(), variables));
+          }
+          if (!piece.arg4().isInfinity()) {
+            and.append(F.binaryAST2(upperEnd, variables, piece.arg4()));
+          }
+          return conjunction(and);
+        }
+      }
+      if (variables.isList() && variables.argSize() > 0
+          && ((IAST) variables).forAll(x -> x.isVariable())
+          && domain.isAST() && !domain.isList()) {
+        IExpr member = engine.evaluate(F.RegionMember(domain, variables));
+        if (member.isTrue() || isRelations(member)) {
+          return member;
+        }
+      }
+      return constraint;
+    }
+    IBuiltInSymbol relation = null;
+    if (constraint.isAST(S.VectorGreaterEqual)) {
+      relation = S.GreaterEqual;
+    } else if (constraint.isAST(S.VectorGreater)) {
+      relation = S.Greater;
+    } else if (constraint.isAST(S.VectorLessEqual)) {
+      relation = S.LessEqual;
+    } else if (constraint.isAST(S.VectorLess)) {
+      relation = S.Less;
+    }
+    if (relation != null) {
+      IExpr u;
+      IExpr v;
+      // VectorGreaterEqual({u, v}) or VectorGreaterEqual({u, v}, cone): only the componentwise
+      // order of the non-negative orthant is a list of inequalities
+      if (!constraint.first().isList2() || (constraint.argSize() != 1
+          && !(constraint.argSize() == 2 && (constraint.second().isString("NonNegativeCone")
+              || constraint.second() == S.Automatic)))) {
+        return constraint;
+      }
+      u = constraint.first().first();
+      v = constraint.first().second();
+      if (u.isList() && v.isList() && u.argSize() != v.argSize()) {
+        return constraint;
+      }
+      if (!u.isList() && !v.isList()) {
+        return F.binaryAST2(relation, u, v);
+      }
+      int size = u.isList() ? u.argSize() : v.argSize();
+      IASTAppendable and = F.ast(S.And, size);
+      for (int i = 1; i <= size; i++) {
+        IExpr ui = u.isList() ? ((IAST) u).get(i) : u;
+        IExpr vi = v.isList() ? ((IAST) v).get(i) : v;
+        if (ui.isList() || vi.isList()) {
+          return constraint;
+        }
+        and.append(F.binaryAST2(relation, ui, vi));
+      }
+      return conjunction(and);
+    }
+    return constraint;
+  }
+
+  /**
+   * The conjunction of the relations in <code>and</code>: <code>True</code> or the single
+   * relation if there are fewer than two.
+   */
+  private static IExpr conjunction(IASTAppendable and) {
+    return and.argSize() == 0 ? S.True : and.argSize() == 1 ? and.arg1() : and;
+  }
+
+  /** A variable, or a list or alternatives of variables. */
+  private static boolean isVariables(IExpr expr) {
+    if (expr.isList() || expr.isAlternatives()) {
+      return expr.argSize() > 0 && ((IAST) expr).forAll(x -> x.isVariable());
+    }
+    return expr.isVariable();
+  }
+
+  /** A relation (a chain of <code>==, &lt;, &lt;=, &gt;, &gt;=</code>) or a conjunction of them. */
+  private static boolean isRelations(IExpr expr) {
+    if (expr.isAnd()) {
+      return ((IAST) expr).forAll(FindMinimum::isRelations);
+    }
+    return expr.argSize() >= 2 && (expr.isAST(S.Equal) || expr.isAST(S.Less)
+        || expr.isAST(S.LessEqual) || expr.isAST(S.Greater) || expr.isAST(S.GreaterEqual));
   }
 
   /**

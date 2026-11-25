@@ -90,11 +90,11 @@ public class ArithmeticSeriesPrecisionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testConstrainedExtremumDeclined() {
-    // a strict inequality has no extremum on its boundary: the machine point stays
-    check("MachineNumberQ(FindMinimum({x + y, x > 1 && y > 1}, {{x, 2}, {y, 2}}, "
+  public void testConstrainedExtremumEdgeCases() {
+    // a strict inequality is read as the non-strict one: the boundary point is refined
+    check("Precision(FindMinimum({x + y, x > 1 && y > 1}, {{x, 2}, {y, 2}}, "
         + "WorkingPrecision -> 30)[[1]])", //
-        "True");
+        "30");
     // integer variables have no Lagrange conditions
     check("NMinimize({x + 2*y, x^2 + y^2 <= 10, Element(x, Integers)}, {x, y}, "
         + "WorkingPrecision -> 20)[[2, 1, 2]] // IntegerQ", //
