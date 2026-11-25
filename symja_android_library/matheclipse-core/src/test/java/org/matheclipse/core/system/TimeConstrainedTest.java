@@ -18,6 +18,21 @@ public class TimeConstrainedTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLimitInsideLoopTest() {
+    // the limit passes while NextPrime in the loop test runs: the loop must not end as if the
+    // test had answered False
+    check("TimeConstrained(Module({q = 7}, While(Mod(q, 10^9 + 7) != 1, q = NextPrime(q)); q), 0.2)", //
+        "$Aborted");
+    // the same for the condition of a definition
+    check("walk(n_) := Module({q = n}, While(NextPrime(q) < 10^15, q = NextPrime(q)); q);"
+        + "big(x_ /; walk(x) > 1) := x; TimeConstrained(big(3), 0.2)", //
+        "$Aborted");
+    // a short loop still ends normally
+    check("TimeConstrained(Module({q = 7}, While(NextPrime(q) < 60, q = NextPrime(q)); q), 5)", //
+        "59");
+  }
+
+  @Test
   public void testMessage() {
     check("TimeConstrained(1+1, 0)", //
         "TimeConstrained(1+1,0)");

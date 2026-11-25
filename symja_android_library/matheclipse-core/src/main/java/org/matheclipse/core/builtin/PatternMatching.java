@@ -621,8 +621,7 @@ public final class PatternMatching {
         }
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (symbol.hasProtectedAttribute()) {
-          Errors.printMessage(S.Default, "write", F.list(symbol, leftHandSide), EvalEngine.get());
-          throw new FailedException();
+          return protectedTag(symbol, leftHandSide, rightHandSide, builtinSymbol, engine);
         }
         if (leftHandSide.size() == 2 && leftHandSide.first().isSymbol()) {
           symbol.setDefaultValue(rightHandSide);
@@ -1913,6 +1912,7 @@ public final class PatternMatching {
           }
           return S.Null;
         }
+        return protectedTag(symbol, leftHandSide, rightHandSide, builtinSymbol, engine);
       }
       return F.NIL;
     }
@@ -3178,6 +3178,37 @@ public final class PatternMatching {
   }
 
   /**
+   * An assignment to <code>Options(f)</code> or <code>Default(f)</code> of a protected symbol
+   * <code>f</code>: the message <code>Set::write</code> (or <code>SetDelayed::write</code>), and
+   * like every refused assignment the right-hand side for <code>Set</code> and
+   * <code>$Failed</code> for <code>SetDelayed</code>.
+   */
+  private static IExpr protectedTag(ISymbol symbol, IExpr leftHandSide, IExpr rightHandSide,
+      IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+    // Tag `1` in `2` is Protected.
+    Errors.printMessage(builtinSymbol, "write", F.list(symbol, leftHandSide), engine);
+    if (builtinSymbol == S.SetDelayed) {
+      return S.$Failed;
+    }
+    return engine.evaluate(rightHandSide);
+  }
+
+  /**
+   * The message for a definition which {@link #isProtectedDefinition(ISymbol, IExpr, boolean)}
+   * refuses: a value of a symbol names the symbol, a rule names its tag and left-hand side.
+   */
+  private static void protectedDefinitionMessage(ISymbol setSymbol, ISymbol lhsSymbol,
+      IExpr evaledLHS) {
+    if (evaledLHS.isSymbol()) {
+      // Symbol `1` is Protected.
+      Errors.printMessage(setSymbol, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+    } else {
+      // Tag `1` in `2` is Protected.
+      Errors.printMessage(setSymbol, "write", F.list(lhsSymbol, evaledLHS), EvalEngine.get());
+    }
+  }
+
+  /**
    * Test if <code>Set</code> or <code>SetDelayed</code> may not give <code>lhsSymbol</code> the
    * definition for <code>evaledLHS</code>: a value if <code>evaledLHS</code> is the symbol itself,
    * else a rule.
@@ -3277,8 +3308,7 @@ public final class PatternMatching {
       return rightHandSide;
     }
     if (isProtectedDefinition(lhsSymbol, evaledLHS, packageMode)) {
-      // Symbol `1` is Protected.
-      Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+      protectedDefinitionMessage(S.Set, lhsSymbol, evaledLHS);
       return rightHandSide;
     }
     noteDerivativeDefinition(lhsSymbol, evaledLHS);
@@ -3364,8 +3394,7 @@ public final class PatternMatching {
       throw new FailedException();
     }
     if (isProtectedDefinition(lhsSymbol, evaledLHS, packageMode)) {
-      // Symbol `1` is Protected.
-      Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+      protectedDefinitionMessage(S.SetDelayed, lhsSymbol, evaledLHS);
       throw new FailedException();
     }
     noteDerivativeDefinition(lhsSymbol, evaledLHS);

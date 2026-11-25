@@ -184,4 +184,11 @@ public class NSolveTest extends ExprEvaluatorTestCase {
     check("NSolveValues({x+y==3,x-y==1},{x,y})", //
         "{{2.0,1.0}}");
   }
+
+  @Test
+  public void testNSolveMachineNumbersWithParameters() {
+    check("sol=NSolve({(x-a)^2+(y-b)^2==9,0.6*x-0.8*y==0.5},{x,y});"
+        + "{Length(sol),Max(Abs(Sort(Chop({x,y}/.sol/.{a->1,b->-1}))-Sort({x,y}/.NSolve({(x-1)^2+(y+1)^2==9,0.6*x-0.8*y==0.5},{x,y}))))<10^-12}", //
+        "{2,True}");
+  }
 }

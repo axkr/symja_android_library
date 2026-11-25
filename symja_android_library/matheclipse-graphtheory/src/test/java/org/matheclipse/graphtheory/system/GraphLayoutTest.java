@@ -341,4 +341,29 @@ public class GraphLayoutTest extends AbstractTestCase {
     check("Cases(LayeredGraphPlot({p -> q, r -> s}), Disk(p_, ___) :> p, Infinity)", //
         "{{0.0,1.0},{0.0,0.0},{1.0,1.0},{1.0,0.0}}");
   }
+
+  @Test
+  public void testVertexShapeFunctionAndCoordinateRules() {
+    // a function draws each vertex, at the position the rules give
+    check("g=Graph({x->y,y->z},VertexCoordinates->{z->{2,1},x->{-1,0},y->{0,3}},"
+        + "VertexShapeFunction->(Text(#2,#1)&));Cases(Show(g),Text(__),Infinity)", //
+        "{Text(x,{-1.0,0.0}),Text(y,{0.0,3.0}),Text(z,{2.0,1.0})}");
+    // its third argument is the size of the vertex
+    check("g=Graph({x->y},VertexShapeFunction->(Rectangle(#1-#3/2,#1+#3/2)&));"
+        + "Length(Cases(Show(g),_Rectangle,Infinity))", //
+        "2");
+    // the style of a vertex colours what the function draws for it
+    check("g=Graph({x->y},VertexStyle->{x->Orange},VertexShapeFunction->(Disk(#1,0.1)&));"
+        + "Length(Cases(Show(g),{Orange,_Disk},Infinity))", //
+        "1");
+    // a rule for a vertex the graph doesn't have doesn't hide another vertex
+    check("g=Graph({4->5,5->6},VertexCoordinates->{4->{0,0},6->{1,1},8->{3,3}},"
+        + "VertexShapeFunction->(Point(#1)&));Length(Cases(Show(g),_Point,Infinity))", //
+        "3");
+    // the vertices a partial list of rules leaves out are where GraphEmbedding puts them
+    check("g=Graph({4->5,5->6,6->7},VertexCoordinates->{7->{3,-1},4->{0,2}},"
+        + "VertexShapeFunction->(Point(#1)&));"
+        + "Cases(Show(g),Point(p_):>p,Infinity)==N(GraphEmbedding(g))", //
+        "True");
+  }
 }

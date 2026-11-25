@@ -782,6 +782,31 @@ public class Primality implements IPrimality {
     }
   }
 
+  /**
+   * A prime divisor of the composite number <code>n</code> without determining the other
+   * factors: {@link IntegerSplitter#split(BigInteger)} splits <code>n</code>, then the smaller of
+   * the two parts again, until it is prime.
+   *
+   * @param n a composite number greater than <code>3</code>
+   * @return a prime divisor of <code>n</code>
+   * @throws ArgumentTypeException if no divisor of a composite part could be found
+   */
+  public static BigInteger primeDivisor(final BigInteger n) {
+    BigInteger m = n;
+    for (int depth = 0; depth <= MAX_RHO_RECURSION_DEPTH; depth++) {
+      if (MachinePrime.isProbablePrime(m, PRIME_CERTAINTY)) {
+        return m;
+      }
+      BigInteger divisor = IntegerSplitter.split(m);
+      if (divisor.equals(BigInteger.ONE)) {
+        break;
+      }
+      m = divisor.min(m.divide(divisor));
+    }
+    throw new ArgumentTypeException(
+        "The integer " + m + " is composite, but no factor of it could be found.");
+  }
+
   public static List<BigInteger> factorize(final BigInteger val) {
     return factorize(val, null);
   }

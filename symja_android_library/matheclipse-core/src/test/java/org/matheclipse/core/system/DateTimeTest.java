@@ -1048,4 +1048,13 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DayName({4*10^20+1, 1, 1})", //
         "Monday");
   }
+
+  @Test
+  public void testDateStringListWithoutFormatElements() {
+    // strings which are no date elements are copied literally, even if no element is among them
+    check("DateString({\"u\",\"/\",\"w\"})", //
+        "u/w");
+    check("StringLength(DateString({\"Minute\",\"h\"}))", //
+        "3");
+  }
 }
