@@ -24209,6 +24209,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{2,3},{3,2},{5,1}},FactorInteger(360,0),FactorInteger(x,2)}");
     check("{FactorInteger(360, 10^20), FactorInteger(-360, 10^20)}", //
         "{{{2,3},{3,2},{5,1}},{{-5,1},{2,3},{3,2}}}");
+    // a small prime factor is split off without factoring the hard rest
+    check("n = NextPrime(10^12)*NextPrime(10^50)*NextPrime(10^51); "
+        + "f = TimeConstrained(FactorInteger(n, 2), 5); "
+        + "{f[[1]], Length(f), Times @@ (#[[1]]^#[[2]]& /@ f) == n}", //
+        "{{1000000000039,1},2,True}");
+    check("n = 7*NextPrime(10^9)*NextPrime(10^50)*NextPrime(10^51); "
+        + "f = TimeConstrained(FactorInteger(n, 3), 5); "
+        + "{Most(f), Length(f), Times @@ (#[[1]]^#[[2]]& /@ f) == n}", //
+        "{{{7,1},{1000000007,1}},3,True}");
+    check("FactorInteger(65537^2*65539*1000003, 2)", //
+        "{{65537,2},{65539196617,1}}");
+    check("FactorInteger(65537^2*65539*1000003, 3)", //
+        "{{65537,2},{65539,1},{1000003,1}}");
+    // a rest which is a prime power keeps its prime and exponent
+    check("FactorInteger(65537^2*65539^3, 2)", //
+        "{{65537,2},{65539,3}}");
+    check("FactorInteger((65537*65539)^2, 2)", //
+        "{{65537,2},{65539,2}}");
+    check("FactorInteger(65539^3*1000003^2*1000033, 3)", //
+        "{{65539,3},{1000003,2},{1000033,1}}");
+    check("FactorInteger(1/(65537^2*65539^3), 2)", //
+        "{{65537,-2},{65539,-3}}");
     // the cofactor of two 41-digit primes is not factored when there is no room to split it
     check("FactorInteger(6*NextPrime(10^40)*NextPrime(10^41), 3)", //
         "{{2,1},{3,1},{1000000000000000000000000000000000000013190000000000000000000000000000000000013\\\n"

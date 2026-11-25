@@ -3767,7 +3767,9 @@ public final class NumberTheory {
      * The factorization of <code>q</code> into at most <code>k</code> factors for the numerator and
      * for the denominator. The largest prime powers are kept; the smallest are multiplied into
      * one factor with exponent 1. A cofactor without prime factors below <code>2^16</code> stays
-     * one factor unless there is room to split it, smallest primes first.
+     * one factor unless there is room to split it: then prime factors are split off one by one, in
+     * the order they are found and not necessarily the smallest first, without factoring the rest
+     * completely. A rest which is a prime power is given as that prime with its exponent.
      */
     private static IExpr partialFactorization(IRational q, int k) {
       if (q.isZero() || q.isOne() || q.isMinusOne()) {
@@ -3821,8 +3823,8 @@ public final class NumberTheory {
     /**
      * Appends the factors of <code>n &gt; 1</code> to <code>entries</code>; a product of merged
      * small factors goes to <code>merged[0]</code> (<code>merged[1]</code> for the denominator).
-     * Only primes below <code>2^16</code> are divided out; the cofactor is factored only if there
-     * is room to split it.
+     * Only primes below <code>2^16</code> are divided out; prime factors of the cofactor are split
+     * off only while there is room for the rest.
      *
      * @return the number of factors including the merged one
      */
@@ -3846,25 +3848,36 @@ public final class NumberTheory {
           entries.add(new BigInteger[] {cofactor, sign, BigInteger.ONE});
           return count;
         }
-        List<BigInteger[]> large = new ArrayList<BigInteger[]>();
-        for (Map.Entry<BigInteger, Integer> entry : Config.PRIME_FACTORS.factorInteger(cofactor)
-            .entrySet()) {
-          large.add(new BigInteger[] {entry.getKey(),
-              BigInteger.valueOf(entry.getValue()).multiply(sign), BigInteger.ONE});
-        }
-        if (large.size() <= room) {
-          entries.addAll(large);
-          return small.size() + large.size();
-        }
-        // split the cofactor, smallest primes first
+        // split off one prime power after the other while there is room for the rest; the
+        // rest isn't factored, so a hard cofactor doesn't block a small prime factor
         BigInteger rest = cofactor;
-        for (int i = 0; i < room - 1; i++) {
-          BigInteger[] e = large.get(i);
-          entries.add(e);
-          rest = rest.divide(e[0].pow(e[1].abs().intValueExact()));
+        int factors = small.size();
+        while (room > 1 && !rest.equals(BigInteger.ONE)
+            && !MachinePrime.isProbablePrime(rest, 32)) {
+          BigInteger p = Primality.primeDivisor(rest);
+          int e = 0;
+          BigInteger[] qr = rest.divideAndRemainder(p);
+          while (qr[1].signum() == 0) {
+            rest = qr[0];
+            e++;
+            qr = rest.divideAndRemainder(p);
+          }
+          entries.add(new BigInteger[] {p, BigInteger.valueOf(e).multiply(sign), BigInteger.ONE});
+          factors++;
+          room--;
         }
-        entries.add(new BigInteger[] {rest, sign, BigInteger.ONE});
-        return k;
+        if (!rest.equals(BigInteger.ONE)) {
+          // a rest which is a power of a prime gets that prime and its exponent
+          BigInteger[] power = Primality.perfectPower(rest, 2);
+          if (power[1].compareTo(BigInteger.ONE) > 0
+              && MachinePrime.isProbablePrime(power[0], 32)) {
+            entries.add(new BigInteger[] {power[0], power[1].multiply(sign), BigInteger.ONE});
+          } else {
+            entries.add(new BigInteger[] {rest, sign, BigInteger.ONE});
+          }
+          factors++;
+        }
+        return factors;
       }
       // k >= 2: keep the cofactor and the largest small prime powers; merge the smallest
       int keep = k - 1 - (hasCofactor ? 1 : 0);
