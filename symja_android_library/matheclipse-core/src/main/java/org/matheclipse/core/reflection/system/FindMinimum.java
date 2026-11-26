@@ -132,17 +132,21 @@ import org.matheclipse.core.numerics.optim.LocalConstrainedMinimizer;
  * <code>Element(x, Interval({a,b}))</code>,
  * <code>Element(x, IntervalData({a,Less,LessEqual,b}))</code>,
  * <code>Element(x, Reals)</code> or a vector inequality like
- * <code>VectorGreaterEqual({{x,y},{a,b}})</code>.
+ * <code>VectorGreaterEqual({{x,y},{a,b}})</code>. With a disjunction (<code>Or</code>,
+ * <code>Not</code> of a conjunction, <code>x != a</code>, a union of intervals) the result is the
+ * best extremum of its branches; an extremum on the excluded point of <code>x != a</code> is
+ * reported next to it. With integer variables <code>Element(x, Integers)</code> the result is the
+ * integer optimum of <code>NMinimize</code>.
  * </p>
  *
  * <pre>
- * <code>FindMinimum(f, Element({x, y, ...}, region))
+ * <code>FindMinimum(f, Element(x, domain))
  * </code>
  * </pre>
  *
  * <p>
- * is the search for a local minimum in the <code>region</code>, the same as
- * <code>FindMinimum({f, Element({x, y, ...}, region)}, {x, y, ...})</code>.
+ * is the search for a local minimum of one variable in the <code>domain</code>, the same as
+ * <code>FindMinimum({f, Element(x, domain)}, x)</code>.
  * </p>
  * <p>
  * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen
@@ -242,6 +246,15 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   /** The position of the inner point of a golden section search. */
   private static final double GOLDEN_SECTION = 0.5 * (3.0 - Math.sqrt(5.0));
 
+  /**
+   * The distance kept from the excluded points of <code>a != b</code>: an extremum which would be
+   * there is reported next to them.
+   */
+  private static final double UNEQUAL_GAP = 1.0e-4;
+
+  /** The most conjunctions of relations which the disjunctions among the constraints expand to. */
+  private static final int MAX_BRANCHES = 64;
+
   /** The best value of a search stopped by MaxIterations which went off towards infinity. */
   private static final double RAN_AWAY = 1e100;
 
@@ -251,7 +264,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    ast = domainSpecification(ast);
+    ast = domainSpecification(ast, engine);
+    if (ast == null) {
+      return F.NIL;
+    }
     try {
       IExpr result = findExtremum(ast, goalType(), engine, options);
       int precision =
@@ -305,29 +321,31 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * The search specification <code>Element({x, y, ...}, domain)</code> as the variables
-   * <code>{x, y, ...}</code> with the constraint <code>Element({x, y, ...}, domain)</code>:
-   * <code>FindMinimum(f, Element({x,y}, Disk()))</code> is
-   * <code>FindMinimum({f, Element({x,y}, Disk())}, {x,y})</code>.
+   * The search specification <code>Element(x, domain)</code> of one variable as the variable
+   * <code>x</code> with the constraint <code>Element(x, domain)</code>:
+   * <code>FindMinimum(f, Element(x, Interval({a, b})))</code> is
+   * <code>FindMinimum({f, Element(x, Interval({a, b}))}, x)</code>. A list of variables
+   * <code>Element({x, y}, region)</code> is no search specification.
    *
-   * @return <code>ast</code> itself if its second argument has not this form
+   * @return <code>ast</code> itself if its second argument has not this form, <code>null</code>
+   *         after the message <code>ivar</code> for a list of variables
    */
-  private static IAST domainSpecification(IAST ast) {
+  private static IAST domainSpecification(IAST ast, EvalEngine engine) {
     if (ast.argSize() < 2 || !ast.arg2().isAST(S.Element, 3)) {
       return ast;
     }
     IAST element = (IAST) ast.arg2();
-    if (!isVariables(element.first()) || element.first().isAlternatives()) {
+    if (element.first().isList() || element.first().isAlternatives()) {
+      // `1` is not a valid variable.
+      Errors.printMessage(ast.topHead(), "ivar", F.List(element.first()), engine);
+      return null;
+    }
+    if (!element.first().isVariable()) {
       return ast;
     }
     IExpr problem = ast.arg1().isList() ? ((IAST) ast.arg1()).appendClone(element)
         : F.list(ast.arg1(), element);
-    // one specification {x} per variable: a plain list {x, y} would be read as {x, xstart} if y
-    // has a numeric value
-    IExpr variables = element.first().isList()
-        ? ((IAST) element.first()).mapThread(x -> F.list(x))
-        : element.first();
-    return ast.setAtCopy(1, problem).setAtCopy(2, variables);
+    return ast.setAtCopy(1, problem).setAtCopy(2, element.first());
   }
 
   /**
@@ -347,9 +365,24 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       boolean maximize, EvalEngine engine) {
     final int n = rules.argSize();
     IAST variables = F.mapRange(1, n + 1, i -> rules.get(i).first());
-    java.util.List<IExpr> relations = new java.util.ArrayList<IExpr>();
+    IASTAppendable conjunction = F.ast(S.And);
     for (IExpr constraint : constraints) {
-      if (!collectRelations(engine.evaluate(constraint), relations, engine)) {
+      appendConstraints(engine.evaluate(constraint), conjunction, engine);
+    }
+    // with disjunctions: the conjunction of relations which holds at the machine point
+    List<IAST> branches = disjunctiveBranches(conjunction, engine);
+    if (branches == null) {
+      return F.NIL;
+    }
+    IAST branch = branches.stream()
+        .filter(b -> b.forAll(relation -> holdsAt(relation, rules, engine))).findFirst()
+        .orElse(null);
+    if (branch == null) {
+      return F.NIL;
+    }
+    java.util.List<IExpr> relations = new java.util.ArrayList<IExpr>();
+    for (IExpr constraint : branch) {
+      if (!collectRelations(constraint, relations, engine)) {
         return F.NIL;
       }
     }
@@ -634,6 +667,27 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     for (int i = 2; i < relationList.size(); i++) {
       // the constraints are held: Thread(vars >= 0) is a list of constraints
       appendConstraints(engine.evaluate(relationList.get(i)), constraints, engine);
+    }
+    if (constraints.exists(FindMinimum::isIntegerDomain)) {
+      // integer variables: the integer optimum which NMinimize / NMaximize find
+      return engine.evaluate(F.binaryAST2(
+          goalType == GoalType.MINIMIZE ? S.NMinimize : S.NMaximize,
+          F.list(function, constraints), varsList));
+    }
+    List<IAST> branches = disjunctiveBranches(constraints, engine);
+    if (branches == null) {
+      IAST unreadable = constraints.filter(F.ListAlloc(),
+          c -> !isRelations(c) && disjuncts(c, engine) == null);
+      // Constraints in `1` are not all equality or inequality constraints. Constraints with
+      // Unequal(!=) are not supported.
+      return Errors.printMessage(head, "eqineq",
+          F.List(unreadable.argSize() > 0 ? unreadable : constraints), engine);
+    }
+    if (branches.size() > 1) {
+      // Or, Unequal, the negation of a conjunction or a union of intervals: the best extremum of
+      // the conjunctions of relations they are made of
+      return bestBranch(head, function, branches, specs, goalType, maxIterations,
+          explicitIterations, method, automaticMethod, evaluationMonitor, stepMonitor, engine);
     }
     if (automaticMethod && !specBounds && constraints.argSize() > 0) {
       // a linear objective with linear constraints is a linear program
@@ -1252,6 +1306,181 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return expr.argSize() > 0 && ((IAST) expr).forAll(x -> x.isVariable());
     }
     return expr.isVariable();
+  }
+
+  /**
+   * <code>Element(x, Integers)</code>, also for a list or alternatives of variables.
+   */
+  private static boolean isIntegerDomain(IExpr constraint) {
+    return constraint.isAST(S.Element, 3) && constraint.second() == S.Integers
+        && isVariables(constraint.first());
+  }
+
+  /**
+   * The ways a constraint which is a disjunction can hold, or <code>null</code> if it is none:
+   * <ul>
+   * <li>the parts of <code>Or(c1, c2, ...)</code>,</li>
+   * <li><code>a != b</code> as <code>a - b &lt;= -d || a - b &gt;= d</code> with the gap
+   * {@link #UNEQUAL_GAP}, so that an extremum on the excluded points is one next to them,</li>
+   * <li>the negation <code>Not(c)</code> of a conjunction or chain of relations as the negations of
+   * the relations, and of a disjunction as the conjunction of the negations,</li>
+   * <li><code>Element(x, Interval({a, b}, {c, d}, ...))</code> and the same with
+   * <code>IntervalData</code> as one interval each.</li>
+   * </ul>
+   */
+  private static IAST disjuncts(IExpr constraint, EvalEngine engine) {
+    if (constraint.isOr()) {
+      return (IAST) constraint;
+    }
+    if (constraint.isAST(S.Unequal, 3)) {
+      IExpr difference = F.Subtract(constraint.first(), constraint.second());
+      return F.Or(F.LessEqual(difference, F.num(-UNEQUAL_GAP)),
+          F.GreaterEqual(difference, F.num(UNEQUAL_GAP)));
+    }
+    if (constraint.isAST(S.Not, 2)) {
+      IExpr negated = constraint.first();
+      if (negated.isOr()) {
+        IAST negations = ((IAST) negated).mapThread(c -> F.Not(c));
+        return F.Or(engine.evaluate(negations.setAtCopy(0, S.And)));
+      }
+      IASTAppendable relations = F.ast(S.And);
+      appendConstraints(negated, relations, engine);
+      if (relations.argSize() == 0 || !relations.forAll(FindMinimum::isRelations)) {
+        return null;
+      }
+      // the links of a chain a < x < b one by one: Not of a chain stays unevaluated
+      IASTAppendable negations = F.ast(S.Or);
+      for (IExpr relation : relations) {
+        for (IExpr link : ((IAST) relation).chainToAnd()) {
+          IExpr negation = engine.evaluate(F.Not(link));
+          if (negation.isAST(S.Not)) {
+            return null;
+          }
+          negations.append(negation);
+        }
+      }
+      return negations;
+    }
+    if (constraint.isAST(S.Element, 3) && constraint.first().isVariable()
+        && (constraint.second().isAST(S.Interval) || constraint.second().isAST(S.IntervalData))
+        && constraint.second().argSize() > 1) {
+      IAST domain = (IAST) constraint.second();
+      return F.mapRange(S.Or, 1, domain.size(),
+          i -> F.Element(constraint.first(), F.unaryAST1(domain.head(), domain.get(i))));
+    }
+    return null;
+  }
+
+  /**
+   * The conjunctions of relations the constraints are made of, one per combination of the ways the
+   * disjunctions among them can hold: a single conjunction if there is no disjunction.
+   *
+   * @return <code>null</code> if a constraint is no relation and no disjunction, or there would be
+   *         more than {@link #MAX_BRANCHES} conjunctions
+   */
+  private static List<IAST> disjunctiveBranches(IAST constraints, EvalEngine engine) {
+    List<IAST> branches = new ArrayList<IAST>();
+    if (!collectBranches(constraints, engine, branches)) {
+      return null;
+    }
+    return branches;
+  }
+
+  private static boolean collectBranches(IAST conjunction, EvalEngine engine,
+      List<IAST> branches) {
+    for (int i = 1; i < conjunction.size(); i++) {
+      IExpr constraint = conjunction.get(i);
+      if (isRelations(constraint)) {
+        continue;
+      }
+      IAST alternatives = disjuncts(constraint, engine);
+      if (alternatives == null) {
+        return false;
+      }
+      for (IExpr alternative : alternatives) {
+        IASTAppendable branch = conjunction.copyAppendable();
+        branch.remove(i);
+        appendConstraints(alternative, branch, engine);
+        if (!collectBranches(branch, engine, branches) || branches.size() > MAX_BRANCHES) {
+          return false;
+        }
+      }
+      return true;
+    }
+    branches.add(conjunction);
+    return true;
+  }
+
+  /**
+   * The best of the extrema under each conjunction of relations, the first of equal ones. The
+   * searches are quiet, so that a conjunction without an extremum prints nothing; if no conjunction
+   * has one, the first is searched again to print why.
+   */
+  private static IExpr bestBranch(ISymbol head, IExpr function, List<IAST> branches,
+      List<VariableSpec> specs, GoalType goalType, int maxIterations, boolean explicitIterations,
+      String method, boolean automaticMethod, IExpr evaluationMonitor, IExpr stepMonitor,
+      EvalEngine engine) {
+    IExpr best = F.NIL;
+    double bestValue = Double.NaN;
+    for (IAST branch : branches) {
+      IExpr result;
+      boolean quiet = engine.isQuietMode();
+      try {
+        engine.setQuietMode(true);
+        result = findExtremum(head, function, F.list(function, branch), specs, goalType,
+            maxIterations, explicitIterations, method, automaticMethod, evaluationMonitor,
+            stepMonitor, engine);
+      } catch (MathRuntimeException mre) {
+        continue;
+      } finally {
+        engine.setQuietMode(quiet);
+      }
+      if (!result.isList2() || !result.second().isListOfRules()) {
+        continue;
+      }
+      double value = result.first().evalfNaN();
+      if (Double.isNaN(value)) {
+        continue;
+      }
+      if (best.isNIL()
+          || (goalType == GoalType.MINIMIZE ? value < bestValue : value > bestValue)) {
+        best = result;
+        bestValue = value;
+      }
+    }
+    if (best.isPresent()) {
+      return best;
+    }
+    return findExtremum(head, function, F.list(function, branches.get(0)), specs, goalType,
+        maxIterations, explicitIterations, method, automaticMethod, evaluationMonitor, stepMonitor,
+        engine);
+  }
+
+  /**
+   * The relation holds at the point <code>rules</code> up to the rounding of a machine search.
+   */
+  private static boolean holdsAt(IExpr relation, IAST rules, EvalEngine engine) {
+    if (!(relation instanceof IAST) || relation.argSize() < 2) {
+      return false;
+    }
+    IAST chain = (IAST) relation;
+    for (IExpr link : chain.chainToAnd()) {
+      double lhs = engine.evalN(F.subst(link.first(), rules)).evalfNaN();
+      double rhs = engine.evalN(F.subst(link.second(), rules)).evalfNaN();
+      double tolerance = 1.0e-7 * (1.0 + Math.abs(lhs) + Math.abs(rhs));
+      boolean holds;
+      if (link.isAST(S.Equal)) {
+        holds = Math.abs(lhs - rhs) <= tolerance;
+      } else if (link.isAST(S.Less) || link.isAST(S.LessEqual)) {
+        holds = lhs <= rhs + tolerance;
+      } else {
+        holds = lhs + tolerance >= rhs;
+      }
+      if (!holds) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** A relation (a chain of <code>==, &lt;, &lt;=, &gt;, &gt;=</code>) or a conjunction of them. */

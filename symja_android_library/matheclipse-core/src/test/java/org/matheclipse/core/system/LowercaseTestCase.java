@@ -10466,9 +10466,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "Method->\"SequentialQuadratic\"))) < 10^-7", //
         "True");
 
-    // message: Constraints in {x!=0} are not all equality or inequality constraints ...
+    // x!=0 excludes no point near the minimum
     check("FindMinimum({x+y, x^2+y^2<=1, x!=0}, {{x,0.5},{y,0.5}})", //
-        "FindMinimum({x+y,x^2+y^2<=1,x!=0},{{x,0.5},{y,0.5}})");
+        "{-1.41421,{x->-0.707107,y->-0.707107}}");
     // z is no variable of the search
     check("FindMinimum({x+y, x^2+z^2<=1}, {{x,0.5},{y,0.5}})", //
         "FindMinimum({x+y,x^2+z^2<=1},{{x,0.5},{y,0.5}})");
