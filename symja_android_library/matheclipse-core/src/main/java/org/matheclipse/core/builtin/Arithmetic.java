@@ -5180,6 +5180,7 @@ public final class Arithmetic {
      * @return the number, {@link F#NIL} for a base which is no exact real expression, or
      *         <code>null</code> if a side couldn't be told
      */
+    @AllowNIL
     private static IExpr exactBaseRepresentative(IExpr base, EvalEngine engine) {
       if (!base.isNumericFunction(true) || !base.isFree(x -> x.isInexactNumber(), false)) {
         return F.NIL;

@@ -396,6 +396,7 @@ public class PiecewiseFunctions {
    * @return {@link F#NIL} if it can't be told whether the argument is zero, or <code>null</code>
    *         for an argument which is no exact real numeric expression
    */
+  @AllowNIL
   private static IExpr exactDelta(IExpr arg1, EvalEngine engine) {
     int sign = exactSign(arg1, engine);
     if (sign == 0) {
