@@ -22,6 +22,7 @@
  Log(a_,E):=Log(a)^(-1),
  Log(a_,E^m_Integer):=m*Log(a)^(-1),
  Log(a_,0):=(-Infinity)*Log(a)^(-1), 
+ Log(1,1)=Indeterminate, 
  Log(a_,1)=0, 
  Log(a_,-1):=I*Pi*Log(a)^(-1),
  Log(E,z_):=Log(z),

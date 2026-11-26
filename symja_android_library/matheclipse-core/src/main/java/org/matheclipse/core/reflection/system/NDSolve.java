@@ -1233,6 +1233,14 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     java.util.List<IAST> whenEvents = new java.util.ArrayList<IAST>();
     ast = separateEquations(ast, whenEvents);
     if (ast.argSize() >= 4 && ast.arg4().isList3()) {
+      if (whenEvents.isEmpty()) {
+        // a second variable which is never differentiated: a family of ordinary differential
+        // equations with a parameter
+        IExpr family = NDSolveFamily.solve(ast, engine, ruleForm);
+        if (family.isPresent()) {
+          return family;
+        }
+      }
       // a second range: a partial differential equation in one space variable
       IExpr solution = solvePDE(ast, engine, ruleForm);
       if (solution.isNIL() && ast.arg3().isList3()) {

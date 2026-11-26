@@ -4143,4 +4143,41 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("FreeQ(Solve({x^2+y^2==r^2,y==1.5*x+2},{x,y}),Complex)", //
         "True");
   }
+
+  @Test
+  public void testRemovableSingularityIsASolution() {
+    // only the roots of the denominator with the common factors cancelled are poles
+    check("Solve((x^3-8)/(x-2)==12,x)", //
+        "{{x->-4},{x->2}}");
+    check("Solve((x^2-2*x)/(x^2-4)==1/2,x)", //
+        "{{x->2}}");
+    check("Solve(x/(x-3)==1,x)", //
+        "{}");
+    // a product with a factor 1/(-5+x) which the evaluator doesn't cancel against (5-x)^2
+    check("Solve((x-5)^2/(x-5)==0,x)", //
+        "{{x->5}}");
+    // the numerical value at a removable singularity is Indeterminate: NSolve drops it
+    check("Solve((x^3-27)/(x-3)==27,x)", //
+        "{{x->-6},{x->3}}");
+    check("NSolve((x^3-27)/(x-3)==27,x)", //
+        "{{x->-6.0}}");
+  }
+
+  @Test
+  public void testRepeatedRootsOfMachinePolynomials() {
+    // the approximations a multiple root splits into are merged into the root
+    check("Round(10^9*x/.Solve(Expand((x-2.3)^2*(x-0.7))==0,x))", //
+        "{700000000,2300000000,2300000000}");
+    check("Round(10^9*z/.NSolve(Expand((z-1.6)^4*(z^2+4))==0,z))", //
+        "{-I*2000000000,I*2000000000,1600000000,1600000000,1600000000,1600000000}");
+    // distinct roots close together stay distinct
+    check("Round(10^6*x/.Solve(Expand((x-3)*(x-3.002)*(x+1))==0,x))", //
+        "{-1000000,3000000,3002000}");
+    // the formulas of a cubic give a double root once
+    check("NRoots(Expand((x-2.5)^2*(x+1)),x)", //
+        "x==-1.0||x==2.5||x==2.5");
+    // Laguerre's method stalls at the 8-fold root, the companion matrix doesn't
+    check("x/.NSolve(Expand((x-0.3)^8)==0,x)", //
+        "{0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3}");
+  }
 }

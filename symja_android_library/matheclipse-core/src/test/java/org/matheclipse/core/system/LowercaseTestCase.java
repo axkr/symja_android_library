@@ -5836,6 +5836,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDeleteCases() {
+    // every argument deleted: the head without arguments
+    check("DeleteCases(p+q, p|q)", //
+        "0");
+    check("DeleteCases(p*q*r, p|q|r)", //
+        "1");
+    check("DeleteCases(g(u,v), u|v)", //
+        "g()");
     check("DeleteCases(Sqrt(Range(10)),_Integer,{1},Infinity)", //
         "{Sqrt(2),Sqrt(3),Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),Sqrt(10)}");
     check("DeleteCases(Sqrt(Range(10)),_Integer,{1},-1)", //
@@ -40337,9 +40344,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ff()");
     check("Function(ff(##4))[a,b]", //
         "ff(##4)");
-    // written out, because the parser reads ##-1 as ## - 1
+    // written out, because the parser reads ##-1 as ## - 1; printed the same way
     check("Function(ff(SlotSequence(-1)))[a,b]", //
-        "ff(##-1)");
+        "ff(SlotSequence(-1))");
     // the spliced form now agrees with the standalone form on the boundary
     check("Function(##3)[a,b]", //
         "Identity()");

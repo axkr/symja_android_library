@@ -346,6 +346,18 @@ public class BoxesFunctions {
           if (function.isPlus()) {
             return plusBox(function, precedence, form, engine);
           }
+          if (function.isAST1() && (function.isAST(S.Transpose)
+              || function.isAST(S.ConjugateTranspose)
+              || (form == S.TraditionalForm && function.isAST(S.Conjugate)))) {
+            // a postfix mark: the template of the superscript m^T, which is put in parentheses
+            // like a superscript; a sum, a product or another superscript in it is put in
+            // parentheses like the base of a power. Conjugate(z) is z^* in TraditionalForm only.
+            return F.ternaryAST3(S.TemplateBox,
+                F.list(powerBaseBox(function.arg1(), form, engine)),
+                F.$str(function.isAST(S.Transpose) ? "Transpose"
+                    : function.isAST(S.ConjugateTranspose) ? "ConjugateTranspose" : "Conjugate"),
+                F.Rule(S.SyntaxForm, S.SuperscriptBox));
+          }
           if (form == S.TraditionalForm) {
             IExpr traditional = traditionalLogicBox(function, precedence, form, engine);
             if (traditional.isPresent()) {
@@ -1473,10 +1485,16 @@ public class BoxesFunctions {
      */
     private static IExpr powerBaseBox(IExpr base, IExpr form, EvalEngine engine) {
       IExpr box = standardFormRecursive(base, Precedence.POWER, form, engine);
-      if (box.isAST(S.SuperscriptBox)) {
+      if (box.isAST(S.SuperscriptBox) || isSuperscriptTemplate(box)) {
         return F.RowBox(F.list(F.$str("("), box, F.$str(")")));
       }
       return box;
+    }
+
+    /** A template like the one of <code>Transpose(m)</code> which is set as a superscript. */
+    private static boolean isSuperscriptTemplate(IExpr box) {
+      return box.isAST(S.TemplateBox, 4) && box.last().isRuleAST()
+          && box.last().first() == S.SyntaxForm && box.last().second() == S.SuperscriptBox;
     }
 
     /** What <code>a^-n</code> reads as once it stands under the line of a fraction. */

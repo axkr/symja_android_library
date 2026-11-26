@@ -43,9 +43,9 @@
   D(Sec(x_), {x_, 2}) := Sec(x)^3+Sec(x)*Tan(x)^2,
   
   D(x_^a_, {x_, n_}) := If(IntegerQ(n), Pochhammer(a - n + 1, n)*x^(a - n), FactorialPower(a, n)*x^(a - n))
-    /; ((IntegerQ(n) && n >= 0)||SymbolQ(n)) && FreeQ(a,x),
+    /; ((IntegerQ(n) && n >= 0)||SymbolQ(n)) && FreeQ(a,x) && !NumberQ(x),
   D(a_^x_, {x_, n_}) := a^x*Log(a)^n
-    /; ((IntegerQ(n) && n >= 0)||SymbolQ(n)) && FreeQ(a,x),
+    /; ((IntegerQ(n) && n >= 0)||SymbolQ(n)) && FreeQ(a,x) && !NumberQ(x),
     
   D(ArcCos(x_), {x_, n_Integer}) := KroneckerDelta(n)*ArcCos(x) - 
     ((-1)^(n - 1)/(1 - x^2)^(n - 1/2))*Sum((1/(2*k - n + 1)!)*(Pochhammer(1 - n, k)*Pochhammer(1/2, k)*2^(2*k + 1 - n)*x^(2*k + 1 - n)*(x^2 - 1)^(n - 1 - k)), {k, 0, n - 1})

@@ -1023,6 +1023,15 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         return quantityPart;
       }
     }
+    if (!target.isAST() && target.head() == S.InterpolatingFunction
+        && engine.evaluate(ast.arg2()).isOne()) {
+      // the first part of an interpolating function is its domain: f[[1, 1, 2]] is the end of the
+      // first variable's range
+      IExpr domain = engine.evaluate(F.unaryAST1(target, F.stringx("Domain")));
+      if (domain.isList()) {
+        return engine.evaluate(ast.setAtCopy(1, F.list(domain)));
+      }
+    }
     // the expression which the part specifications are applied to; for a pattern object this is the
     // AST which mirrors its FullForm structure
     IAST arg1AST = F.NIL;

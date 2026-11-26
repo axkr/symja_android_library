@@ -2715,6 +2715,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               }
             } else {
               if (possibleZero.isIndeterminate()) {
+                if (isRemovableZero(termEQZero, (IAST) expr, engine)) {
+                  continue;
+                }
                 removedPositions[untilPosition++] = j;
                 break;
               }
@@ -2792,6 +2795,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   subSolutionSet.add(solution);
                 } else if (!solution.isFree(S.ConditionalExpression)) {
                   // TODO create some cross-check for C(1),... variables?
+                  subSolutionSet.add(solution);
+                } else if (!numericFlag && replaceAll.isIndeterminate() && solution.isListOfRules()
+                    && isRemovableZero(times, (IAST) solution, engine)) {
+                  // (1-x)^2/(-1+x) has a removable singularity with the value 0 at x == 1
                   subSolutionSet.add(solution);
                 }
               }
@@ -6765,12 +6772,41 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Whether <code>term</code>, which is indeterminate at <code>solution</code>, has a removable
+   * singularity there with the value <code>0</code>: brought over a common denominator with the
+   * common factors cancelled it vanishes, as <code>(x^3-1)/(x-1)-3</code> does at <code>x==1</code>.
+   */
+  private static boolean isRemovableZero(IExpr term, IAST solution, EvalEngine engine) {
+    IExpr together = engine.evalQuiet(F.Together(term));
+    IExpr value = engine.evalQuiet(together.replaceAll(solution).orElse(together));
+    return value.isNumber() && ((INumber) value).isZero(Config.SPECIAL_FUNCTIONS_TOLERANCE);
+  }
+
+  /**
    * Drop a solution for which an equation evaluates to <code>Indeterminate</code> or an infinity:
    * <code>x/E^(1/x)==0</code> has no solution <code>x-&gt;0</code>, because <code>0*E^(-1/0)</code>
    * is not <code>0</code>. <code>x/Log(x)==0</code> keeps it, as <code>0/-Infinity</code> is
    * <code>0</code>.
    */
   private static IExpr dropIndeterminateSolutions(IExpr system, IExpr result, EvalEngine engine) {
+    return dropIndeterminateSolutions(system, result, true, engine);
+  }
+
+  /**
+   * The solutions of a numerical solver without those at which an equation is not defined: the
+   * numerical value of <code>(x^3-8)/(x-2)</code> at <code>x == 2.0</code> is
+   * <code>Indeterminate</code>, removable or not.
+   */
+  static IExpr dropSingularSolutions(IExpr system, IExpr result, EvalEngine engine) {
+    return dropIndeterminateSolutions(system, result, false, engine);
+  }
+
+  /**
+   * @param keepRemovable keep a solution at which the equation has a removable singularity with
+   *        the value <code>0</code>
+   */
+  private static IExpr dropIndeterminateSolutions(IExpr system, IExpr result,
+      boolean keepRemovable, EvalEngine engine) {
     if (!result.isListOfLists() || result.argSize() == 0) {
       return result;
     }
@@ -6785,7 +6821,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       for (IExpr equation : equations) {
         IExpr difference = F.Subtract(equation.first(), equation.second());
         IExpr value = engine.evalQuiet(difference.replaceAll((IAST) solution).orElse(difference));
-        if (value.isIndeterminate() || value.isDirectedInfinity()) {
+        if ((value.isIndeterminate() || value.isDirectedInfinity())
+            && !(keepRemovable && isRemovableZero(difference, (IAST) solution, engine))) {
           return false;
         }
       }

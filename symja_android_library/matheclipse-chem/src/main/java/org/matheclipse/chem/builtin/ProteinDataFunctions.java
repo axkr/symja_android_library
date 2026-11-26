@@ -231,7 +231,8 @@ public class ProteinDataFunctions {
       case "Sequence":
         return F.stringx(protein.sequence);
       case "SequenceLength":
-        return F.ZZ(protein.sequence.length());
+        // the number of residues, counted in the unit "AminoAcids"
+        return F.Quantity(F.ZZ(protein.sequence.length()), F.stringx("AminoAcids"));
       default:
         Term[] terms = annotations(protein, property);
         if (terms == null) {
@@ -281,10 +282,7 @@ public class ProteinDataFunctions {
         }
         return F.NIL;
       }
-      if (arg1.isList()) {
-        // a list of proteins threads over its elements
-        return ((IAST) arg1).mapThread(ast, 1);
-      }
+      // a list of proteins is no entity: it stays unevaluated with a message
       Protein protein = proteinOf(arg1);
       if (protein == null) {
         return Errors.printMessage(S.ProteinData, "notent", F.List(arg1, S.ProteinData), engine);

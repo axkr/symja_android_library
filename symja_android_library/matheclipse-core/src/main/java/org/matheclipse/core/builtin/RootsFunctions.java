@@ -218,7 +218,8 @@ public class RootsFunctions {
         }
       } else {
         // an equation like 1==0 has already evaluated to False, which is no polynomial in x
-        if (!arg1.isPolynomialStruct() || arg1.isTrue() || arg1.isFalse()) {
+        if ((!arg1.isPolynomialStruct() && !arg1.isPolynomial(variables)) || arg1.isTrue()
+            || arg1.isFalse()) {
           // `1` is expected to be a polynomial equation in the variable `2` with numeric
           // coefficients.
           return Errors.printMessage(ast.topHead(), "nnumeq",
@@ -508,11 +509,22 @@ public class RootsFunctions {
               list.set(i, chopRoot(expr));
             }
           }
+          int degree = coefficients.length - 1;
+          if (list.argSize() < degree && coefficients[degree] != 0.0) {
+            // the formulas give a multiple root once: (x-2.5)^2*(x+1) has the roots -1, 2.5, 2.5
+            org.hipparchus.complex.Complex[] roots = multipleRootsMerged(coefficients, true);
+            if (roots != null && roots.length == degree) {
+              for (int i = 0; i < roots.length; i++) {
+                roots[i] = chopRoot(roots[i]);
+              }
+              list = Object2Expr.convertComplex(true, roots);
+            }
+          }
           if (list.isEmptyList()) {
             return F.NIL;
           }
         } else {
-          org.hipparchus.complex.Complex[] roots = allComplexRootsLaguerre(coefficients);
+          org.hipparchus.complex.Complex[] roots = multipleRootsMerged(coefficients, true);
           if (roots == null) {
             return F.NIL;
           }
@@ -606,7 +618,7 @@ public class RootsFunctions {
    */
   protected static IAST findRoots(double... coefficients) {
     try {
-      org.hipparchus.complex.Complex[] complexRoots = allComplexRootsLaguerre(coefficients);
+      org.hipparchus.complex.Complex[] complexRoots = multipleRootsMerged(coefficients);
       if (complexRoots == null) {
         return F.NIL;
       }
@@ -1764,6 +1776,52 @@ public class RootsFunctions {
   private static final int MAX_POLISH_STEPS = 8;
 
   /**
+   * The roots of a polynomial as the eigenvalues of its companion matrix.
+   *
+   * @param coefficients the coefficients, the constant one first; the leading one isn't 0
+   * @return <code>null</code> if the decomposition fails
+   */
+  private static org.hipparchus.complex.Complex[] companionMatrixRoots(double[] coefficients) {
+    int n = coefficients.length - 1;
+    if (n < 1 || coefficients[n] == 0.0) {
+      return null;
+    }
+    double leading = coefficients[n];
+    double[][] companion = new double[n][n];
+    for (int i = 0; i < n; i++) {
+      companion[0][i] = -coefficients[n - 1 - i] / leading;
+      if (i > 0) {
+        companion[i][i - 1] = 1.0;
+      }
+    }
+    try {
+      org.hipparchus.complex.Complex[] eigenvalues =
+          new org.hipparchus.linear.EigenDecompositionNonSymmetric(
+              new org.hipparchus.linear.Array2DRowRealMatrix(companion, false)).getEigenvalues();
+      if (eigenvalues == null || eigenvalues.length != n) {
+        return null;
+      }
+      for (org.hipparchus.complex.Complex z : eigenvalues) {
+        if (z.isNaN() || z.isInfinite()) {
+          return null;
+        }
+      }
+      return eigenvalues;
+    } catch (MathRuntimeException mre) {
+      return null;
+    }
+  }
+
+  private static boolean isFinite(double[] coefficients) {
+    for (double c : coefficients) {
+      if (!Double.isFinite(c)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Improve the roots by Newton steps with the polynomial itself. The roots of the solver are
    * found one by one in the quotients of the polynomial by the roots found before, and its tests
    * for convergence are absolute: a small root like <code>10^-12</code> of <code>x-10^-12</code>
@@ -1807,6 +1865,221 @@ public class RootsFunctions {
       }
       roots[i] = z;
     }
+  }
+
+  /**
+   * The roots of {@link #allComplexRootsLaguerre(double[])} as the solutions of a polynomial
+   * equation: the approximations of a multiple root are replaced by the root, each repeated with
+   * its multiplicity. <code>Root</code> objects number the approximations and keep them apart.
+   *
+   * @return <code>null</code> if the solver couldn't find the roots
+   */
+  private static org.hipparchus.complex.Complex[] multipleRootsMerged(double[] coefficients) {
+    return multipleRootsMerged(coefficients, false);
+  }
+
+  /**
+   * @param withEigenvalues if Laguerre's method fails, the roots of a polynomial with machine
+   *        number coefficients are the eigenvalues of its companion matrix
+   */
+  private static org.hipparchus.complex.Complex[] multipleRootsMerged(double[] coefficients,
+      boolean withEigenvalues) {
+    org.hipparchus.complex.Complex[] roots = allComplexRootsLaguerre(coefficients);
+    if (roots == null && withEigenvalues
+        && coefficients.length <= Config.MAX_POLYNOMIAL_DEGREE_LAGUERRE_SOLVER
+        && isFinite(coefficients)) {
+      // Laguerre's method can stall next to a root of high multiplicity, like the 8-fold root
+      // of (x-0.4)^8: the eigenvalues of the companion matrix are the roots as well
+      roots = companionMatrixRoots(coefficients);
+      if (roots != null) {
+        polishRoots(coefficients, roots);
+      }
+    }
+    if (roots != null) {
+      mergeMultipleRoots(coefficients, roots);
+      symmetricConjugates(roots);
+    }
+    return roots;
+  }
+
+  /**
+   * The relative distance within which roots are first gathered into a candidate cluster of a
+   * multiple root; a cluster which isn't one is split again with a tenth of the distance.
+   */
+  private static final double CLUSTER_DISTANCE = 0.05;
+
+  /** The smallest relative distance a candidate cluster is split with. */
+  private static final double MIN_CLUSTER_DISTANCE = 1.0e-7;
+
+  /**
+   * How much wider than the spread rounding errors cause a cluster of roots may be and still be
+   * taken as one multiple root.
+   */
+  private static final double CLUSTER_SPREAD_FACTOR = 20.0;
+
+  /**
+   * Replace the approximations of a multiple root by the root itself. Rounding errors of the size
+   * <code>eps</code> in the coefficients split an <code>m</code>-fold root <code>c</code> into
+   * <code>m</code> roots on a circle of the radius <code>(eps*S/|p^(m)(c)/m!|)^(1/m)</code> around
+   * it, where <code>S</code> is the sum of the moduli of the terms of the polynomial at
+   * <code>c</code>: about <code>10^-8</code> for a double root, <code>10^-2</code> for a ninefold
+   * one. Neighbouring roots are gathered into candidate clusters, and a cluster whose spread is of
+   * that size is one multiple root; it is a simple root of the <code>(m-1)</code>-th derivative,
+   * which a few Newton steps from the centroid of the cluster find to full accuracy. A cluster
+   * which is wider, like the distinct roots <code>1</code> and <code>1.001</code>, is split again.
+   *
+   * @param coefficients the coefficients, the constant one first
+   * @param roots the roots, of which the approximations of a multiple root are replaced
+   */
+  private static void mergeMultipleRoots(double[] coefficients,
+      org.hipparchus.complex.Complex[] roots) {
+    if (roots.length < 2 || coefficients.length != roots.length + 1) {
+      return;
+    }
+    java.util.List<Integer> all = new java.util.ArrayList<>(roots.length);
+    for (int i = 0; i < roots.length; i++) {
+      all.add(i);
+    }
+    mergeClusters(coefficients, roots, all, CLUSTER_DISTANCE);
+  }
+
+  /**
+   * Gather the roots with the indices <code>members</code> into clusters of roots closer than
+   * <code>distance</code> relative to their size, and replace each cluster which is a multiple
+   * root by that root.
+   */
+  private static void mergeClusters(double[] coefficients, org.hipparchus.complex.Complex[] roots,
+      java.util.List<Integer> members, double distance) {
+    final int n = members.size();
+    // single-linkage clusters: the component of each member
+    int[] component = new int[n];
+    java.util.Arrays.fill(component, -1);
+    int components = 0;
+    for (int i = 0; i < n; i++) {
+      if (component[i] >= 0) {
+        continue;
+      }
+      component[i] = components;
+      java.util.ArrayDeque<Integer> queue = new java.util.ArrayDeque<>();
+      queue.add(i);
+      while (!queue.isEmpty()) {
+        int a = queue.poll();
+        org.hipparchus.complex.Complex ra = roots[members.get(a)];
+        for (int b = 0; b < n; b++) {
+          if (component[b] < 0) {
+            org.hipparchus.complex.Complex rb = roots[members.get(b)];
+            double scale = Math.max(ra.norm(), rb.norm());
+            if (ra.subtract(rb).norm() <= distance * scale) {
+              component[b] = components;
+              queue.add(b);
+            }
+          }
+        }
+      }
+      components++;
+    }
+    for (int k = 0; k < components; k++) {
+      java.util.List<Integer> cluster = new java.util.ArrayList<>();
+      for (int i = 0; i < n; i++) {
+        if (component[i] == k) {
+          cluster.add(members.get(i));
+        }
+      }
+      if (cluster.size() < 2) {
+        continue;
+      }
+      if (!mergeCluster(coefficients, roots, cluster) && distance > MIN_CLUSTER_DISTANCE) {
+        mergeClusters(coefficients, roots, cluster, distance / 10.0);
+      }
+    }
+  }
+
+  /**
+   * Replace the roots with the indices <code>cluster</code> by one multiple root, if their spread
+   * is the one rounding errors cause.
+   *
+   * @return <code>true</code> if the cluster was a multiple root
+   */
+  private static boolean mergeCluster(double[] coefficients, org.hipparchus.complex.Complex[] roots,
+      java.util.List<Integer> cluster) {
+    final int m = cluster.size();
+    double re = 0.0;
+    double im = 0.0;
+    for (int i : cluster) {
+      re += roots[i].getReal();
+      im += roots[i].getImaginary();
+    }
+    org.hipparchus.complex.Complex centroid = new org.hipparchus.complex.Complex(re / m, im / m);
+    double radius = 0.0;
+    for (int i : cluster) {
+      radius = Math.max(radius, roots[i].subtract(centroid).norm());
+    }
+    if (Math.abs(centroid.getImaginary()) <= radius) {
+      // a cluster around a real multiple root of a polynomial with real coefficients
+      centroid = new org.hipparchus.complex.Complex(centroid.getReal());
+    }
+    // the Taylor coefficients p^(j)(c)/j! at the centroid
+    final int degree = coefficients.length - 1;
+    org.hipparchus.complex.Complex[] taylor = new org.hipparchus.complex.Complex[degree + 1];
+    for (int k = 0; k <= degree; k++) {
+      taylor[k] = new org.hipparchus.complex.Complex(coefficients[k]);
+    }
+    for (int j = 0; j <= m; j++) {
+      // synthetic division by (x - c): taylor[j] becomes p^(j)(c)/j!
+      for (int k = degree - 1; k >= j; k--) {
+        taylor[k] = taylor[k].add(taylor[k + 1].multiply(centroid));
+      }
+    }
+    double size = 0.0;
+    double modulus = centroid.norm();
+    for (int k = degree; k >= 0; k--) {
+      size = size * modulus + Math.abs(coefficients[k]);
+    }
+    double leading = taylor[m].norm();
+    if (!(leading > 0.0) || !Double.isFinite(size)) {
+      return false;
+    }
+    double noise = Math.pow(4.0 * degree * Math.ulp(1.0) * size / leading, 1.0 / m);
+    if (!(radius <= CLUSTER_SPREAD_FACTOR * noise)) {
+      return false;
+    }
+    // a simple root of the (m-1)-th derivative
+    double[] derivative = coefficients;
+    for (int j = 1; j < m; j++) {
+      double[] next = new double[derivative.length - 1];
+      for (int k = 1; k < derivative.length; k++) {
+        next[k - 1] = k * derivative[k];
+      }
+      derivative = next;
+    }
+    org.hipparchus.complex.Complex z = centroid;
+    org.hipparchus.complex.Complex[] values = hornerWithDerivative(derivative, z);
+    double residual = values[0].norm();
+    for (int step = 0; step < 2 * MAX_POLISH_STEPS && residual > 0.0; step++) {
+      org.hipparchus.complex.Complex dz = values[0].divide(values[1]);
+      if (!Double.isFinite(dz.norm())) {
+        break;
+      }
+      org.hipparchus.complex.Complex next = z.subtract(dz);
+      if (centroid.getImaginary() == 0.0) {
+        next = new org.hipparchus.complex.Complex(next.getReal());
+      }
+      org.hipparchus.complex.Complex[] nextValues = hornerWithDerivative(derivative, next);
+      double nextResidual = nextValues[0].norm();
+      if (!(nextResidual < residual)) {
+        break;
+      }
+      z = next;
+      values = nextValues;
+      residual = nextResidual;
+    }
+    if (!(z.subtract(centroid).norm() <= 2.0 * radius + Math.ulp(modulus))) {
+      z = centroid;
+    }
+    for (int i : cluster) {
+      roots[i] = z;
+    }
+    return true;
   }
 
   /** The relative distance of two roots which are taken as a pair of conjugates. */
@@ -1950,7 +2223,7 @@ public class RootsFunctions {
       double[] deflated = new double[degree - zeroMultiplicity + 1];
       System.arraycopy(coefficients, zeroMultiplicity, deflated, 0, deflated.length);
       roots = deflated.length == 3 ? quadraticRoots(deflated[0], deflated[1], deflated[2])
-          : allComplexRootsLaguerre(deflated);
+          : multipleRootsMerged(deflated);
       if (roots == null) {
         return F.NIL;
       }

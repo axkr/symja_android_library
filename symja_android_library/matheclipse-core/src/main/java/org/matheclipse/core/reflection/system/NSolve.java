@@ -73,7 +73,10 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       // the working precision was given as the fourth argument
       ast = ast.copyUntil(4);
     }
-    return solveNumeric(solveOptions, ast, precision, engine);
+    // a numerical solution at which an equation has no value, removable singularity or not, is no
+    // solution
+    return Solve.dropSingularSolutions(ast.arg1(),
+        solveNumeric(solveOptions, ast, precision, engine), engine);
   }
 
   /**

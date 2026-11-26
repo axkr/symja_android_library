@@ -6584,7 +6584,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       result.appendRule(arg);
     }
-    return result.orElse(this);
+    if (result.isPresent() || argSize() == 0) {
+      return result.orElse(this);
+    }
+    // every argument removed: the head with no arguments, like Plus() for DeleteCases(a+b, a|b)
+    return copyHead(1);
   }
 
   @Override

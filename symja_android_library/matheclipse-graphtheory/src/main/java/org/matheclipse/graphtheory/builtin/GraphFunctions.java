@@ -57,6 +57,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -1295,13 +1296,17 @@ public class GraphFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof GraphExpr)) {
-        return F.NIL;
-      }
       IExpr arg2 = ast.arg2();
       IAST rules = arg2.isRuleAST() ? F.list(arg2)
           : (arg2.isList() && ((IAST) arg2).forAll(x -> x.isRuleAST()) ? (IAST) arg2 : F.NIL);
       if (rules.isNIL()) {
+        return F.NIL;
+      }
+      if (ast.arg1().isList2() && ast.arg1().first() instanceof GraphExpr) {
+        return setItemProperty((GraphExpr<?>) ast.arg1().first(), ast.arg1().second(), rules,
+            engine);
+      }
+      if (!(ast.arg1() instanceof GraphExpr)) {
         return F.NIL;
       }
       GraphExpr<?> gex = (GraphExpr<?>) ast.arg1();
@@ -1330,6 +1335,95 @@ public class GraphFunctions {
         result.setOptions(gex.options());
       }
       return others.argSize() == 0 ? result : engine.evaluate(F.Graph(result, others));
+    }
+
+    /**
+     * <code>SetProperty({graph, item}, name -&gt; value)</code>: the option <code>name</code> gets
+     * the rule <code>item -&gt; value</code>. A value for the whole graph stays in front of the
+     * rules, <code>VertexStyle -&gt; {Blue, 2 -&gt; Green}</code>, the new rule comes before the
+     * rules of other items, and an earlier rule for the item is replaced. A value given for each
+     * vertex or edge in order, like <code>VertexWeight -&gt; {1, 2, 3}</code>, gets the value at the
+     * position of the item, and <code>EdgeWeight</code> of an edge sets the weight of that edge. A
+     * vertex or an edge which isn't in the graph gives <code>$Failed</code>.
+     */
+    private static IExpr setItemProperty(GraphExpr<?> gex, IExpr item, IAST rules,
+        EvalEngine engine) {
+      Graph<IExpr, ?> graph = gex.toData();
+      IAST vertices = GraphExpr.vertexToIExpr(graph);
+      IASTAppendable[] edgeData = GraphExpr.edgesToIExpr(graph);
+      // the position of the item among the vertices or the edges
+      int position = -1;
+      if (graph.containsVertex(item)) {
+        position = vertices.indexOf(item);
+      } else if (item.isEdge()) {
+        position = edgePosition(edgeData[0], item, graph.getType().isDirected());
+      }
+      if (position <= 0) {
+        return S.$Failed;
+      }
+      final int count = graph.containsVertex(item) ? vertices.argSize() : edgeData[0].argSize();
+      IASTAppendable options = F.ListAlloc(rules.argSize());
+      IExpr result = gex;
+      for (IExpr rule : rules) {
+        IExpr name = rule.first();
+        if (name == S.EdgeWeight) {
+          if (graph.containsVertex(item)) {
+            return F.NIL;
+          }
+          // the weights of all edges, the one of the item replaced
+          IASTMutable weights = edgeData[1].isPresent() ? edgeData[1].copy()
+              : F.constantArray(F.C1, count).copy();
+          weights.set(position, rule.second());
+          result =
+              engine.evaluate(F.binaryAST2(S.SetProperty, result, F.Rule(S.EdgeWeight, weights)));
+          continue;
+        }
+        IAST old = gex.options().getRule(name);
+        if (old.isPresent() && old.second().isList() && old.second().argSize() == count
+            && ((IAST) old.second()).forAll(x -> !x.isRuleAST())) {
+          // a value for each vertex or edge in order
+          options.append(F.Rule(name, ((IAST) old.second()).setAtCopy(position, rule.second())));
+          continue;
+        }
+        IASTAppendable value = F.ListAlloc();
+        IASTAppendable itemRules = F.ListAlloc();
+        if (old.isPresent()) {
+          IExpr previous = old.second();
+          IAST entries = previous.isList() ? (IAST) previous : F.list(previous);
+          for (IExpr entry : entries) {
+            if (!entry.isRuleAST()) {
+              value.append(entry);
+            } else if (!entry.first().equals(item)) {
+              itemRules.append(entry);
+            }
+          }
+        }
+        value.append(F.Rule(item, rule.second()));
+        value.appendArgs(itemRules);
+        options.append(F.Rule(name, value));
+      }
+      return options.isEmpty() ? result : engine.evaluate(F.Graph(result, options));
+    }
+
+    /**
+     * The position of the edge <code>item</code> in the list of <code>edges</code>, in either
+     * direction for an undirected graph, or <code>-1</code>.
+     */
+    private static int edgePosition(IAST edges, IExpr item, boolean directed) {
+      for (int i = 1; i < edges.size(); i++) {
+        IExpr edge = edges.get(i);
+        if (!edge.isEdge()) {
+          continue;
+        }
+        if (edge.first().equals(item.first()) && edge.second().equals(item.second())) {
+          return i;
+        }
+        if (!directed && edge.first().equals(item.second())
+            && edge.second().equals(item.first())) {
+          return i;
+        }
+      }
+      return -1;
     }
 
     @Override

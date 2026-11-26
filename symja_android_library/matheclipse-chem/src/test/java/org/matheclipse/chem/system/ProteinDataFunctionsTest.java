@@ -16,10 +16,13 @@ public class ProteinDataFunctionsTest extends AbstractTestCase {
         "MSDKPDMAEIEKFDKSKLKKTETQEKNPLPSKETIEQEKQAGES");
     check("StringTake(ProteinData(\"GSN\", \"Sequence\"), -10)", //
         "LDRAMAELAA");
+    // a list of proteins is no entity
     check("ProteinData({\"GSN\", \"TMSB4X\", \"DSTN\"}, \"SequenceLength\")", //
-        "{782,44,165}");
+        "ProteinData({GSN,TMSB4X,DSTN},SequenceLength)");
+    check("Map(ProteinData(#, \"SequenceLength\")&, {\"GSN\", \"TMSB4X\"})", //
+        "{Quantity(782,\"AminoAcids\"),Quantity(44,\"AminoAcids\")}");
     check("ProteinData(Entity(\"Protein\", \"DSTN\"), EntityProperty(\"Protein\", \"SequenceLength\"))", //
-        "165");
+        "Quantity(165,\"AminoAcids\")");
     check("EntityValue(Entity(\"Protein\", \"PFN1\"), \"StandardName\")", //
         "PFN1");
   }

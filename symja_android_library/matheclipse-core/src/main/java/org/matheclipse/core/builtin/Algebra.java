@@ -225,17 +225,30 @@ public class Algebra {
         if (variableList.isNIL()) {
           return F.NIL;
         }
+        if (variableList.argSize() == 1 && variableList.arg1().isSymbol()) {
+          IExpr collected = collectedCoefficients(arg1, variableList.arg1(), engine);
+          if (collected.isPresent()) {
+            return collected;
+          }
+          IExpr constant = apartWithConstantKernels(arg1, variableList.arg1(), engine);
+          if (constant.isPresent()) {
+            return constant;
+          }
+        }
       } else {
-        IExpr kernels = engine.evaluate(F.Variables(arg1));
-        if (kernels.isList() && ((IAST) kernels).argSize() > 0) {
-          // the last variable in the order of Variables(); a term free of it stays as it is, like
-          // the coefficient 1/((x-1)*(x+2)) of y^0 in 1/((x-1)*(x+2))+y
-          IExpr last = ((IAST) kernels).last();
+        IAST kernels = apartKernels(arg1, engine);
+        if (kernels.argSize() > 0) {
+          // the last kernel, the symbols ordered before the other kernels like Sin(x) or E^x;
+          // the others are constants
+          IExpr last = kernels.last();
           if (isKernel(last)) {
             return apartInKernel(arg1, last, engine);
           }
-          if (((IAST) kernels).argSize() > 1) {
-            return apartTermwise(arg1, last, false, engine);
+          if (kernels.argSize() > 1) {
+            // with more than one kernel the coefficients are factored without a denominator too:
+            // (1+x)^2+y
+            IExpr collected = collectedCoefficients(arg1, last, false, engine);
+            return collected.isPresent() ? collected : apartTermwise(arg1, last, false, engine);
           }
         }
         if (!eVar.isSize(1)) {
@@ -255,11 +268,135 @@ public class Algebra {
       return variable.isAST() && !variable.isNumericFunction(true);
     }
 
+    /**
+     * The kernels of <code>expr</code> Apart can decompose in: the variables, and the powers of a
+     * number with a symbolic exponent like <code>E^x</code>; the symbols first, each group in
+     * canonical order.
+     */
+    private static IAST apartKernels(IExpr expr, EvalEngine engine) {
+      java.util.Set<IExpr> found = new java.util.TreeSet<>();
+      IExpr variables = engine.evaluate(F.Variables(expr));
+      if (variables.isList()) {
+        for (IExpr v : (IAST) variables) {
+          if (!v.isNumericFunction(true)) {
+            found.add(v);
+          }
+        }
+      }
+      // a traversal of all subexpressions; the predicate collects and never stops it
+      expr.isFree(x -> {
+        if (x.isPower() && x.base().isNumericFunction(true)
+            && !x.exponent().isNumericFunction(true)) {
+          found.add(x);
+        }
+        return false;
+      }, false);
+      IASTAppendable kernels = F.ListAlloc(found.size());
+      found.stream().filter(IExpr::isSymbol).forEach(kernels::append);
+      found.stream().filter(k -> !k.isSymbol()).forEach(kernels::append);
+      return kernels;
+    }
+
     private static IExpr apartInKernel(IExpr arg1, IExpr kernel, EvalEngine engine) {
       ISymbol t = F.Dummy("ap$t");
       IExpr inT = engine.evaluate(F.subst(arg1, kernel, t));
-      IExpr result = apartTermwise(inT, t, true, engine);
+      // in a function kernel like Cos(x) the coefficients are factored without a denominator too:
+      // (1+x)^2+Cos(x)
+      IExpr result = collectedCoefficients(inT, t, false, engine);
+      if (result.isNIL()) {
+        result = apartTermwise(inT, t, true, engine);
+      }
       return engine.evaluate(F.subst(result, t, kernel));
+    }
+
+    /**
+     * A polynomial in <code>variable</code> with fractions in its coefficients has no partial
+     * fractions in it: its coefficients, collected by powers of the variable, are each brought
+     * over a common denominator in factored form, <code>x/((-1+x)*(1+x))+y</code> for
+     * <code>x/(x^2-1)+y</code> in <code>y</code>.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is no such polynomial
+     */
+    private static @AllowNIL IExpr collectedCoefficients(IExpr expr, IExpr variable,
+        EvalEngine engine) {
+      return collectedCoefficients(expr, variable, true, engine);
+    }
+
+    /**
+     * @param withDenominator only a polynomial with a denominator in a coefficient is collected
+     */
+    private static @AllowNIL IExpr collectedCoefficients(IExpr expr, IExpr variable,
+        boolean withDenominator, EvalEngine engine) {
+      if (engine.getSimplifyDepth() > 0 || !expr.isPolynomial(variable)
+          || (withDenominator && !hasDenominatorIn(expr, x -> true))
+          || hasDenominatorIn(expr, variable)) {
+        // not as a rewrite candidate of the simplifier, which compares the decomposed forms
+        return F.NIL;
+      }
+      IExpr coefficients = engine.evaluate(F.CoefficientList(expr, variable));
+      if (!coefficients.isList()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) coefficients;
+      if (!list.forAll(Apart::isRationalFunction)) {
+        // a coefficient with other functions like Log(4)-Log(5) keeps its form
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(list.argSize());
+      for (int k = 1; k < list.size(); k++) {
+        IExpr coefficient = engine.evaluate(F.Factor(F.Together(list.get(k))));
+        sum.append(F.Times(coefficient, F.Power(variable, F.ZZ(k - 1))));
+      }
+      return engine.evaluate(sum);
+    }
+
+    /**
+     * Whether <code>expr</code> is a rational function of its variables and kernels: no numeric
+     * function like <code>Log(4)</code> or <code>Sqrt(2)</code> stands in it.
+     */
+    private static boolean isRationalFunction(IExpr expr) {
+      return expr.isFree(x -> x.isAST() && !x.isPlus() && !x.isTimes()
+          && !(x.isPower() && x.exponent().isInteger()) && x.isNumericFunction(true), true);
+    }
+
+    /**
+     * Decompose in the symbol <code>variable</code> while the functions of it which are no
+     * polynomials, like <code>y(x)</code> or <code>Sin(x)</code>, are constants:
+     * <code>(x*y(x))/(x^2-1)</code> is <code>y(x)/(2*(-1+x))+y(x)/(2*(1+x))</code>.
+     *
+     * @return {@link F#NIL} if there are no such functions
+     */
+    private static @AllowNIL IExpr apartWithConstantKernels(IExpr expr, IExpr variable,
+        EvalEngine engine) {
+      IAST kernels = apartKernels(expr, engine);
+      IASTAppendable forward = F.ListAlloc();
+      IASTAppendable backward = F.ListAlloc();
+      for (IExpr kernel : kernels) {
+        if (!kernel.isSymbol() && !kernel.isFree(variable)) {
+          ISymbol constant = F.Dummy("ap$c" + forward.size());
+          forward.append(F.Rule(kernel, constant));
+          backward.append(F.Rule(constant, kernel));
+        }
+      }
+      if (forward.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr substituted = engine.evaluate(F.ReplaceAll(expr, forward));
+      if (!substituted.isFree(variable) && substituted.isFree(x -> x.isAST() && !x.isFree(variable)
+          && !x.isPlus() && !x.isTimes() && !x.isPower(), false)) {
+        if (!hasDenominatorIn(substituted, variable)) {
+          // nothing to decompose: the kernels in it change nothing
+          return F.NIL;
+        }
+        IExpr result = collectedCoefficients(substituted, variable, engine);
+        if (result.isNIL()) {
+          result = apartTermwise(substituted, variable, false, engine);
+        }
+        if (result.isPresent()) {
+          return engine.evaluate(F.ReplaceAll(result, backward));
+        }
+      }
+      return F.NIL;
     }
 
     /**
@@ -341,9 +478,11 @@ public class Algebra {
                   return arg1;
                 }
                 IExpr inverse = F.Power(constant, F.CN1);
-                return engine.evaluate(
-                    temp.isPlus() ? ((IAST) temp).map(t -> F.Expand(F.Times(inverse, t)))
-                        : F.Expand(F.Times(inverse, temp)));
+                // the polynomial part is multiplied out; the numerator of a partial fraction
+                // stays one sum: (1+x)/((-1+x)*(-1+y)) in y
+                return engine.evaluate(((IAST) temp)
+                    .map(t -> hasDenominatorIn(t, variable) ? F.Times(inverse, t)
+                        : F.Expand(F.Times(inverse, t))));
               }
             }
           }

@@ -1047,9 +1047,12 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "2*c*Cos(z)");
     check("ExpToTrig(a*E^(I*z)+b*E^(2*I*z))", //
         "a*Cos(z)+b*Cos(2*z)+I*a*Sin(z)+I*b*Sin(2*z)");
-    // a sum or a power of a sum stays a factor
+    // a sum or a positive integer power of a sum stays a factor; another power of a sum is
+    // distributed like any other factor
     check("ExpToTrig((2+w)^3*E^(I*z))", //
         "(2+w)^3*(Cos(z)+I*Sin(z))");
+    check("ExpToTrig(Sqrt(5+v)*E^(I*z))", //
+        "Sqrt(5+v)*Cos(z)+I*Sqrt(5+v)*Sin(z)");
     check("ExpToTrig((a+b)*E^(I*z))", //
         "(a+b)*(Cos(z)+I*Sin(z))");
     // a numeric power such as Sqrt(3) isn't rewritten, a power with a symbolic exponent is
@@ -1060,6 +1063,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // an exponent with a real and an imaginary part isn't split
     check("ExpToTrig(E^(r+2*I*w))", //
         "Cosh(r+I*2*w)+Sinh(r+I*2*w)");
+    // a sum in the denominator is no factor which is kept
+    check("ExpToTrig(E^(I*z)/(3+w)^2)", //
+        "Cos(z)/(3+w)^2+(I*Sin(z))/(3+w)^2");
     // a numeric coefficient doesn't expand a sum factor either
     check("ExpToTrig(2*(a+b)*E^(I*z))", //
         "2*(a+b)*(Cos(z)+I*Sin(z))");

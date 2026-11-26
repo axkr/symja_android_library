@@ -1057,4 +1057,15 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("StringLength(DateString({\"Minute\",\"h\"}))", //
         "3");
   }
+
+  @Test
+  public void testYearsBeforeYearOne() {
+    // a year before year 1 is written with BC, the ISO year with a sign and four digits
+    check("{DateString({-44,3,15},{\"Year\"}), DateString({-44,3,15},\"ISODate\"), "
+        + "DateString({-44,3,15},{\"ISOYear\",\"/\",\"YearShort\"}), DateString({1987,3,15},{\"Year\",\" \",\"YearShort\"})}", //
+        "{44 BC,-0044-03-15,-0044/44,1987 87}");
+    // "Year" has no leading zeros, "ISOYear" four digits
+    check("{DateString({7,1,1},{\"Year\"}), DateString({7,1,1},\"ISODate\")}", //
+        "{7,0007-01-01}");
+  }
 }

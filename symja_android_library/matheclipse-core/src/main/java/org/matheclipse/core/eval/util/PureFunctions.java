@@ -102,8 +102,8 @@ public final class PureFunctions {
   }
 
   /**
-   * The source text of a <code>Slot</code> or <code>SlotSequence</code>: <code>#n</code> for an
-   * integer, <code>#name</code> for a string which is a plain identifier, and <code>#"..."</code>
+   * The source text of a <code>Slot</code> or <code>SlotSequence</code>: <code>#n</code> for a
+   * non-negative integer, <code>#name</code> for a string which is a plain identifier, and <code>#"..."</code>
    * for any other string.
    *
    * <p>
@@ -121,7 +121,8 @@ public final class PureFunctions {
     final String prefix = slot.isAST(S.SlotSequence, 2) ? "##" : "#";
     IExpr arg1 = slot.arg1();
     if (arg1.isInteger()) {
-      return prefix + arg1.toString();
+      // #-1 would read back as Slot(1)-1
+      return arg1.isNegative() ? null : prefix + arg1.toString();
     }
     if (arg1.isString()) {
       String name = arg1.toString();

@@ -521,4 +521,48 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
         + "{Round(1000*r[[2,1]]),y(\"Domain\")/.r[[1,1]]}", //
         "{{524,2618,6807,8901},{{0.0,10.0}}}");
   }
+
+  @Test
+  public void testFamilyOverAParameter() {
+    // the second variable is never differentiated: an equation in t for each of its values
+    check("f=NDSolveValue({D(u(t,c),t)==-c*u(t,c),u(0,c)==2-c},u,{t,0,1},{c,0,2});"
+        + "{f(\"Domain\"),Abs(f(0.5,1.3)-0.7*Exp(-0.65))<10^-6,"
+        + "Abs(Derivative(1,0)[f][0.5,1.3]+1.3*0.7*Exp(-0.65))<10^-5,"
+        + "Last(Dimensions(f(\"ValuesOnGrid\")))}", //
+        "{{{0.0,1.0},{0.0,2.0}},True,True,51}");
+    // second order with an initial velocity
+    check("sol=NDSolve({D(v(t,w),t,t)==-w^2*v(t,w),v(0,w)==0,Derivative(1,0)[v][0,w]==w},"
+        + "v,{t,0,2},{w,1,3});Abs((v(1.2,2.5)/.sol[[1]])-Sin(3.0))<10^-6", //
+        "True");
+    // the parameter as the first argument, and a given number of its points
+    check("f=NDSolveValue({D(u(c,t),t)==-u(c,t),u(c,0)==c},u,{t,0,1},{c,0,1},\"MinPoints\"->61);"
+        + "{f(\"Domain\"),Dimensions(f(\"ValuesOnGrid\"))[[1]],Abs(f(0.4,0.5)-0.4*Exp(-0.5))<10^-6}", //
+        "{{{0.0,1.0},{0.0,1.0}},61,True}");
+    // the points of the parameter as a method option of the spatial discretization; fewer than
+    // the default 51 aren't used
+    check("f=NDSolveValue({D(u(c,t),t)==-u(c,t),u(c,0)==c},u,{t,0,1},{c,0,1},"
+        + "Method->{\"MethodOfLines\",\"SpatialDiscretization\"->{\"TensorProductGrid\",\"MinPoints\"->71}});"
+        + "Dimensions(f(\"ValuesOnGrid\"))[[1]]", //
+        "71");
+    check("f=NDSolveValue({D(u(c,t),t)==-u(c,t),u(c,0)==c},u,{t,0,1},{c,0,1},"
+        + "Method->{\"MethodOfLines\",\"SpatialDiscretization\"->{\"TensorProductGrid\",\"MinPoints\"->9}});"
+        + "Dimensions(f(\"ValuesOnGrid\"))[[1]]", //
+        "51");
+    // a member which runs into a singularity ends the family there: u == c/(2-c*t) for c == 1
+    // at t == 2
+    check("f=NDSolveValue({D(u(t,c),t)==u(t,c)^2,u(0,c)==c/2},u,{t,0,3},{c,0,1});"
+        + "{Abs(f(\"Domain\")[[1,2]]-2)<10^-6,Abs(f(1.5,0.5)-0.4)<10^-5}", //
+        "{True,True}");
+    // an unknown given as a call: the rule and the value are calls too
+    check("sol=NDSolve({D(u(t,c),t)==-2*u(t,c),u(0,c)==c},u(t,c),{t,0,1},{c,0,1});"
+        + "{sol[[1,1,1]],Abs((u(t,c)/.sol[[1]]/.{t->0.5,c->0.8})-0.8*Exp(-1.0))<10^-6}", //
+        "{u(t,c),True}");
+  }
+
+  @Test
+  public void testFirstPartIsTheDomain() {
+    check("sol=NDSolve({y'(t)==2,y(0)==1},y,{t,0,3});"
+        + "{(y/.sol[[1]])[[1]],(y/.sol[[1]])[[1,1,2]]}", //
+        "{{{0.0,3.0}},3.0}");
+  }
 }

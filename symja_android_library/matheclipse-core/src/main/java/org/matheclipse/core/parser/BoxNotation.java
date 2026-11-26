@@ -1251,6 +1251,11 @@ public final class BoxNotation {
       // the notation m mod n
       return "Mod[" + source(parts.get(0)) + ", " + source(parts.get(1)) + "]";
     }
+    if ((tag.equals("Transpose") || tag.equals("ConjugateTranspose") || tag.equals("Conjugate"))
+        && parts.size() == 1) {
+      // the postfix marks m^T, m^H and z^*
+      return tag + "[" + source(parts.get(0)) + "]";
+    }
     if (parts.isEmpty()) {
       throw new Unreadable();
     }

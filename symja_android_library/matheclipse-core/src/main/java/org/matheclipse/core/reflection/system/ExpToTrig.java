@@ -100,7 +100,7 @@ public class ExpToTrig extends AbstractEvaluator {
       if (x.isTimes()) {
         // a*(Cos(x)+I*Sin(x)) -> a*Cos(x)+I*a*Sin(x): the other factors are distributed over the
         // one converted sum, so that terms of several exponentials combine; a factor that is a sum
-        // or a power of a sum keeps the product (a+b)*(Cos(x)+I*Sin(x))
+        // or a positive integer power of one keeps the product (a+b)*(Cos(x)+I*Sin(x))
         IAST times = (IAST) x;
         int index = -1;
         for (int i = 1; i < times.size(); i++) {
@@ -111,8 +111,8 @@ public class ExpToTrig extends AbstractEvaluator {
             }
             index = i;
           } else if (isSumFactor(factor) || hasConverted(factor, converted)) {
-            // a sum, a power of a sum, or a product with converted sums of its own like the one
-            // of (-b)^e
+            // a sum, a positive power of a sum, or a product with converted sums of its own like
+            // the one of (-b)^e
             return x;
           }
         }
@@ -135,9 +135,15 @@ public class ExpToTrig extends AbstractEvaluator {
     return arg1;
   }
 
-  /** Whether <code>factor</code> is a sum or a power of a sum. */
+  /**
+   * Whether <code>factor</code> is a sum or a positive integer power of a sum like
+   * <code>(1+y)^2</code>; another power of a sum like <code>Sqrt(3+w)</code>,
+   * <code>(3+w)^n</code> or <code>(1+y)^(-2)</code> isn't one, the other factors are distributed
+   * over it.
+   */
   private static boolean isSumFactor(IExpr factor) {
-    return factor.isPlus() || (factor.isPower() && factor.base().isPlus());
+    return factor.isPlus() || (factor.isPower() && factor.base().isPlus()
+        && factor.exponent().isInteger() && factor.exponent().isPositive());
   }
 
   /** Whether <code>expr</code> is or contains a sum of {@link #coshPlusSinh}. */

@@ -854,4 +854,32 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("FactorTermsList(6-6*E*y)", //
         "{6,1-E*y}");
   }
+
+  @Test
+  public void testApartKernelsAndFactoredCoefficients() {
+    // a function of the variable which is no polynomial is a constant
+    check("Apart((x*g(x))/(x^2-4),x)", //
+        "g(x)/(2*(-2+x))+g(x)/(2*(2+x))");
+    // without a variable the last kernel is the variable; the coefficients get a factored
+    // denominator
+    check("Apart((x*Cos(x))/(x^2-4))", //
+        "(x*Cos(x))/((-2+x)*(2+x))");
+    check("Apart(x/(x^2-9)+z)", //
+        "x/((-3+x)*(3+x))+z");
+    check("Apart((x^3-8)*w/(x^2-4),w)", //
+        "(w*(4+2*x+x^2))/(2+x)");
+    check("Apart((2*x+6)*Cos(x)+5*x/(x+2))", //
+        "(5*x)/(2+x)+2*(3+x)*Cos(x)");
+    // in a function kernel the coefficients are factored without a denominator too
+    check("Apart(x^2+6*x+9+Sin(x))", //
+        "(3+x)^2+Sin(x)");
+    // also in the last of several symbols, but not with only one
+    check("Apart(x^2+4*x+4+z)", //
+        "(2+x)^2+z");
+    check("Apart(x^2+4*x+4)", //
+        "4+4*x+x^2");
+    // the numerator of a partial fraction in z stays one sum
+    check("Apart((x+z)/((x-2)*(z+1)))", //
+        "1/(-2+x)+(-1+x)/((-2+x)*(1+z))");
+  }
 }

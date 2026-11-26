@@ -2745,6 +2745,15 @@ public class TensorFunctions {
         // a translation moves the primitive as it is, also an ellipse given by its semi-axes
         return F.binaryAST2(head, points, radius);
       }
+      if (n == 2 && !radius.isList() && !radius.isNumericFunction(true)) {
+        // in the plane a rotation or reflection with a uniform scaling c keeps a disk or a circle
+        // with a symbolic radius r round: Sqrt(c^2*r^2); a ball becomes an ellipsoid
+        final IExpr square = similaritySquare(linear, n, engine);
+        if (square.isPresent()) {
+          return F.binaryAST2(head, points,
+              engine.evaluate(F.Sqrt(F.Times(square, F.Sqr(radius)))));
+        }
+      }
       if (!radius.isList() && radius.isNumericFunction(true) && radius.isPositiveResult()) {
         // a radius which is a positive number, also an exact one like Sqrt(2) or Pi
         final IExpr square = similaritySquare(linear, n, engine);

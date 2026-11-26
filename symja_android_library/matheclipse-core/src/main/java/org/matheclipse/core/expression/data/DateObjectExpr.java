@@ -79,9 +79,14 @@ public class DateObjectExpr extends DataExpr<LocalDateTime> implements Externali
     int quarter = (date.getMonthValue() - 1) / 3 + 1;
     switch (name) {
       case "Year":
-        return integerOrPadded(toDisplayYear(date.getYear()), 4, asString);
+        if (asString && date.getYear() <= 0) {
+          // a year before year 1 is written 5 BC
+          return F.stringx(-toDisplayYear(date.getYear()) + " BC");
+        }
+        // the digits without leading zeros: the year 1 is "1", only "ISOYear" has four digits
+        return integerOrPadded(toDisplayYear(date.getYear()), 1, asString);
       case "YearShort":
-        return integerOrPadded(Math.floorMod(date.getYear(), 100), 2, asString);
+        return integerOrPadded(Math.abs(toDisplayYear(date.getYear())) % 100, 2, asString);
       case "Quarter":
         return integerOrPadded(quarter, 1, asString);
       case "QuarterName":
@@ -143,6 +148,10 @@ public class DateObjectExpr extends DataExpr<LocalDateTime> implements Externali
       case "ISOWeekYear":
         return integerOrPadded(date.get(WeekFields.ISO.weekBasedYear()), 4, asString);
       case "ISOYear":
+        if (asString && date.getYear() <= 0) {
+          // the sign before the padded digits: -0005
+          return F.stringx(String.format(Locale.US, "-%04d", -toDisplayYear(date.getYear())));
+        }
         return integerOrPadded(toDisplayYear(date.getYear()), 4, asString);
       case "ISOWeekDay":
         return integerOrPadded(date.getDayOfWeek().getValue(), 1, asString);

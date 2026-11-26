@@ -135,4 +135,12 @@ public class RegionTransformationTest extends ExprEvaluatorTestCase {
     }
     return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
   }
+
+  @Test
+  public void testUniformScalingKeepsASymbolicRadius() {
+    check("ScalingTransform({3,3})[Disk({0,1},s)]", //
+        "Disk({0,3},3*Sqrt(s^2))");
+    check("RotationTransform(Pi/4)[Circle({0,2},s)]", //
+        "Circle({-Sqrt(2),Sqrt(2)},Sqrt(s^2))");
+  }
 }

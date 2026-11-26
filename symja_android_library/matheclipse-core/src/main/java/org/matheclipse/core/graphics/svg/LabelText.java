@@ -721,6 +721,16 @@ public final class LabelText {
     if (box.isAST(S.RowBox, 2)) {
       return boxes(box.first());
     }
+    if (box.isAST(S.TemplateBox) && box.argSize() >= 2 && box.first().argSize() == 1
+        && box.first().isList() && box.second().isString()) {
+      // the postfix marks m^T, m^H and z^*
+      String tag = box.second().toString();
+      String mark = tag.equals("Transpose") ? "ᵀ"
+          : tag.equals("ConjugateTranspose") ? "ᴴ" : tag.equals("Conjugate") ? "*" : null;
+      if (mark != null) {
+        return boxes(box.first().first()) + mark;
+      }
+    }
     if (box.isAST(S.TemplateBox) && box.argSize() >= 2 && box.first().isList()
         && box.second().isString() && (box.second().toString().equals("RowWithSeparators")
             || box.second().toString().equals("RowWithSeparator"))) {

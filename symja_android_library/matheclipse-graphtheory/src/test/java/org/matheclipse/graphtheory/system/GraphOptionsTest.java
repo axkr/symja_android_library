@@ -45,4 +45,34 @@ public class GraphOptionsTest extends AbstractTestCase {
     check("Options(Graph({p -> q}, VertexLabels -> {p -> \"x\"}))", //
         "{VertexLabels->{p->x}}");
   }
+
+  @Test
+  public void testSetPropertyOfAnItemKeepsTheGraphStyle() {
+    // the style of the whole graph stays in front of the rules for single vertices
+    check("g=SetProperty({Graph({a,b,c},{a->b,b->c},VertexStyle->Orange),b},VertexStyle->Red);"
+        + "VertexStyle/.Options(g,VertexStyle)", //
+        "{RGBColor(1.0,0.5,0.0),b->RGBColor(1,0,0)}");
+    // a second value for the same vertex replaces the first
+    check("VertexStyle/.Options(SetProperty({g,b},VertexStyle->Green),VertexStyle)", //
+        "{RGBColor(1.0,0.5,0.0),b->RGBColor(0,1,0)}");
+    // the rule of another vertex comes first
+    check("VertexStyle/.Options(SetProperty({g,c},VertexStyle->Green),VertexStyle)", //
+        "{RGBColor(1.0,0.5,0.0),c->RGBColor(0,1,0),b->RGBColor(1,0,0)}");
+    check("SetProperty({g,z},VertexStyle->Green)", //
+        "$Failed");
+    // an edge which isn't in the graph
+    check("SetProperty({g,c->a},EdgeStyle->Green)", //
+        "$Failed");
+  }
+
+  @Test
+  public void testSetPropertyOfAnItemInAListOfValues() {
+    // a value for each vertex in order gets the value at the position of the vertex
+    check("h=Graph({p,q,r},{p->q,q->r},VertexWeight->{4,5,6});"
+        + "VertexWeight/.Options(SetProperty({h,q},VertexWeight->9),VertexWeight)", //
+        "{4,9,6}");
+    // the weight of one edge, in either direction of an undirected graph
+    check("Normal(WeightedAdjacencyMatrix(SetProperty({Graph({p<->q,q<->r}),r<->q},EdgeWeight->8)))", //
+        "{{0,1,0},{1,0,8},{0,8,0}}");
+  }
 }

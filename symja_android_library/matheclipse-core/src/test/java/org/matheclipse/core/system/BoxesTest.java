@@ -517,4 +517,28 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToBoxes(Function({s, t}, s + t), TraditionalForm) // InputForm", //
         "FormBox(RowBox({RowBox({\"{\",RowBox({\"s\",\",\",\"t\"}),\"}\"}),\"\\[Function]\",RowBox({\"s\",\"+\",\"t\"})}),TraditionalForm)");
   }
+
+  @Test
+  public void testPostfixMarksAsSuperscripts() {
+    // the template of a superscript mark, put in parentheses like a superscript
+    check("ToBoxes(Transpose(q)) // InputForm", //
+        "TemplateBox({\"q\"},\"Transpose\",SyntaxForm->SuperscriptBox)");
+    check("ToBoxes({Transpose(b)^3, ConjugateTranspose(h(c)), 5*Transpose(k)}) // InputForm", //
+        "RowBox({\"{\",RowBox({SuperscriptBox(RowBox({\"(\",TemplateBox({\"b\"},\"Transpose\",SyntaxForm->SuperscriptBox),\")\"}),\"3\"),\",\",TemplateBox({RowBox({\"h\",\"[\",\"c\",\"]\"})},\"ConjugateTranspose\",SyntaxForm->SuperscriptBox),\",\",RowBox({\"5\",\" \",TemplateBox({\"k\"},\"Transpose\",SyntaxForm->SuperscriptBox)})}),\"}\"})");
+    // Conjugate is a function call, z^* in TraditionalForm only
+    check("ToBoxes(Conjugate(w)) // InputForm", //
+        "RowBox({\"Conjugate\",\"[\",\"w\",\"]\"})");
+    check("ToBoxes(Conjugate(w), TraditionalForm) // InputForm", //
+        "FormBox(TemplateBox({\"w\"},\"Conjugate\",SyntaxForm->SuperscriptBox),TraditionalForm)");
+    // the boxes read back
+    check("ToExpression(ToBoxes(ConjugateTranspose(r+s))) // FullForm", //
+        "ConjugateTranspose(Plus(r, s))");
+  }
+
+  @Test
+  public void testNegativeSlotPrintsAsFunction() {
+    // #-2 would read back as #2-... so a negative slot keeps its function form
+    check("ToString(Hold(Slot(-2), Slot(1)), InputForm)", //
+        "Hold(Slot(-2),#1)");
+  }
 }

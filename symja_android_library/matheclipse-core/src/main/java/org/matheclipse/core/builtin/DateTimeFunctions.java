@@ -798,11 +798,11 @@ public class DateTimeFunctions {
   private static String[] namedFormat(String name) {
     switch (name) {
       case "ISODate":
-        return new String[] {"Year", "-", "Month", "-", "Day"};
+        return new String[] {"ISOYear", "-", "Month", "-", "Day"};
       case "ISOTime":
         return new String[] {"Hour24", ":", "Minute", ":", "Second"};
       case "ISODateTime":
-        return new String[] {"Year", "-", "Month", "-", "Day", "T", "Hour24", ":", "Minute", ":",
+        return new String[] {"ISOYear", "-", "Month", "-", "Day", "T", "Hour24", ":", "Minute", ":",
             "Second"};
       case "Date":
         return new String[] {"DayName", " ", "DayShort", " ", "MonthName", " ", "Year"};
