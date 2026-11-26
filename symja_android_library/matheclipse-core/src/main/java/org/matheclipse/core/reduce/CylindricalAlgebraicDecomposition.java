@@ -999,8 +999,11 @@ public final class CylindricalAlgebraicDecomposition {
       boolean left = joins(inner[i - 1], cells.get(i - 1), cell, k, point);
       boolean right = joins(inner[i + 1], cells.get(i + 1), cell, k, point);
       if (left && right) {
-        // the simpler bounds, which the sector on that side has too
-        inner[i] = inner[i + 1].leafCount() < inner[i - 1].leafCount() ? inner[i + 1] : inner[i - 1];
+        // where the bounds of the two sectors cross at a rational point, the section closes the
+        // sector before it: (x<=0&&y>-x)||(x>0&&y>x); at an algebraic point it joins the sector
+        // with the simpler bounds
+        inner[i] = cell.sample.rational == null
+            && inner[i + 1].leafCount() < inner[i - 1].leafCount() ? inner[i + 1] : inner[i - 1];
       } else if (left || right) {
         inner[i] = left ? inner[i - 1] : inner[i + 1];
       } else {

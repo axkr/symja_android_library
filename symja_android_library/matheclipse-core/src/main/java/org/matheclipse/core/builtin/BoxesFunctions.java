@@ -265,9 +265,21 @@ public class BoxesFunctions {
         return expr.first();
       }
       if (expr.isAST(S.HoldForm, 2)) {
-        // an invisible wrapper: TagBox keeps it for the way back, the front end shows the content
-        return F.binaryAST2(S.TagBox, heldBoxes(expr.first(), precedence, form, engine),
-            S.HoldForm);
+        // an invisible wrapper: TagBox keeps it for the way back, the front end shows the content;
+        // the parentheses the surrounding operator needs go outside the TagBox
+        IExpr held = heldBoxes(expr.first(), precedence, form, engine);
+        if (precedence > 0 && held.isAST(S.RowBox, 2) && held.first().isList()) {
+          IAST row = (IAST) held.first();
+          if (row.argSize() == 3 && row.arg1().equals(F.$str("("))
+              && row.arg3().equals(F.$str(")"))) {
+            IExpr bare = heldBoxes(expr.first(), 0, form, engine);
+            if (bare.equals(row.arg2())) {
+              return F.RowBox(
+                  F.list(F.$str("("), F.binaryAST2(S.TagBox, bare, S.HoldForm), F.$str(")")));
+            }
+          }
+        }
+        return F.binaryAST2(S.TagBox, held, S.HoldForm);
       }
       if (expr.isAST(S.Defer, 2)) {
         return heldBoxes(expr.first(), precedence, form, engine);
@@ -347,6 +359,14 @@ public class BoxesFunctions {
                       standardFormRecursive(function.arg1(), Precedence.TIMES + 1, form, engine),
                       standardFormRecursive(function.arg2(), Precedence.TIMES + 1, form, engine)),
                   F.$str("Mod"));
+            }
+            if (function.isAST(S.Function, 3)) {
+              // x |-> body and {x, y} |-> body, with the character \[Function]
+              return parenthesizeRow(F.RowBox(F.list(
+                  standardFormRecursive(function.arg1(), 0, form, engine), F.$str("\uF4A1"),
+                  standardFormRecursive(function.arg2(), Precedence.FUNCTION, form,
+                      engine))),
+                  Precedence.FUNCTION, precedence);
             }
           }
           if (function.isNot() && function.argSize() == 1) {

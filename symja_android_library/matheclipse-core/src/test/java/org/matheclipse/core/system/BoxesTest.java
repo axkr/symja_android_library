@@ -497,4 +497,24 @@ public class BoxesTest extends ExprEvaluatorTestCase {
     check("ToExpression(UnderoverscriptBox(\"z\", \"__\", \"m\")) // InputForm", //
         "Underoverscript(z,\"__\",m)");
   }
+
+  @Test
+  public void testHoldFormParenthesesOutsideTagBox() {
+    // the parentheses an operator needs around a held sum or product are not part of the held
+    // boxes
+    check("ToBoxes(HoldForm(r - s)^4) // InputForm", //
+        "SuperscriptBox(RowBox({\"(\",TagBox(RowBox({\"r\",\"-\",\"s\"}),HoldForm),\")\"}),\"4\")");
+    check("ToBoxes(m*HoldForm(r + s)) // InputForm", //
+        "RowBox({\"m\",\" \",RowBox({\"(\",TagBox(RowBox({\"r\",\"+\",\"s\"}),HoldForm),\")\"})})");
+    check("ToBoxes(HoldForm(r + s)) // InputForm", //
+        "TagBox(RowBox({\"r\",\"+\",\"s\"}),HoldForm)");
+  }
+
+  @Test
+  public void testFunctionArrowInTraditionalForm() {
+    check("ToBoxes(Function(t, t^5), TraditionalForm) // InputForm", //
+        "FormBox(RowBox({\"t\",\"\\[Function]\",SuperscriptBox(\"t\",\"5\")}),TraditionalForm)");
+    check("ToBoxes(Function({s, t}, s + t), TraditionalForm) // InputForm", //
+        "FormBox(RowBox({RowBox({\"{\",RowBox({\"s\",\",\",\"t\"}),\"}\"}),\"\\[Function]\",RowBox({\"s\",\"+\",\"t\"})}),TraditionalForm)");
+  }
 }

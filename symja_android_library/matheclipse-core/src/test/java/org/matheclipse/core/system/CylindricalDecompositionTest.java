@@ -42,7 +42,8 @@ public class CylindricalDecompositionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSectionJoinsTheSimplerSector() {
-    // the section where the curves meet has the interval of both sectors
+    // the section where the curves meet at an algebraic point has the interval of both sectors; it
+    // joins the one with the simpler bounds
     check("CylindricalDecomposition(u^2/9 + v^2 < 1 && u^2 + v^2/9 < 1, {u, v})", //
         "(-1<u<=-3/Sqrt(10)&&-Sqrt(9-9*u^2)<v<Sqrt(9-9*u^2))||(-3/Sqrt(10)<u<3/Sqrt(10)&&-Sqrt(\n"
             + "9-u^2)/3<v<Sqrt(9-u^2)/3)||(3/Sqrt(10)<=u<1&&-Sqrt(9-9*u^2)<v<Sqrt(9-9*u^2))");
@@ -148,5 +149,16 @@ public class CylindricalDecompositionTest extends ExprEvaluatorTestCase {
     assertSameSolutions("u^2 + v^2 > 1 && u*v < 1", "{u, v}", 2);
     assertSameSolutions("v^3 + u*v + 1 > 0", "{u, v}", 2);
     assertSameSolutions("u^2 + v^2 + w^2 < 4 && w > u*v", "{u, v, w}", 3);
+  }
+
+  @Test
+  public void testCrossingBoundsCloseTheLeftCell() {
+    // where the lower bounds -s and s cross, the point s==0 belongs to the cell before it
+    check("CylindricalDecomposition(t > s && t > -s, {s, t})", //
+        "(s<=0&&t>-s)||(s>0&&t>s)");
+    check("CylindricalDecomposition(t < 2*s && t < -2*s, {s, t})", //
+        "(s<=0&&t<2*s)||(s>0&&t<-2*s)");
+    check("CylindricalDecomposition(t > 3*s^2 && t > 4 - s^2, {s, t})", //
+        "(s<=-1&&t>3*s^2)||(-1<s<=1&&t>4-s^2)||(s>1&&t>3*s^2)");
   }
 }

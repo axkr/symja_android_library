@@ -93,6 +93,8 @@ public class ContourPlot extends ListPlot {
     int maxRecursion = -1;
     // -1: Automatic, levels at round values
     int numberOfContours = -1;
+    // the levels Contours -> {c1, c2, ...} asks for, or null
+    ExplicitContours explicitLevels = null;
     IExpr contourStyle = S.Automatic;
     IExpr contourShading = S.Automatic;
 
@@ -116,6 +118,8 @@ public class ContourPlot extends ListPlot {
               if (val.isInteger()) {
                 // a negative count draws no contours, like zero; -1 stands for Automatic
                 numberOfContours = Math.max(0, val.toIntDefault(10));
+              } else if (val.isList()) {
+                explicitLevels = explicitLevels((IAST) val, engine);
               }
               break;
             case ID.ContourStyle:
@@ -210,7 +214,7 @@ public class ContourPlot extends ListPlot {
         }
 
         generateContours(primitives, func, xRange, yRange, xVar, yVar, cells, null,
-            numberOfContours,
+            numberOfContours, explicitLevels,
             style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
             contourLines, contourLabels, func.isAST(S.Equal, 3) ? region : valueRegion,
             boundaryStyle, valueRange);
@@ -220,7 +224,7 @@ public class ContourPlot extends ListPlot {
       // Single function/equation
       shaded = isShaded(functionArg, contourShading);
       generateContours(primitives, functionArg, xRange, yRange, xVar, yVar, cells, middle,
-          numberOfContours, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
+          numberOfContours, explicitLevels, contourStyle, contourShading, colorFunctionScaling, colorFunctionOpt,
           engine, false, contourLines, contourLabels,
           functionArg.isAST(S.Equal, 3) ? region : valueRegion, boundaryStyle, valueRange);
     }
@@ -475,9 +479,85 @@ public class ContourPlot extends ListPlot {
     return Math.round(scaled * (1 << 24));
   }
 
+  /**
+   * The levels of <code>Contours -&gt; {c1, c2, ...}</code> or <code>{{c1, style1}, ...}</code>.
+   */
+  static final class ExplicitContours {
+    /** the levels in increasing order */
+    final double[] sorted;
+    /** the style of each level in {@link #sorted}, or {@link F#NIL} where none is given */
+    final IExpr[] styles;
+
+    ExplicitContours(double[] levels, IExpr[] levelStyles) {
+      Integer[] order = new Integer[levels.length];
+      for (int i = 0; i < order.length; i++) {
+        order[i] = i;
+      }
+      // a stable sort: of a level given more than once the first entry comes first
+      java.util.Arrays.sort(order, (a, b) -> Double.compare(levels[a], levels[b]));
+      double[] distinct = new double[levels.length];
+      IExpr[] distinctStyles = new IExpr[levels.length];
+      int count = 0;
+      for (int i = 0; i < order.length; i++) {
+        double level = levels[order[i]];
+        IExpr style = levelStyles[order[i]];
+        if (count > 0 && distinct[count - 1] == level) {
+          // a level is drawn once, in the first style given for it
+          if (distinctStyles[count - 1].isNIL()) {
+            distinctStyles[count - 1] = style;
+          }
+          continue;
+        }
+        distinct[count] = level;
+        distinctStyles[count++] = style;
+      }
+      this.sorted = java.util.Arrays.copyOf(distinct, count);
+      this.styles = java.util.Arrays.copyOf(distinctStyles, count);
+    }
+  }
+
+  /**
+   * The distance below which two end points of contour pieces along one axis are the same point:
+   * a tiny part of a sampling step, but no less than a few units in the last place of the
+   * coordinates, which far from the origin are coarser than that.
+   */
+  private static double joinTolerance(double step, double[] range) {
+    double magnitude = Math.max(Math.abs(range[0]), Math.abs(range[1]));
+    return Math.max(1.0e-9 * step, 64 * Math.ulp(magnitude));
+  }
+
+  /**
+   * The values of <code>Contours -&gt; {c1, c2, ...}</code> or <code>{{c1, style1}, ...}</code>;
+   * values which aren't real numbers are left out.
+   */
+  private static ExplicitContours explicitLevels(IAST list, EvalEngine engine) {
+    double[] values = new double[list.argSize()];
+    IExpr[] styles = new IExpr[list.argSize()];
+    int count = 0;
+    for (IExpr entry : list) {
+      IExpr value = entry;
+      IExpr style = F.NIL;
+      if (entry.isList() && entry.argSize() >= 1) {
+        value = entry.first();
+        if (entry.argSize() == 2) {
+          style = entry.second();
+        } else if (entry.argSize() > 2) {
+          style = ((IAST) entry).rest().setAtCopy(0, S.Directive);
+        }
+      }
+      double level = engine.evalQuiet(F.N(value)).evalfNaN();
+      if (Double.isFinite(level)) {
+        styles[count] = style;
+        values[count++] = level;
+      }
+    }
+    return new ExplicitContours(java.util.Arrays.copyOf(values, count),
+        java.util.Arrays.copyOf(styles, count));
+  }
+
   private void generateContours(IASTAppendable primitives, IExpr function, double[] xRange,
       double[] yRange, ISymbol xVar, ISymbol yVar, int[] cells, KnownSample known,
-      int numberOfContours,
+      int numberOfContours, ExplicitContours explicitLevels,
       IExpr contourStyle, IExpr contourShading, boolean colorFunctionScaling,
       IExpr colorFunctionOpt, EvalEngine engine, boolean isMulti, boolean contourLines,
       boolean contourLabels, RegionFunctionFilter region, IExpr boundaryStyle,
@@ -563,6 +643,8 @@ public class ContourPlot extends ListPlot {
     double[] levels;
     if (isEquation) {
       levels = new double[] {0.0};
+    } else if (explicitLevels != null) {
+      levels = explicitLevels.sorted;
     } else if (numberOfContours < 0) {
       // about ten levels at round values strictly between the least and the greatest value
       levels = TickGenerator.interiorDivisions(minZ, maxZ, 10);
@@ -588,8 +670,10 @@ public class ContourPlot extends ListPlot {
         if (contourShading.isList()) {
           color = GraphicsOptions.getPlotStyle(contourShading, k + 1);
         } else {
-          double lower = (k == -1) ? minZ : levels[k];
-          double upper = (k == levels.length - 1) ? maxZ : levels[k + 1];
+          // an explicit level may lie outside the values; the band colour stays within them
+          double lower = (k == -1) ? minZ : Math.min(Math.max(levels[k], minZ), maxZ);
+          double upper =
+              (k == levels.length - 1) ? maxZ : Math.min(Math.max(levels[k + 1], minZ), maxZ);
           double bandZ = (lower + upper) * 0.5;
           // an equation has no range of values to place a band within, so it is left unscaled
           color = colorMap != null && !isEquation ? colorMap.color(bandZ)
@@ -616,12 +700,18 @@ public class ContourPlot extends ListPlot {
 
     // 4. Contour Lines
     if (contourLines && contourStyle != S.None && !contourStyle.isFalse()) {
-      for (int k = 0; k < levels.length; k++) {
+      // the lines are drawn from the highest level down; an explicit level with a style of its
+      // own is drawn in just that style
+      final boolean given = !isEquation && explicitLevels != null;
+      for (int k = levels.length - 1; k >= 0; k--) {
         double level = levels[k];
         IASTAppendable lineSegments = F.ListAlloc();
 
         IExpr currentStyle = contourStyle;
-        if (currentStyle == S.Automatic) {
+        final boolean ownStyle = given && explicitLevels.styles[k].isPresent();
+        if (ownStyle) {
+          currentStyle = explicitLevels.styles[k];
+        } else if (currentStyle == S.Automatic) {
           // Single plot default: Gray
           // CPD-ON
           // Multi plot default: Passed in via argument (handled in evaluate loop)
@@ -637,10 +727,13 @@ public class ContourPlot extends ListPlot {
             xRange[0], yRange[0], stepX, stepY, gridX, gridY, level);
 
         if (lineSegments.argSize() > 0) {
+          lineSegments = joinSegments(lineSegments, xRange[0], yRange[0],
+              joinTolerance(stepX, xRange), joinTolerance(stepY, yRange));
           IASTAppendable group = F.ListAlloc();
           // the lines of a level are half transparent with butt ends, an equation's curve keeps
           // its style as given
-          group.append(isEquation ? styleDirective(currentStyle) : levelDirective(currentStyle));
+          group.append(isEquation || ownStyle ? styleDirective(currentStyle)
+              : levelDirective(currentStyle));
 
           for (IExpr line : lineSegments)
             group.append(line);
@@ -824,6 +917,117 @@ public class ContourPlot extends ListPlot {
     } else {
       directive.append(style);
     }
+  }
+
+  /**
+   * The pieces of one level joined into polylines: pieces of neighbouring cells meet in the point
+   * where the contour crosses their common edge, and the chains of pieces through such points
+   * become one <code>Line</code> each - one per closed loop or open curve of the level.
+   *
+   * @param lineSegments <code>Line({p1, p2, ...})</code> primitives; any other primitive is kept
+   * @param x0 the x coordinate the end points are compared relative to
+   * @param y0 the y coordinate the end points are compared relative to
+   * @param toleranceX the x distance below which two end points are the same point
+   * @param toleranceY the y distance below which two end points are the same point
+   */
+  static IASTAppendable joinSegments(IAST lineSegments, double x0, double y0, double toleranceX,
+      double toleranceY) {
+    final double[] origin = {x0, y0};
+    final double[] tolerance = {toleranceX, toleranceY};
+    final int n = lineSegments.argSize();
+    double[][][] pieces = new double[n][][];
+    java.util.Map<String, java.util.List<Integer>> byEnd = new java.util.HashMap<>();
+    IASTAppendable result = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      IExpr line = lineSegments.get(i + 1);
+      double[][] points = linePoints(line);
+      if (points == null) {
+        result.append(line);
+        continue;
+      }
+      pieces[i] = points;
+      byEnd.computeIfAbsent(pointKey(points[0], origin, tolerance),
+          key -> new java.util.ArrayList<>()).add(i);
+      byEnd.computeIfAbsent(pointKey(points[points.length - 1], origin, tolerance),
+          key -> new java.util.ArrayList<>()).add(i);
+    }
+    boolean[] used = new boolean[n];
+    for (int i = 0; i < n; i++) {
+      if (pieces[i] == null || used[i]) {
+        continue;
+      }
+      used[i] = true;
+      java.util.ArrayDeque<double[]> chain = new java.util.ArrayDeque<>();
+      for (double[] p : pieces[i]) {
+        chain.addLast(p);
+      }
+      // grow the chain at its end, then at its start
+      for (boolean atEnd : new boolean[] {true, false}) {
+        while (true) {
+          String key = pointKey(atEnd ? chain.peekLast() : chain.peekFirst(), origin, tolerance);
+          int next = -1;
+          for (int j : byEnd.getOrDefault(key, java.util.Collections.emptyList())) {
+            if (!used[j]) {
+              next = j;
+              break;
+            }
+          }
+          if (next < 0) {
+            break;
+          }
+          used[next] = true;
+          double[][] piece = pieces[next];
+          // the piece runs away from the shared point, in whichever direction it was stored
+          boolean forward = pointKey(piece[0], origin, tolerance).equals(key);
+          for (int k = 1; k < piece.length; k++) {
+            double[] p = forward ? piece[k] : piece[piece.length - 1 - k];
+            if (atEnd) {
+              chain.addLast(p);
+            } else {
+              chain.addFirst(p);
+            }
+          }
+        }
+      }
+      IASTAppendable points = F.ListAlloc(chain.size());
+      for (double[] p : chain) {
+        points.append(F.List(F.num(p[0]), F.num(p[1])));
+      }
+      result.append(F.Line(points));
+    }
+    return result;
+  }
+
+  /** The points of <code>Line({p1, p2, ...})</code>, or <code>null</code> for anything else. */
+  private static double[][] linePoints(IExpr line) {
+    if (!line.isAST(S.Line, 2) || !line.first().isList() || line.first().argSize() < 2) {
+      return null;
+    }
+    IAST list = (IAST) line.first();
+    double[][] points = new double[list.argSize()][];
+    for (int k = 0; k < points.length; k++) {
+      IExpr p = list.get(k + 1);
+      if (!p.isList2()) {
+        return null;
+      }
+      double x = p.first().evalfNaN();
+      double y = p.second().evalfNaN();
+      if (!Double.isFinite(x) || !Double.isFinite(y)) {
+        return null;
+      }
+      points[k] = new double[] {x, y};
+    }
+    return points;
+  }
+
+  /**
+   * The offset of the point from <code>origin</code> rounded to multiples of
+   * <code>tolerance</code>, as a map key; relative to the plot's corner the multiples stay far
+   * below the range of a <code>long</code>.
+   */
+  private static String pointKey(double[] p, double[] origin, double[] tolerance) {
+    return Math.round((p[0] - origin[0]) / tolerance[0]) + ","
+        + Math.round((p[1] - origin[1]) / tolerance[1]);
   }
 
   /**

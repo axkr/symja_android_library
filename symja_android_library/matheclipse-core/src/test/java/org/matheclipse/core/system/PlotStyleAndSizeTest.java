@@ -18,7 +18,8 @@ public class PlotStyleAndSizeTest extends ExprEvaluatorTestCase {
   @Test
   public void testContourStyleListBecomesDirective() {
     // every per-contour list of directives becomes one flat Directive behind the half opacity and
-    // the butt caps of the contour lines, the styles taken in turn
+    // the butt caps of the contour lines, the styles taken in turn from the lowest level up; the
+    // lines are drawn from the highest level down
     check("Union(Cases(ContourPlot(x*y, {x, -1, 1}, {y, -1, 1}, " //
         + "ContourStyle -> {{Dashed, Green}, {Thin, Orange}})[[1]], _Directive, Infinity))", //
         "{Directive(Opacity(0.5),CapForm(Butt),Dashing({Small,Small}),RGBColor(0,1,0)),"
@@ -26,7 +27,7 @@ public class PlotStyleAndSizeTest extends ExprEvaluatorTestCase {
     check("Take(Cases(ContourPlot(x-2*y, {x, 0, 2}, {y, 0, 2}, Contours -> 4, " //
         + "ContourStyle -> {{Gray}, {Thick, Purple}, {Dotted}})[[1]], _Directive, Infinity), 4) " //
         + "=== Map(Directive(Opacity(0.5), CapForm(\"Butt\"), Sequence @@ #) &, " //
-        + "{{Gray}, {Thick, Purple}, {Dotted}, {Gray}})", //
+        + "{{Gray}, {Dotted}, {Thick, Purple}, {Gray}})", //
         "True");
     // a nested list of directives is flattened, a Directive opened
     check("Union(Cases(ContourPlot(x+2*y, {x, 0, 1}, {y, 0, 1}, " //

@@ -52,66 +52,33 @@ public class ExpToTrig extends AbstractEvaluator {
       arg1 = engine.evaluate(flattened);
     }
 
+    // the sums Cosh(..)+Sinh(..) the conversion creates, which a product is distributed over
+    final java.util.Set<IExpr> converted =
+        java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     VisitorReplaceAll visitor = new VisitorReplaceAll(x -> {
       if (x.isPower()) {
-        IExpr exponent = F.NIL;
         IExpr base = x.base();
         if (base == S.E) {
-          exponent = x.exponent();
-        } else if (base.isNumber()) {
-          // base^exponent => E ^(exponent*Log(base))
-          exponent = S.Expand.of(engine, F.Times(x.exponent(), F.Log(base)));
+          // E^(a+I*b) -> Cosh(a+I*b)+Sinh(a+I*b): the exponent isn't split into its real and
+          // imaginary parts
+          return coshPlusSinh(x.exponent(), converted, engine);
         }
-        if (exponent.isPresent()) {
-
-          // Partition Plus exponents to isolate Imaginary components from Real components
-          // E^(A + I*B) -> (Cosh(A) + Sinh(A)) * (Cos(B) + I*Sin(B))
-          if (exponent.isPlus()) {
-            IASTAppendable hasI = F.PlusAlloc(exponent.size());
-            IASTAppendable noI = F.PlusAlloc(exponent.size());
-            for (int i = 1; i < exponent.size(); i++) {
-              IExpr arg = ((IAST) exponent).get(i);
-              if (!arg.isFree(
-                  y -> y.isComplex() || y.isComplexNumeric() || y == S.I || y.equals(F.CNI),
-                  true)) {
-                hasI.append(arg);
-              } else {
-                noI.append(arg);
-              }
-            }
-            if (hasI.argSize() > 0 && noI.argSize() > 0) {
-              IExpr complexExp = hasI.argSize() == 1 ? hasI.arg1() : hasI;
-              IExpr realExp = noI.argSize() == 1 ? noI.arg1() : noI;
-
-              IExpr complexCosh = engine.evaluate(F.Cosh(complexExp));
-              if (complexCosh.isTimes())
-                complexCosh = F.evalExpand(complexCosh);
-              IExpr complexSinh = engine.evaluate(F.Sinh(complexExp));
-              if (complexSinh.isTimes())
-                complexSinh = F.evalExpand(complexSinh);
-              IExpr complexPart = engine.evaluate(F.Plus(complexCosh, complexSinh));
-
-              IExpr realCosh = engine.evaluate(F.Cosh(realExp));
-              if (realCosh.isTimes())
-                realCosh = F.evalExpand(realCosh);
-              IExpr realSinh = engine.evaluate(F.Sinh(realExp));
-              if (realSinh.isTimes())
-                realSinh = F.evalExpand(realSinh);
-              IExpr realPart = engine.evaluate(F.Plus(realCosh, realSinh));
-
-              return F.Times(complexPart, realPart);
-            }
+        if (base.isNumber() && !(base.isPositive() && x.exponent().isNumericFunction(true)
+            && x.exponent().isRealResult())) {
+          // base^exponent => E ^(exponent*Log(base)); a positive real number like Sqrt(2) stays as
+          // it is, while (-1)^(1/3) becomes Cos(Pi/3)+I*Sin(Pi/3)
+          if (base.isNegative() && !base.isMinusOne()) {
+            // (-b)^e -> (-1)^e * b^e, each converted on its own
+            IExpr sign = coshPlusSinh(S.Expand.of(engine, F.Times(x.exponent(), F.Log(F.CN1))),
+                converted, engine);
+            IExpr magnitude = x.exponent().isNumericFunction(true) && x.exponent().isRealResult()
+                ? F.Power(base.negate(), x.exponent())
+                : coshPlusSinh(S.Expand.of(engine, F.Times(x.exponent(), F.Log(base.negate()))),
+                    converted, engine);
+            return F.Times(sign, magnitude);
           }
-
-          IExpr cosh = engine.evaluate(F.Cosh(exponent));
-          if (cosh.isTimes()) {
-            cosh = F.evalExpand(cosh);
-          }
-          IExpr sinh = engine.evaluate(F.Sinh(exponent));
-          if (sinh.isTimes()) {
-            sinh = F.evalExpand(sinh);
-          }
-          return F.Plus(cosh, sinh);
+          return coshPlusSinh(S.Expand.of(engine, F.Times(x.exponent(), F.Log(base))), converted,
+              engine);
         }
       } else if (x.isPlus()) {
         IExpr logRes = convertLogDifferences((IAST) x, engine);
@@ -123,8 +90,38 @@ public class ExpToTrig extends AbstractEvaluator {
     });
 
     visitor.setPostProcessing(x -> {
-      if (x.isTimes() && x.arg1().isNumber() && x.arg2().isPlus()) {
+      if (x.isTimes() && x.arg1().isNumber() && x.arg2().isPlus()
+          && ((IAST) x).forAll(factor -> !isSumFactor(factor) || hasConverted(factor, converted),
+              1)) {
+        // c*(Cos(x)+I*Sin(x)+...) is expanded so that converted terms cancel; a sum without a
+        // converted part keeps the product
         return F.Expand(x);
+      }
+      if (x.isTimes()) {
+        // a*(Cos(x)+I*Sin(x)) -> a*Cos(x)+I*a*Sin(x): the other factors are distributed over the
+        // one converted sum, so that terms of several exponentials combine; a factor that is a sum
+        // or a power of a sum keeps the product (a+b)*(Cos(x)+I*Sin(x))
+        IAST times = (IAST) x;
+        int index = -1;
+        for (int i = 1; i < times.size(); i++) {
+          IExpr factor = times.get(i);
+          if (converted.contains(factor)) {
+            if (index > 0) {
+              return x;
+            }
+            index = i;
+          } else if (isSumFactor(factor) || hasConverted(factor, converted)) {
+            // a sum, a power of a sum, or a product with converted sums of its own like the one
+            // of (-b)^e
+            return x;
+          }
+        }
+        if (index > 0) {
+          IAST sum = (IAST) times.get(index);
+          IAST rest = times.removeAtCopy(index);
+          IExpr factor = rest.argSize() == 1 ? rest.arg1() : rest;
+          return sum.map(term -> F.Times(factor, term), 1);
+        }
       }
       return x;
     });
@@ -136,6 +133,32 @@ public class ExpToTrig extends AbstractEvaluator {
       return engine.evaluate(temp);
     }
     return arg1;
+  }
+
+  /** Whether <code>factor</code> is a sum or a power of a sum. */
+  private static boolean isSumFactor(IExpr factor) {
+    return factor.isPlus() || (factor.isPower() && factor.base().isPlus());
+  }
+
+  /** Whether <code>expr</code> is or contains a sum of {@link #coshPlusSinh}. */
+  private static boolean hasConverted(IExpr expr, java.util.Set<IExpr> converted) {
+    return converted.contains(expr) || expr.has(converted::contains, false);
+  }
+
+  /** <code>Cosh(exponent)+Sinh(exponent)</code>, which is recorded in <code>converted</code>. */
+  private static IAST coshPlusSinh(IExpr exponent, java.util.Set<IExpr> converted,
+      EvalEngine engine) {
+    IExpr cosh = engine.evaluate(F.Cosh(exponent));
+    if (cosh.isTimes()) {
+      cosh = F.evalExpand(cosh);
+    }
+    IExpr sinh = engine.evaluate(F.Sinh(exponent));
+    if (sinh.isTimes()) {
+      sinh = F.evalExpand(sinh);
+    }
+    IAST sum = F.Plus(cosh, sinh);
+    converted.add(sum);
+    return sum;
   }
 
   /**

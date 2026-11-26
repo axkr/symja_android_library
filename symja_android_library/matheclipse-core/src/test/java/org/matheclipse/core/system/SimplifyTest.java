@@ -1039,4 +1039,37 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(Log(2+I)+Log(2-I))", //
         "Log(5)");
   }
+
+  @Test
+  public void testExpToTrigDistributesAndKeepsNumbers() {
+    // the coefficients are distributed over the converted sums, so like terms combine
+    check("ExpToTrig(c*E^(I*z)+c*E^(-I*z))", //
+        "2*c*Cos(z)");
+    check("ExpToTrig(a*E^(I*z)+b*E^(2*I*z))", //
+        "a*Cos(z)+b*Cos(2*z)+I*a*Sin(z)+I*b*Sin(2*z)");
+    // a sum or a power of a sum stays a factor
+    check("ExpToTrig((2+w)^3*E^(I*z))", //
+        "(2+w)^3*(Cos(z)+I*Sin(z))");
+    check("ExpToTrig((a+b)*E^(I*z))", //
+        "(a+b)*(Cos(z)+I*Sin(z))");
+    // a numeric power such as Sqrt(3) isn't rewritten, a power with a symbolic exponent is
+    check("ExpToTrig(Sqrt(3)*E^(I*z))", //
+        "Sqrt(3)*Cos(z)+I*Sqrt(3)*Sin(z)");
+    check("ExpToTrig(5^z)", //
+        "Cosh(z*Log(5))+Sinh(z*Log(5))");
+    // an exponent with a real and an imaginary part isn't split
+    check("ExpToTrig(E^(r+2*I*w))", //
+        "Cosh(r+I*2*w)+Sinh(r+I*2*w)");
+    // a numeric coefficient doesn't expand a sum factor either
+    check("ExpToTrig(2*(a+b)*E^(I*z))", //
+        "2*(a+b)*(Cos(z)+I*Sin(z))");
+    check("ExpToTrig(5*(3+w)^2*E^(I*z))", //
+        "5*(3+w)^2*(Cos(z)+I*Sin(z))");
+    // the two converted factors of a negative base keep the product
+    check("ExpToTrig(c*(-17)^a*E^(I*z))", //
+        "c*(Cos(a*Pi)+I*Sin(a*Pi))*(Cos(z)+I*Sin(z))*(Cosh(a*Log(17))+Sinh(a*Log(17)))");
+    // a negative base with a real numeric exponent: only the sign is converted
+    check("ExpToTrig((-3)^Pi)", //
+        "3^Pi*(Cos(Pi^2)+I*Sin(Pi^2))");
+  }
 }

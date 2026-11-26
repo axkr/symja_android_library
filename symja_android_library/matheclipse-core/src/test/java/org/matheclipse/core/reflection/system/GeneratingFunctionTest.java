@@ -116,7 +116,7 @@ public class GeneratingFunctionTest {
   public void testEGFTrigonometric() {
     // a_n = Sin(n) => e^(x Cos(1)) Sin(x Sin(1)) = Sin(x Sin(1))(Cosh(x Cos(1))+Sinh(x Cos(1)))
     check("ExponentialGeneratingFunction(Sin(n),n,x)", //
-        "Sin(x*Sin(1))*(Cosh(x*Cos(1))+Sinh(x*Cos(1)))");
+        "Cosh(x*Cos(1))*Sin(x*Sin(1))+Sin(x*Sin(1))*Sinh(x*Cos(1))");
   }
 
   // ==========================================================

@@ -140,4 +140,19 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
     check("FindInstance({x + y == 10, x >= 0, y >= 0, x <= 7}, {x, y}, Reals)", //
         "{{x->0,y->10}}");
   }
+
+  @Test
+  public void testFindInstanceLogicalCombinationsOverReals() {
+    // a chain of comparisons in several variables
+    check("cs=Inequality(p-2,LessEqual,q,Less,p+1)&&r==q-1;s=FindInstance(cs,{p,q,r},Reals,4);"
+        + "{Length(s),Length(Union(s)),And@@(cs/.s)}", //
+        "{4,4,True}");
+    // a disjunction of conjunctions
+    check("cs=(u>7&&v==0)||(u<-2&&v>u);s=FindInstance(cs,{u,v},Reals,3);"
+        + "{Length(s),And@@(cs/.s)}", //
+        "{3,True}");
+    // every branch empty
+    check("FindInstance((w<-1&&w>2)||(w>9&&w<8),w,Reals)", //
+        "{}");
+  }
 }

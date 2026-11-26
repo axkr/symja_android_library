@@ -851,4 +851,35 @@ public class PlotSamplingAndLayoutTest extends ExprEvaluatorTestCase {
         + "Norm(List @@ ColorData(95, 3) - {0.315656, 0.739838, 0.687294}) < 10^-6}", //
         "{{1,Infinity,1},15,True}");
   }
+
+  @Test
+  public void testContourLinesAreJoined() {
+    // each contour level is one line, not a line per sampling cell
+    check("g=ContourPlot(Exp(-10*u),{u,0,1},{v,0,1},Contours->5);"
+        + "Length(Cases(g,_Line,Infinity))", //
+        "5");
+    // an explicit list draws exactly its levels, the lines from the highest level down
+    check("g=ContourPlot(u^2+v^2,{u,-2,2},{v,-2,2},Contours->{2,3,1});"
+        + "Cases(Normal(g),Line(p_):>Round(Norm(First(p))^2,1/100),Infinity)", //
+        "{3,2,1}");
+    // a level with a style is drawn in just that style
+    check("g=ContourPlot(u^2+v^2,{u,-2,2},{v,-2,2},Contours->{{1/2,Orange},{2,Green}});"
+        + "Cases(Normal(g),{c_RGBColor,Line(p_)}:>{Round(Norm(First(p))^2,1/100),c},Infinity)", //
+        "{{2,RGBColor(0,1,0)},{1/2,RGBColor(1.0,0.5,0.0)}}");
+    // a closed contour ends where it starts
+    check("g=ContourPlot(u^2+v^2,{u,-2,2},{v,-2,2},Contours->{1});"
+        + "Cases(Normal(g),Line(p_):>{Length(p)>10,Norm(First(p)-Last(p))<10^-9},Infinity)", //
+        "{{True,True}}");
+    // far from the origin as well
+    check("g=ContourPlot((u-10^9)^2+v^2,{u,10^9-2,10^9+2},{v,-2,2},Contours->{1});"
+        + "Cases(Normal(g),Line(p_):>{Length(p)>10,Norm(First(p)-Last(p))<10^-3},Infinity)", //
+        "{{True,True}}");
+    // a level given twice is drawn once, in the style given for it
+    check("g=ContourPlot(u^2+v^2,{u,-2,2},{v,-2,2},Contours->{1,1});"
+        + "Length(Cases(g,_Line,Infinity))", //
+        "1");
+    check("g=ContourPlot(u^2+v^2,{u,-2,2},{v,-2,2},Contours->{{1},{1,Red},{2}});"
+        + "Cases(Normal(g),{c_RGBColor,Line(p_)}:>{Round(Norm(First(p))^2,1/100),c},Infinity)", //
+        "{{1,RGBColor(1,0,0)}}");
+  }
 }

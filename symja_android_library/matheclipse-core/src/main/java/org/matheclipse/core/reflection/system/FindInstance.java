@@ -178,27 +178,13 @@ public class FindInstance extends Solve {
       return F.NIL;
     }
     IAST conditions = arg1.isAnd() || arg1.isList() ? (IAST) arg1 : arg1.makeList();
-    boolean hasInequality = false;
+    boolean[] hasInequality = {false};
     for (IExpr condition : conditions) {
-      if (condition.isAST(S.LessEqual, 3) || condition.isAST(S.Less, 3)
-          || condition.isAST(S.GreaterEqual, 3) || condition.isAST(S.Greater, 3)) {
-        hasInequality = true;
-      } else if (condition.isAST(S.Inequality)) {
-        hasInequality = true;
-        if (vars.argSize() > 1) {
-          return F.NIL;
-        }
-      } else if (!condition.isAST(S.Equal, 3) && !condition.isAST(S.Unequal, 3)) {
-        return F.NIL;
-      }
-      if (!VariablesSet.getVariables(condition).forAll(v -> vars.indexOf(v) > 0)) {
-        return F.NIL;
-      }
-      if (vars.argSize() > 1 && !isLinear(condition, vars, engine)) {
+      if (!isComparisonFormula(condition, vars, hasInequality, engine)) {
         return F.NIL;
       }
     }
-    if (!hasInequality) {
+    if (!hasInequality[0]) {
       return F.NIL;
     }
     final IExpr condition =
@@ -225,6 +211,45 @@ public class FindInstance extends Solve {
       return F.NIL;
     }
     return instances;
+  }
+
+  /**
+   * Whether <code>formula</code> combines comparisons of the variables with <code>And</code>,
+   * <code>Or</code> and <code>Not</code>; with several variables every compared expression has to
+   * be linear in them.
+   *
+   * @param hasInequality set to <code>true</code> if a comparison is an inequality
+   */
+  private static boolean isComparisonFormula(IExpr formula, IAST vars, boolean[] hasInequality,
+      EvalEngine engine) {
+    if (formula.isAnd() || formula.isOr() || formula.isNot()) {
+      for (IExpr arg : (IAST) formula) {
+        if (!isComparisonFormula(arg, vars, hasInequality, engine)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (formula.isAST(S.LessEqual, 3) || formula.isAST(S.Less, 3)
+        || formula.isAST(S.GreaterEqual, 3) || formula.isAST(S.Greater, 3)) {
+      hasInequality[0] = true;
+    } else if (formula.isAST(S.Inequality) && formula.argSize() % 2 == 1) {
+      hasInequality[0] = true;
+      if (vars.argSize() > 1) {
+        // a chain a < b <= c: every compared expression is linear
+        for (int i = 1; i < formula.size(); i += 2) {
+          if (!Solve.isAffine(engine.evalQuiet(((IAST) formula).get(i)), vars)) {
+            return false;
+          }
+        }
+      }
+    } else if (!formula.isAST(S.Equal, 3) && !formula.isAST(S.Unequal, 3)) {
+      return false;
+    }
+    if (!VariablesSet.getVariables(formula).forAll(v -> vars.indexOf(v) > 0)) {
+      return false;
+    }
+    return vars.argSize() == 1 || formula.isAST(S.Inequality) || isLinear(formula, vars, engine);
   }
 
   /** Test if the sides of the comparison are polynomials of degree &lt;= 1 in the variables. */
