@@ -343,14 +343,59 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
   /**
    * The variables of a linear problem are free, as in WMA - the non-negativity these problems need
-   * is written out. Without it the problem is unbounded and stays unevaluated.
+   * is written out. Without it the problem is unbounded.
    */
   @Test
   public void testLinearProblemsHaveFreeVariables() {
     check("NMinimize({x+y, x>=-1 && y>=-2}, {x,y})", //
         "{-3.0,{x->-1.0,y->-2.0}}");
     check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})", //
-        "NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})");
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+  }
+
+  /**
+   * A problem whose objective falls (for NMaximize rises) without bound on the points which
+   * satisfy the constraints is unbounded: the result is {-Infinity, {x -> Indeterminate, ...}} and
+   * not the end point of a search which ran away.
+   */
+  @Test
+  public void testNMinimizeUnboundedConstrained() {
+    // a linear program
+    check("Check(NMaximize({x+y, x>=0}, {x,y}), ubnd, NMaximize::ubnd)", //
+        "ubnd");
+    check("NMinimize({x-y, y>=1}, {x,y})", //
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+    // nonlinear objectives which run away inside of the constraints
+    check("NMaximize({x*y, x+y<=7}, {x,y})", //
+        "{Infinity,{x->Indeterminate,y->Indeterminate}}");
+    check("NMinimize({x*y, x+y<=7}, {x,y})", //
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+    check("NMinimize({x^3, x<=5}, x)", //
+        "{-Infinity,{x->Indeterminate}}");
+    check("NMinimize({-x^2-y^2, x^2+y^2>=1}, {x,y})", //
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+    // an equality constraint holds one variable, the other runs away
+    check("NMinimize({-x+y^2, y==1}, {x,y})", //
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+    check("NMinimize({x*y, x+y==7}, {x,y})", //
+        "{-Infinity,{x->Indeterminate,y->Indeterminate}}");
+    // integer variables
+    check("NMaximize({x*y, x+y<=7 && Element(x,Integers)}, {x,y})", //
+        "{Infinity,{x->Indeterminate,y->Indeterminate}}");
+    check("Check(FindMaximum({x*y, x+y<=7 && Element(x,Integers)}, {x,y}), ubnd, NMaximize::ubnd)", //
+        "ubnd");
+
+    // the same constraints with an optimum
+    check("NMaximize({x*y, x+y==7}, {x,y})", //
+        "{12.25,{x->3.5,y->3.5}}");
+    check("NMinimize({x*y, x^2+y^2<=4}, {x,y})", //
+        "{-2.0,{x->1.41421,y->-1.41421}}");
+    check("NMinimize({(x-100)^2+y^2, x>=0}, {x,y})", //
+        "{0.0,{x->100.0,y->0.0}}");
+    check("NMinimize({(x-500)^2, x>=1}, x)", //
+        "{0.0,{x->500.0}}");
+    check("NMinimize({x^2-y, y==1}, {x,y})", //
+        "{-1.0,{x->0.0,y->1.0}}");
   }
 
   @Test

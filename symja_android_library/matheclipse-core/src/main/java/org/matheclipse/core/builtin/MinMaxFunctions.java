@@ -1787,6 +1787,11 @@ public class MinMaxFunctions {
                 i -> F.Rule(listOfVariables.get(i), S.Indeterminate));
             return F.list(getGoalType() == GoalType.MINIMIZE ? F.CInfinity : F.CNInfinity, rules);
           }
+          if (isUnboundedResult(best)) {
+            // The problem is unbounded.
+            Errors.printMessage(ast.topHead(), "ubnd", F.CEmptyList, engine);
+            return best;
+          }
           return withWorkingPrecision(best, function, constraints, ast, engine);
         }
       } catch (ValidateException ve) {
@@ -1956,9 +1961,36 @@ public class MinMaxFunctions {
       if (second.isNIL()) {
         return first;
       }
-      double a = first.first().evalf();
-      double b = second.first().evalf();
+      double a = objective(first);
+      double b = objective(second);
       return (getGoalType() == GoalType.MINIMIZE ? b < a : b > a) ? second : first;
+    }
+
+    /** The value of a result <code>{value, rules}</code>, infinite for an unbounded problem. */
+    private static double objective(IExpr result) {
+      IExpr value = result.first();
+      if (value.isNegativeInfinity()) {
+        return Double.NEGATIVE_INFINITY;
+      }
+      if (value.isInfinity()) {
+        return Double.POSITIVE_INFINITY;
+      }
+      return value.evalf();
+    }
+
+    /**
+     * The result of a problem which has no optimum because the objective falls (for
+     * <code>NMaximize</code> rises) without bound on the points which satisfy the constraints:
+     * <code>{-Infinity, {x -> Indeterminate, ...}}</code>.
+     */
+    private IAST unboundedResult(Search search) {
+      IAST variables = search.listOfVariables;
+      return F.list(getGoalType() == GoalType.MINIMIZE ? F.CNInfinity : F.CInfinity,
+          F.mapRange(1, variables.size(), i -> F.Rule(variables.get(i), S.Indeterminate)));
+    }
+
+    private static boolean isUnboundedResult(IExpr result) {
+      return result.isList2() && (result.first().isInfinity() || result.first().isNegativeInfinity());
     }
 
     /**
@@ -2054,6 +2086,9 @@ public class MinMaxFunctions {
             search.infeasible = true;
             return F.NIL;
           }
+          if (mise.getSpecifier() == LocalizedOptimFormats.UNBOUNDED_SOLUTION) {
+            return unboundedResult(search);
+          }
           throw mise;
         }
       }
@@ -2131,12 +2166,7 @@ public class MinMaxFunctions {
         return F.NIL;
       }
       if (isUnbounded(cost, best, bestCost, cost.value(init))) {
-        // The problem is unbounded.
-        Errors.printMessage(minimize ? S.NMinimize : S.NMaximize, "ubnd", F.CEmptyList,
-            search.engine);
-        IAST variables = search.listOfVariables;
-        return F.list(minimize ? F.CNInfinity : F.CInfinity,
-            F.mapRange(1, variables.size(), i -> F.Rule(variables.get(i), S.Indeterminate)));
+        return unboundedResult(search);
       }
       return F.list(F.num(func.value(best)), rules(search.vars.getArrayList(), best));
     }
@@ -2174,6 +2204,20 @@ public class MinMaxFunctions {
      */
     private static boolean isUnbounded(MultivariateFunction cost, double[] point,
         double pointCost, double originCost) {
+      return isUnbounded(cost, point, pointCost, originCost, p -> true);
+    }
+
+    /**
+     * <code>true</code> if the search ran away to points which satisfy the constraints: its end
+     * point is far from the origin, and further out on a ray through it the points satisfy the
+     * constraints and the cost does not rise. The ray scales all coordinates of the end point, or
+     * only its large ones, so that a variable which a constraint like <code>y == 1</code> holds
+     * stays where it is.
+     *
+     * @param feasible tests if a point satisfies the constraints
+     */
+    private static boolean isUnbounded(MultivariateFunction cost, double[] point,
+        double pointCost, double originCost, Predicate<double[]> feasible) {
       if (pointCost == Double.NEGATIVE_INFINITY) {
         return true;
       }
@@ -2187,14 +2231,25 @@ public class MinMaxFunctions {
         // an oscillating objective whose amplitude grows without bound
         return true;
       }
+      return isRisingNowhere(cost, point, pointCost, 0.0, feasible)
+          || isRisingNowhere(cost, point, pointCost, 0.1 * norm, feasible);
+    }
+
+    /**
+     * <code>true</code> if on the ray which scales the coordinates of <code>point</code> whose
+     * absolute value exceeds <code>threshold</code> the points satisfy the constraints and the cost
+     * does not rise.
+     */
+    private static boolean isRisingNowhere(MultivariateFunction cost, double[] point,
+        double pointCost, double threshold, Predicate<double[]> feasible) {
       double previous = pointCost;
       double[] further = new double[point.length];
       for (double scale = 2.0; scale <= 1e7; scale *= scale < 8.0 ? 2.0 : 100.0) {
         for (int d = 0; d < point.length; d++) {
-          further[d] = scale * point[d];
+          further[d] = Math.abs(point[d]) > threshold ? scale * point[d] : point[d];
         }
         double value = cost.value(further);
-        if (Double.isNaN(value) || value > previous) {
+        if (Double.isNaN(value) || value > previous || !feasible.test(further)) {
           return false;
         }
         previous = value;
@@ -2258,13 +2313,19 @@ public class MinMaxFunctions {
       // A local search may end where it starts: the origin is a stationary point of x^2, so the
       // search for the maximum of x^2 under x^2<=4 stays at the minimum 0. The best of the local
       // optima of all starts is the answer; of equal ones the first.
+      // With two or more variables the starts {1,-1,1,...} and {-1,1,-1,...} leave the diagonal:
+      // on it x*y is x^2, and the searches for the minimum of x*y under x+y<=7 stopped at the
+      // saddle point 0.
       IExpr best = F.NIL;
       double bestCost = Double.POSITIVE_INFINITY;
       final boolean minimize = getGoalType() == GoalType.MINIMIZE;
-      for (int i = 0; i < starts.length; i++) {
+      final int startCount = variables.size() >= 2 ? starts.length + 2 : starts.length;
+      for (int i = 0; i < startCount; i++) {
         IASTAppendable specs = F.ListAlloc(variables.size());
-        for (IExpr variable : variables) {
-          specs.append(F.list(variable, starts[i]));
+        for (int d = 0; d < variables.size(); d++) {
+          IExpr start = i < starts.length ? starts[i]
+              : (d % 2 == 0) == (i == starts.length) ? F.C1 : F.CN1;
+          specs.append(F.list(variables.get(d), start));
         }
         lastSpecs = specs;
         // the failures of the local searches are quiet: there may be no point to find
@@ -2287,7 +2348,7 @@ public class MinMaxFunctions {
         }
       }
       if (best.isPresent()) {
-        return best;
+        return ranAway(function, constraints, best, search) ? unboundedResult(search) : best;
       }
       if (!violated) {
         // no local search ended: the constraints may have no point at all
@@ -2301,6 +2362,43 @@ public class MinMaxFunctions {
         search.infeasible = true;
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>true</code> if the local constrained search ran away to points which satisfy the
+     * constraints and where the objective keeps falling (for <code>NMaximize</code> rising):
+     * <code>NMaximize({x*y, x+y<=7}, {x,y})</code> has no maximum, its search ended at
+     * <code>x == y == -2.8*10^14</code>.
+     *
+     * @param best the result <code>{value, {x -> x0, ...}}</code> of the local search
+     */
+    private boolean ranAway(IExpr function, IExpr constraints, IExpr best, Search search) {
+      final List<IExpr> variables = search.vars.getArrayList();
+      final IAST rules = (IAST) best.second();
+      final double[] point = new double[variables.size()];
+      for (int d = 0; d < point.length; d++) {
+        IExpr variable = variables.get(d);
+        IExpr value = F.NIL;
+        for (IExpr rule : rules) {
+          if (rule.first().equals(variable)) {
+            value = rule.second();
+          }
+        }
+        double v = value.isPresent() ? value.evalfNaN() : Double.NaN;
+        if (!Double.isFinite(v)) {
+          return false;
+        }
+        point[d] = v;
+      }
+      final MultivariateFunction func = new MultiVariateNumerical(function, search.listOfVariables);
+      final MultivariateFunction cost =
+          getGoalType() == GoalType.MINIMIZE ? func : p -> -func.value(p);
+      final double pointCost = cost.value(point);
+      if (Double.isNaN(pointCost)) {
+        return false;
+      }
+      return isUnbounded(cost, point, pointCost, cost.value(new double[point.length]),
+          p -> isFeasible(constraints, rules(variables, p), search.engine));
     }
 
     /**
@@ -2755,6 +2853,10 @@ public class MinMaxFunctions {
         IExpr relaxed = optimum(function, node, search);
         if (relaxed.isNIL()) {
           continue;
+        }
+        if (isUnboundedResult(relaxed)) {
+          // a relaxation which runs away along a ray runs away on its integer points as well
+          return relaxed;
         }
         if (incumbent.isPresent()) {
           double bound = relaxed.first().evalf();
