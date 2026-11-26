@@ -1700,6 +1700,20 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
+   * Can <code>a^c*b^c</code> be written as <code>(a*b)^c</code>? For an integer <code>c</code>, or
+   * if <code>a</code> or <code>b</code> is a nonnegative real, or if <code>a+b</code> is: then the
+   * arguments of <code>a</code> and <code>b</code> add up to an argument in <code>(-Pi, Pi]</code>.
+   * Without that <code>Sqrt(x-1)*Sqrt(x+1)</code> is <code>-Sqrt(x^2-1)</code> at <code>x=-2</code>,
+   * and <code>Sqrt(-2-x)*Sqrt(-2+x)</code> is <code>-Sqrt(4-x^2)</code> at <code>x=0</code>.
+   */
+  private boolean powersMerge(IExpr a, IExpr b, IExpr exponent) {
+    if (exponent.isInteger() || a.isNonNegativeResult() || b.isNonNegativeResult()) {
+      return true;
+    }
+    return eval(F.Plus(a, b)).isNonNegativeResult();
+  }
+
+  /**
    * Try reducing for {@link S#Plus} expressions in the denominators of the {@link S#Times} function
    * by creating a conjugate expression and use the rule <code>(a+b)*(a-b) == a^2 - b^2</code>
    * 
@@ -1766,7 +1780,8 @@ public class SimplifyUtil extends VisitorExpr {
           IExpr rhs = timesAST.get(i + 1);
           if (rhs.isPower() && rhs.exponent().equals(exponent) //
               && ((fFullSimplify && rhs.base().isAST())
-                  || (rhs.base().isPlus() && rhs.base().first().equals(base.first())))) {
+                  || (rhs.base().isPlus() && rhs.base().first().equals(base.first())))
+              && powersMerge(base, rhs.base(), exponent)) {
             if (fFullSimplify) {
               IAST test = F.Times(base, rhs.base());
               long minCounter = fComplexityFunction.apply(test);

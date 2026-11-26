@@ -294,10 +294,24 @@ public class SpecialFunctions {
       // }
       // }
       if (a.isNumber() && b.isNumber()) {
-        if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
-          // http://fungrim.org/entry/082a69/
-          return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
-              Power(Factorial(Plus(CN1, a, b)), -1));
+        if (a.isInteger() && b.isInteger() && (a.isPositive() || b.isPositive())) {
+          // Beta(m, n) == (n-1)!/Pochhammer(m, n) for a positive integer n: finite also on the
+          // lattice of the poles of Gamma, if m <= -n, and with few factors for a large m
+          IInteger n = (IInteger) (b.isPositive() && (!a.isPositive()
+              || ((IInteger) b).isLE((IInteger) a)) ? b : a);
+          IInteger m = (IInteger) (n == b ? a : b);
+          if (n.isLE(F.ZZ(Config.MAX_POLYNOMIAL_DEGREE))) {
+            if (!m.isPositive() && m.add(n).isPositive()) {
+              // a factor of Pochhammer(m, n) is 0
+              return F.CComplexInfinity;
+            }
+            return Times(Factorial(Plus(CN1, n)), Power(F.Pochhammer(m, n), -1));
+          }
+          if (a.isPositive() && b.isPositive()) {
+            // http://fungrim.org/entry/082a69/
+            return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
+                Power(Factorial(Plus(CN1, a, b)), -1));
+          }
         }
         // http://fungrim.org/entry/888581/
         return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
@@ -3687,6 +3701,13 @@ public class SpecialFunctions {
     if (ast.argSize() == 2) {
       IInexactNumber n = (IInexactNumber) ast.arg1();
       IInexactNumber z = (IInexactNumber) ast.arg2();
+      if (z.isZero() && n.isReal()) {
+        double shifted = n.evalf() + 0.5;
+        if (shifted <= 0.0 && shifted == Math.rint(shifted)) {
+          // the order -k-1/2: +-BesselJ or BesselI of the order k+1/2, which vanish at 0
+          return z;
+        }
+      }
       if (n instanceof Num && z instanceof Num) {
         try {
           double machine =
@@ -3778,6 +3799,10 @@ public class SpecialFunctions {
             if (num != Integer.MIN_VALUE && Math.abs(num) < 42) {
               if (num < 0) {
                 // H_{-n-1/2}(z) = (-1)^n * J_{n+1/2}(z)
+                if (arg2.isZero()) {
+                  // J_{n+1/2}(0) == 0; the closed form of J divides by a power of the machine zero
+                  return arg2;
+                }
                 int n = (-num - 1) / 2;
                 IExpr besselJ = engine.evaluate(F.BesselJ(F.Plus(F.ZZ(n), F.C1D2), arg2));
                 // CPD-ON
@@ -3866,6 +3891,10 @@ public class SpecialFunctions {
             if (num != Integer.MIN_VALUE && Math.abs(num) < 42) {
               if (num < 0) {
                 // L_{-n-1/2}(z) = I_{n+1/2}(z)
+                if (arg2.isZero()) {
+                  // I_{n+1/2}(0) == 0
+                  return arg2;
+                }
                 int n = (-num - 1) / 2;
                 IExpr besselI = engine.evaluate(F.BesselI(F.Plus(F.ZZ(n), F.C1D2), arg2));
                 return engine.evaluate(F.Together(besselI));

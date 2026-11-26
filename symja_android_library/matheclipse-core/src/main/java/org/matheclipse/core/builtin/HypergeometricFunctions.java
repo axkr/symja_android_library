@@ -2956,12 +2956,43 @@ public class HypergeometricFunctions {
       return hypergeometricU(a, b, z, engine).eval(engine);
     }
 
+    /**
+     * <code>HypergeometricU(-n, b, z)</code>, the polynomial
+     * <code>(-1)^n*Pochhammer(b,n)*Hypergeometric1F1(-n,b,z)</code> for every <code>b</code>:
+     * <code>(-1)^n*Sum(Binomial(n,k)*Pochhammer(b+k,n-k)*(-z)^k, {k,0,n})</code>. Its value at
+     * <code>z==0</code> is <code>(-1)^n*Pochhammer(b,n)</code>, where the forms with negative
+     * powers of <code>z</code> are undefined.
+     *
+     * @return {@link F#NIL} if the degree <code>n</code> is too large
+     */
+    private static @AllowNIL IExpr negativeIntegerA(int n, IExpr b, IExpr z) {
+      if (n <= 0 || n > Config.MAX_POLYNOMIAL_DEGREE) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(n + 1);
+      sum.append(F.Pochhammer(b, F.ZZ(n)));
+      for (int k = 1; k <= n; k++) {
+        sum.append(F.Times(F.Binomial(F.ZZ(n), F.ZZ(k)), F.Pochhammer(F.Plus(b, F.ZZ(k)),
+            F.ZZ(n - k)), F.Power(F.Negate(z), F.ZZ(k))));
+      }
+      return F.Expand((n & 1) == 1 ? F.Negate(sum) : sum);
+    }
+
     /** Highest second parameter handed to the arbitrary precision routine. */
     private static final int MAX_HYPERGEOMETRICU_PARAMETER = 200000;
 
     private static @AllowNIL IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
       if (a.isZero()) {
         return F.C1;
+      }
+      // also -2.0 with a machine number argument; a nonzero inexact z with a numeric b goes to the
+      // numeric routine, the alternating sum of the polynomial cancels most of its digits
+      if (a.isMathematicalIntegerNegative() && F.isPresent(a.toIntDefault())
+          && !(z.isInexactNumber() && !z.isZero() && b.isNumber())) {
+        IExpr polynomial = negativeIntegerA(-a.toIntDefault(), b, z);
+        if (polynomial.isPresent()) {
+          return polynomial;
+        }
       }
       if (z.isZero()) {
         // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/01/

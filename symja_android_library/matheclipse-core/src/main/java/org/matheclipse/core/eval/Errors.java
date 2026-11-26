@@ -650,6 +650,8 @@ public class Errors {
       "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
       "psv", "`1` is not a list of nonincreasing positive numbers.", //
       "pts", "`1` should be a non-empty list of points.", //
+      "pvrng",
+      "Singular points must be specified in the integration range in order to use PrincipalValue.", //
       "mcell", "`1` is not a valid mesh cell specification.", //
       "ptype",
       "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",

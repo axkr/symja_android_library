@@ -104,12 +104,12 @@ public class DRules {
     // D(Sec(x_),{x_,2}):=Sec(x)^3+Sec(x)*Tan(x)^2
     ISetDelayed(D(Sec(x_),list(x_,C2)),
       Plus(Power(Sec(x),C3),Times(Sec(x),Sqr(Tan(x))))),
-    // D(x_^a_,{x_,n_}):=If(IntegerQ(n),Pochhammer(a-n+1,n)*x^(a-n),FactorialPower(a,n)*x^(a-n))/;((IntegerQ(n)&&n>=0)||SymbolQ(n))&&FreeQ(a,x)
+    // D(x_^a_,{x_,n_}):=If(IntegerQ(n),Pochhammer(a-n+1,n)*x^(a-n),FactorialPower(a,n)*x^(a-n))/;((IntegerQ(n)&&n>=0)||SymbolQ(n))&&FreeQ(a,x)&&!NumberQ(x)
     ISetDelayed(D(Power(x_,a_),list(x_,n_)),
-      Condition(If(IntegerQ(n),Times(Pochhammer(Plus(a,Negate(n),C1),n),Power(x,Subtract(a,n))),Times(FactorialPower(a,n),Power(x,Subtract(a,n)))),And(Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)),FreeQ(a,x)))),
-    // D(a_^x_,{x_,n_}):=a^x*Log(a)^n/;((IntegerQ(n)&&n>=0)||SymbolQ(n))&&FreeQ(a,x)
+      Condition(If(IntegerQ(n),Times(Pochhammer(Plus(a,Negate(n),C1),n),Power(x,Subtract(a,n))),Times(FactorialPower(a,n),Power(x,Subtract(a,n)))),And(Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)),FreeQ(a,x),Not(NumberQ(x))))),
+    // D(a_^x_,{x_,n_}):=a^x*Log(a)^n/;((IntegerQ(n)&&n>=0)||SymbolQ(n))&&FreeQ(a,x)&&!NumberQ(x)
     ISetDelayed(D(Power(a_,x_),list(x_,n_)),
-      Condition(Times(Power(a,x),Power(Log(a),n)),And(Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)),FreeQ(a,x)))),
+      Condition(Times(Power(a,x),Power(Log(a),n)),And(Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)),FreeQ(a,x),Not(NumberQ(x))))),
     // D(ArcCos(x_),{x_,n_Integer}):=KroneckerDelta(n)*ArcCos(x)-(-1)^(n-1)/(1-x^2)^(n-1/2)*Sum((Pochhammer(1-n,k)*Pochhammer(1/2,k)*2^(2*k+1-n)*x^(2*k+1-n)*(x^2-1)^(n-1-k))/(2*k-n+1)!,{k,0,n-1})/;n>=0
     ISetDelayed(D(ArcCos(x_),list(x_,$p(n, Integer))),
       Condition(Plus(Times(KroneckerDelta(n),ArcCos(x)),Times(CN1,Power(-1,Plus(n,CN1)),Power(Power(Subtract(C1,Sqr(x)),Plus(n,CN1D2)),CN1),Sum(Times(Power(Factorial(Plus(Times(C2,k),Negate(n),C1)),CN1),Pochhammer(Subtract(C1,n),k),Pochhammer(C1D2,k),Power(C2,Plus(Times(C2,k),C1,Negate(n))),Power(x,Plus(Times(C2,k),C1,Negate(n))),Power(Plus(Sqr(x),CN1),Plus(n,CN1,Negate(k)))),list(k,C0,Plus(n,CN1))))),GreaterEqual(n,C0))),

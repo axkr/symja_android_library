@@ -2190,6 +2190,10 @@ public final class NumberTheory {
           return Errors.printMessage(S.Divisible, "divz", F.list(ast.get(i), ast), engine);
         }
       }
+      if (ast.exists(x -> x.isDirectedInfinity() || x.isIndeterminate())) {
+        // 2/Infinity is 0, but no integer is a multiple of Infinity
+        return F.NIL;
+      }
       if (ast.argSize() > 2) {
         // Divisible(n1, n2, n3, ...): each argument is divisible by the next one
         for (int i = 1; i < ast.argSize(); i++) {

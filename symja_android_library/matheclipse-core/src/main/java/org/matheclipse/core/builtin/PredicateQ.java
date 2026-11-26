@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -635,6 +636,18 @@ public class PredicateQ {
 
     /** The parity test of the Gaussian integer <code>re + I*im</code>. */
     protected abstract boolean gaussianParity(IInteger re, IInteger im);
+
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        if (!arg2.isRuleAST() && !(arg2.isList() && ((IAST) arg2).forAll(x -> x.isRuleAST()))) {
+          // the second argument can only hold options: EvenQ(2, 3) stays unevaluated
+          return Errors.printArgMessage(ast, IFunctionEvaluator.ARGS_1_1, engine);
+        }
+      }
+      return super.evaluate(ast, engine);
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {

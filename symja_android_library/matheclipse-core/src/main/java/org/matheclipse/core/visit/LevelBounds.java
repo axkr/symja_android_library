@@ -134,9 +134,9 @@ final class LevelBounds {
       }
     }
     if (levelExpr.isInfinity() || levelExpr == S.All) {
-      // level specification Infinity and -1 are equivalent
+      // level specification Infinity and -1 are equivalent; All includes the whole expression
       toLevel = Integer.MAX_VALUE;
-      fromLevel = startValueForAll;
+      fromLevel = levelExpr == S.All ? 0 : startValueForAll;
       fromDepth = Integer.MIN_VALUE;
       toDepth = -1;
       return;

@@ -88,6 +88,37 @@ public class CompareUtil {
   }
 
   /**
+   * The sign of a real numeric expression as {@link #numericSign(IExpr, EvalEngine)} gives it; a
+   * value which cannot be told from zero is decided exactly if it is an algebraic number, a
+   * combination of rationals and their radicals: <code>Sqrt(5+2*Sqrt(6))-Sqrt(2)-Sqrt(3)</code> is
+   * <code>0</code>, whatever the rounding errors of its numeric values are.
+   */
+  public static int numericSignOrExactZero(final IExpr x, EvalEngine engine) {
+    final int sign = numericSign(x, engine);
+    if (sign == UNCERTAIN && isRadicalExpression(x)) {
+      final IExpr reduced = engine.evalQuiet(F.RootReduce(x));
+      if (reduced.isZero()) {
+        return 0;
+      }
+    }
+    return sign;
+  }
+
+  /** Is <code>x</code> built from rationals with sums, products and rational powers? */
+  private static boolean isRadicalExpression(IExpr x) {
+    if (x.isRational()) {
+      return true;
+    }
+    if (x.isPower()) {
+      return x.exponent().isRational() && isRadicalExpression(x.base());
+    }
+    if (x.isPlus() || x.isTimes()) {
+      return ((IAST) x).forAll(CompareUtil::isRadicalExpression);
+    }
+    return false;
+  }
+
+  /**
    * The sign of <code>a0 - a1</code> for two real numeric operands, with the certainty of
    * {@link #numericSign(IExpr, EvalEngine)}: the difference is only evaluated when the machine
    * values of the operands cannot tell them apart.
@@ -317,18 +348,39 @@ public class CompareUtil {
     return difference <= 1.0e-10 * scale;
   }
 
-  /** The largest absolute machine value of the terms of a sum, <code>0.0</code> for no sum. */
+  /**
+   * The largest absolute machine value of the terms of a sum, <code>0.0</code> for no sum. For a
+   * product with a sum among its factors the product of the sizes of the factors, each the size of
+   * its largest term: the cancellation in <code>10^20*(Pi-80143857/25510582)</code> is relative to
+   * <code>10^20*Pi</code>.
+   */
   private static double largestTerm(IExpr a, EvalEngine engine) {
+    if (a.isTimes() && ((IAST) a).exists(IExpr::isPlus)) {
+      IAST times = (IAST) a;
+      double product = 1.0;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        double size = factor.isPlus() ? largestTerm(factor, engine) : 0.0;
+        IExpr value = engine.evalNumericFunction(factor);
+        if (value.isNumber()) {
+          size = Math.max(size, ((INumber) value).abs().evalf());
+        }
+        product *= size;
+      }
+      return Double.isFinite(product) ? product : 0.0;
+    }
     double scale = 0.0;
     if (a.isPlus()) {
       IAST plus = (IAST) a;
       for (int i = 1; i < plus.size(); i++) {
+        // a term which is a product with a sum has the size of its largest terms
+        double abs = plus.get(i).isTimes() ? largestTerm(plus.get(i), engine) : 0.0;
         IExpr term = engine.evalNumericFunction(plus.get(i));
         if (term.isNumber()) {
-          double abs = ((INumber) term).abs().evalf();
-          if (abs > scale) {
-            scale = abs;
-          }
+          abs = Math.max(abs, ((INumber) term).abs().evalf());
+        }
+        if (abs > scale) {
+          scale = abs;
         }
       }
     }

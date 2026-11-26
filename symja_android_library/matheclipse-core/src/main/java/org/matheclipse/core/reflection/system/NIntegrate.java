@@ -1139,6 +1139,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(ast.topHead(), "ilim", F.List(ast.arg2()), engine);
     }
     IAST list = (IAST) ast.arg2();
+    if (isPrincipalValueMethod(option[0]) && list.isList() && list.argSize() <= 3) {
+      // Singular points must be specified in the integration range in order to use
+      // PrincipalValue.
+      return Errors.printMessage(ast.topHead(), "pvrng", F.CEmptyList, engine);
+    }
     IExpr function = ast.arg1();
     if (function.isList()) {
       // a list of integrands is integrated element by element
@@ -1219,6 +1224,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       function = inner;
     } else if (list.isList() && list.argSize() > 3 && list.arg1().isSymbol()) {
+      if (isPrincipalValueMethod(option[0])) {
+        return principalValue(ast, list, engine);
+      }
       // NIntegrate(f, {x, x0, x1, ..., xn}) - along the path through the points, straight
       // segments between complex ones (a contour integral), split points on the real line
       IExpr sum = F.C0;
@@ -1265,7 +1273,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         return result;
       }
     }
-    final String method = option[0].isAutomatic() ? null : option[0].toString();
+    // without interior points a principal value is the ordinary integral
+    final String method =
+        option[0].isAutomatic() || isPrincipalValueMethod(option[0]) ? null : option[0].toString();
     double minDouble = list.arg2().evalfNaN();
     double maxDouble = list.arg3().evalfNaN();
     if (Double.isNaN(minDouble) || Double.isNaN(maxDouble)) {
@@ -1433,6 +1443,63 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         NEST_DEPTH.get()[0]--;
       }
     }
+  }
+
+  private static boolean isPrincipalValueMethod(IExpr method) {
+    return (method.isString() || method.isSymbol()) && "PrincipalValue".equals(method.toString());
+  }
+
+  /**
+   * The Cauchy principal value of <code>NIntegrate(f, {x, x0, x1, ..., xn})</code> with
+   * singularities at the interior points <code>x1, ..., x(n-1)</code> of increasing real points:
+   * around each interior point <code>c</code> the symmetric integral
+   * <code>Integrate(f(c+t)+f(c-t), {t, 0, r})</code>, in which a simple pole cancels, and the
+   * ordinary integral over the rest of the range.
+   *
+   * @return {@link F#NIL} if the points aren't increasing real numbers or a piece has no numeric
+   *         value
+   */
+  private static @AllowNIL IExpr principalValue(IAST pvAST, IAST list, EvalEngine engine) {
+    // the pieces are ordinary integrals: without the Method option
+    final IAST ast = pvAST.filter(F.ast(pvAST.head()),
+        arg -> !(arg.isRuleAST() && arg.first() == S.Method));
+    final int points = list.argSize() - 1;
+    double[] p = new double[points];
+    for (int i = 0; i < points; i++) {
+      p[i] = list.get(i + 2).evalfNaN();
+      if (!Double.isFinite(p[i]) || (i > 0 && !(p[i] > p[i - 1]))) {
+        return F.NIL;
+      }
+    }
+    // half of the distance to the nearer neighbour: the symmetric ranges don't overlap
+    double[] radius = new double[points];
+    for (int k = 1; k < points - 1; k++) {
+      radius[k] = 0.5 * Math.min(p[k] - p[k - 1], p[k + 1] - p[k]);
+    }
+    final IExpr x = list.arg1();
+    final IExpr f = ast.arg1();
+    IASTAppendable sum = F.PlusAlloc(2 * points);
+    for (int k = 0; k < points - 1; k++) {
+      IExpr piece = engine.evaluate(ast.setAtCopy(2,
+          F.list(x, F.num(p[k] + radius[k]), F.num(p[k + 1] - radius[k + 1]))));
+      if (!piece.isNumber()) {
+        return F.NIL;
+      }
+      sum.append(piece);
+    }
+    final ISymbol t = F.Dummy("t");
+    for (int k = 1; k < points - 1; k++) {
+      final IExpr c = list.get(k + 2);
+      IExpr symmetric = F.Plus(F.subst(f, x, F.Plus(c, t)), F.subst(f, x, F.Subtract(c, t)));
+      IASTMutable integral = ast.setAtCopy(1, symmetric);
+      integral.set(2, F.list(t, F.C0, F.num(radius[k])));
+      IExpr piece = engine.evaluate(integral);
+      if (!piece.isNumber()) {
+        return F.NIL;
+      }
+      sum.append(piece);
+    }
+    return engine.evaluate(sum);
   }
 
   /**

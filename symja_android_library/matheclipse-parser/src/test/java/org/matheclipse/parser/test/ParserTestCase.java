@@ -850,6 +850,19 @@ class ParserTestCase {
   }
 
   @Test
+  void testADefaultBeforeARule() {
+    // the default of a blank ends before a rule, a condition and a string expression
+    ASTNode obj = PARSE_UNRELAXED.parse("k_:2 :> k^2");
+    assertEquals("RuleDelayed(Optional(k_, 2), Power(k, 2))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("k_Integer:f[3] -> k");
+    assertEquals("Rule(Optional(k_Integer, f(3)), k)", obj.toString());
+    obj = PARSE_UNRELAXED.parse("_:0 -> c");
+    assertEquals("Rule(Optional(_, 0), c)", obj.toString());
+    obj = PARSE_UNRELAXED.parse("k_:2 /; k < 5");
+    assertEquals("Condition(Optional(k_, 2), Less(k, 5))", obj.toString());
+  }
+
+  @Test
   void testADefaultAfterAlternatives() {
     // ...and it belongs to the whole alternative, not to its last branch
     ASTNode obj = PARSE_UNRELAXED.parse("i : _Symbol | _Function : Auto");

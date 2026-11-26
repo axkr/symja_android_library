@@ -5147,7 +5147,18 @@ public final class Arithmetic {
           return temp;
         }
       } else {
-        IExpr a1 = engine.evalN(base);
+        IExpr a1 = exactBaseRepresentative(base, engine);
+        if (a1 == null) {
+          // the base lies too close to -1, 0 or 1 to tell on which side
+          return F.NIL;
+        }
+        if (a1.isOne() || a1.isMinusOne()) {
+          // a hidden 1 or -1, like 1^Infinity
+          return S.Indeterminate;
+        }
+        if (a1.isNIL()) {
+          a1 = engine.evalN(base);
+        }
         if (a1.isNumber()) {
           IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
           if (temp.isPresent()) {
@@ -5156,6 +5167,46 @@ public final class Arithmetic {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * A number which lies on the same side of <code>-1, 0, 1</code> as the exact real numeric
+     * expression <code>base</code>, or is equal to it there: whether <code>base^Infinity</code> is
+     * <code>0</code>, <code>Infinity</code> or <code>Indeterminate</code> depends only on that.
+     * The sides are decided with the precision they need, and exactly for a hidden algebraic
+     * <code>1</code> like <code>1+Sqrt(5+2*Sqrt(6))-Sqrt(2)-Sqrt(3)</code>, whose machine value may
+     * be a rounding error above or below <code>1</code>.
+     *
+     * @return the number, {@link F#NIL} for a base which is no exact real expression, or
+     *         <code>null</code> if a side couldn't be told
+     */
+    private static IExpr exactBaseRepresentative(IExpr base, EvalEngine engine) {
+      if (!base.isNumericFunction(true) || !base.isFree(x -> x.isInexactNumber(), false)) {
+        return F.NIL;
+      }
+      final int[] signs = new int[3];
+      final IExpr[] points = {F.CN1, F.C0, F.C1};
+      for (int i = 0; i < 3; i++) {
+        int sign = CompareUtil.numericSignOrExactZero(engine.evaluate(F.Subtract(base, points[i])),
+            engine);
+        if (sign == CompareUtil.NOT_COMPARABLE) {
+          return F.NIL;
+        }
+        if (sign == CompareUtil.UNCERTAIN) {
+          return null;
+        }
+        if (sign == 0) {
+          return points[i];
+        }
+        signs[i] = sign;
+      }
+      if (signs[2] > 0) {
+        return F.C2;
+      }
+      if (signs[0] < 0) {
+        return F.CN2;
+      }
+      return signs[1] > 0 ? F.C1D2 : F.CN1D2;
     }
 
     private static @AllowNIL IExpr fractionFraction(IFraction base, IFraction exponent) {
@@ -5332,7 +5383,11 @@ public final class Arithmetic {
         IAST[] assumedPositive = baseTimes.filter(x -> isAssumedPositiveFactor(x));
         if (assumedPositive[0].argSize() > 0
             && ((exponent.isReal() && assumedPositive[0].exists(x -> x.isPower()))
-                || assumedPositive[1].exists(x -> !x.isRational() || !x.isPositive()))) {
+                || (assumedPositive[1].exists(x -> !x.isRational() || !x.isPositive())
+                    // a positive rest is joined with the positive factors by Times() again:
+                    // Sqrt(-x*y) with x<0 and y>0 isn't split into Sqrt(y)*Sqrt(-x)
+                    && !EvalEngine.get().evaluate(assumedPositive[1].oneIdentity1())
+                        .isPositiveResult()))) {
           // (a^m * u)^c => (a^m)^c * u^c /; a > 0, for every u and c, e.g.
           // Refine(Sqrt(x^2*y^2), x>0 && y>0) is x*y. A product of positive factors stays as it
           // is otherwise: Times() would join Sqrt(a)*Sqrt(b) again, and (b/a)^c is the short form.
@@ -5884,6 +5939,11 @@ public final class Arithmetic {
       final boolean phaseInRest = baseTimes.exists(arg -> !arg.isPower() //
           && (arg.isImaginaryUnit() || arg.isNegativeImaginaryUnit() //
               || (arg.isRational() && arg.isNegative())));
+      // the same for symbolic factors which the assumptions make negative: Sqrt(x*y) with x<0 and
+      // y<0 is Sqrt(-x)*Sqrt(-y), not I*Sqrt(-x)*I*Sqrt(-y) - and Times() joins Sqrt(-x)*Sqrt(-y)
+      // to Sqrt(x*y) again
+      final boolean severalSymbolicPhases =
+          baseTimes.count(arg -> !arg.isNumericFunction() && !arg.isNonNegativeResult()) > 1;
       // a rational factor next to numeric factors only gives up its perfect power part:
       // Sqrt(3/8*(1+Sqrt(2))) is Sqrt(3/2*(1+Sqrt(2)))/2
       final boolean numericRest = exponent.numerator().isOne()
@@ -5945,7 +6005,8 @@ public final class Arithmetic {
               evaled = true;
               continue;
             }
-          } else if (!phaseInRest && (!arg.isNumericFunction() || arg.isPositiveResult())) {
+          } else if (!phaseInRest && (arg.isPositiveResult()
+              || (!arg.isNumericFunction() && !(severalSymbolicPhases && arg.isNegativeResult())))) {
             // a number which isn't positive has a phase of its own, even if its root is closed:
             // Sqrt((3+4*I)*u) is not (2+I)*Sqrt(u), and Sqrt((2-Sqrt(5))*u) is not
             // I*Sqrt(-2+Sqrt(5))*Sqrt(u), for every u
@@ -6344,12 +6405,53 @@ public final class Arithmetic {
         return F.NIL;
       }
       IExpr factored = engine.evaluate(F.Factor(poly));
-      if (factored.isTimes() && factored.size() > 2) {
+      if (factored.isTimes() && factored.size() > 2 && sqrtSplits((IAST) factored, engine)) {
         // don't use F.Sqrt() here; the `mapThread()` template has to be a `Sqrt(#1)` expression and
         // not a `Power(#1, 1/2)` expression
         return ((IAST) factored).mapThread(F.unaryAST1(S.Sqrt, F.Slot1), 1);
       }
       return F.NIL;
+    }
+
+    /**
+     * Is <code>Sqrt(f1*f2*...)</code> the product of the <code>Sqrt(fi)</code>? If all factors but
+     * one are nonnegative reals, the arguments of the factors add up to an argument in
+     * <code>(-Pi, Pi]</code>. Otherwise <code>Sqrt(a*b) == Sqrt(a)*Sqrt(b)</code> holds for two
+     * products <code>a</code>, <code>b</code> of the factors whose sum is a nonnegative real, and
+     * each of them has to split again. <code>Sqrt(1-x^2)</code> splits into
+     * <code>Sqrt(1-x)*Sqrt(1+x)</code>, and <code>Sqrt(1-x^4)</code> through
+     * <code>(1-x^2)*(1+x^2)</code> into three roots, but <code>Sqrt(x^2-1)</code> doesn't:
+     * <code>Sqrt(x-1)*Sqrt(x+1)</code> is <code>-Sqrt(3)</code> at <code>x=-2</code>.
+     */
+    private static boolean sqrtSplits(IAST factors, EvalEngine engine) {
+      if (factors.count(f -> !f.isNonNegativeResult()) <= 1) {
+        return true;
+      }
+      final int n = factors.argSize();
+      if (n > 5) {
+        return false;
+      }
+      // every split into two nonempty groups, the first group always holding the first factor
+      for (int mask = 1; mask < (1 << (n - 1)); mask++) {
+        IASTAppendable a = F.TimesAlloc(n);
+        IASTAppendable b = F.TimesAlloc(n);
+        a.append(factors.arg1());
+        for (int i = 2; i <= n; i++) {
+          if ((mask & (1 << (i - 2))) != 0) {
+            b.append(factors.get(i));
+          } else {
+            a.append(factors.get(i));
+          }
+        }
+        IExpr productA = engine.evaluate(a.oneIdentity1());
+        IExpr productB = engine.evaluate(b.oneIdentity1());
+        if (engine.evaluate(F.Expand(F.Plus(productA, productB))).isNonNegativeResult()
+            && (a.argSize() == 1 || sqrtSplits(a, engine))
+            && (b.argSize() == 1 || sqrtSplits(b, engine))) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /** {@inheritDoc} */
@@ -7007,8 +7109,9 @@ public final class Arithmetic {
         return F.Sign(((IAST) arg1).arg1());
       }
       if (evaluated.isPresent() && !arg1.isNumber()) {
+        // the result if the sign isn't decided; the sign is the one of the evaluated argument, not
+        // the one of the machine value of Sign(arg1)
         result = F.Sign(arg1);
-        arg1 = result;
       }
       if (arg1.isList()) {
         return arg1.mapThread(F.Sign(F.Slot1), 1);
@@ -7023,7 +7126,7 @@ public final class Arithmetic {
           final boolean exact = arg1.isFree(x -> x.isInexactNumber(), false);
           if (exact) {
             // decided with as much precision as needed and without General::munfl
-            int sign = CompareUtil.numericSign(arg1, engine);
+            int sign = CompareUtil.numericSignOrExactZero(arg1, engine);
             if (sign == CompareUtil.UNCERTAIN) {
               CompareUtil.printSignUncertain(arg1, engine);
               return result;
@@ -9060,6 +9163,25 @@ public final class Arithmetic {
    *         decided.
    */
   public static @AllowNIL IExpr clip(IExpr x, IExpr min, IExpr max, IExpr vMin, IExpr vMax) {
+    if (isExactNumeric(x) && isExactNumeric(min) && isExactNumeric(max)
+        && !(x.isRational() && min.isRational() && max.isRational())) {
+      // a machine value can't separate x from a bound it nearly equals
+      EvalEngine engine = EvalEngine.get();
+      int aboveMax = CompareUtil.numericSignOrExactZero(engine.evaluate(F.Subtract(x, max)), engine);
+      if (aboveMax == 1) {
+        return vMax;
+      }
+      int aboveMin = CompareUtil.numericSignOrExactZero(engine.evaluate(F.Subtract(x, min)), engine);
+      if (aboveMin == -1) {
+        return vMin;
+      }
+      if ((aboveMax == 0 || aboveMax == -1) && (aboveMin == 0 || aboveMin == 1)) {
+        return x;
+      }
+      if (aboveMax == CompareUtil.UNCERTAIN || aboveMin == CompareUtil.UNCERTAIN) {
+        return F.NIL;
+      }
+    }
     IReal xReal = x.evalReal();
     if (xReal != null) {
       IReal minReal = min.evalReal();
@@ -9089,6 +9211,11 @@ public final class Arithmetic {
       return x;
     }
     return F.NIL;
+  }
+
+  /** An exact real numeric expression like <code>Sqrt(2)+1/10^20</code>, without machine numbers. */
+  private static boolean isExactNumeric(IExpr expr) {
+    return expr.isNumericFunction(true) && expr.isFree(x -> x.isInexactNumber(), false);
   }
 
   public static void initialize() {

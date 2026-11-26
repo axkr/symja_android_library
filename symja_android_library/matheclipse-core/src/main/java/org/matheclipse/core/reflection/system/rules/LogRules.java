@@ -13,7 +13,7 @@ public class LogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 18, 4 };
+  final public static int[] SIZES = { 19, 4 };
 
   final public static IAST RULES = List(
     IInit(Log, SIZES),
@@ -83,6 +83,9 @@ public class LogRules {
     // Log(a_,0):=-Infinity/Log(a)
     ISetDelayed(Log(a_,C0),
       Times(CN1,oo,Power(Log(a),CN1))),
+    // Log(1,1)=Indeterminate
+    ISet(Log(C1,C1),
+      Indeterminate),
     // Log(a_,1)=0
     ISet(Log(a_,C1),
       C0),

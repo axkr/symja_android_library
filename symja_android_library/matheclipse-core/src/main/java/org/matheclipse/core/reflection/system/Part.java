@@ -738,7 +738,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             // an absent key gives key -> Missing("KeyAbsent", key)
             final IExpr key = listArg.isKey() ? listArg.first() : listArg;
             final IAST rule = assoc.getRule(key);
-            result.appendRule(rule.isPresent() ? rule : F.Rule(key, F.Missing(S.KeyAbsent, key)));
+            result.appendRule(rule.isPresent() ? rule : F.Rule(key, F.Missing(F.stringx("KeyAbsent"), key)));
           } else {
             // a number which is no position, a symbol, a list: nothing of it can be a part
             // The expression `1` cannot be used as a part specification.

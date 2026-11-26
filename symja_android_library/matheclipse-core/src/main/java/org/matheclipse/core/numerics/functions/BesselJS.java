@@ -51,6 +51,9 @@ public class BesselJS extends JS {
 
   private final static RiddersSolver RIDDERS_SOLVER = new RiddersSolver();
 
+  /** For the bracket of a single zero: to the last digits of a machine number. */
+  private final static RiddersSolver PRECISE_RIDDERS_SOLVER = new RiddersSolver(1.0e-15, 1.0e-15);
+
   private BesselJS() {}
 
   public static Complex besselJ(double n, double x) {
@@ -105,6 +108,13 @@ public class BesselJS extends JS {
       throw new ArgumentTypeException("Negative index " + m + " not supported in BesselJZero");
     }
 
+    UnivariateFunction f = new BesselJUnivariateFunction(n);
+    if (n >= 0.0 && m >= 1) {
+      double counted = countedZero(f, n, m);
+      if (!Double.isNaN(counted)) {
+        return counted;
+      }
+    }
     // approximations from dlmf.nist.gov/10.21#vi
     double delta = Math.PI / 4.0;
 
@@ -115,8 +125,73 @@ public class BesselJS extends JS {
       e += (n % 1) * Math.PI;
     }
 
-    UnivariateFunction f = new BesselJUnivariateFunction(n);
     return RIDDERS_SOLVER.solve(100, f, e - delta < 0 ? 0 : e - delta, e + delta);
+  }
+
+  /**
+   * Steps of the zero count: shorter than the distance of two zeros of a non-negative order, which
+   * is at least <code>3.11</code>.
+   */
+  private static final double ZERO_COUNT_STEP = 2.5;
+
+  /** Most steps of the zero count; beyond them the asymptotic expansion is accurate. */
+  private static final int MAX_ZERO_COUNT_STEPS = 4000;
+
+  /**
+   * <code>BesselJ(n, x)</code> for a real order <code>n &gt;= 0</code> and <code>x &gt;= 0</code>
+   * in machine precision: the fast machine routine, or the arbitrary-order function <code>f</code>
+   * where the fast routine fails.
+   */
+  private static double countingValue(UnivariateFunction f, double n, double x) {
+    try {
+      double value = org.hipparchus.special.BesselJ.value(n, x);
+      if (Double.isFinite(value)) {
+        return value;
+      }
+    } catch (RuntimeException rex) {
+      // use the slow function
+    }
+    return f.value(x);
+  }
+
+  /**
+   * The <code>m</code>-th positive zero of <code>BesselJ(n, x)</code> for an order
+   * <code>n &gt;= 0</code>, found by counting the sign changes from
+   * <code>x = n + 1.85*n^(1/3)</code>, below which there is no zero. The asymptotic expansions in
+   * <code>m</code> miss the first zeros of a large order by several zeros.
+   *
+   * @return <code>NaN</code> if the zero lies too far to count the sign changes up to it
+   */
+  private static double countedZero(UnivariateFunction f, double n, int m) {
+    final double start = n + 1.85 * Math.cbrt(n);
+    if ((m + n / 2.0) * Math.PI - start > MAX_ZERO_COUNT_STEPS * ZERO_COUNT_STEP) {
+      return Double.NaN;
+    }
+    EvalEngine engine = EvalEngine.get();
+    double x = start;
+    double fx = countingValue(f, n, x);
+    int count = 0;
+    for (int i = 0; i < 2 * MAX_ZERO_COUNT_STEPS; i++) {
+      engine.checkTimeLimit();
+      double next = x + ZERO_COUNT_STEP;
+      double fNext = countingValue(f, n, next);
+      if (Double.isNaN(fNext)) {
+        return Double.NaN;
+      }
+      if (fNext == 0.0) {
+        if (++count == m) {
+          return next;
+        }
+      } else if ((fx > 0.0 && fNext < 0.0) || (fx < 0.0 && fNext > 0.0)) {
+        if (++count == m) {
+          // the arbitrary-order function costs seconds per value at orders in the thousands
+          return PRECISE_RIDDERS_SOLVER.solve(200, t -> countingValue(f, n, t), x, next);
+        }
+      }
+      x = next;
+      fx = fNext;
+    }
+    return Double.NaN;
   }
 
   public static Complex besselY(double n, double x) {

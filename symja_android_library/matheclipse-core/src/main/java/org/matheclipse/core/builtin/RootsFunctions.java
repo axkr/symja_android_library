@@ -217,10 +217,12 @@ public class RootsFunctions {
           arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
         }
       } else {
-        if (!arg1.isPolynomialStruct()) {
+        // an equation like 1==0 has already evaluated to False, which is no polynomial in x
+        if (!arg1.isPolynomialStruct() || arg1.isTrue() || arg1.isFalse()) {
           // `1` is expected to be a polynomial equation in the variable `2` with numeric
           // coefficients.
-          return Errors.printMessage(ast.topHead(), "nnumeq", F.List(arg1, variables), engine);
+          return Errors.printMessage(ast.topHead(), "nnumeq",
+              F.List(arg1, variables.argSize() == 1 ? variables.arg1() : variables), engine);
         }
       }
 

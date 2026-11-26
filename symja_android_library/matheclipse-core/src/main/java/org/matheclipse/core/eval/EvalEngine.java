@@ -5366,6 +5366,11 @@ public class EvalEngine implements Serializable {
       // a time limit passed while the test ran: answering False would end a While loop early
       // with whatever value its variables had at that moment
       throw flow;
+    } catch (org.matheclipse.core.eval.exception.BreakException
+        | org.matheclipse.core.eval.exception.ContinueException loopControl) {
+      // Break() or Continue() in a test, like the predicate of Select or a condition of Cases,
+      // leaves the test and goes to the enclosing loop
+      throw loopControl;
     } catch (ReturnException re) {
       if (re.getForm() == S.Select && isEvaluatingIteration(S.Select)) {
         // Return(value, Select) in the predicate of Select leaves the Select

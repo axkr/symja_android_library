@@ -86,8 +86,10 @@ public class Partition extends AbstractFunctionEvaluator {
     }
 
     try {
-      if (nSpec.levels() > 1 && ast.argSize() >= 4 && !isUpTo) {
-        IExpr array = partitionArray(list, nSpec, dSpec, ast.arg4(), pad, engine);
+      if (nSpec.levels() > 1 && !isUpTo) {
+        // without an alignment the blocks lie inside of the array: {1, -1} at each level
+        IExpr alignment = ast.argSize() >= 4 ? ast.arg4() : F.List(F.C1, F.CN1);
+        IExpr array = partitionArray(list, nSpec, dSpec, alignment, pad, engine);
         if (array.isPresent()) {
           return array;
         }

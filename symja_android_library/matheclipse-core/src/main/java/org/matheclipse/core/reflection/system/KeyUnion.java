@@ -21,7 +21,7 @@ public class KeyUnion extends AbstractFunctionEvaluator {
       // a list whose elements are all associations or lists of rules is expected
       return F.NIL;
     }
-    IExpr missing = F.Function(F.Missing(S.KeyAbsent, F.Slot1));
+    IExpr missing = F.Function(F.Missing(F.stringx("KeyAbsent"), F.Slot1));
     if (ast.isAST2()) {
       missing = ast.arg2();
     }

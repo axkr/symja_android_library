@@ -2,6 +2,9 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -2171,6 +2174,169 @@ public class IntegerFunctions {
    */
   private static class PowerMod extends AbstractFunctionEvaluator {
 
+    /** Moduli up to this many bits are searched residue by residue for the smallest root. */
+    private static final int SMALLEST_ROOT_MODULUS_BITS = 24;
+
+    /**
+     * The smallest <code>x</code> in <code>[0, m)</code> with <code>x^n == a (mod m)</code>.
+     *
+     * @param a the residue, in <code>[0, m)</code>
+     * @param n the positive degree of the root
+     * @param m the modulus, below <code>2^SMALLEST_ROOT_MODULUS_BITS</code>
+     * @return the root, or {@link F#NIL} if there is none
+     */
+    private static @AllowNIL IExpr smallestRoot(long a, BigInteger n, long m, EvalEngine engine) {
+      if (m == 1L) {
+        return F.C0;
+      }
+      for (long x = 0; x < m; x++) {
+        long power = 1L;
+        long b = x;
+        BigInteger e = n;
+        while (e.signum() > 0) {
+          if (e.testBit(0)) {
+            power = (power * b) % m;
+          }
+          b = (b * b) % m;
+          e = e.shiftRight(1);
+        }
+        if (power == a) {
+          return F.ZZ(x);
+        }
+        if ((x & 0xFFFFL) == 0L) {
+          engine.checkTimeLimit();
+        }
+      }
+      return F.NIL;
+    }
+
+    /** Prime factors below this bound are searched residue by residue for their roots. */
+    private static final int SMALL_PRIME_BOUND = 1 << 16;
+
+    /** Most roots kept modulo a prime power, and most combinations of them. */
+    private static final int MAX_ROOTS = 1 << 16;
+
+    /**
+     * The smallest <code>x</code> in <code>[0, m)</code> with <code>x^n == a (mod m)</code>: the
+     * roots modulo each prime power <code>p^e</code> of <code>m</code> are lifted from the roots
+     * modulo <code>p</code>, and combined by the Chinese remainder theorem.
+     *
+     * @param a the residue
+     * @param n the positive degree of the root
+     * @param m the modulus
+     * @return the root, <code>-1</code> if there is none, or <code>null</code> if <code>m</code>
+     *         has a prime factor of at least {@link #SMALL_PRIME_BOUND} or there are too many roots
+     */
+    private static BigInteger smallestRootByPrimePowers(BigInteger a, BigInteger n, BigInteger m,
+        EvalEngine engine) {
+      final BigInteger residue = a.mod(m);
+      if (residue.signum() == 0) {
+        return BigInteger.ZERO;
+      }
+      BigInteger rest = m;
+      List<BigInteger> moduli = new ArrayList<>();
+      List<List<BigInteger>> rootSets = new ArrayList<>();
+      for (int p = 2; p < SMALL_PRIME_BOUND && rest.compareTo(BigInteger.ONE) > 0; p =
+          p == 2 ? 3 : p + 2) {
+        final BigInteger prime = BigInteger.valueOf(p);
+        if (rest.mod(prime).signum() != 0) {
+          continue;
+        }
+        int e = 0;
+        while (rest.mod(prime).signum() == 0) {
+          rest = rest.divide(prime);
+          e++;
+        }
+        List<BigInteger> roots = primePowerRoots(residue, n, p, e, engine);
+        if (roots == null) {
+          return null;
+        }
+        if (roots.isEmpty()) {
+          return BigInteger.ONE.negate();
+        }
+        moduli.add(prime.pow(e));
+        rootSets.add(roots);
+      }
+      if (!rest.equals(BigInteger.ONE)) {
+        return null;
+      }
+      List<BigInteger> combined = new ArrayList<>();
+      combined.add(BigInteger.ZERO);
+      BigInteger modulus = BigInteger.ONE;
+      for (int i = 0; i < moduli.size(); i++) {
+        final BigInteger q = moduli.get(i);
+        final List<BigInteger> roots = rootSets.get(i);
+        if ((long) combined.size() * roots.size() > MAX_ROOTS) {
+          return null;
+        }
+        // x == r (mod modulus) and x == s (mod q): x = r + modulus*((s-r)/modulus mod q)
+        final BigInteger inverse = modulus.modInverse(q);
+        List<BigInteger> next = new ArrayList<>(combined.size() * roots.size());
+        for (BigInteger r : combined) {
+          for (BigInteger root : roots) {
+            next.add(r.add(modulus.multiply(root.subtract(r).multiply(inverse).mod(q))));
+          }
+        }
+        combined = next;
+        modulus = modulus.multiply(q);
+      }
+      return Collections.min(combined);
+    }
+
+    /**
+     * All roots of <code>x^n == a (mod p^e)</code>: the residues modulo <code>p</code> are tried,
+     * and each root modulo <code>p^j</code> is lifted to the roots <code>r + t*p^j</code> modulo
+     * <code>p^(j+1)</code>.
+     *
+     * @return the roots, or <code>null</code> if there are more than {@link #MAX_ROOTS}
+     */
+    private static List<BigInteger> primePowerRoots(BigInteger a, BigInteger n, int p, int e,
+        EvalEngine engine) {
+      final BigInteger prime = BigInteger.valueOf(p);
+      BigInteger power = prime;
+      BigInteger target = a.mod(power);
+      List<BigInteger> roots = new ArrayList<>();
+      for (int x = 0; x < p; x++) {
+        BigInteger candidate = BigInteger.valueOf(x);
+        if (candidate.modPow(n, power).equals(target)) {
+          roots.add(candidate);
+        }
+        if ((x & 0xFFF) == 0) {
+          engine.checkTimeLimit();
+        }
+      }
+      final BigInteger nModP = n.mod(prime);
+      for (int j = 1; j < e && !roots.isEmpty(); j++) {
+        final BigInteger next = power.multiply(prime);
+        List<BigInteger> lifted = new ArrayList<>();
+        for (BigInteger root : roots) {
+          engine.checkTimeLimit();
+          // for j >= 1: (r + t*p^j)^n == r^n + n*r^(n-1)*t*p^j (mod p^(j+1)), so t solves
+          // c + d*t == 0 (mod p) with c = (r^n - a)/p^j and d = n*r^(n-1)
+          final BigInteger c = root.modPow(n, next).subtract(a).mod(next).divide(power);
+          final BigInteger d = nModP.multiply(root.modPow(n.subtract(BigInteger.ONE), prime))
+              .mod(prime);
+          if (d.signum() != 0) {
+            final BigInteger t = c.negate().multiply(d.modInverse(prime)).mod(prime);
+            lifted.add(root.add(power.multiply(t)));
+          } else if (c.signum() == 0) {
+            if (lifted.size() + p > MAX_ROOTS) {
+              return null;
+            }
+            for (int t = 0; t < p; t++) {
+              lifted.add(root.add(power.multiply(BigInteger.valueOf(t))));
+            }
+          }
+          if (lifted.size() > MAX_ROOTS) {
+            return null;
+          }
+        }
+        roots = lifted;
+        power = next;
+      }
+      return roots;
+    }
+
     // Helper: Modulo operation using GaussianInteger.quotientRemainder
     private static org.matheclipse.core.numbertheory.GaussianInteger mod(
         org.matheclipse.core.numbertheory.GaussianInteger a,
@@ -2279,16 +2445,42 @@ public class IntegerFunctions {
             IInteger base = F.ZZ(aPowU);
 
             IExpr result;
-            if (n.equals(F.C2)) {
-              result = org.matheclipse.core.sympy.ntheory.ResidueNTheory.sqrtMod(base, arg3);
+            boolean noRoot;
+            if (mVal.bitLength() <= SMALLEST_ROOT_MODULUS_BITS) {
+              // every residue is tried: the smallest root, or none
+              result = smallestRoot(aPowU.longValue(), v, mVal.longValue(), engine);
+              noRoot = result.isNIL();
             } else {
-              result = org.matheclipse.core.sympy.ntheory.ResidueNTheory.nthRootMod(base, n, arg3);
+              BigInteger byPrimePowers = smallestRootByPrimePowers(aPowU, v, mVal, engine);
+              if (byPrimePowers != null) {
+                result = byPrimePowers.signum() < 0 ? F.NIL : F.ZZ(byPrimePowers);
+                noRoot = result.isNIL();
+              } else {
+                if (n.equals(F.C2)) {
+                  result = org.matheclipse.core.sympy.ntheory.ResidueNTheory.sqrtMod(base, arg3);
+                } else {
+                  result =
+                      org.matheclipse.core.sympy.ntheory.ResidueNTheory.nthRootMod(base, n, arg3);
+                }
+                if (result.isPresent() && !(result.isInteger() && ((IInteger) result)
+                    .toBigNumerator().modPow(v, mVal).equals(aPowU.mod(mVal)))) {
+                  // not a root of the equation
+                  return F.NIL;
+                }
+                // Euler's criterion decides for a prime modulus whether there is a root
+                noRoot = result.isNIL() && mVal.isProbablePrime(32) && aPowU.signum() != 0
+                    && !aPowU.modPow(
+                        mVal.subtract(BigInteger.ONE).divide(v.gcd(mVal.subtract(BigInteger.ONE))),
+                        mVal).equals(BigInteger.ONE);
+              }
             }
 
             if (result.isPresent()) {
               return result;
             }
-
+            if (!noRoot) {
+              return F.NIL;
+            }
             // If no integer solution exists: "The equation `1` has no integer solutions."
             IExpr eqn = F.Equal(F.Power(S.x, n), F.Mod(ast.arg1(), ast.arg3()));
             return Errors.printMessage(ast.topHead(), "root2", F.List(eqn), engine);
@@ -3048,6 +3240,23 @@ public class IntegerFunctions {
    *
    * @return <code>null</code> if the expression has no numeric value
    */
+  /**
+   * The value of <code>expr</code> with <code>digits</code> digits. Unlike
+   * <code>N(expr, digits)</code> this leaves the precision of the evaluation it is part of as it
+   * is: inside <code>NProbability</code> the result stays a machine number.
+   */
+  private static IExpr evalWithDigits(IExpr expr, long digits, EvalEngine engine) {
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    try {
+      engine.setNumericMode(true, digits, (int) digits);
+      return engine.evalWithoutNumericReset(expr);
+    } finally {
+      engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+    }
+  }
+
   private static INumber roundingValue(IExpr expr, EvalEngine engine) {
     if (expr.isNumber()) {
       return (INumber) expr;
@@ -3055,11 +3264,13 @@ public class IntegerFunctions {
     INumber number = expr.evalNumber();
     if (number != null && number.isReal() && expr.isFree(x -> x.isInexactNumber(), false)) {
       double magnitude = Math.abs(number.reDoubleValue());
-      // from 2^52 on the machine numbers are further apart than 1/2
-      if (magnitude >= 4.503599627370496E15 && Double.isFinite(magnitude)) {
-        long digits = (long) Math.log10(magnitude) + 25L;
+      // from 2^52 on the machine numbers are further apart than 1/2, and below a machine value
+      // can be off by much more than 1 where terms cancel: 10^20*(Pi-80143857/25510582) is
+      // 57908.70..., its machine value 44408.0
+      if (Double.isFinite(magnitude)) {
+        long digits = (long) Math.log10(Math.max(magnitude, 1.0)) + 30L;
         try {
-          IExpr precise = engine.evalN(expr, digits);
+          IExpr precise = evalWithDigits(expr, digits, engine);
           if (precise.isReal()) {
             return (IReal) precise;
           }

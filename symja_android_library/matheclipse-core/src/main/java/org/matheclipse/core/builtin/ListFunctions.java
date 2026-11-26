@@ -1929,6 +1929,9 @@ public final class ListFunctions {
       } catch (final ValidateException ve) {
         // see level specification and int number validation
         return Errors.printMessage(S.Cases, ve, engine);
+      } catch (final FlowControlException fce) {
+        // Break(), Continue() or Throw() in a condition of the pattern
+        throw fce;
       } catch (final RuntimeException rex) {
         return Errors.printMessage(S.Cases, rex, engine);
       }
@@ -2531,24 +2534,24 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return evaluateComposeList(ast, F.ListAlloc(8));
+      return evaluateComposeList(ast, F.ListAlloc(8), engine);
     }
 
-    public static @AllowNIL IExpr evaluateComposeList(final IAST ast, final IASTAppendable resultList) {
-      try {
-        if ((ast.isAST2()) && (ast.arg1().isAST())) {
-          // final EvalEngine engine = EvalEngine.get();
-          final IAST list = (IAST) ast.arg1();
-          final IAST constant = F.ast(ast.arg1());
-          ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
-            final IASTAppendable a = constant.apply(y);
-            a.append(x);
-            return a;
-          }, resultList);
-          return resultList;
+    /**
+     * <code>{x, f1(x), f2(f1(x)), ...}</code>: every element is evaluated once and is the argument
+     * of the next function, so a function is applied once and a long list needs no deep recursion.
+     */
+    public static @AllowNIL IExpr evaluateComposeList(final IAST ast,
+        final IASTAppendable resultList, EvalEngine engine) {
+      if ((ast.isAST2()) && (ast.arg1().isAST())) {
+        final IAST list = (IAST) ast.arg1();
+        IExpr current = ast.arg2();
+        resultList.append(current);
+        for (int i = 1; i < list.size(); i++) {
+          current = engine.evaluate(F.unaryAST1(list.get(i), current));
+          resultList.append(current);
         }
-      } catch (final ArithmeticException e) {
-
+        return resultList;
       }
       return F.NIL;
     }
@@ -4608,15 +4611,42 @@ public final class ListFunctions {
    * @param sameTest the comparator which identifies equal elements
    * @return {@link F#NIL} if <code>arg1</code> is no list or association
    */
-  private static @AllowNIL IExpr sortedUnion1(IExpr arg1, SameTestComparator sameTest) {
+  private static @AllowNIL IExpr sortedUnion1(IExpr arg1, IExpr sameTestOption,
+      SameTestComparator sameTest) {
     if (arg1.isASTOrAssociation()) {
       IAST sorted = EvalAttributes.copySort((IAST) arg1);
+      if (sameTestOption != S.Automatic) {
+        return firstOfEachClass(S.List, sorted, sameTest);
+      }
       Set<IExpr> set = sorted.asSortedSet(sameTest);
       if (set != null) {
         return F.ListAlloc(set);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The elements of <code>sorted</code> which are not the same as an element before them under
+   * <code>sameTest</code>. Each element is compared with every element kept so far: a sorted set
+   * would compare it only with its neighbours in the order, which loses the classes of a test
+   * like <code>Mod(#1-#2,3)==0&amp;</code> whose equal elements are not next to each other.
+   *
+   * @param head the head of the result
+   * @param sorted the elements in canonical order
+   * @param sameTest the test of the <code>SameTest</code> option
+   * @return the first element of each class
+   */
+  private static IASTMutable firstOfEachClass(IExpr head, IAST sorted,
+      SameTestComparator sameTest) {
+    IASTAppendable result = F.ast(head, sorted.argSize());
+    for (int i = 1; i < sorted.size(); i++) {
+      final IExpr element = sorted.get(i);
+      if (!result.exists(kept -> sameTest.compare(kept, element) == 0)) {
+        result.append(element);
+      }
+    }
+    return result;
   }
 
   private static boolean isColumnSpecification(IExpr expr) {
@@ -4766,7 +4796,7 @@ public final class ListFunctions {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
-          return sortedUnion1(ast.arg1(), sameTest);
+          return sortedUnion1(ast.arg1(), option[0], sameTest);
         }
 
         if (ast.arg1().isASTOrAssociation()) {
@@ -6422,6 +6452,10 @@ public final class ListFunctions {
         RecursionData recursionData = new RecursionData(resultList, maxResults, level, matcher,
             positionConverter, headOffset);
         recursionData.positionRecursive(ast, cloneList);
+        // the whole expression at level 0 comes after its subexpressions
+        if (maxResults >= resultList.size() && level.isInRange() && matcher.test(expr)) {
+          resultList.append(F.CEmptyList);
+        }
         return resultList;
       }
       if (matcher.test(expr)) {
@@ -9969,7 +10003,7 @@ public final class ListFunctions {
         final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
-          return sortedUnion1(ast.arg1(), sameTest);
+          return sortedUnion1(ast.arg1(), option[0], sameTest);
         }
 
         if (ast.arg1().isASTOrAssociation()) {
@@ -10175,10 +10209,7 @@ public final class ListFunctions {
     unionList.appendArgs(ast1);
     unionList.appendArgs(ast2);
     unionList.sortInplace();
-    SortedSet<IExpr> resultSet = unionList.asSortedSet(sameTest);
-    IASTAppendable result = F.ast(newHead, resultSet.size());
-    result.appendAll(resultSet);
-    return result;
+    return firstOfEachClass(newHead, unionList, sameTest);
   }
 
   /**

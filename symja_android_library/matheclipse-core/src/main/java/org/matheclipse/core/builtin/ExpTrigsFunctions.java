@@ -732,7 +732,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public double applyAsDouble(double operand) {
-      if (operand == 0.0) {
+      if (operand == 0.0 || Math.abs(operand) == 1.0) {
         return Double.NaN;
       }
       double c = 1.0 / operand;
@@ -751,6 +751,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.getImaginary() == 0.0 && Math.abs(arg1.getReal()) == 1.0) {
+        // like the real machine number: a rounding of a value on either side of the pole
+        return S.Indeterminate;
+      }
       // 1/arg1
       Complex c = arg1.reciprocal();
 
@@ -766,8 +770,9 @@ public class ExpTrigsFunctions {
         // I*Pi / 2
         return F.complexNum(new Complex(0.0, Math.PI).divide(new Complex(2.0)));
       }
-      if (arg1 == 0.0) {
-        return e1ComplexArg(new Complex(arg1));
+      if (Math.abs(arg1) == 1.0) {
+        // the machine number may be the rounding of a value on either side of the pole
+        return S.Indeterminate;
       }
       double c = 1.0 / arg1;
       double val = (Math.log(1.0 + c) - Math.log(1.0 - c)) / 2.0;

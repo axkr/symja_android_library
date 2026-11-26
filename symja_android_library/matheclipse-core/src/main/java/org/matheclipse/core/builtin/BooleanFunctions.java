@@ -3539,6 +3539,42 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /**
+   * The arguments of a <code>Max</code> (or <code>Min</code>) with every interval replaced by its
+   * largest (or smallest) value, so that intervals compare with each other and with numbers:
+   * <code>Max(Interval({1,3}), Interval({2,7}))</code> is <code>7</code>.
+   *
+   * @param args the flattened arguments
+   * @param max <code>true</code> for <code>Max</code>, <code>false</code> for <code>Min</code>
+   * @return the new arguments, or {@link F#NIL} if there is no interval which could be replaced
+   */
+  private static @AllowNIL IASTAppendable intervalExtremes(IAST args, boolean max) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < args.size(); i++) {
+      final IExpr arg = args.get(i);
+      IExpr extreme = F.NIL;
+      if (arg.isInterval()) {
+        extreme = max ? IntervalSym.max((IAST) arg) : IntervalSym.min((IAST) arg);
+      } else if (arg.isIntervalData()) {
+        try {
+          IAST intervalData = IntervalDataSym.normalize((IAST) arg);
+          extreme = max
+              ? F.eval(F.mapFunction(S.Max, intervalData, list -> ((IAST) list).arg4()))
+              : F.eval(F.mapFunction(S.Min, intervalData, list -> ((IAST) list).arg1()));
+        } catch (ArgumentTypeException e) {
+          extreme = F.NIL;
+        }
+      }
+      if (extreme.isPresent()) {
+        if (result.isNIL()) {
+          result = args.copyAppendable();
+        }
+        result.set(i, extreme);
+      }
+    }
+    return result;
+  }
+
   private static class Max extends Min {
     // CPD-OFF mirrored comparison and Max/Min evaluators, each with its own assumption handling
     private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$Max");
@@ -3562,21 +3598,14 @@ public final class BooleanFunctions {
         if (ast.isAST0()) {
           return F.CNInfinity;
         }
-        if (ast.arg1().isInterval()) {
-          return IntervalSym.max((IAST) ast.arg1());
-        }
-        if (ast.arg1().isIntervalData()) {
-          try {
-            IAST intervalData = IntervalDataSym.normalize((IAST) ast.arg1());
-            return F.eval(F.mapFunction(S.Max, intervalData, list -> ((IAST) list).arg4()));
-          } catch (ArgumentTypeException e) {
-            return F.NIL;
-          }
-        }
-
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
+        final IASTAppendable extremes = intervalExtremes(result, true);
+        if (extremes.isPresent()) {
+          result = extremes;
+          evaled = true;
+        }
         final IAST nonReal = nonRealArguments(result, engine);
         if (nonReal.isPresent()) {
           return unorderedArguments(original, ast, result, nonReal, engine);
@@ -3707,21 +3736,14 @@ public final class BooleanFunctions {
         if (ast.isAST0()) {
           return F.CInfinity;
         }
-        if (ast.arg1().isInterval()) {
-          return IntervalSym.min((IAST) ast.arg1());
-        }
-        if (ast.arg1().isIntervalData()) {
-          try {
-            IAST intervalData = IntervalDataSym.normalize((IAST) ast.arg1());
-            return F.eval(F.mapFunction(S.Min, intervalData, list -> ((IAST) list).arg1()));
-          } catch (ArgumentTypeException e) {
-            return F.NIL;
-          }
-        }
-
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Min, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
+        final IASTAppendable extremes = intervalExtremes(result, false);
+        if (extremes.isPresent()) {
+          result = extremes;
+          evaled = true;
+        }
         final IAST nonReal = nonRealArguments(result, engine);
         if (nonReal.isPresent()) {
           return unorderedArguments(original, ast, result, nonReal, engine);

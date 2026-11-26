@@ -1,8 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -16,6 +21,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.AlgebraicNumberUtils;
+import edu.jas.application.GBAlgorithmBuilder;
+import edu.jas.arith.BigRational;
+import edu.jas.gb.GroebnerBaseAbstract;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.TermOrderByName;
 
 public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
 
@@ -57,10 +67,7 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     if (extensionOption == S.Automatic) {
       extensionGenerators = AlgebraicNumberUtils.extractAlgebraicGenerators(poly);
     } else if (extensionOption == S.All) {
-      // Absolute irreducibility over the algebraic closure of Q; approximate by adjoining I
-      // (sufficient for absolute irreducibility of e.g. x^2 + y^2). Full algebraic closure is not
-      // implemented.
-      gaussianFromExtension = true;
+      return absolutelyIrreducible(poly, variables, engine);
     } else if (extensionOption.isList()) {
       extensionGenerators = (IAST) extensionOption;
     } else if (extensionOption != S.None) {
@@ -194,6 +201,298 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     }
     // An irreducible polynomial should only have 1 non-constant square-free factor
     return info[1] == 1 && info[0] == 1 ? S.True : S.False;
+  }
+
+  /**
+   * Is <code>poly</code> irreducible over the algebraic numbers? Decided where a rule applies:
+   * <ul>
+   * <li>a polynomial which is reducible over the rationals or the Gaussian rationals is reducible
+   * <li>a univariate polynomial, and a homogeneous one in two variables, which is a product of
+   * linear forms, is irreducible only with degree <code>1</code>
+   * <li>a polynomial of one monomial, <code>q(x^2*y^2)</code>, is reducible from degree
+   * <code>2</code> of <code>q</code> on
+   * <li>a polynomial of total degree <code>2</code> is reducible if the symmetric matrix of its
+   * homogenized quadratic form has a rank of at most <code>2</code>
+   * <li>a polynomial of degree <code>1</code> in one of its variables is irreducible if it is so
+   * over the rationals: the content in that variable is the same over every field
+   * </ul>
+   *
+   * @return {@link S#True}, {@link S#False} or {@link F#NIL} if no rule applies
+   */
+  private IExpr absolutelyIrreducible(IExpr poly, IAST variables, EvalEngine engine) {
+    int[] overQ = analyzeFactored(engine.evaluate(F.Factor(poly)), variables);
+    if (overQ[0] < 0) {
+      return F.NIL;
+    }
+    if (overQ[0] != 1 || overQ[1] != 1) {
+      return S.False;
+    }
+    int[] overQI =
+        analyzeFactored(engine.evaluate(F.binaryAST2(S.Factor, poly, F.Rule(S.GaussianIntegers, S.True))),
+            variables);
+    if (overQI[0] >= 0 && (overQI[0] != 1 || overQI[1] != 1)) {
+      return S.False;
+    }
+    final int n = variables.argSize();
+    IExpr rules = engine.evaluate(F.CoefficientRules(poly, variables));
+    if (!rules.isList() || ((IAST) rules).isEmpty()) {
+      return F.NIL;
+    }
+    IAST monomials = (IAST) rules;
+    long[][] exponents = new long[monomials.argSize()][n];
+    long totalDegree = 0;
+    boolean homogeneous = true;
+    long firstDegree = -1;
+    for (int i = 1; i <= monomials.argSize(); i++) {
+      IExpr exponentList = monomials.get(i).first();
+      long degree = 0;
+      for (int j = 0; j < n; j++) {
+        IExpr e = exponentList.getAt(j + 1);
+        if (!e.isInteger()) {
+          return F.NIL;
+        }
+        exponents[i - 1][j] = ((IInteger) e).toLong();
+        degree += exponents[i - 1][j];
+      }
+      totalDegree = Math.max(totalDegree, degree);
+      if (firstDegree < 0) {
+        firstDegree = degree;
+      } else if (degree != firstDegree) {
+        homogeneous = false;
+      }
+    }
+    if (n == 1 || (n == 2 && homogeneous)) {
+      return totalDegree == 1 ? S.True : S.False;
+    }
+    if (singleMonomialPower(exponents) >= 2) {
+      return S.False;
+    }
+    if (totalDegree == 2) {
+      // the symmetric matrix of the quadratic form in the variables and a homogenizing one
+      IASTAppendable matrix = F.ListAlloc(n + 1);
+      for (int i = 0; i <= n; i++) {
+        IASTAppendable row = F.ListAlloc(n + 1);
+        for (int j = 0; j <= n; j++) {
+          row.append(quadraticFormEntry(monomials, exponents, n, i, j));
+        }
+        matrix.append(row);
+      }
+      IExpr rank = engine.evaluate(F.MatrixRank(matrix));
+      if (rank.isInteger()) {
+        return ((IInteger) rank).toLong() <= 2 ? S.False : S.True;
+      }
+      return F.NIL;
+    }
+    for (int j = 0; j < n; j++) {
+      long degree = 0;
+      for (long[] e : exponents) {
+        degree = Math.max(degree, e[j]);
+      }
+      if (degree == 1) {
+        return S.True;
+      }
+    }
+    if (n == 2 && newtonPolygonIndecomposable(exponents)) {
+      return S.True;
+    }
+    return smoothProjectiveClosure(monomials, exponents, variables, totalDegree, engine);
+  }
+
+  /**
+   * Gao's criterion for a polynomial in two variables without a monomial factor: it is absolutely
+   * irreducible if its Newton polygon is no Minkowski sum of two lattice polygons. That holds for a
+   * segment without interior lattice points, like the one of <code>x^2+y^3</code>, and for a
+   * triangle with a vertex <code>v0</code> whose differences <code>v1-v0, v2-v0</code> to the other
+   * vertices have the coordinate gcd <code>1</code>.
+   *
+   * @param exponents the exponent vectors of the monomials
+   */
+  private static boolean newtonPolygonIndecomposable(long[][] exponents) {
+    for (int j = 0; j < 2; j++) {
+      long min = Long.MAX_VALUE;
+      for (long[] e : exponents) {
+        min = Math.min(min, e[j]);
+      }
+      if (min != 0) {
+        // a monomial factor
+        return false;
+      }
+    }
+    long[][] points = exponents.clone();
+    java.util.Arrays.sort(points,
+        (a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : Long.compare(a[1], b[1]));
+    // the convex hull by the monotone chain, without points inside of an edge
+    List<long[]> hull = new ArrayList<>();
+    for (int pass = 0; pass < 2; pass++) {
+      final int start = hull.size();
+      for (int k = 0; k < points.length; k++) {
+        long[] point = points[pass == 0 ? k : points.length - 1 - k];
+        while (hull.size() >= start + 2 && cross(hull.get(hull.size() - 2),
+            hull.get(hull.size() - 1), point) <= 0) {
+          hull.remove(hull.size() - 1);
+        }
+        hull.add(point);
+      }
+      hull.remove(hull.size() - 1);
+    }
+    if (hull.size() == 2) {
+      return gcd(hull.get(1)[0] - hull.get(0)[0], hull.get(1)[1] - hull.get(0)[1]) == 1L;
+    }
+    if (hull.size() == 3) {
+      for (int k = 0; k < 3; k++) {
+        long[] v0 = hull.get(k);
+        long[] v1 = hull.get((k + 1) % 3);
+        long[] v2 = hull.get((k + 2) % 3);
+        if (gcd(gcd(v1[0] - v0[0], v1[1] - v0[1]), gcd(v2[0] - v0[0], v2[1] - v0[1])) == 1L) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static long cross(long[] o, long[] a, long[] b) {
+    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  }
+
+  private static long gcd(long a, long b) {
+    return java.math.BigInteger.valueOf(a).gcd(java.math.BigInteger.valueOf(b)).longValue();
+  }
+
+  /** Most variables and the highest degree of {@link #smoothProjectiveClosure}. */
+  private static final int SMOOTH_TEST_MAX_VARIABLES = 3;
+
+  private static final long SMOOTH_TEST_MAX_DEGREE = 8;
+
+  /**
+   * <code>True</code> if the projective closure of the hypersurface of a polynomial in two or more
+   * variables is smooth: the partial derivatives of the homogenized polynomial vanish together only
+   * at the origin. Two components of a reducible hypersurface would meet in singular points, so it
+   * is absolutely irreducible, like <code>x^4+y^4+1</code>.
+   *
+   * @return {@link F#NIL} if there is a singular point or it can't be decided
+   */
+  private static IExpr smoothProjectiveClosure(IAST monomials, long[][] exponents, IAST variables,
+      long degree, EvalEngine engine) {
+    final int n = variables.argSize();
+    if (n > SMOOTH_TEST_MAX_VARIABLES || degree > SMOOTH_TEST_MAX_DEGREE) {
+      return F.NIL;
+    }
+    ISymbol z = F.Dummy("$ipqZ");
+    IASTAppendable homogeneous = F.PlusAlloc(monomials.argSize());
+    for (int i = 1; i <= monomials.argSize(); i++) {
+      IASTAppendable term = F.TimesAlloc(n + 2);
+      term.append(monomials.get(i).second());
+      long termDegree = 0;
+      for (int j = 0; j < n; j++) {
+        term.append(F.Power(variables.get(j + 1), F.ZZ(exponents[i - 1][j])));
+        termDegree += exponents[i - 1][j];
+      }
+      term.append(F.Power(z, F.ZZ(degree - termDegree)));
+      homogeneous.append(term);
+    }
+    IASTAppendable allVariables = F.ListAlloc(n + 1);
+    allVariables.appendArgs(variables);
+    allVariables.append(z);
+    try {
+      JASConvert<BigRational> jas =
+          new JASConvert<BigRational>(allVariables, BigRational.ZERO, TermOrderByName.IGRLEX);
+      List<GenPolynomial<BigRational>> partials = new ArrayList<>(n + 1);
+      for (int k = 1; k <= n + 1; k++) {
+        IExpr derivative = engine.evaluate(F.Expand(F.D(homogeneous, allVariables.get(k))));
+        GenPolynomial<BigRational> partial = jas.expr2JAS(derivative, false);
+        if (partial == null) {
+          return F.NIL;
+        }
+        partials.add(partial);
+      }
+      GroebnerBaseAbstract<BigRational> gb =
+          GBAlgorithmBuilder.<BigRational>polynomialRing(jas.getPolynomialRingFactory())
+              .fractionFree().syzygyPairlist().build();
+      // dimension 0 of the homogeneous ideal: the origin is the only common zero
+      if (gb.commonZeroTest(gb.GB(partials)) <= 0) {
+        return S.True;
+      }
+    } catch (JASConversionException jce) {
+      // a coefficient which isn't rational
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The largest <code>k</code> with which every monomial is the <code>k</code>-th power of one
+   * monomial <code>m</code> to some power, <code>poly = q(m)</code>, or <code>0</code> if there is
+   * no such monomial.
+   */
+  private static long singleMonomialPower(long[][] exponents) {
+    long[] base = null;
+    long gcd = 0;
+    for (long[] e : exponents) {
+      long g = 0;
+      for (long v : e) {
+        g = java.math.BigInteger.valueOf(g).gcd(java.math.BigInteger.valueOf(v)).longValue();
+      }
+      if (g == 0) {
+        // the constant term
+        continue;
+      }
+      long[] direction = new long[e.length];
+      for (int j = 0; j < e.length; j++) {
+        direction[j] = e[j] / g;
+      }
+      if (base == null) {
+        base = direction;
+      } else if (!java.util.Arrays.equals(base, direction)) {
+        return 0;
+      }
+      gcd = java.math.BigInteger.valueOf(gcd).gcd(java.math.BigInteger.valueOf(g)).longValue();
+    }
+    if (base == null) {
+      return 0;
+    }
+    long maxPower = 0;
+    for (long[] e : exponents) {
+      for (int j = 0; j < e.length; j++) {
+        if (base[j] != 0) {
+          maxPower = Math.max(maxPower, e[j] / base[j]);
+          break;
+        }
+      }
+    }
+    return maxPower;
+  }
+
+  /**
+   * The entry <code>(i, j)</code> of the symmetric matrix of a quadratic polynomial homogenized
+   * with the variable of index <code>n</code>: the coefficient of <code>x_i^2</code> on the
+   * diagonal, half the coefficient of <code>x_i*x_j</code> beside it.
+   */
+  private static IExpr quadraticFormEntry(IAST monomials, long[][] exponents, int n, int i,
+      int j) {
+    for (int k = 0; k < exponents.length; k++) {
+      long[] e = exponents[k];
+      long degree = 0;
+      for (long v : e) {
+        degree += v;
+      }
+      // the exponents with the homogenizing variable at index n
+      long[] full = new long[n + 1];
+      System.arraycopy(e, 0, full, 0, n);
+      full[n] = 2 - degree;
+      boolean match;
+      if (i == j) {
+        match = full[i] == 2;
+      } else {
+        match = full[i] == 1 && full[j] == 1;
+      }
+      if (match) {
+        IExpr coefficient = monomials.get(k + 1).second();
+        return i == j ? coefficient : F.Times(F.C1D2, coefficient);
+      }
+    }
+    return F.C0;
   }
 
   /**

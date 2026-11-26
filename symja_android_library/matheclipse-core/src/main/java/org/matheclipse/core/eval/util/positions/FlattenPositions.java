@@ -90,12 +90,14 @@ public class FlattenPositions {
         }
         IAST elementAST = (IAST) element;
         int sizeOfFlattenedElement = elementAST.argSize();
-        subResult.set(newP, F.Sequence());
+        // the element is replaced by its arguments; no Sequence() is left, which a held expression
+        // like HoldComplete(...) would keep
+        subResult.remove(newP);
         for (int i = elementAST.argSize(); i > 0; i--) {
           subResult.append(newP, elementAST.getRule(i));
         }
         insertedPositions.add(p);
-        insertedPositions.add(sizeOfFlattenedElement);
+        insertedPositions.add(sizeOfFlattenedElement - 1);
         return subResult;
       } else {
         // translate original position p to the current index in the Appendable,

@@ -3734,7 +3734,9 @@ public class StatisticsFunctions {
           LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
-        if (!isRealOrQuantityData(arg1)) {
+        if (!isRealOrQuantityData(arg1)
+            || (dimensions.size() == 1 && arg1.isList() && ((IAST) arg1).exists(x -> x.isList()))) {
+          // a ragged array like {{1,2},3} has the dimensions of a vector
           return Errors.printMessage(S.Median, "rectn", F.List(F.C1, F.Median(arg1)), engine);
         }
         if (dimensions.size() >= 2) {

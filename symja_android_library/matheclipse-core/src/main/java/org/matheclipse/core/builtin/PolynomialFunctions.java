@@ -2954,7 +2954,7 @@ public class PolynomialFunctions {
           int miAbs = mi < 0 ? -mi : mi;
           ni = ni < 0 ? -ni - 1 : ni;
           if (miAbs > ni) {
-            return F.C0;
+            return mi > 0 ? F.C0 : legendreBeyondDegree(ni, miAbs, z, type, engine);
           }
 
           ISymbol dummyZ = F.Dummy("$z");
@@ -2977,6 +2977,34 @@ public class PolynomialFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>LegendreP(n, -k, z)</code> for an order <code>-k</code> with <code>k &gt; n</code>, where
+     * the identity with <code>LegendreP(n, k, z) == 0</code> doesn't apply:
+     * <code>1/k! * ((1-z)/(1+z))^(k/2) * Hypergeometric2F1(-n, n+1, 1+k, (1-z)/2)</code>, with
+     * <code>((z-1)/(z+1))^(k/2)</code> for type 3. The hypergeometric series ends after
+     * <code>n+1</code> terms.
+     */
+    private static IExpr legendreBeyondDegree(int n, int k, IExpr z, int type, EvalEngine engine) {
+      if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+        PolynomialDegreeLimitExceeded.throwIt(n);
+      }
+      IExpr w = F.Times(F.C1D2, F.Subtract(F.C1, z));
+      IASTAppendable series = F.PlusAlloc(n + 1);
+      IRational coefficient = F.C1;
+      for (int j = 0; j <= n; j++) {
+        series.append(F.Times(coefficient, F.Power(w, F.ZZ(j))));
+        // (-n+j)*(n+1+j)/((1+k+j)*(j+1))
+        coefficient = coefficient.multiply(F.QQ((long) (j - n) * (n + 1 + j), //
+            (long) (1 + k + j) * (j + 1)));
+      }
+      // integer coefficients: the common denominator joins 1/k!
+      IExpr polynomial = engine.evaluate(F.Together(F.Expand(series)));
+      IRational kHalf = F.QQ(k, 2);
+      IExpr numerator = type == 3 ? F.Plus(F.CN1, z) : F.Subtract(F.C1, z);
+      return F.Times(F.Power(F.Factorial(F.ZZ(k)), F.CN1), F.Power(numerator, kHalf),
+          F.Power(F.Plus(F.C1, z), kHalf.negate()), polynomial);
     }
 
     private static IExpr legendreP(int n, IExpr z) {

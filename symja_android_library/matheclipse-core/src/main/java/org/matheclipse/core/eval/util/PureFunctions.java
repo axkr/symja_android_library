@@ -274,10 +274,20 @@ public final class PureFunctions {
 
     // build the parameter map once, not once per visited subexpression
     final Map<IExpr, IExpr> rulesMap = parameterMap(parameters, application);
-    IExpr result = F.subst(body, x -> {
-      IExpr temp = rulesMap.get(x);
-      return temp != null ? temp : F.NIL;
-    });
+    IExpr result;
+    if (!locals.isEmpty() && parameters.exists(p -> locals.contains(p))) {
+      // an inner Module, With, Block or Function binds a parameter again
+      Map<IExpr, IExpr> scopedMap = new HashMap<IExpr, IExpr>();
+      for (int i = 1; i <= parameters.argSize(); i++) {
+        scopedMap.put(parameters.get(i), application.get(i));
+      }
+      result = substituteScoped(body, scopedMap);
+    } else {
+      result = F.subst(body, x -> {
+        IExpr temp = rulesMap.get(x);
+        return temp != null ? temp : F.NIL;
+      });
+    }
 
     if (result.isAST() && function.argSize() == 3) {
       // LISTABLE was already applied to the arguments; applying it to the result as well would
@@ -289,6 +299,69 @@ public final class PureFunctions {
       }
     }
     return engine.evaluate(result);
+  }
+
+  /**
+   * Substitute the parameters in <code>expr</code>, but not where an inner scoping construct binds
+   * one of them again: in <code>Module({x = x + 1}, x)</code> the parameter <code>x</code> is
+   * substituted in the initializer, which belongs to the outer scope, but neither in the local
+   * list nor in the body. <code>Function(x, Module({x = x + 1}, x))(5)</code> is <code>6</code>.
+   */
+  private static IExpr substituteScoped(IExpr expr, Map<IExpr, IExpr> rulesMap) {
+    if (rulesMap.isEmpty()) {
+      return expr;
+    }
+    if (!expr.isAST()) {
+      IExpr temp = rulesMap.get(expr);
+      return temp != null ? temp : expr;
+    }
+    IAST ast = (IAST) expr;
+    // Block localizes values, not names: its local list receives the parameters
+    final boolean scoping =
+        (ast.isAST(S.Module, 3) || ast.isAST(S.With, 3)) && ast.arg1().isList();
+    final boolean function = ast.isAST(S.Function, 3) || ast.isAST(S.Function, 4);
+    if (scoping || function) {
+      IAST localList = ast.arg1().makeList();
+      java.util.Set<IExpr> bound = new java.util.HashSet<IExpr>();
+      for (IExpr local : localList) {
+        IExpr symbol = (local.isAST(S.Set, 3) || local.isAST(S.SetDelayed, 3)) ? local.first()
+            : local;
+        if (rulesMap.containsKey(symbol)) {
+          bound.add(symbol);
+        }
+      }
+      if (!bound.isEmpty()) {
+        Map<IExpr, IExpr> inner = new HashMap<IExpr, IExpr>(rulesMap);
+        inner.keySet().removeAll(bound);
+        IASTMutable result = ast.copy();
+        if (scoping) {
+          // the initializers are evaluated in the outer scope
+          IASTMutable newLocals = ((IAST) ast.arg1()).copy();
+          for (int i = 1; i < newLocals.size(); i++) {
+            IExpr local = newLocals.get(i);
+            if (local.isAST(S.Set, 3) || local.isAST(S.SetDelayed, 3)) {
+              newLocals.set(i, F.binaryAST2(local.head(), local.first(),
+                  substituteScoped(local.second(), rulesMap)));
+            }
+          }
+          result.set(1, newLocals);
+        }
+        result.set(2, substituteScoped(ast.arg2(), inner));
+        return result;
+      }
+    }
+    IASTMutable result = F.NIL;
+    for (int i = 0; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      IExpr temp = substituteScoped(arg, rulesMap);
+      if (temp != arg) {
+        if (result.isNIL()) {
+          result = ast.copy();
+        }
+        result.set(i, temp);
+      }
+    }
+    return result.isPresent() ? result : ast;
   }
 
   /** Maps each bound parameter to the argument in the same position. */

@@ -167,10 +167,11 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "x+Sqrt(-1+x)*Sqrt(1+x)");
     check("FunctionExpand(E^ArcTanh(x))", //
         "(1+x)/Sqrt(1-x^2)");
+    // Sqrt((1+x^2)/x^2) doesn't split: Sqrt(1/x^2)*Sqrt(1+x^2) is its negative at x=2*I
     check("FunctionExpand(E^ArcCsch(x))", //
-        "1/x+Sqrt(1/x^2)*Sqrt(1+x^2)");
+        "Sqrt(1+1/x^2)+1/x");
     check("FunctionExpand(E^ArcSech(x))", //
-        "1/x+(Sqrt(1-x)*Sqrt(1+x))/x");
+        "Sqrt(-1+1/x)*Sqrt(1+1/x)+1/x");
     check("FunctionExpand(E^ArcCoth(x))", //
         "1/Sqrt((-1+x)/(1+x))");
 

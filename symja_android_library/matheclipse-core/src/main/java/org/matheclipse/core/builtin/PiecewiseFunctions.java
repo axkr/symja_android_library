@@ -373,6 +373,43 @@ public class PiecewiseFunctions {
    * 1
    * </pre>
    */
+  /**
+   * The sign of an exact real numeric expression which is no number, decided with the precision it
+   * needs and exactly for a hidden algebraic zero like <code>Sqrt(5+2*Sqrt(6))-Sqrt(2)-Sqrt(3)</code>
+   * - not by its machine value, which may be a rounding error of either sign.
+   *
+   * @return <code>-1, 0, 1</code>, {@link CompareUtil#UNCERTAIN} if the sign can't be told, or
+   *         {@link CompareUtil#NOT_COMPARABLE} if <code>expr</code> is no such expression
+   */
+  static int exactSign(IExpr expr, EvalEngine engine) {
+    if (expr.isNumber() || !expr.isNumericFunction(true)
+        || !expr.isFree(x -> x.isInexactNumber(), false)) {
+      return CompareUtil.NOT_COMPARABLE;
+    }
+    return CompareUtil.numericSignOrExactZero(expr, engine);
+  }
+
+  /**
+   * The delta of one exact real numeric argument, see {@link #exactSign(IExpr, EvalEngine)}:
+   * <code>1</code> for zero, <code>0</code> otherwise.
+   *
+   * @return {@link F#NIL} if it can't be told whether the argument is zero, or <code>null</code>
+   *         for an argument which is no exact real numeric expression
+   */
+  private static IExpr exactDelta(IExpr arg1, EvalEngine engine) {
+    int sign = exactSign(arg1, engine);
+    if (sign == 0) {
+      return F.C1;
+    }
+    if (sign == 1 || sign == -1) {
+      return F.C0;
+    }
+    if (sign == CompareUtil.UNCERTAIN) {
+      return F.NIL;
+    }
+    return null;
+  }
+
   private static class DiscreteDelta extends AbstractFunctionEvaluator {
 
     private static @AllowNIL IExpr removeEval(final IAST ast, EvalEngine engine) {
@@ -413,6 +450,10 @@ public class PiecewiseFunctions {
         IExpr arg1 = engine.evaluate(ast.arg1());
 
         if (size == 2) {
+          IExpr exact = exactDelta(arg1, engine);
+          if (exact != null) {
+            return exact;
+          }
           INumber temp = arg1.evalNumber();
           if (temp != null) {
             if (F.isExactZero(temp)) {
@@ -519,6 +560,12 @@ public class PiecewiseFunctions {
       }
       if (size > 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
+        if (size == 2) {
+          IExpr exact = exactDelta(arg1, engine);
+          if (exact != null) {
+            return exact;
+          }
+        }
         IExpr temp = arg1.evalNumber();
         if (temp == null) {
           temp = arg1;
@@ -1208,6 +1255,22 @@ public class PiecewiseFunctions {
       if (size > 1) {
         for (int i = 1; i < size; i++) {
           IExpr expr = ast.get(i);
+          if (!expr.isNumber() && expr.isNumericFunction(true)
+              && expr.isFree(x -> x.isInexactNumber(), false)) {
+            // an exact value: its sign is decided with the precision it needs, not by its machine
+            // value, which may be a rounding error of the wrong sign
+            int sign = CompareUtil.numericSignOrExactZero(expr, engine);
+            if (sign == 0 || sign == 1) {
+              continue;
+            }
+            if (sign == -1) {
+              return F.C0;
+            }
+            if (sign == CompareUtil.UNCERTAIN) {
+              CompareUtil.printSignUncertain(expr, engine);
+              return F.NIL;
+            }
+          }
           IReal temp = expr.evalReal();
           if (temp != null) {
             if (temp.complexSign() < 0) {

@@ -34172,7 +34172,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             "2),Key(a)},{Key(2)},{Key(3)},{Key(4),0},{Key(4),1},{Key(4),2,0},{Key(4),2,1,0},{Key(\n"
             + //
             "4),2,1,1},{Key(4),2,1,2,0},{Key(4),2,1,2,1},{Key(4),2,1,2,2},{Key(4),2,1,2},{Key(\n" + //
-            "4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)}}");
+            "4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)},{}}");
     check("Position(<|1->1+x^2,2-><|\"a\"->x^2|>,3->x^4,4->a+(1+x^2)^2|>,x_)", //
         "{{0},{Key(1),0},{Key(1),1},{Key(1),2,0},{Key(1),2,1},{Key(1),2,2},{Key(1),2},{Key(\n" + //
             "1)},{Key(2),0},{Key(2),Key(a),0},{Key(2),Key(a),1},{Key(2),Key(a),2},{Key(2),Key(a)},{Key(\n"
@@ -34180,7 +34180,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             "2)},{Key(3),0},{Key(3),1},{Key(3),2},{Key(3)},{Key(4),0},{Key(4),1},{Key(4),2,0},{Key(\n"
             + //
             "4),2,1,0},{Key(4),2,1,1},{Key(4),2,1,2,0},{Key(4),2,1,2,1},{Key(4),2,1,2,2},{Key(\n" + //
-            "4),2,1,2},{Key(4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)}}");
+            "4),2,1,2},{Key(4),2,1},{Key(4),2,2},{Key(4),2},{Key(4)},{}}");
     check(
         "Position(<|{1 -> 1 + x^2, 2 -> <|\"a\" -> x^2|>, 3 -> x^4, 4 -> a + (1 + x^2)^2}|>, x^_)", //
         "{{Key(1),2},{Key(2),Key(a)},{Key(3)},{Key(4),2,1,2}}");
@@ -39895,11 +39895,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1+x");
     check("Refine(Sqrt(-x^2), Element(x, Reals))", //
         "I*Abs(x)");
-    // an exact 0 whose numerical value is only rounding noise
+    // an exact 0 whose numerical value is only rounding noise: the algebraic number is reduced
     check("Sign((Sqrt(2) + Sqrt(3))^2 - 5 - 2*Sqrt(6))", //
-        "Sign(-5-2*Sqrt(6)+(Sqrt(2)+Sqrt(3))^2)");
+        "0");
     check("Sign(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
-        "Sign(Sqrt(2)+Sqrt(3)-Sqrt(5+2*Sqrt(6)))");
+        "0");
     check("Sign(Pi - 355/113)", //
         "-1");
     check("Sign(E - 2718281828/1000000000)", //

@@ -1005,7 +1005,7 @@ public class AssociationFunctions {
           if (rule.isPresent()) {
             return rule.second();
           }
-          return F.Missing(S.KeyAbsent, key);
+          return F.Missing(F.stringx("KeyAbsent"), key);
         }
       }
       return F.NIL;

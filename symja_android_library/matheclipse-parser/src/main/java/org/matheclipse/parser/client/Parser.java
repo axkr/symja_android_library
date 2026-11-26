@@ -521,7 +521,7 @@ public class Parser extends Scanner {
     } else if (fToken == TT_BLANK_COLON) {
       // read '_:'
       getNextToken();
-      ASTNode defaultValue = parseExpression();
+      ASTNode defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       // temp = fFactory.createPattern(null, null, defaultValue);
 
       final FunctionNode function =
@@ -533,7 +533,7 @@ public class Parser extends Scanner {
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
-      ASTNode defaultValue = parseExpression();
+      ASTNode defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       final FunctionNode function =
           fFactory.createAST(fFactory.createSymbol(IConstantOperators.Optional));
       function.add(temp);
@@ -605,7 +605,7 @@ public class Parser extends Scanner {
     } else if (fToken == TT_BLANK_COLON) {
       // read '_:'
       getNextToken();
-      ASTNode defaultValue = parseExpression();
+      ASTNode defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), //
           fFactory.createPattern(symbol, null, false), //
           defaultValue);
@@ -613,7 +613,7 @@ public class Parser extends Scanner {
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
-      ASTNode defaultValue = parseExpression();
+      ASTNode defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), temp,
           defaultValue);
     }
@@ -1621,6 +1621,13 @@ public class Parser extends Scanner {
     }
     return result;
   }
+
+  /**
+   * The precedence of the default value of an optional pattern, <code>x_:v</code>: the default
+   * ends before <code>~~</code>, <code>/;</code>, <code>-&gt;</code> and <code>:&gt;</code>, so
+   * <code>x_:0 :&gt; x + 1</code> is <code>RuleDelayed[Optional[x_, 0], x + 1]</code>.
+   */
+  private static final int OPTIONAL_PRECEDENCE = 140;
 
   private ASTNode parseLookaheadOperator(final int min_precedence) {
     ASTNode rhs = climbOperators(parsePrimary(min_precedence), min_precedence, false);

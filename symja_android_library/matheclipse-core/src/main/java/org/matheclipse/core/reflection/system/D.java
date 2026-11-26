@@ -553,6 +553,10 @@ public class D extends AbstractFunctionOptionEvaluator {
             x = F.list(xList.arg1());
           } else {
             x = xList.arg1();
+            if (!isDerivativeVariable(x)) {
+              // `1` is not a valid variable.
+              return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+            }
             if (fx.isAST()) {
               if (xListN.isNegativeResult()
                   || (!xListN.isInteger() && xListN.isNumericFunction())) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -24,6 +25,20 @@ public class HeavisideTheta extends AbstractEvaluator {
     if (size > 1) {
       for (int i = 1; i < size; i++) {
         IExpr expr = ast.get(i);
+        if (!expr.isNumber() && expr.isNumericFunction(true)
+            && expr.isFree(x -> x.isInexactNumber(), false)) {
+          // an exact value: the sign is not the one of a rounding error of its machine value
+          int sign = CompareUtil.numericSignOrExactZero(expr, engine);
+          if (sign == 1) {
+            continue;
+          }
+          if (sign == -1) {
+            return F.C0;
+          }
+          if (sign == 0 || sign == CompareUtil.UNCERTAIN) {
+            return F.NIL;
+          }
+        }
         IReal temp = expr.evalReal();
         if (temp != null) {
           if (temp.complexSign() < 0) {

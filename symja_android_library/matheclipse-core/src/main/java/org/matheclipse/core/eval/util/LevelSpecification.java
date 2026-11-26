@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -133,6 +134,14 @@ public final class LevelSpecification extends LevelSpec {
     if (expr.isInfinity()) {
       fToLevel = Integer.MAX_VALUE;
       fFromLevel = 1;
+      fFromDepth = Integer.MIN_VALUE;
+      fToDepth = -1;
+      return;
+    }
+    if (expr == S.All) {
+      // {0, Infinity}: the whole expression and all its subexpressions
+      fToLevel = Integer.MAX_VALUE;
+      fFromLevel = 0;
       fFromDepth = Integer.MIN_VALUE;
       fToDepth = -1;
       return;
