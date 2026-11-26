@@ -5787,6 +5787,16 @@ public class S {
       S.initFinalSymbol("CorrelationDistance", ID.CorrelationDistance);
 
   /**
+   * CorrelationFunction(x) - TODO describe `CorrelationFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CorrelationFunction.md">CorrelationFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CorrelationFunction =
+      S.initFinalSymbol("CorrelationFunction", ID.CorrelationFunction);
+
+  /**
    * Cos(expr) - returns the cosine of `expr` (measured in radians). `Cos(expr)` will evaluate
    * automatically in the case `expr` is a multiple of `Pi, Pi/2, Pi/3, Pi/4` and `Pi/6`.
    * 
@@ -21103,6 +21113,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Part = S.initFinalSymbol("Part", ID.Part);
+
+  /**
+   * PartialCorrelationFunction(x) - TODO describe `PartialCorrelationFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PartialCorrelationFunction.md">PartialCorrelationFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PartialCorrelationFunction =
+      S.initFinalSymbol("PartialCorrelationFunction", ID.PartialCorrelationFunction);
 
   /**
    * PartialD(x) - TODO describe `PartialD`.
