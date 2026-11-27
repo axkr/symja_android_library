@@ -135,6 +135,56 @@ public class PlotStyleAndSizeTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testListPlotFillingStems() {
+    // points are filled to another dataset by stems, at its value at the same x
+    check("Union(Cases(ListPlot({{{1, 3}, {3, 1}, {5, 2}}, {{1, 1}, {5, 4}}}, Filling -> {1 -> {2}}), "
+        + "Line({{x_, a_}, {x_, b_}}) :> {x, a, b}, Infinity))", //
+        "{{1.0,3.0,1.0},{3.0,1.0,2.5},{5.0,2.0,4.0}}");
+    // stems are more opaque than the area below a line
+    check("{Union(Cases(ListPlot({2, 5, 3}, Filling -> Axis), _Opacity, Infinity)), "
+        + "Union(Cases(ListLinePlot({2, 5, 3}, Filling -> Axis), _Opacity, Infinity))}", //
+        "{{Opacity(0.3)},{Opacity(0.2)}}");
+    // a stem to the axis for each point, one line each
+    check("Cases(ListPlot({4, 1, 3}, Filling -> Axis), _Line, Infinity)", //
+        "{Line({{1.0,4.0},{1.0,0.0}}),Line({{2.0,1.0},{2.0,0.0}}),Line({{3.0,3.0},{3.0,0.0}})}");
+  }
+
+  @Test
+  public void testListContourPlotOutlierRange() {
+    // a lone spike gets no contours of its own unless the whole range is plotted
+    check("d = Table(If(i == 3 && j == 3, 500., i - j/2.), {i, 8}, {j, 8}); "
+        + "{Table(Length(Cases(Normal(ListContourPlot(d, Contours -> {c})), _Line, Infinity)), "
+        + "{c, {2, 9, 30, 100}}), "
+        + "Table(Length(Cases(Normal(ListContourPlot(d, Contours -> {c}, PlotRange -> All)), "
+        + "_Line, Infinity)), {c, {2, 9, 30, 100}})}", //
+        "{{1,1,0,0},{1,1,1,1}}");
+    // explicit contours outside an explicit value range are not drawn
+    check("d = Table(i + j, {i, 6}, {j, 6}); "
+        + "Table(Length(Cases(Normal(ListContourPlot(d, Contours -> {c}, PlotRange -> {4, 8})), "
+        + "_Line, Infinity)), {c, {3, 5, 7, 9}})", //
+        "{0,1,1,0}");
+  }
+
+  @Test
+  public void testListContourPlotPolylines() {
+    // the segments of a level are joined into one line where they meet
+    check("d = Table(Sin(i/2.) + Cos(j/3.), {i, 10}, {j, 10}); "
+        + "Cases(Normal(ListContourPlot(d, Contours -> {0.5})), Line(q_) :> Length(q), Infinity)", //
+        "{15}");
+    // a closed contour
+    check("d = Table(-(i - 4)^2 - (j - 4)^2, {i, 7}, {j, 7}); "
+        + "Cases(Normal(ListContourPlot(d, Contours -> {-5})), Line(q_) :> {Length(q), "
+        + "Chop(Norm(First(q) - Last(q)))}, Infinity)", //
+        "{{13,0}}");
+    // far from the origin with a small step
+    check("d = Table(Sin(i/2.) + Cos(j/3.), {i, 10}, {j, 10}); "
+        + "Cases(Normal(ListContourPlot(d, Contours -> {0.5}, "
+        + "DataRange -> {{10.^12, 10.^12 + 1}, {-10.^12, -10.^12 + 1}})), "
+        + "Line(q_) :> Length(q), Infinity)", //
+        "{15}");
+  }
+
+  @Test
   public void testSaddleCellJoinsItsMainDiagonal() {
     // a saddle cell joins its lower left and upper right corners, whatever its centre
     check("g = ListContourPlot({{3, 0}, {0, 3}}, Contours -> {1.5}); "

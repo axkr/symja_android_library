@@ -51,6 +51,17 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V>
     return result;
   }
 
+  /** Whether a key of the map satisfies the predicate. */
+  @SuppressWarnings("unchecked")
+  public boolean anyKey(java.util.function.Predicate<? super K> predicate) {
+    for (int i = 0; i < table.length; i += 2) {
+      if (table[i] != null && predicate.test((K) table[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Throws exception <code>IllegalStateException("entrySet not implemented!")</code>. */
   @Override
   public Set<java.util.Map.Entry<K, V>> entrySet() {

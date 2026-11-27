@@ -394,6 +394,10 @@ public class Predicates {
     if (pattern.isSymbol()) {
       return x -> x == pattern;
     }
+    if (pattern instanceof Num) {
+      // a machine real also occurs one bit apart, as for a pattern (PatternMatcher.isSameLiteral)
+      return x -> PatternMatcher.isSameLiteral(pattern, x);
+    }
     if (pattern.isAtomicConstant()) {
       return x -> x.equals(pattern);
     }

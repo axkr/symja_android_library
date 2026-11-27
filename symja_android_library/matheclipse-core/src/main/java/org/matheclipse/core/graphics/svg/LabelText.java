@@ -760,9 +760,14 @@ public final class LabelText {
         return boxes(box.first()) + accent;
       }
     }
-    if (box.isAST(S.SuperscriptBox, 3) || box.isAST(S.SubscriptBox, 3)) {
+    if (box.isAST(S.SuperscriptBox, 3) || box.isAST(S.SubscriptBox, 3)
+        || (box.isAST(S.SuperscriptBox, 4) && box.last().isRuleAST())) {
       boolean sub = box.isAST(S.SubscriptBox);
       String index = boxes(box.second());
+      if (!sub && index.matches("′+")) {
+        // the prime marks of a derivative f'
+        return boxes(box.first()) + index;
+      }
       String script = script(index, sub ? SUB_FROM : SUPER_FROM, sub ? SUB_TO : SUPER_TO);
       return boxes(box.first()) + (script != null ? script : (sub ? "_" : "^") + index);
     }

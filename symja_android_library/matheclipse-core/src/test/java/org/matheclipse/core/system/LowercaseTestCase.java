@@ -12650,6 +12650,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // no variable in the first argument: the head stays protected
     check("Subscript(Sin, 1) = 2; Subscript(Sin, 1)", //
         "Subscript(Sin,1)");
+    // machine reals which differ in the last bit are the same index
+    check("Subscript(rq, 0.1 + 0.2) = 1; Subscript(rq, 1.5) = 2; "
+        + "{Subscript(rq, 0.3), Subscript(rq, 1.5), Subscript(rq, 0.31)}", //
+        "{1,2,Subscript(rq,0.31)}");
+    check("Subscript(sq, 0.3) = 4; Subscript(sq, 0.1 + 0.2) = 5; {Subscript(sq, 0.3), Length(UpValues(sq))}", //
+        "{5,1}");
+  }
+
+  @Test
+  public void testMachineRealLiteralPatterns() {
+    // a machine real literal matches the reals one bit apart, which are the same for SameQ
+    check("{MatchQ(1.1 + 2.2, 3.3), Cases({1.1 + 2.2, 2.5}, 3.3), Count({3.3, 1.1 + 2.2}, 3.3), "
+        + "Position({2, 1.1 + 2.2}, 3.3), FreeQ({1.1 + 2.2}, 3.3), FreeQ(1.1 + 2.2, 3.3)}", //
+        "{True,{3.3},2,{{2}},False,False}");
+    check("{(1.1 + 2.2) /. 3.3 -> u, {1.1 + 2.2, 4.4} /. {3.3 -> u, 5.5 -> v}, "
+        + "ReplaceList(1.1 + 2.2, {3.3 -> w}), Cases({h(1.1 + 2.2), h(2.5)}, h(3.3) -> 1)}", //
+        "{u,{u,4.4},{w},{1}}");
+    // two bits apart is another number
+    check("{MatchQ(3.3 + 2.0*2^-51, 3.3), 3.3 + 2.0*2^-51 /. 3.3 -> u}", //
+        "{False,3.3}");
+    // one unit above a power of 2 is relatively more than the machine epsilon: another number,
+    // one unit below is the same
+    check("{MatchQ(2.0 + 2.0^-51, 2.0), MatchQ(2.0 - 2.0^-52, 2.0), "
+        + "Cases({2.0 + 2.0^-51, 2.0 - 2.0^-52}, 2.0) // InputForm}", //
+        "{False,True,{1.9999999999999998`}}");
+    check("k(2.0) = 1; {k(2.0 + 2.0^-51), k(2.0 - 2.0^-52)} // InputForm", //
+        "{k(2.0000000000000004`),1}");
   }
 
   @Test
@@ -13816,15 +13843,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
             + "Infinity)", //
-        "{{{{1.0,2},{1.0,6.0}},{{2.0,4},{2.0,6.0}},{{3.0,3},{3.0,6.0}}}}");
+        "{{{1.0,2.0},{1.0,6.0}},{{2.0,4.0},{2.0,6.0}},{{3.0,3.0},{3.0,6.0}}}");
     // without a range, Bottom is the lowest point
     check("Cases(ListPlot({2, 4, 3}, Filling -> Bottom), Line(p_) :> p, Infinity)", //
-        "{{{{1.0,2},{1.0,2.0}},{{2.0,4},{2.0,2.0}},{{3.0,3},{3.0,2.0}}}}");
+        "{{{1.0,2.0},{1.0,2.0}},{{2.0,4.0},{2.0,2.0}},{{3.0,3.0},{3.0,2.0}}}");
     // one end of the range given, the other from the data
     check(
         "Cases(ListPlot({2, 4, 3}, Filling -> Bottom, PlotRange -> {1, Automatic}), "
-            + "Line(p_) :> First(p), Infinity)", //
-        "{{{1.0,2},{1.0,1.0}}}");
+            + "Line(p_) :> Last(p), Infinity)", //
+        "{{1.0,1.0},{2.0,1.0},{3.0,1.0}}");
     // a height with its own style
     check(
         "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "

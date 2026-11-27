@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.IntFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -178,6 +180,9 @@ public final class StochasticProcesses {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr lag = ast.arg2();
+      if (!lag.isList() && !lag.isNumericFunction(true)) {
+        return symbolicLag(ast.arg1(), lag, engine);
+      }
       IAST lags = F.NIL;
       if (lag.isList()) {
         IAST spec = (IAST) lag;
@@ -205,6 +210,45 @@ public final class StochasticProcesses {
         int k = CovarianceFunction.lagIndex(x);
         return k >= 1 && k < pacf.length ? pacf[k] : ast.setAtCopy(2, x);
       });
+    }
+
+    /**
+     * The partial autocorrelation of an AR(p) process with numeric parameters at the symbolic lag
+     * <code>h</code>: its values at the lags <code>h = +-1, ..., +-p</code>, equal values in one
+     * case, and <code>0</code> beyond, for integers <code>h != 0</code>.
+     *
+     * @return {@link F#NIL} for another process
+     */
+    private static @AllowNIL IExpr symbolicLag(IExpr arg1, IExpr lag, EvalEngine engine) {
+      if (!arg1.isAST(S.ARProcess)) {
+        return F.NIL;
+      }
+      IAST process = (IAST) arg1;
+      if (process.argSize() != 2 && process.argSize() != 3) {
+        return F.NIL;
+      }
+      IExpr coefficients = process.argSize() == 3 ? process.arg2() : process.arg1();
+      if (!coefficients.isList() || coefficients.argSize() < 1) {
+        return F.NIL;
+      }
+      int p = coefficients.argSize();
+      IExpr[] r = CovarianceFunction.autocorrelations(arg1, p, engine);
+      if (r == null || r.length <= p) {
+        return F.NIL;
+      }
+      IExpr[] pacf = partialAutocorrelations(r, engine);
+      Map<IExpr, IASTAppendable> cases = new LinkedHashMap<>();
+      for (int k = 1; k <= p; k++) {
+        if (!pacf[k].isZero()) {
+          IASTAppendable condition = cases.computeIfAbsent(pacf[k], x -> F.ast(S.Or));
+          condition.append(F.Equal(lag, F.ZZ(k)));
+          condition.append(F.Equal(lag, F.ZZ(-k)));
+        }
+      }
+      IASTAppendable list = F.ListAlloc(cases.size());
+      cases.forEach((value, condition) -> list.append(F.list(value, condition)));
+      return F.ConditionalExpression(F.Piecewise(list, F.C0),
+          F.And(F.Element(lag, S.Integers), F.Unequal(lag, F.C0)));
     }
 
     /**
@@ -260,7 +304,10 @@ public final class StochasticProcesses {
    * <code>CovarianceFunction(proc, h)</code> - the autocovariance at the lag <code>h</code> of a
    * weakly stationary <code>ARProcess</code>, <code>MAProcess</code> or <code>ARMAProcess</code>
    * with numeric parameters; <code>CovarianceFunction(proc, s, t)</code> is the covariance of the
-   * values at the times <code>s</code> and <code>t</code>. Exact parameters give exact values.
+   * values at the times <code>s</code> and <code>t</code>. Exact parameters give exact values. A
+   * symbolic lag or symbolic times give the closed form in <code>|h|</code> of an AR(1), an MA(q)
+   * or an ARMA(1,q) process, whose parameters may also be symbolic; integer lags of symbolic
+   * parameters give the closed form at the lag.
    *
    * <p>
    * <code>CovarianceFunction(data, h)</code> - the sample autocovariance
@@ -295,9 +342,19 @@ public final class StochasticProcesses {
       if (ast.isAST2()) {
         lag = ast.arg2();
       } else if (ast.isAST3()) {
-        lag = engine.evaluate(F.Abs(F.Subtract(ast.arg3(), ast.arg2())));
+        lag = engine.evaluate(F.Abs(F.Subtract(ast.arg2(), ast.arg3())));
       } else {
         return F.NIL;
+      }
+      if (!lag.isList() && !lag.isNumericFunction(true)) {
+        // a symbolic lag or symbolic times: a function of the lag |h|
+        IExpr result =
+            symbolicLag(ast.arg1(), ast.isAST2() ? F.Abs(lag) : lag, correlation, engine);
+        if (result.isNIL() && ast.isAST2() && dataPaths(ast.arg1(), engine).isPresent()) {
+          // data has values at integer lags only
+          return badLag(ast, lag, engine);
+        }
+        return result;
       }
       IAST lags = F.NIL;
       if (lag.isList()) {
@@ -319,6 +376,20 @@ public final class StochasticProcesses {
         // a numeric lag which is no integer, not a machine integer or without pairs in the data
         return badLag(ast, lag, engine);
       }
+      if (paths.isNIL() && hasSymbolicParameters(ast.arg1())) {
+        // the closed form at the integer lags
+        if (notStationary((IAST) ast.arg1(), engine)) {
+          return F.NIL;
+        }
+        if (lags.isNIL()) {
+          return h < 0 ? F.NIL : symbolicLag(ast.arg1(), F.ZZ(h), correlation, engine);
+        }
+        return lags.map(x -> {
+          int k = lagIndex(x);
+          IExpr value = k >= 0 ? symbolicLag(ast.arg1(), F.ZZ(k), correlation, engine) : F.NIL;
+          return value.isPresent() ? value : ast.setAtCopy(2, x);
+        });
+      }
       IntFunction<IExpr> gamma = h < 0 ? null
           : paths.isPresent() ? new SampleAutocovariances(paths, engine)
               : processAutocovariances(ast.arg1(), h, engine);
@@ -338,6 +409,142 @@ public final class StochasticProcesses {
     }
 
     /**
+     * The autocovariance or, for <code>correlation</code>, the autocorrelation of an AR(1), an MA(q)
+     * or an ARMA(1,q) process as a function of the symbolic lag <code>absLag = |h|</code>. The
+     * parameters may be symbolic; numeric ones must give a weakly stationary process.
+     *
+     * @return {@link F#NIL} for another process
+     */
+    private static @AllowNIL IExpr symbolicLag(IExpr arg1, IExpr absLag, boolean correlation,
+        EvalEngine engine) {
+      if (!arg1.isAST()) {
+        return F.NIL;
+      }
+      IAST process = (IAST) arg1;
+      IExpr[] parameters = armaParameters(process, false);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      IAST a = (IAST) parameters[0];
+      IAST b = (IAST) parameters[1];
+      if (notStationary(process, engine)) {
+        return F.NIL;
+      }
+      IExpr gamma = closedForm(a, b, parameters[2], absLag, engine);
+      if (gamma.isNIL()) {
+        return F.NIL;
+      }
+      if (!correlation) {
+        return engine.evaluate(gamma);
+      }
+      if (a.argSize() == 1 && b.isEmpty() && a.arg1().isZero()) {
+        // white noise
+        return engine.evaluate(F.Piecewise(F.list(F.list(F.C1, F.Equal(absLag, F.C0))), F.C0));
+      }
+      if (a.argSize() == 1 && b.isEmpty()) {
+        // the autocorrelation a^|h| of an AR(1) process
+        return engine.evaluate(F.Power(a.arg1(), absLag));
+      }
+      IExpr variance = engine.evaluate(closedForm(a, b, parameters[2], F.C0, engine));
+      return engine.evaluate(F.Divide(gamma, variance));
+    }
+
+    /**
+     * The autocovariance at the lag <code>lag &gt;= 0</code> of an AR(1) process,
+     * <code>v*a^lag/(1-a^2)</code>, of an MA(q) process, <code>v*Sum(b(j)*b(j+k))</code> with
+     * <code>b(0) = 1</code> at the lags <code>k = q, ..., 0</code> (equal values in one case) and
+     * <code>0</code> beyond, or of an ARMA(1,q) process, <code>gamma(q)*a^(lag-q)</code> for
+     * <code>lag &gt; q-1</code>, the values at the lags <code>q-2, ..., 0</code> and
+     * <code>gamma(q-1)</code> otherwise.
+     *
+     * @return {@link F#NIL} for other orders
+     */
+    private static @AllowNIL IExpr closedForm(IAST a, IAST b, IExpr v, IExpr lag,
+        EvalEngine engine) {
+      int p = a.argSize();
+      int q = b.argSize();
+      if (p == 1 && a.arg1().isZero()) {
+        // no autoregressive part: white noise or an MA(q) process
+        return q == 0 ? F.Piecewise(F.list(F.list(v, F.Equal(lag, F.C0))), F.C0)
+            : closedForm(F.CEmptyList, b, v, lag, engine);
+      }
+      if (p == 1 && q == 0) {
+        IExpr phi = a.arg1();
+        return F.Times(F.Power(phi, lag), v, F.Power(F.Subtract(F.C1, F.Sqr(phi)), F.CN1));
+      }
+      if (p == 0 && q > 0) {
+        // the lags of each nonzero value, in the order of their smallest lag
+        Map<IExpr, IASTAppendable> values = new LinkedHashMap<>();
+        for (int k = q; k >= 0; k--) {
+          engine.checkTimeLimit();
+          IASTAppendable sum = F.PlusAlloc(q - k + 1);
+          for (int j = 0; j + k <= q; j++) {
+            sum.append(F.Times(j == 0 ? F.C1 : b.get(j), j + k == 0 ? F.C1 : b.get(j + k)));
+          }
+          IExpr value = factored(F.Times(v, sum.oneIdentity0()), engine);
+          if (!value.isZero()) {
+            IASTAppendable lags = values.remove(value);
+            if (lags == null) {
+              lags = F.ast(S.Or);
+            }
+            lags.append(1, F.Equal(lag, F.ZZ(k)));
+            values.put(value, lags);
+          }
+        }
+        IASTAppendable cases = F.ListAlloc(values.size());
+        values.forEach((value, lags) -> cases.append(F.list(value, lags.oneIdentity1())));
+        return F.Piecewise(cases, F.C0);
+      }
+      if (p == 1 && q > 0) {
+        IExpr phi = a.arg1();
+        // the moving average weights psi(j) = Sum(b(i)*phi^(j-i), i=0..j)
+        IExpr[] psi = new IExpr[q + 1];
+        psi[0] = F.C1;
+        for (int j = 1; j <= q; j++) {
+          psi[j] = engine.evaluate(F.Plus(F.Times(phi, psi[j - 1]), b.get(j)));
+        }
+        // gamma(k) - phi*gamma(k-1) = v*Sum(b(j)*psi(j-k), j=k..q) with gamma(-1) = gamma(1)
+        IExpr[] c = new IExpr[q + 1];
+        for (int k = 0; k <= q; k++) {
+          engine.checkTimeLimit();
+          IASTAppendable sum = F.PlusAlloc(q - k + 1);
+          for (int j = k; j <= q; j++) {
+            sum.append(F.Times(j == 0 ? F.C1 : b.get(j), psi[j - k]));
+          }
+          c[k] = F.Times(v, sum.oneIdentity0());
+        }
+        // the numerators of gamma(k) = n(k)/(1-phi^2)
+        IExpr scale = engine.evaluate(F.Subtract(F.C1, F.Sqr(phi)));
+        IExpr[] n = new IExpr[q + 1];
+        n[0] = engine.evaluate(F.Expand(F.Plus(c[0], F.Times(phi, c[1]))));
+        for (int k = 1; k <= q; k++) {
+          n[k] = engine.evaluate(F.Expand(F.Plus(F.Times(phi, n[k - 1]), F.Times(c[k], scale))));
+        }
+        IExpr[] gamma = new IExpr[q + 1];
+        for (int k = 0; k <= q; k++) {
+          gamma[k] = engine.evaluate(F.Times(factored(n[k], engine), F.Power(scale, F.CN1)));
+        }
+        IASTAppendable cases = F.ListAlloc(q);
+        cases.append(F.list(F.Times(gamma[q], F.Power(phi, F.Plus(F.ZZ(-q), lag))),
+            F.Greater(lag, F.ZZ(q - 1))));
+        for (int k = q - 2; k >= 0; k--) {
+          cases.append(F.list(gamma[k], F.Equal(lag, F.ZZ(k))));
+        }
+        return F.Piecewise(cases, gamma[q - 1]);
+      }
+      return F.NIL;
+    }
+
+    /** The value, factored if it is symbolic and exact. */
+    private static IExpr factored(IExpr value, EvalEngine engine) {
+      IExpr result = engine.evaluate(value);
+      if (result.isNumber() || !result.isFree(x -> x.isInexactNumber(), false)) {
+        return result;
+      }
+      return engine.evaluate(F.Factor(result));
+    }
+
+    /**
      * The message for a lag specification of data or of a process without a value.
      *
      * @return {@link F#NIL}
@@ -345,7 +552,7 @@ public final class StochasticProcesses {
     private static @AllowNIL IExpr badLag(IAST ast, IExpr lag, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (dataPaths(arg1, engine).isPresent()
-          || (arg1.isAST() && armaParameters((IAST) arg1) != null)) {
+          || (arg1.isAST() && armaParameters((IAST) arg1, true) != null)) {
         // CovarianceFunction::bdlag: The lag specification `1` should be ...
         return Errors.printMessage(ast.topHead(), "bdlag", F.List(lag), engine);
       }
@@ -407,12 +614,16 @@ public final class StochasticProcesses {
         return null;
       }
       IAST process = (IAST) arg1;
-      IExpr[] parameters = armaParameters(process);
+      IExpr[] parameters = armaParameters(process, true);
       if (parameters == null) {
         return null;
       }
       Arma arma = Arma.of(process);
-      if (arma == null || arma.d > 0 || !arma.isStationary()) {
+      if (arma == null || arma.d > 0) {
+        return null;
+      }
+      if (!arma.isStationary()) {
+        Errors.printMessage((ISymbol) process.head(), "nonwkst", F.CEmptyList, engine);
         return null;
       }
       IExpr[] gamma = autocovariances((IAST) parameters[0], (IAST) parameters[1], parameters[2],
@@ -590,13 +801,51 @@ public final class StochasticProcesses {
     }
 
     /**
+     * Whether the process is known not to be weakly stationary or integrated: by its numeric
+     * parameters, or by a numeric autoregressive coefficient of an order 1 process outside the
+     * unit interval. A process which is not weakly stationary reports the message
+     * <code>nonwkst</code>.
+     */
+    private static boolean notStationary(IAST process, EvalEngine engine) {
+      IExpr[] parameters = armaParameters(process, false);
+      if (parameters == null) {
+        return true;
+      }
+      IAST a = (IAST) parameters[0];
+      if (armaParameters(process, true) != null) {
+        Arma arma = Arma.of(process);
+        if (arma == null || arma.d > 0) {
+          return true;
+        }
+        if (!arma.isStationary()) {
+          Errors.printMessage((ISymbol) process.head(), "nonwkst", F.CEmptyList, engine);
+          return true;
+        }
+      } else if (a.argSize() == 1 && a.arg1().isNumber()
+          && !engine.evalTrue(F.Less(F.Abs(a.arg1()), F.C1))) {
+        // a numeric autoregressive coefficient outside the unit interval
+        Errors.printMessage((ISymbol) process.head(), "nonwkst", F.CEmptyList, engine);
+        return true;
+      }
+      return false;
+    }
+
+    /** Whether the expression is an ARMA family process with symbolic parameters. */
+    private static boolean hasSymbolicParameters(IExpr arg1) {
+      return arg1.isAST() && armaParameters((IAST) arg1, false) != null
+          && armaParameters((IAST) arg1, true) == null;
+    }
+
+    /**
      * The autoregressive and the moving average coefficients and the noise variance of an
      * <code>ARProcess</code>, <code>MAProcess</code> or <code>ARMAProcess</code>, with or without
      * a constant.
      *
-     * @return <code>null</code> for another expression or non-numeric parameters
+     * @param numeric whether the parameters must be numbers
+     * @return <code>null</code> for another expression or, for <code>numeric</code>, non-numeric
+     *         parameters
      */
-    private static IExpr[] armaParameters(IAST process) {
+    private static IExpr[] armaParameters(IAST process, boolean numeric) {
       int offset = process.argSize() > 0 && !process.arg1().isList() ? 1 : 0;
       IExpr a;
       IExpr b;
@@ -613,8 +862,8 @@ public final class StochasticProcesses {
         return null;
       }
       IExpr v = process.last();
-      if (!a.isList() || !b.isList() || !((IAST) a).forAll(IExpr::isNumber)
-          || !((IAST) b).forAll(IExpr::isNumber) || !v.isNumber()) {
+      if (!a.isList() || !b.isList() || (numeric && (!((IAST) a).forAll(IExpr::isNumber)
+          || !((IAST) b).forAll(IExpr::isNumber) || !v.isNumber()))) {
         return null;
       }
       return new IExpr[] {a, b, v};

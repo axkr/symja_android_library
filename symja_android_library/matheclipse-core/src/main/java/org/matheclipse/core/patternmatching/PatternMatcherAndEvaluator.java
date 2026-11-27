@@ -411,7 +411,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     fReturnResult = F.NIL;
 
     if (isRuleWithoutPatterns()) {
-      if (fLhsPatternExpr.equals(leftHandSide)) {
+      if (isSameLiteral(fLhsPatternExpr, leftHandSide)) {
         return replaceEqualMatch(leftHandSide, engine, evaluate);
       }
       if (wholeOnly) {

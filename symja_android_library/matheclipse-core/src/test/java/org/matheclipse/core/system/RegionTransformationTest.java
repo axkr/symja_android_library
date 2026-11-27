@@ -10,6 +10,17 @@ import org.junit.jupiter.api.Test;
 public class RegionTransformationTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testProjectivePointImages() {
+    // a last row other than {0,...,0,1} divides by the homogeneous coordinate
+    check("TransformationFunction({{2, 0, 1}, {0, 1, 0}, {1, 1, 3}})[{{1, 2}, {0, 0}}]", //
+        "{{1/2,1/3},{1/3,0}}");
+    check("TransformationFunction({{1., 0., 2.}, {0., 1., 0.}, {0., 1., 1.}})[{3, 4}]", //
+        "{1.0,0.8}");
+    check("TransformationFunction({{1, 0, 3}, {0, 1, 4}, {0, 0, 1}})[{x, y}]", //
+        "{3+x,4+y}");
+  }
+
+  @Test
   public void testPointListsUnderAffineMaps() {
     check("TranslationTransform({2, -1})[Polygon({{0, 0}, {2, 0}, {0, 2}})]", //
         "Polygon({{2,-1},{4,-1},{2,1}})");

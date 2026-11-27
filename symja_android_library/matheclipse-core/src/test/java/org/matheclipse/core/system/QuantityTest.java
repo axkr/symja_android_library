@@ -536,7 +536,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("Length(Cases(PolarPlot(Quantity(1,\"Meters\"), {x,0,2}), _Line, Infinity))", //
         "1");
     check("Length(Cases(DiscretePlot(Quantity(n,\"Meters\"), {n,1,5}), _Point|_Line, Infinity))", //
-        "2");
+        "6");
     check("Length(Cases(Plot3D(Quantity(x*y,\"Meters\"), {x,0,1},{y,0,1}), _Polygon, Infinity))", //
         "1");
 

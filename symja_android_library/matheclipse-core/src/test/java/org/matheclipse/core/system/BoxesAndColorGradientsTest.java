@@ -6,6 +6,26 @@ import org.junit.jupiter.api.Test;
 public class BoxesAndColorGradientsTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testFactorialPowerBase() {
+    // a factorial base is bracketed, a call is not
+    check("{ToBoxes((k!)^3), ToBoxes(HoldForm((k!!)^m)), ToBoxes(g(k)^2)}", //
+        "{SuperscriptBox(RowBox({(,RowBox({k,!}),)}),3),TagBox(SuperscriptBox(RowBox({(,RowBox({k,!!}),)}),m),HoldForm),SuperscriptBox(RowBox({g,[,k,]}),2)}");
+  }
+
+  @Test
+  public void testDerivativeBoxes() {
+    // prime marks over the function, from the fourth order on the order in parentheses
+    check("{ToBoxes(g'), ToBoxes(Derivative(3)[g][t]), ToBoxes(Derivative(5)[g])} // InputForm", //
+        "{SuperscriptBox(\"g\",\"′\",MultilineFunction->None),RowBox({SuperscriptBox(\"g\",\"′′′\",MultilineFunction->None),\"[\",\"t\",\"]\"}),SuperscriptBox(\"g\",TagBox(RowBox({\"(\",\"5\",\")\"}),Derivative),MultilineFunction->None)}");
+    // a derivative as the base of a power is bracketed
+    check("ToBoxes(Derivative(2)[g]^3) // InputForm", //
+        "SuperscriptBox(RowBox({\"(\",SuperscriptBox(\"g\",\"′′\",MultilineFunction->None),\")\"}),\"3\")");
+    // the order of a partial derivative stays in the call form
+    check("ToBoxes(Derivative(1, 0)[g]) // InputForm", //
+        "RowBox({RowBox({\"Derivative\",\"[\",RowBox({\"1\",\",\",\"0\"}),\"]\"}),\"[\",\"g\",\"]\"})");
+  }
+
+  @Test
   public void testTraditionalFormFunctionCall() {
     check("ToBoxes(TraditionalForm(g(u, v) + Cosh(u))) // InputForm", //
         "TagBox(FormBox(RowBox({RowBox({\"g\",\"(\",RowBox({\"u\",\",\",\"v\"}),\")\"}),\"+\",RowBox({\"cosh\",\"(\",\"u\",\")\"})}),TraditionalForm),TraditionalForm,Editable->True)");

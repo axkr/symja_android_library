@@ -2662,21 +2662,41 @@ public class TensorFunctions {
           return F.NIL;
         }
         IAST v = (IAST) ast.arg1().normal(false);
-        // Take(m . Join(v, {1}), Length(v))
-        return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
+        return transformPoint(m, v, dim);
       }
       // a list of points: every one of them is transformed
       int[] dims = ast.arg1().isMatrix(false);
       int[] matrixDims = m.isMatrix(false);
       if (dims != null && matrixDims != null && dims[1] == matrixDims[0] - 1) {
         IAST points = (IAST) ast.arg1().normal(false);
-        return points.map(point -> F.Take(F.Dot(m, F.Join(point, F.list(F.C1))), F.ZZ(dims[1])), 1);
+        return points.map(point -> transformPoint(m, (IAST) point, dims[1]), 1);
       }
       if (ast.arg1().isAST() && matrixDims != null && matrixDims[0] == matrixDims[1]
           && matrixDims[0] > 1) {
         return transformRegion((IAST) m.normal(false), (IAST) ast.arg1(), engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * The image <code>Take(w, n)/w(n+1)</code> of the point <code>v</code> of dimension
+     * <code>n</code> with <code>w = m . Join(v, {1})</code>; an affine <code>m</code>, whose last
+     * row is <code>{0, ..., 0, 1}</code>, needs no division.
+     */
+    private static IExpr transformPoint(IExpr m, IAST v, int n) {
+      IExpr w = F.Dot(m, F.Join(v, F.list(F.C1)));
+      if (m.isList() && m.last().isList()) {
+        IAST lastRow = (IAST) m.last();
+        boolean affine = lastRow.argSize() == n + 1 && lastRow.last().isOne();
+        for (int j = 1; affine && j <= n; j++) {
+          affine = lastRow.get(j).isZero();
+        }
+        if (!affine) {
+          // a projective transformation divides by the homogeneous coordinate
+          return F.Divide(F.Take(w, F.ZZ(n)), F.Last(w));
+        }
+      }
+      return F.Take(w, F.ZZ(n));
     }
 
     /**

@@ -30,6 +30,8 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
@@ -2035,7 +2037,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       return matchPattern((IPatternObject) lhsPatternExpr, lhsEvalExpr, stackMatcher, engine)
           && stackMatcher.matchRest();
     }
-    return lhsPatternExpr.equals(lhsEvalExpr);
+    return isSameLiteral(lhsPatternExpr, lhsEvalExpr);
   }
 
   /**
@@ -2577,7 +2579,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       StackMatcher stackMatcher = new StackMatcher(engine);
       return matchASTSpecialBuiltIn((IAST) lhsPatternExpr, lhsEvalExpr, engine, stackMatcher);
     }
-    return lhsPatternExpr.equals(lhsEvalExpr);
+    return isSameLiteral(lhsPatternExpr, lhsEvalExpr);
   }
 
   /**
@@ -2603,14 +2605,57 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return matched ? stackMatcher.matchRest() : false;
   }
 
-  /** Two machine reals one unit in the last place apart are the same number to a pattern. */
-  static boolean isSameReal(IExpr patternExpr, IExpr evalExpr) {
-    if (patternExpr instanceof Num && evalExpr instanceof Num) {
-      final double x = ((Num) patternExpr).doubleValue();
-      final double y = ((Num) evalExpr).doubleValue();
-      return Math.nextUp(x) == y || Math.nextDown(x) == y;
+  /**
+   * Whether the expression matches the pattern-free <code>patternExpr</code>: it is equal, or its
+   * machine reals are the same numbers by {@link #isSameMachineReal(double, double)} (which is
+   * stricter than <code>SameQ</code> one unit above a power of 2) and its other inexact numbers
+   * are the same for <code>SameQ</code>.
+   */
+  public static boolean isSameLiteral(IExpr patternExpr, IExpr evalExpr) {
+    if (patternExpr.equals(evalExpr)) {
+      return true;
+    }
+    if (patternExpr instanceof INum) {
+      if (patternExpr instanceof Num) {
+        return isSameReal(patternExpr, evalExpr);
+      }
+      return evalExpr instanceof INum && !(evalExpr instanceof Num)
+          && Predicates.isSameQ(patternExpr, evalExpr);
+    }
+    if (patternExpr.isAST() && evalExpr.isAST() && patternExpr.size() == evalExpr.size()
+        && !patternExpr.isSparseArray() && !evalExpr.isSparseArray() && !patternExpr.isDataset()
+        && !evalExpr.isDataset() && patternExpr.head().equals(evalExpr.head())) {
+      IAST patternAST = (IAST) patternExpr;
+      IAST evalAST = (IAST) evalExpr;
+      for (int i = 1; i < patternAST.size(); i++) {
+        if (!isSameLiteral(patternAST.get(i), evalAST.get(i))) {
+          return false;
+        }
+      }
+      return true;
     }
     return false;
+  }
+
+  /**
+   * Two machine reals are the same number to a pattern if they differ by less than the machine
+   * epsilon relative to the smaller magnitude: one unit in the last place apart, except one unit
+   * above a power of 2 (<code>1.0</code> and <code>1.0+2^-52</code> are different).
+   */
+  static boolean isSameReal(IExpr patternExpr, IExpr evalExpr) {
+    if (patternExpr instanceof Num && evalExpr instanceof Num) {
+      return isSameMachineReal(((Num) patternExpr).doubleValue(), ((Num) evalExpr).doubleValue());
+    }
+    return false;
+  }
+
+  /**
+   * @see #isSameReal(IExpr, IExpr) - <code>-0.0</code> and <code>0.0</code> stay different, as
+   *      for {@link Num#equals(Object)}
+   */
+  public static boolean isSameMachineReal(double x, double y) {
+    return Double.compare(x, y) == 0
+        || Math.abs(x - y) < Math.ulp(1.0) * Math.min(Math.abs(x), Math.abs(y));
   }
 
   private boolean matchTrue(IExpr lhsPatternExpr, EvalEngine engine, StackMatcher stackMatcher) {
@@ -3368,7 +3413,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     boolean matched = false;
     if (isRuleWithoutPatterns()) {
       // no patterns found match equally:
-      matched = fLhsPatternExpr.equals(leftHandSide);
+      matched = isSameLiteral(fLhsPatternExpr, leftHandSide);
     } else {
 
       fPatternMap.initPattern();
@@ -3384,7 +3429,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   public boolean testBlank(final IExpr leftHandSide, EvalEngine engine) {
     if (isRuleWithoutPatterns()) {
       // no patterns found match equally:
-      return fLhsPatternExpr.equals(leftHandSide);
+      return isSameLiteral(fLhsPatternExpr, leftHandSide);
     }
     fPatternMap.initPatternBlank();
     return matchExpr(fLhsPatternExpr, leftHandSide, engine);

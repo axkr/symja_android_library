@@ -383,7 +383,7 @@ public interface IExpr
     }
     if ((arg1.isSymbol() || arg1.isAtomicConstant())
         && (arg2.isSymbol() || arg2.isAtomicConstant())) {
-      return F.booleSymbol(!arg1.equals(arg2));
+      return F.booleSymbol(!PatternMatcher.isSameLiteral(arg2, arg1));
     }
     if (!arg1.isFreeOfPatterns() && occursInPatternParts(arg1, arg2)) {
       return S.False;

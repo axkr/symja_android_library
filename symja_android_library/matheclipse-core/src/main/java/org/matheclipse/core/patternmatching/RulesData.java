@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -258,6 +259,9 @@ public final class RulesData implements Serializable {
    */
   private volatile Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 
+  /** Is there a rule in {@link #fEqualUpRules} with a machine real argument? */
+  private volatile boolean fRealEqualUpRules;
+
   /**
    * Matches rules which are defined with {@link S#UpSet} or {@link S#UpSetDelayed} function
    */
@@ -277,6 +281,7 @@ public final class RulesData implements Serializable {
     copy.fMessages = fMessages == null ? null : new java.util.HashMap<>(fMessages);
     copy.fEqualDownRules = fEqualDownRules == null ? null : new ConcurrentHashMap<>(fEqualDownRules);
     copy.fRealEqualDownRules = fRealEqualDownRules;
+    copy.fRealEqualUpRules = fRealEqualUpRules;
     // a list of rules is replaced, not changed, when a rule is added or removed
     copy.fPatternDownRules = fPatternDownRules;
     copy.fPriorityDownRules =
@@ -1074,6 +1079,9 @@ public final class RulesData implements Serializable {
     final Map<IExpr, PatternMatcherEquals> equalRules = fEqualUpRules;
     if (equalRules != null) {
       res = equalRules.get(expression);
+      if (res == null && fRealEqualUpRules) {
+        res = sameRealRule(equalRules, expression);
+      }
       if (res != null) {
         if (res.getRHS().equals(expression)) {
           // a rule without a pattern which gives back its own left-hand side is a fixed point
@@ -1185,22 +1193,65 @@ public final class RulesData implements Serializable {
    */
   private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
       IExpr expr) {
+    return getSameReal(equalRules, expr);
+  }
+
+  /**
+   * The value of the key in <code>map</code> which differs from <code>expr</code> only in the last
+   * bit of a machine real, <code>expr</code> itself or its machine real arguments, which are the
+   * same number to a pattern ({@link PatternMatcher#isSameMachineReal(double, double)}).
+   *
+   * @return <code>null</code> if there is no such key
+   */
+  public static <V> V getSameReal(Map<? extends IExpr, V> map, IExpr expr) {
+    if (expr instanceof Num) {
+      final double value = expr.evalf();
+      for (double neighbour : new double[] {Math.nextDown(value), Math.nextUp(value)}) {
+        if (PatternMatcher.isSameMachineReal(value, neighbour)) {
+          V result = map.get(F.num(neighbour));
+          if (result != null) {
+            return result;
+          }
+        }
+      }
+      return null;
+    }
     if (!hasMachineRealArgument(expr)
         || ((IAST) expr).count(x -> x instanceof Num) > MAX_SAME_REAL_ARGUMENTS) {
       return null;
     }
-    return sameRealRule(equalRules, (IAST) expr, 1);
+    return sameRealRule(map, (IAST) expr, 1);
+  }
+
+  /**
+   * Whether a key of the map is a machine real or has machine real arguments, so that
+   * {@link #getSameReal(Map, IExpr)} may find a value.
+   */
+  public static boolean hasMachineRealKey(Map<? extends IExpr, ?> map) {
+    if (map instanceof OpenFixedSizeMap) {
+      return ((OpenFixedSizeMap<? extends IExpr, ?>) map)
+          .anyKey(key -> key instanceof Num || hasMachineRealArgument(key));
+    }
+    for (IExpr key : map.keySet()) {
+      if (key instanceof Num || hasMachineRealArgument(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Vary the machine real arguments from the position <code>start</code> on by one bit. */
-  private static PatternMatcherEquals sameRealRule(Map<IExpr, PatternMatcherEquals> equalRules,
-      IAST expr, int start) {
+  private static <V> V sameRealRule(Map<? extends IExpr, V> equalRules, IAST expr,
+      int start) {
     for (int i = start; i < expr.size(); i++) {
       if (expr.get(i) instanceof Num) {
         final double value = expr.get(i).evalf();
         for (double neighbour : new double[] {Math.nextDown(value), Math.nextUp(value)}) {
+          if (!PatternMatcher.isSameMachineReal(value, neighbour)) {
+            continue;
+          }
           IAST changed = expr.setAtCopy(i, F.num(neighbour));
-          PatternMatcherEquals rule = equalRules.get(changed);
+          V rule = equalRules.get(changed);
           if (rule == null) {
             rule = sameRealRule(equalRules, changed, i + 1);
           }
@@ -1646,25 +1697,37 @@ public final class RulesData implements Serializable {
       fNValues = true;
     }
     if (equalRule) {
-      fEqualUpRules = getEqualUpRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualUpRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualUpRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     final PatternMatcherAndEvaluator pmEvaluator =
         new PatternMatcherAndEvaluator(setSymbol, leftHandSide, rightHandSide);
 
     if (pmEvaluator.isRuleWithoutPatterns()) {
-      fEqualUpRules = getEqualUpRules();
-      PatternMatcherEquals pmEquals =
-          new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
-      fEqualUpRules.put(leftHandSide, pmEquals);
-      return pmEquals;
+      return putEqualUpRule(setSymbol, leftHandSide, rightHandSide);
     }
 
     return addSimplePatternUpRule(pmEvaluator);
+  }
+
+  /**
+   * Store an up-rule without patterns. A definition for a machine real replaces the one for a real
+   * which is the same up to the tolerance of <code>SameQ</code>.
+   */
+  private PatternMatcherEquals putEqualUpRule(final int setSymbol, final IAST leftHandSide,
+      final IExpr rightHandSide) {
+    fEqualUpRules = getEqualUpRules();
+    if (hasMachineRealArgument(leftHandSide)) {
+      fRealEqualUpRules = true;
+      PatternMatcherEquals same = sameRealRule(fEqualUpRules, leftHandSide);
+      if (same != null) {
+        fEqualUpRules.remove(same.getLHS());
+      }
+    }
+    PatternMatcherEquals pmEquals =
+        new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
+    fEqualUpRules.put(leftHandSide, pmEquals);
+    return pmEquals;
   }
 
   /**

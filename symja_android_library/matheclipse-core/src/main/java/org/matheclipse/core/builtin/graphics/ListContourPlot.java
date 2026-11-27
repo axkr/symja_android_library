@@ -121,6 +121,23 @@ public class ListContourPlot extends ContourPlot {
       // the region left nothing to contour, which is the same as data with no value in it
       return F.NIL;
     }
+    IExpr plotRange = GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic);
+    if (plotRange == S.Automatic) {
+      // a lone spike in the data neither stretches the contour levels nor gets contours of its
+      // own
+      clipOutlierValues(gridData, defined);
+    } else {
+      // an explicit value range {zmin, zmax}, also the last of {xrange, yrange, zrange}
+      IExpr zRange = plotRange.isList3() ? plotRange.last() : plotRange;
+      if (zRange.isList2()) {
+        double zMin = zRange.first().evalfNaN();
+        double zMax = zRange.second().evalfNaN();
+        if (Double.isFinite(zMin) && Double.isFinite(zMax) && zMin < zMax) {
+          gridData.minZ = zMin;
+          gridData.maxZ = zMax;
+        }
+      }
+    }
 
     graphicsOptions
         .setBoundingBox(new double[] {gridData.xMin, gridData.xMax, gridData.yMin, gridData.yMax});
@@ -205,6 +222,52 @@ public class ListContourPlot extends ContourPlot {
       gd.maxZ = maxZ;
     }
     return defined;
+  }
+
+  /**
+   * Narrow the value range of the grid to the automatic range of a list plot: with
+   * <code>lo</code> and <code>hi</code> the values at the quantiles <code>0.175</code> and
+   * <code>0.825</code> (the <code>Ceiling(n*q)</code>-th smallest), an extreme value further than
+   * <code>2.5*(hi-lo)</code> beyond its quantile is an outlier, and the range then ends
+   * <code>1.5*(hi-lo)</code> beyond the quantile. An extreme value <code>0</code> is kept.
+   */
+  static void clipOutlierValues(GridData gd, boolean[][] defined) {
+    int n = 0;
+    for (boolean[] column : defined) {
+      for (boolean d : column) {
+        if (d) {
+          n++;
+        }
+      }
+    }
+    if (n == 0) {
+      return;
+    }
+    double[] values = new double[n];
+    int k = 0;
+    for (int i = 0; i < defined.length; i++) {
+      for (int j = 0; j < defined[i].length; j++) {
+        if (defined[i][j]) {
+          values[k++] = gd.zGrid[i][j];
+        }
+      }
+    }
+    java.util.Arrays.sort(values);
+    double min = values[0];
+    double max = values[n - 1];
+    double lo = values[(int) Math.max(1, Math.min(n, Math.ceil(n * 0.175))) - 1];
+    double hi = values[(int) Math.max(1, Math.min(n, Math.ceil(n * 0.825))) - 1];
+    if (lo == hi) {
+      lo = min;
+      hi = max;
+    }
+    double span = hi - lo;
+    if (min < lo - 2.5 * span && min != 0.0) {
+      gd.minZ = lo - 1.5 * span;
+    }
+    if (max > hi + 2.5 * span && max != 0.0) {
+      gd.maxZ = hi + 1.5 * span;
+    }
   }
 
   /**
@@ -407,8 +470,9 @@ public class ListContourPlot extends ContourPlot {
       if (list.size() >= 2 && list.arg1() == S.Automatic && list.arg2().isInteger()) {
         numberOfContours = list.arg2().toIntDefault(10);
       } else {
-        // Explicit Values
-        levels = list.toDoubleVectorIgnore();
+        // the explicit values in the range of the values
+        levels = java.util.Arrays.stream(list.toDoubleVectorIgnore())
+            .filter(level -> level >= gd.minZ && level <= gd.maxZ).toArray();
       }
     } else if (contoursOption.isInteger()) {
       numberOfContours = contoursOption.toIntDefault(10);
@@ -485,11 +549,128 @@ public class ListContourPlot extends ContourPlot {
           // the lines of a level are half transparent with butt ends, as in ContourPlot
           group.append(ContourPlot.levelDirective(currentStyle));
 
-          group.appendArgs(lineSegments);
+          // the same point computed in two cells differs by rounding, relative to the step and
+          // to the magnitude of the coordinates
+          double magnitude = Math.max(Math.max(Math.abs(gd.xMin), Math.abs(gd.xMax)),
+              Math.max(Math.abs(gd.yMin), Math.abs(gd.yMax)));
+          double tolerance = Math.max(1.0e-9 * Math.max(Math.abs(gd.stepX), Math.abs(gd.stepY)),
+              64 * Math.ulp(magnitude));
+          group.appendArgs(joinSegments(lineSegments, gd.xMin, gd.yMin, tolerance, engine));
           primitives.append(group);
         }
       }
     }
+  }
+
+  /**
+   * Join the two-point lines of one contour level, one for each grid cell, into polylines where
+   * they share an end point: one at most <code>tolerance</code> away in x and y. The end points are
+   * looked up in buckets of that size, counted from the origin <code>(x0, y0)</code> of the grid,
+   * and in the neighbouring buckets. Other lines stay as they are.
+   */
+  static IAST joinSegments(IAST lines, double x0, double y0, double tolerance,
+      EvalEngine engine) {
+    java.util.List<double[]> segments = new java.util.ArrayList<>();
+    IASTAppendable result = F.ListAlloc(lines.argSize());
+    for (IExpr line : lines) {
+      double[] segment = null;
+      if (line.isAST(S.Line, 2) && line.first().isList2()) {
+        IExpr p = line.first().first();
+        IExpr q = line.first().second();
+        if (p.isList2() && q.isList2()) {
+          segment = new double[] {p.first().evalfNaN(), p.second().evalfNaN(),
+              q.first().evalfNaN(), q.second().evalfNaN()};
+        }
+      }
+      if (segment == null || !Double.isFinite(segment[0] + segment[1] + segment[2] + segment[3])
+          || !(tolerance > 0.0)) {
+        result.append(line);
+      } else {
+        segments.add(segment);
+      }
+    }
+    // the ends 2*i and 2*i+1 of the segment i in the bucket of their point
+    java.util.Map<java.util.List<Long>, java.util.List<Integer>> buckets =
+        new java.util.HashMap<>();
+    for (int i = 0; i < segments.size(); i++) {
+      double[] s = segments.get(i);
+      for (int e = 0; e < 2; e++) {
+        java.util.List<Long> key = bucket(s[2 * e] - x0, s[2 * e + 1] - y0, tolerance, 0, 0);
+        buckets.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(2 * i + e);
+      }
+    }
+    boolean[] used = new boolean[segments.size()];
+    for (int i = 0; i < segments.size(); i++) {
+      if (used[i]) {
+        continue;
+      }
+      engine.checkTimeLimit();
+      used[i] = true;
+      double[] s = segments.get(i);
+      java.util.ArrayDeque<double[]> polyline = new java.util.ArrayDeque<>();
+      polyline.add(new double[] {s[0], s[1]});
+      polyline.add(new double[] {s[2], s[3]});
+      // forward from the last point, then backward from the first one
+      for (boolean forward : new boolean[] {true, false}) {
+        double[] next;
+        while ((next = nextPoint(forward ? polyline.peekLast() : polyline.peekFirst(), segments,
+            buckets, used, x0, y0, tolerance)) != null) {
+          if (forward) {
+            polyline.addLast(next);
+          } else {
+            polyline.addFirst(next);
+          }
+        }
+      }
+      IASTAppendable points = F.ListAlloc(polyline.size());
+      for (double[] point : polyline) {
+        points.append(F.List(F.num(point[0]), F.num(point[1])));
+      }
+      result.append(F.Line(points));
+    }
+    return result;
+  }
+
+  /**
+   * The other end of an unused segment which has an end at the point, marking that segment as
+   * used.
+   *
+   * @return <code>null</code> if there is none
+   */
+  private static double[] nextPoint(double[] point, java.util.List<double[]> segments,
+      java.util.Map<java.util.List<Long>, java.util.List<Integer>> buckets, boolean[] used,
+      double x0, double y0, double tolerance) {
+    for (int dx = -1; dx <= 1; dx++) {
+      for (int dy = -1; dy <= 1; dy++) {
+        java.util.List<Integer> ends =
+            buckets.get(bucket(point[0] - x0, point[1] - y0, tolerance, dx, dy));
+        if (ends == null) {
+          continue;
+        }
+        for (int end : ends) {
+          int j = end / 2;
+          int e = end % 2;
+          double[] t = segments.get(j);
+          if (!used[j] && Math.abs(t[2 * e] - point[0]) <= tolerance
+              && Math.abs(t[2 * e + 1] - point[1]) <= tolerance) {
+            used[j] = true;
+            return new double[] {t[2 - 2 * e], t[3 - 2 * e]};
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The bucket of the point <code>(x, y)</code> relative to the grid origin, shifted by
+   * <code>(dx, dy)</code> buckets.
+   */
+  private static java.util.List<Long> bucket(double x, double y, double tolerance, int dx,
+      int dy) {
+    long i = (long) Math.floor(x / tolerance) + dx;
+    long j = (long) Math.floor(y / tolerance) + dy;
+    return java.util.List.of(i, j);
   }
 
   // --- Marching Squares Implementation ---

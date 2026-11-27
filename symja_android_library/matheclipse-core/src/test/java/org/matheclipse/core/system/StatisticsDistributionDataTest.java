@@ -145,6 +145,81 @@ public class StatisticsDistributionDataTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCovarianceFunctionAtSymbolicLags() {
+    // AR(1): v*a^|h|/(1-a^2), also of symbolic parameters; the autocorrelation a^|h|
+    check("{CovarianceFunction(ARProcess({1/3}, 2), k), CovarianceFunction(ARProcess({p}, s2), k), "
+        + "CorrelationFunction(ARProcess({-2/5}, 3), k)}", //
+        "{3^(2-Abs(k))/4,(p^Abs(k)*s2)/(1-p^2),(-2/5)^Abs(k)}");
+    // MA(q): one value for each lag up to q
+    check("CovarianceFunction(MAProcess({c1, c2}, w), k)", //
+        "Piecewise({{c2*w,Abs(k)==2},{c1*(1+c2)*w,Abs(k)==1},{(1+c1^2+c2^2)*w,Abs(k)==0}},\n"
+            + "0)");
+    // equal values share one case, a zero value has none
+    check("CovarianceFunction(MAProcess({1, 0, 1}, 1), k)", //
+        "Piecewise({{1,Abs(k)==1||Abs(k)==2||Abs(k)==3},{3,Abs(k)==0}},0)");
+    check("CovarianceFunction(MAProcess({1/2, 0, 0, 1/4}, 4), h)", //
+        "Piecewise({{1,Abs(h)==4},{1/2,Abs(h)==3},{2,Abs(h)==1},{21/4,Abs(h)==0}},0)");
+    // ARMA(1,1): gamma(1)*a^(|h|-1) beyond the lag 0
+    check("CorrelationFunction(ARMAProcess({1/4}, {1/2}, 1), k)", //
+        "5/8*Piecewise({{9/5*2^(1-2*Abs(k)),Abs(k)>0}},8/5)");
+    // ARMA(1,q): gamma(q)*a^(|h|-q) from the lag q on
+    check("CovarianceFunction(ARMAProcess({1/3}, {1/2, -1/4}, 2), k)", //
+        "Piecewise({{41/(64*3^Abs(k)),Abs(k)>1},{217/64,Abs(k)==0}},329/192)");
+    check("CovarianceFunction(ARMAProcess({p}, {q}, w), k)", //
+        "Piecewise({{((p+q)*(1+p*q)*w)/(p^(1-Abs(k))*(1-p^2)),Abs(k)>0}},((1+2*p*q+q^2)*w)/(\n1-p^2))");
+    // integer lags of symbolic parameters
+    check("{CovarianceFunction(ARProcess({p}, w), 3), CorrelationFunction(MAProcess({c}, w), {0, 2}), "
+        + "CovarianceFunction(ARProcess({p}, w), u, u + 2)}", //
+        "{(p^3*w)/(1-p^2),{1,c/(1+c^2),0},(p^2*w)/(1-p^2)}");
+    // two times: the lag |s-t|
+    check("CovarianceFunction(ARProcess({1/3}, 2), u, 4)", //
+        "3^(2-Abs(-4+u))/4");
+    // the closed forms agree with the values at integer lags
+    check("{Table((CovarianceFunction(ARMAProcess({1/4}, {1/2}, 1), k) /. k -> j) - "
+        + "CovarianceFunction(ARMAProcess({1/4}, {1/2}, 1), j), {j, 0, 3}), "
+        + "Table((CorrelationFunction(MAProcess({2/3, -1/4}, 5), k) /. k -> j) - "
+        + "CorrelationFunction(MAProcess({2/3, -1/4}, 5), j), {j, -3, 3})}", //
+        "{{0,0,0,0},{0,0,0,0,0,0,0}}");
+    check("{Table((CovarianceFunction(ARMAProcess({-1/3}, {1/2, 1/4, -1/5}, 3), k) /. k -> j) - "
+        + "CovarianceFunction(ARMAProcess({-1/3}, {1/2, 1/4, -1/5}, 3), j), {j, -5, 5}), "
+        + "Table((CovarianceFunction(ARMAProcess({p}, {q1, q2}, w), k) /. "
+        + "{k -> j, p -> 2/5, q1 -> -1/2, q2 -> 1/3, w -> 3}) - "
+        + "CovarianceFunction(ARMAProcess({2/5}, {-1/2, 1/3}, 3), j), {j, 0, 4})}", //
+        "{{0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0}}");
+    // no closed form: a process which is not stationary, AR(2) and data
+    check("{Head(CovarianceFunction(ARProcess({3}, 1), k)), "
+        + "Head(CovarianceFunction(ARProcess({1/2, 1/5}, 1), k)), "
+        + "Head(CovarianceFunction({1, 2, 3}, k))}", //
+        "{CovarianceFunction,CovarianceFunction,CovarianceFunction}");
+    // no autoregressive part: white noise or MA(q), no 0^0
+    check("{CovarianceFunction(ARMAProcess({0}, {b}, w), 1), CovarianceFunction(ARProcess({0}, w), {0, 2}), "
+        + "CovarianceFunction(ARMAProcess({0}, {b}, w), k), CorrelationFunction(ARProcess({0}, 2), k)}", //
+        "{b*w,{w,0,0},Piecewise({{b*w,Abs(k)==1},{(1+b^2)*w,Abs(k)==0}},0),Piecewise({{1,Abs(k)==\n0}},0)}");
+    // a process which is not stationary and data with a symbolic lag give a message
+    check("{Check(CovarianceFunction(ARProcess({3}, 1), k), bad, ARProcess::nonwkst), "
+        + "Check(CovarianceFunction(ARProcess({-2}, w), k), bad, ARProcess::nonwkst), "
+        + "Check(CorrelationFunction(ARProcess({5/4}, 1), 2), bad, ARProcess::nonwkst), "
+        + "Check(CovarianceFunction({1, 2, 3}, k), bad, CovarianceFunction::bdlag)}", //
+        "{bad,bad,bad,bad}");
+  }
+
+  @Test
+  public void testPartialCorrelationFunctionAtSymbolicLag() {
+    // AR(p): the values at the lags +-1, ..., +-p, for integers h != 0
+    check("PartialCorrelationFunction(ARProcess({1/4}, 3), h)", //
+        "ConditionalExpression(Piecewise({{1/4,h==1||h==-1}},0),h∈Integers&&h!=0)");
+    check("PartialCorrelationFunction(ARProcess({1/4, 1/5}, 1), h)", //
+        "ConditionalExpression(Piecewise({{5/16,h==1||h==-1},{1/5,h==2||h==-2}},0),h∈Integers&&h!=\n0)");
+    check("Table(PartialCorrelationFunction(ARProcess({1/4, 1/5}, 1), h), {h, 1, 3}) == "
+        + "PartialCorrelationFunction(ARProcess({1/4, 1/5}, 1), {3})", //
+        "True");
+    // no closed form: an MA process or a process without parameters
+    check("{Head(PartialCorrelationFunction(MAProcess({1/2}, 1), h)), "
+        + "Head(PartialCorrelationFunction(ARProcess(), h))}", //
+        "{PartialCorrelationFunction,PartialCorrelationFunction}");
+  }
+
+  @Test
   public void testCorrelationFunctionLagRanges() {
     // a lag which is not a machine integer has no value
     check("Head /@ {CovarianceFunction({2,6,1}, 10^20), CorrelationFunction({2,6,1}, -2^31), "

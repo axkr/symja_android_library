@@ -22,8 +22,10 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.PatternMatcherList;
+import org.matheclipse.core.patternmatching.RulesData;
 import com.google.common.collect.ImmutableMap;
 
 public class Functors {
@@ -43,20 +45,23 @@ public class Functors {
 
     @Override
     public IExpr apply(final IExpr arg) {
-      return lhs.equals(arg) ? rhs : F.NIL;
+      return PatternMatcher.isSameLiteral(lhs, arg) ? rhs : F.NIL;
     }
   }
 
   private static class RulesFunctor implements Function<IExpr, IExpr> {
     private final Map<? extends IExpr, ? extends IExpr> fEqualRules;
+    /** whether a left-hand side contains a machine real, which also matches one bit apart */
+    private final boolean fRealKeys;
 
     public RulesFunctor(Map<? extends IExpr, ? extends IExpr> rulesMap) {
       fEqualRules = rulesMap;
+      fRealKeys = RulesData.hasMachineRealKey(rulesMap);
     }
 
     @Override
     public IExpr apply(final IExpr arg) {
-      IExpr temp = fEqualRules.get(arg);
+      IExpr temp = equalRule(fEqualRules, fRealKeys, arg);
       return temp != null ? temp : F.NIL;
     }
   }
@@ -68,9 +73,12 @@ public class Functors {
     /** only match an expression as a whole, never a run of a Flat or Orderless expression */
     private final boolean fWholeOnly;
 
+    private final boolean fRealKeys;
+
     public RulesPatternFunctor(Map<IExpr, IExpr> equalRules,
         List<PatternMatcherAndEvaluator> matchers, EvalEngine engine, boolean wholeOnly) {
       fEqualRules = equalRules;
+      fRealKeys = RulesData.hasMachineRealKey(equalRules);
       fMatchers = matchers;
       fEngine = engine;
       fWholeOnly = wholeOnly;
@@ -78,7 +86,7 @@ public class Functors {
 
     @Override
     public IExpr apply(final IExpr arg) {
-      IExpr temp = fEqualRules.get(arg);
+      IExpr temp = equalRule(fEqualRules, fRealKeys, arg);
       if (temp != null) {
         return temp;
       }
@@ -101,6 +109,18 @@ public class Functors {
     return rhs.isUnevaluated() && rhs.isAST1() ? rhs.first() : rhs;
   }
 
+  /**
+   * The right-hand side of the rule without patterns for <code>arg</code>; with
+   * <code>realKeys</code> also of a left-hand side whose machine reals are one bit apart.
+   *
+   * @return <code>null</code> if there is none
+   */
+  private static <V> V equalRule(Map<? extends IExpr, V> equalRules, boolean realKeys,
+      IExpr arg) {
+    V temp = equalRules.get(arg);
+    return temp == null && realKeys ? RulesData.getSameReal(equalRules, arg) : temp;
+  }
+
   private static class ListRulesPatternFunctor implements Function<IExpr, IExpr> {
     private final Map<IExpr, IExpr> fEqualRules;
     private final List<PatternMatcherList> fMatchers;
@@ -113,9 +133,12 @@ public class Functors {
      * @param result
      * @param engine
      */
+    private final boolean fRealKeys;
+
     public ListRulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherList> matchers,
         IASTAppendable result, EvalEngine engine) {
       fEqualRules = equalRules;
+      fRealKeys = RulesData.hasMachineRealKey(equalRules);
       fMatchers = matchers;
       fResult = result;
       fEngine = engine;
@@ -123,6 +146,7 @@ public class Functors {
 
     public ListRulesPatternFunctor(Map<IExpr, IExpr> rulesMap, IASTAppendable result) {
       fEqualRules = rulesMap;
+      fRealKeys = RulesData.hasMachineRealKey(rulesMap);
       fResult = result;
       fMatchers = null;
       fEngine = null;
@@ -130,7 +154,7 @@ public class Functors {
 
     @Override
     public IExpr apply(final IExpr arg) {
-      IExpr temp = fEqualRules.get(arg);
+      IExpr temp = equalRule(fEqualRules, fRealKeys, arg);
       if (temp != null) {
         fResult.append(temp);
         return F.list(temp);

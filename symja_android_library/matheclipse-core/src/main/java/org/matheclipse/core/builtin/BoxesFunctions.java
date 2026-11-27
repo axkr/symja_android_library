@@ -358,6 +358,13 @@ public class BoxesFunctions {
                     : function.isAST(S.ConjugateTranspose) ? "ConjugateTranspose" : "Conjugate"),
                 F.Rule(S.SyntaxForm, S.SuperscriptBox));
           }
+          if (function.isAST1() && function.head().isAST(S.Derivative, 2)
+              && function.arg1().isSymbol()) {
+            IExpr derivative = derivativeBox(function.head().first(), function.arg1(), form, engine);
+            if (derivative.isPresent()) {
+              return derivative;
+            }
+          }
           if (form == S.TraditionalForm) {
             IExpr traditional = traditionalLogicBox(function, precedence, form, engine);
             if (traditional.isPresent()) {
@@ -1481,14 +1488,36 @@ public class BoxesFunctions {
 
     /**
      * The base of a superscript. A base which is itself a superscript is put in parentheses, since
-     * <code>(a^b)^c</code> would otherwise read as <code>a^(b^c)</code>.
+     * <code>(a^b)^c</code> would otherwise read as <code>a^(b^c)</code>, and so is a factorial,
+     * whose <code>!</code> would otherwise carry the exponent.
      */
     private static IExpr powerBaseBox(IExpr base, IExpr form, EvalEngine engine) {
       IExpr box = standardFormRecursive(base, Precedence.POWER, form, engine);
-      if (box.isAST(S.SuperscriptBox) || isSuperscriptTemplate(box)) {
+      if (box.isAST(S.SuperscriptBox) || isSuperscriptTemplate(box)
+          || base.isAST(S.Factorial, 2) || base.isAST(S.Factorial2, 2)) {
         return F.RowBox(F.list(F.$str("("), box, F.$str(")")));
       }
       return box;
+    }
+
+    /**
+     * <code>Derivative(n)(f)</code> of a function symbol as <code>f</code> with <code>n</code> prime
+     * marks, from the order <code>4</code> on with the order in parentheses.
+     *
+     * @return {@link F#NIL} for an order which is not a positive machine integer
+     */
+    private static @AllowNIL IExpr derivativeBox(IExpr order, IExpr f, IExpr form,
+        EvalEngine engine) {
+      int n = order.isInteger() ? order.toIntDefault() : -1;
+      if (n < 1) {
+        return F.NIL;
+      }
+      IExpr mark = n <= 3 ? F.$str("′".repeat(n))
+          : F.binaryAST2(S.TagBox,
+              F.RowBox(F.list(F.$str("("), F.$str(Integer.toString(n)), F.$str(")"))),
+              S.Derivative);
+      return F.ternaryAST3(S.SuperscriptBox, standardFormRecursive(f, Precedence.POWER, form, engine),
+          mark, F.Rule(S.MultilineFunction, S.None));
     }
 
     /** A template like the one of <code>Transpose(m)</code> which is set as a superscript. */

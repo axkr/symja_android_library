@@ -1542,19 +1542,53 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
+  /** A stem, one line with machine coordinates, from every real point to the level y. */
   private static IExpr createStemsToBottom(IAST pts, double yBottom) {
     if (pts.argSize() < 1)
       return F.NIL;
-    IASTAppendable lines = F.ListAlloc(pts.size());
-    IASTAppendable segments = F.ListAlloc(pts.size());
+    IASTAppendable stems = F.ListAlloc(pts.size());
     for (IExpr pt : pts) {
       if (pt.isList2()) {
-        IExpr x = ((IAST) pt).arg1();
-        IExpr y = ((IAST) pt).arg2();
-        segments.append(F.List(F.List(x, y), F.List(x, F.num(yBottom))));
+        double x = pt.first().evalfNaN();
+        double y = pt.second().evalfNaN();
+        if (Double.isFinite(x) && Double.isFinite(y)) {
+          stems.append(
+              F.Line(F.List(F.List(F.num(x), F.num(y)), F.List(F.num(x), F.num(yBottom)))));
+        }
       }
     }
-    return F.Line(segments);
+    return stems;
+  }
+
+  /**
+   * A stem from every point to the other curve at the same x, linear between the points of that
+   * curve; points beyond the x range of the other curve have no stem. A curve which is not one of
+   * increasing x is paired point by point.
+   */
+  private static IExpr createStemsBetween(IAST pts, IAST target) {
+    double[][] c = increasingCurve(target);
+    IASTAppendable stems = F.ListAlloc(pts.size());
+    for (int i = 1; i < pts.size(); i++) {
+      IExpr pt = pts.get(i);
+      if (!pt.isList2()) {
+        continue;
+      }
+      double x = pt.first().evalfNaN();
+      double y = pt.second().evalfNaN();
+      double yTarget = Double.NaN;
+      if (c != null) {
+        if (x >= c[0][0] && x <= c[0][c[0].length - 1]) {
+          yTarget = interpolate(c, x);
+        }
+      } else if (i < target.size() && target.get(i).isList2()) {
+        yTarget = target.get(i).second().evalfNaN();
+      }
+      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(yTarget)) {
+        stems.append(
+            F.Line(F.List(F.List(F.num(x), F.num(y)), F.List(F.num(x), F.num(yTarget)))));
+      }
+    }
+    return stems;
   }
 
   private static IExpr createPolygonBetween(IAST pts1, IAST pts2) {
@@ -1766,14 +1800,18 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     if (styleToUse == null || styleToUse.isAutomatic()) {
       IExpr color = srcCurve.color != null ? srcCurve.color : S.Black;
-      styleToUse = F.Directive(F.Opacity(0.2), color, F.EdgeForm(F.None));
+      // the stems of points are drawn stronger than the areas below curves
+      styleToUse = F.Directive(F.Opacity(srcCurve.isPoint ? 0.3 : 0.2), color,
+          F.EdgeForm(F.None));
     }
 
     if (target.isList() && target.argSize() >= 1 && target.first().isInteger()) {
       int targetIndex = ((IAST) target).first().toIntDefault(0) - 1;
       if (targetIndex >= 0 && targetIndex < curves.size()) {
+        IAST targetPoints = curves.get(targetIndex).points;
         out.append(F.List(styleToUse,
-            createPolygonBetween(srcCurve.points, curves.get(targetIndex).points)));
+            srcCurve.isPoint ? createStemsBetween(srcCurve.points, targetPoints)
+                : createPolygonBetween(srcCurve.points, targetPoints)));
       }
     } else {
       // the height the curve is filled to: the axis, the bottom or top of the plot range, or a
