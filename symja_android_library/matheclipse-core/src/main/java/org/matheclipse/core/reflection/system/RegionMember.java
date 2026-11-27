@@ -493,6 +493,10 @@ public class RegionMember extends AbstractFunctionEvaluator {
       dimension = center.argSize();
       if (reg.argSize() >= 2) {
         radius = reg.arg2();
+        if (RegionPrimitives.validRadii(radius, engine) == null) {
+          // a negative or non-real radius describes no region
+          return F.NIL;
+        }
       }
     }
     IExpr sector = F.NIL;

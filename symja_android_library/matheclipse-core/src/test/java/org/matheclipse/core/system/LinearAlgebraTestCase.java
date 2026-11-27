@@ -2132,8 +2132,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "MatrixPower({{2},{1}},2)");
     check("MatrixPower({{1, 0}, {0}}, 2)", //
         "MatrixPower({{1,0},{0}},2)");
+    // repeated squaring: 31 products
     check("MatrixPower({{1,0}, {0,1}},2147483647)", //
-        "MatrixPower({{1,0},{0,1}},2147483647)");
+        "{{1,0},\n" //
+            + " {0,1}}");
 
     check("MatrixPower({{1, 2}, {2, 5}}, -3)", //
         "{{169,-70},\n" + //

@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Norm;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -52,7 +53,6 @@ import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -5993,6 +5993,9 @@ public final class LinearAlgebra {
 
           int p = arg2.toMachineInt();
           if (F.isNotPresent(p)) {
+            if (arg2.isInteger() && !ast.isAST3()) {
+              return integerMatrixPower(matrix, ((IInteger) arg2).toBigNumerator(), ast, engine);
+            }
             return matrixPowerFunction(ast, dimensions, engine);
           }
           if (ast.isAST3()) {
@@ -6015,27 +6018,7 @@ public final class LinearAlgebra {
 
             return Convert.matrix2List(resultMatrix);
           }
-          int iterationLimit = engine.getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit <= p) {
-            IterationLimitExceeded.throwIt(p, ast);
-          }
-
-          if (matrix.getRowDimension() != matrix.getColumnDimension()) {
-            // Argument `1` at position `2` is not a non-empty square matrix.
-            return Errors.printMessage(ast.topHead(), "matsq", F.list(arg1, F.C1), engine);
-          }
-          if (p < 0) {
-            resultMatrix = inverseMatrix(matrix,
-                x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
-            matrix = resultMatrix;
-            p *= (-1);
-          } else {
-            resultMatrix = matrix;
-          }
-          for (int i = 1; i < p; i++) {
-            resultMatrix = resultMatrix.multiply(matrix);
-          }
-          return Convert.matrix2List(resultMatrix);
+          return integerMatrixPower(matrix, BigInteger.valueOf(p), ast, engine);
         }
         return F.NIL;
       } catch (final RuntimeException e) {
@@ -6043,6 +6026,38 @@ public final class LinearAlgebra {
       } finally {
         engine.setTogetherMode(togetherMode);
       }
+    }
+
+    /**
+     * The integer power of a square matrix by repeated squaring, a negative power through the
+     * inverse.
+     */
+    private static IExpr integerMatrixPower(FieldMatrix<IExpr> matrix, BigInteger exponent,
+        final IAST ast, EvalEngine engine) {
+      if (matrix.getRowDimension() != matrix.getColumnDimension()) {
+        // Argument `1` at position `2` is not a non-empty square matrix.
+        return Errors.printMessage(ast.topHead(), "matsq", F.list(ast.arg1(), F.C1), engine);
+      }
+      if (exponent.signum() < 0) {
+        matrix = inverseMatrix(matrix,
+            x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
+        if (matrix == null) {
+          return F.NIL;
+        }
+        exponent = exponent.negate();
+      }
+      FieldMatrix<IExpr> result = null;
+      FieldMatrix<IExpr> square = matrix;
+      for (int bit = 0, bits = exponent.bitLength(); bit < bits; bit++) {
+        if (exponent.testBit(bit)) {
+          result = result == null ? square : result.multiply(square);
+        }
+        if (bit + 1 < bits) {
+          engine.checkTimeLimit();
+          square = square.multiply(square);
+        }
+      }
+      return Convert.matrix2List(result);
     }
 
     /**
@@ -7751,6 +7766,7 @@ public final class LinearAlgebra {
      * @return {@link F#NIL} if a coefficient can't be decided to be zero
      */
     private static @AllowNIL IExpr exactQR(IAST matrix, int[] dim, EvalEngine engine) {
+      final boolean complexEntries = matrix.has(x -> x.isComplex(), false);
       final int m = dim[0];
       final int n = dim[1];
       // the orthogonal (not normalized) vectors, their squared norms and their pivot columns
@@ -7796,7 +7812,11 @@ public final class LinearAlgebra {
       for (int b = 0; b < k; b++) {
         final IExpr[] v = basis.get(b);
         final IExpr scale = F.Power(norms.get(b), F.CN1D2);
-        q.append(F.mapRange(0, m, i -> engine.evaluate(F.Times(scale, v[i]))));
+        // the rows of q are the conjugates of the orthonormal vectors, so that
+        // matrix == ConjugateTranspose(q) . r
+        q.append(F.mapRange(0, m, i -> engine.evaluate(complexEntries //
+            ? F.Conjugate(F.Times(scale, v[i]))
+            : F.Times(scale, v[i]))));
         final int pivot = pivots.get(b);
         r.append(F.mapRange(1, n + 1, j -> {
           if (j < pivot) {

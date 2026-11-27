@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.annotation.AllowNIL;
+import java.util.function.Function;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -257,6 +259,41 @@ public class RegionPrimitives {
   // ---------------------------------------------------------------- Disk
 
   /**
+   * A radius which describes a region: a non-real number or a negative radius doesn't.
+   *
+   * @return <code>null</code> for a radius which is a non-real number or negative
+   */
+  public static IExpr validRadius(IExpr r, EvalEngine engine) {
+    if (r.isNumber() && !r.isReal()) {
+      return null;
+    }
+    if (r.isNegativeResult()) {
+      return null;
+    }
+    return r;
+  }
+
+  /**
+   * A radius <code>r</code> or the radii <code>{r1, r2, ...}</code> of a region.
+   *
+   * @return <code>null</code> if a radius is a non-real number or negative
+   */
+  public static IExpr validRadii(IExpr r, EvalEngine engine) {
+    if (r.isList()) {
+      IASTAppendable result = F.ListAlloc(r.argSize());
+      for (IExpr ri : (IAST) r) {
+        IExpr length = validRadius(ri, engine);
+        if (length == null) {
+          return null;
+        }
+        result.append(length);
+      }
+      return result;
+    }
+    return validRadius(r, engine);
+  }
+
+  /**
    * The radii and the optional angles of <code>Disk(c, ...)</code>: <code>r1 == r2</code> for a
    * circle, and <code>t1</code>, <code>t2</code> for a sector or <code>null</code> for the whole
    * disk.
@@ -300,6 +337,11 @@ public class RegionPrimitives {
       } else {
         return null;
       }
+    }
+    if (validRadius(r1, EvalEngine.get()) == null
+        || validRadius(r2, EvalEngine.get()) == null) {
+      // a negative or non-real radius describes no region
+      return null;
     }
     if (reg.argSize() == 3) {
       if (!reg.arg3().isList2()) {
@@ -1611,8 +1653,17 @@ public class RegionPrimitives {
       if (!reg.arg2().isList2()) {
         return null;
       }
-      innerRadius = reg.arg2().first();
-      outerRadius = reg.arg2().second();
+      innerRadius = validRadius(reg.arg2().first(), engine);
+      outerRadius = validRadius(reg.arg2().second(), engine);
+      if (innerRadius == null || outerRadius == null) {
+        return null;
+      }
+      if (engine.evaluate(F.Subtract(outerRadius, innerRadius)).isNegativeResult()) {
+        // the radii in the wrong order describe the same ring
+        IExpr r = innerRadius;
+        innerRadius = outerRadius;
+        outerRadius = r;
+      }
     }
     if (reg.argSize() == 3) {
       if (!reg.arg3().isList2()) {
@@ -1740,6 +1791,39 @@ public class RegionPrimitives {
       return engine.evaluate(F.Times(F.C1D2, F.Norm(F.list(x, y, z))));
     }
     return F.NIL;
+  }
+
+  /**
+   * A measure of one polygon boundary, or the sum of the measures of a list of boundaries.
+   *
+   * <p>
+   * A point list and a list of point lists are told apart by looking one level down rather than by
+   * counting: <code>{{1,1},{3,1},{3,3}}</code> is one triangle, while
+   * <code>{{{1,1},{3,1},{3,3}}}</code> is a list holding one. Both spellings occur in the same
+   * position - a single hole may be given bare or wrapped in a list.
+   *
+   * @param boundary the measure of a single point list
+   * @return {@link F#NIL} if <code>spec</code> is no boundary or the measure of a part is
+   *         {@link F#NIL}
+   */
+  public static @AllowNIL IExpr sumOverBoundaries(IExpr spec, Function<IAST, IExpr> boundary,
+      EvalEngine engine) {
+    if (!spec.isListOfLists()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) spec;
+    if (!list.arg1().isListOfLists()) {
+      return boundary.apply(list);
+    }
+    IASTAppendable sum = F.PlusAlloc(list.argSize());
+    for (int i = 1; i < list.size(); i++) {
+      IExpr part = sumOverBoundaries(list.get(i), boundary, engine);
+      if (part.isNIL()) {
+        return F.NIL;
+      }
+      sum.append(part);
+    }
+    return engine.evaluate(sum);
   }
 
   /**

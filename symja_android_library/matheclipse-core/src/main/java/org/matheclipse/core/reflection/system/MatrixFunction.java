@@ -139,6 +139,11 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
             currentDeriv = engine.evaluate(F.D(currentDeriv, x));
             factorial *= d;
             IExpr val = engine.evaluate(F.subst(currentDeriv, F.Rule(x, lambda)));
+            if (val.isIndeterminate() || val.isDirectedInfinity()) {
+              // f isn't differentiable at the eigenvalue of a Jordan block of size > 1, like
+              // Sqrt at 0 for {{0,1},{0,0}}: there is no matrix function
+              return F.NIL;
+            }
             terms[d] = engine.evaluate(F.Divide(val, F.ZZ(factorial)));
           }
 

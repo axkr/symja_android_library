@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
+import jakarta.annotation.Nullable;
 import java.util.Random;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
@@ -46,6 +47,19 @@ import org.matheclipse.core.interfaces.statistics.IStatistics;
 
 public class StatisticsContinousDistribution {
 
+  /**
+   * Test if one of the arguments contains a number of more than machine precision, whose digits a
+   * machine evaluation would drop.
+   */
+  private static boolean hasArbitraryPrecisionNumber(IExpr... args) {
+    for (IExpr arg : args) {
+      if (arg.has(x -> x.isInexactNumber() && !x.isMachineNumber(), false)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** A function of two distribution parameters and a variate in machine precision. */
   @FunctionalInterface
   private interface DoubleTernaryOperator {
@@ -63,7 +77,8 @@ public class StatisticsContinousDistribution {
       DoubleTernaryOperator function) {
     if (!engine.isArbitraryMode() //
         && (p1.isNumericArgument(true) || p2.isNumericArgument(true)
-            || x.isNumericArgument(true))) {
+            || x.isNumericArgument(true))
+        && !hasArbitraryPrecisionNumber(p1, p2, x)) {
       double p1Double = p1.evalfNaN();
       double p2Double = p2.evalfNaN();
       double xDouble = x.evalfNaN();
@@ -101,7 +116,8 @@ public class StatisticsContinousDistribution {
       DoubleUnaryOperator q) {
     if (!engine.isArbitraryMode() //
         && (loc.isNumericArgument(true) || scale.isNumericArgument(true)
-            || k.isNumericArgument(true))) {
+            || k.isNumericArgument(true))
+        && !hasArbitraryPrecisionNumber(loc, scale, k)) {
       double p = k.evalfNaN();
       double locDouble = loc.evalfNaN();
       double scaleDouble = scale.evalfNaN();
@@ -5674,6 +5690,34 @@ public class StatisticsContinousDistribution {
   private static final class UniformDistribution extends AbstractEvaluator implements
       IContinuousDistribution, IStatistics, ICDF, IPDF, IRandomVariate, IGeneratingFunction {
 
+    /** A lower bound which isn't less than its upper bound gives no distribution. */
+    @Override
+    public IAST checkParameters(IAST dist) {
+      if (box(dist) == null && minmax(dist) == null && dist.argSize() == 1
+          && dist.arg1().isList() && (isBoxForm((IAST) dist.arg1())
+              || ((IAST) dist.arg1()).isAST2())) {
+        // the bounds were reported by box() or minmax()
+        return F.NIL;
+      }
+      return dist;
+    }
+
+    private static boolean isBoxForm(IAST list) {
+      return list.argSize() >= 1 && list.forAll(x -> x.isList2());
+    }
+
+    /** Whether the bounds <code>a, b</code> are numbers and <code>a</code> isn't less. */
+    private static boolean isReversed(IExpr a, IExpr b) {
+      return a.isReal() && b.isReal() && !a.lessThan(b).isTrue();
+    }
+
+    private static IAST lss(IExpr a, IAST position, IAST dist, IExpr b) {
+      // Parameter `1` at position `2` in `3` is expected to be less than `4`.
+      Errors.printMessage(S.UniformDistribution, "lss", F.List(a, position, dist, b),
+          EvalEngine.get());
+      return F.NIL;
+    }
+
     @Override
     public @AllowNIL IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       IExpr[] minMax = minmax(dist);
@@ -5728,6 +5772,25 @@ public class StatisticsContinousDistribution {
 
     @Override
     public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      IAST sides = box(dist);
+      if (sides != null) {
+        IAST point = boxPoint(sides, k);
+        if (point == null) {
+          return F.NIL;
+        }
+        // the coordinates are independent: the product of the one-dimensional distributions
+        IASTAppendable product = F.TimesAlloc(sides.argSize());
+        for (int i = 1; i < sides.size(); i++) {
+          IAST side = (IAST) sides.get(i);
+          IExpr a = side.first();
+          IExpr b = side.second();
+          IExpr x = point.get(i);
+          product.append(F.Piecewise(F.list(
+              F.list(F.Divide(F.Subtract(x, a), F.Subtract(b, a)), F.LessEqual(a, x, b)),
+              F.list(F.C1, F.Greater(x, b))), F.C0));
+        }
+        return product;
+      }
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5797,6 +5860,13 @@ public class StatisticsContinousDistribution {
 
     @Override
     public @AllowNIL IExpr mean(IAST dist) {
+      IAST sides = box(dist);
+      if (sides != null) {
+        return sides.mapThread(x -> {
+          IAST side = (IAST) x;
+          return F.Times(F.C1D2, F.Plus(side.first(), side.second()));
+        });
+      }
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         // (max + min)/2
@@ -5825,6 +5895,14 @@ public class StatisticsContinousDistribution {
         if (list.isAST2()) {
           IExpr l = list.arg1();
           IExpr r = list.arg2();
+          if (l.isList() || r.isList()) {
+            // a box {{a1,b1},{a2,b2}}: one {min, max} pair per coordinate
+            return null;
+          }
+          if (isReversed(l, r)) {
+            lss(l, F.List(F.C1, F.C1), dist, r);
+            return null;
+          }
           return new IExpr[] {l, r};
         }
       } else if (dist.isAST0()) {
@@ -5834,8 +5912,55 @@ public class StatisticsContinousDistribution {
       return null;
     }
 
+    /**
+     * The sides <code>{{a1, b1}, {a2, b2}, ...}</code> of a box <code>a1 <= x1 <= b1, ...</code>,
+     * or <code>null</code> if the distribution has no box argument or, with a message, a side whose
+     * lower bound isn't less than its upper bound.
+     */
+    private static @Nullable IAST box(IAST dist) {
+      if (dist.argSize() == 1 && dist.arg1().isList()) {
+        IAST sides = (IAST) dist.arg1();
+        if (isBoxForm(sides)) {
+          for (int i = 1; i < sides.size(); i++) {
+            IAST side = (IAST) sides.get(i);
+            if (isReversed(side.first(), side.second())) {
+              lss(side.first(), F.List(F.C1, F.ZZ(i), F.C1), dist, side.second());
+              return null;
+            }
+          }
+          return sides;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * A vector point <code>k</code> with one coordinate per side of the box, or <code>null</code>.
+     */
+    private static @Nullable IAST boxPoint(IAST sides, IExpr k) {
+      if (k.isList() && k.argSize() == sides.argSize()) {
+        return (IAST) k;
+      }
+      return null;
+    }
+
     @Override
     public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IAST sides = box(dist);
+      if (sides != null) {
+        IAST point = boxPoint(sides, k);
+        if (point == null) {
+          return F.NIL;
+        }
+        IASTAppendable volume = F.TimesAlloc(sides.argSize());
+        IASTAppendable inside = F.ast(S.And, sides.argSize());
+        for (int i = 1; i < sides.size(); i++) {
+          IAST side = (IAST) sides.get(i);
+          volume.append(F.Subtract(side.second(), side.first()));
+          inside.append(F.LessEqual(side.first(), point.get(i), side.second()));
+        }
+        return F.Piecewise(F.list(F.list(F.Power(volume, F.CN1), inside)), F.C0);
+      }
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr a = minMax[0];
@@ -5874,6 +5999,13 @@ public class StatisticsContinousDistribution {
 
     @Override
     public @AllowNIL IExpr variance(IAST dist) {
+      IAST sides = box(dist);
+      if (sides != null) {
+        return sides.mapThread(x -> {
+          IAST side = (IAST) x;
+          return F.Times(F.QQ(1L, 12L), F.Sqr(F.Subtract(side.second(), side.first())));
+        });
+      }
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
         IExpr l = minMax[0];

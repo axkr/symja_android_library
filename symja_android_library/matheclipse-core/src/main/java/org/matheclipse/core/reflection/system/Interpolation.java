@@ -26,6 +26,11 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
+    if (argSize == 2 && ast.arg2().isRuleAST()) {
+      // an option which isn't supported is no point to evaluate the interpolation at
+      // Unknown option `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "optx", F.list(ast.arg2(), originalAST), engine);
+    }
     IExpr result = interpolate(ast, argSize, options, engine, originalAST);
     if (result instanceof InterpolatingFunctionExpr
         && !(result instanceof GridInterpolatingFunctionExpr)) {

@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -1226,6 +1227,133 @@ public class LimitGruntz {
   }
 
   /**
+   * Test if <code>e</code> is a function of <code>x</code> which grows exponentially or faster in
+   * its argument and has no closed form in exponentials and <code>Gamma</code>: its growth class
+   * comes from its leading asymptotic form only.
+   */
+  static boolean isUnrewritableGrowth(IExpr e, ISymbol x) {
+    return (e.isAST(S.Subfactorial, 2) || e.isAST(S.AiryAi, 2) || e.isAST(S.AiryBi, 2)
+        || e.isAST(S.AiryAiPrime, 2) || e.isAST(S.AiryBiPrime, 2)) && !e.isFree(x, true);
+  }
+
+  /**
+   * <code>expr</code> with the functions of {@link #isUnrewritableGrowth(IExpr, ISymbol)} replaced
+   * by their leading asymptotic forms, for an argument which runs to <code>Infinity</code>. The
+   * quotient of such a form and the function runs to 1, so it may replace a factor of a product,
+   * the base of a power with a bounded exponent or, if <code>logarithms</code> is set, the
+   * argument of a logarithm, but not a term of a sum. A logarithm of <code>Gamma</code> is left to
+   * the Stirling forms of <code>Limit</code>; the Gruntz algorithm doesn't rank it fast.
+   *
+   * @return {@link F#NIL} if one of the functions is in another position, or its argument doesn't
+   *         run to <code>Infinity</code>
+   */
+  static @AllowNIL IExpr leadingGrowthFactors(IExpr expr, ISymbol x,
+      Limit.Direction direction, boolean logarithms, EvalEngine engine) {
+    if (!expr.has(e -> isUnrewritableGrowth(e, x), true)) {
+      return expr;
+    }
+    if (isUnrewritableGrowth(expr, x)) {
+      IExpr u = expr.first();
+      if (!u.has(e -> isUnrewritableGrowth(e, x), true)
+          && evaluateLimit(u, x, F.CInfinity, direction, engine).isInfinity()) {
+        return leadingAsymptotic((IAST) expr);
+      }
+      return F.NIL;
+    }
+    if (expr.isPower() && !expr.exponent().has(e -> isUnrewritableGrowth(e, x), true)
+        && (expr.exponent().isFree(x)
+            || evaluateLimit(expr.exponent(), x, F.CInfinity, direction, engine).isReal())) {
+      // with a bounded exponent the power of the quotient runs to 1 too
+      IExpr base = leadingGrowthFactors(expr.base(), x, direction, logarithms, engine);
+      return base.isPresent() ? F.Power(base, expr.exponent()) : F.NIL;
+    }
+    if (logarithms && expr.isLog() && isUnrewritableGrowth(expr.first(), x)) {
+      // Log(f) = Log(h) + Log(f/h) with Log(f/h) -> 0: the quotient runs to 1, because Log(h)
+      // diverges - each of the functions runs to Infinity or 0 exponentially or faster
+      IExpr argument = leadingGrowthFactors(expr.first(), x, direction, logarithms, engine);
+      return argument.isPresent() ? F.Log(argument) : F.NIL;
+    }
+    if (expr.isTimes()) {
+      IASTAppendable result = F.TimesAlloc(expr.argSize());
+      for (IExpr factor : (IAST) expr) {
+        IExpr leading = leadingGrowthFactors(factor, x, direction, logarithms, engine);
+        if (leading.isNIL()) {
+          return F.NIL;
+        }
+        result.append(leading);
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The leading term of the asymptotic expansion of <code>f(u)</code> for <code>u -&gt; Infinity</code>,
+   * with <code>zeta = 2/3*u^(3/2)</code>: <code>AiryAi(u) ~ E^(-zeta)/(2*Sqrt(Pi)*u^(1/4))</code>,
+   * <code>AiryBi(u) ~ E^zeta/(Sqrt(Pi)*u^(1/4))</code>, the derivatives with <code>u^(1/4)</code>
+   * in the numerator, and <code>Subfactorial(u) ~ Gamma(u+1)/E</code>.
+   */
+  private static IExpr leadingAsymptotic(IAST f) {
+    IExpr u = f.first();
+    if (f.isAST(S.Subfactorial, 2)) {
+      return F.Times(F.Gamma(F.Plus(u, F.C1)), F.Power(S.E, F.CN1));
+    }
+    IExpr zeta = F.Times(F.C2D3, F.Power(u, F.C3D2));
+    IExpr quarter = F.Power(u, F.C1D4);
+    IExpr sqrtPi = F.Sqrt(S.Pi);
+    if (f.isAST(S.AiryAi, 2)) {
+      return F.Times(F.C1D2, F.Exp(F.Negate(zeta)), F.Power(F.Times(sqrtPi, quarter), F.CN1));
+    }
+    if (f.isAST(S.AiryBi, 2)) {
+      return F.Times(F.Exp(zeta), F.Power(F.Times(sqrtPi, quarter), F.CN1));
+    }
+    if (f.isAST(S.AiryAiPrime, 2)) {
+      return F.Times(F.CN1D2, quarter, F.Exp(F.Negate(zeta)), F.Power(sqrtPi, F.CN1));
+    }
+    // AiryBiPrime
+    return F.Times(quarter, F.Exp(zeta), F.Power(sqrtPi, F.CN1));
+  }
+
+  /**
+   * The continuous closed form of an integer sequence of <code>x</code> in exponentials and
+   * <code>Gamma</code>: Binet's formula for <code>Fibonacci</code> and <code>LucasL</code>, Gamma
+   * quotients for <code>CatalanNumber</code> and <code>Binomial</code>.
+   *
+   * @return {@link F#NIL} if <code>e</code> is none of them
+   */
+  private static @AllowNIL IExpr growthRewrite(IExpr e, ISymbol x) {
+    if (!e.isAST() || e.isFree(x, true)) {
+      return F.NIL;
+    }
+    if (e.isAST(S.Fibonacci, 2)) {
+      IExpr n = e.first();
+      // (GoldenRatio^n - Cos(Pi*n)*GoldenRatio^(-n))/Sqrt(5)
+      return F.Times(F.Power(F.C5, F.CN1D2), F.Subtract(F.Power(S.GoldenRatio, n),
+          F.Times(F.Cos(F.Times(S.Pi, n)), F.Power(S.GoldenRatio, F.Negate(n)))));
+    }
+    if (e.isAST(S.LucasL, 2)) {
+      IExpr n = e.first();
+      // GoldenRatio^n + Cos(Pi*n)*GoldenRatio^(-n)
+      return F.Plus(F.Power(S.GoldenRatio, n),
+          F.Times(F.Cos(F.Times(S.Pi, n)), F.Power(S.GoldenRatio, F.Negate(n))));
+    }
+    if (e.isAST(S.CatalanNumber, 2)) {
+      IExpr n = e.first();
+      // Gamma(2*n+1)/(Gamma(n+1)^2*(n+1))
+      return F.Times(F.Gamma(F.Plus(F.Times(F.C2, n), F.C1)),
+          F.Power(F.Times(F.Sqr(F.Gamma(F.Plus(n, F.C1))), F.Plus(n, F.C1)), F.CN1));
+    }
+    if (e.isAST(S.Binomial, 3)) {
+      IExpr n = e.first();
+      IExpr k = e.second();
+      // Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
+      return F.Times(F.Gamma(F.Plus(n, F.C1)), F.Power(
+          F.Times(F.Gamma(F.Plus(k, F.C1)), F.Gamma(F.Plus(F.Subtract(n, k), F.C1))), F.CN1));
+    }
+    return F.NIL;
+  }
+
+  /**
    * Entry point for Gruntz limit evaluation. Transforms the limit to x -> Infinity and delegates to
    * the recursive driver.
    */
@@ -1260,6 +1388,23 @@ public class LimitGruntz {
     if (expr.has(e -> e.isAST() && LeadTerm.isDiscontinuousHead(e.head())
         && !e.isFree(variable, true), true)) {
       return F.NIL;
+    }
+
+    // Integer sequences and special functions which grow exponentially in their argument have no
+    // growth class of their own: rewrite them into exponentials and Gamma, or decline. Taken as a
+    // function which varies like its argument, Fibonacci(n)^(1/n) came out 1.
+    if (x0.isInfinity()) {
+      if (expr.has(e -> isUnrewritableGrowth(e, variable), true)) {
+        IExpr leading = leadingGrowthFactors(expr, variable, direction, false, engine);
+        if (leading.isNIL()) {
+          return F.NIL;
+        }
+        return evaluateLimit(engine.evaluate(leading), x, x0, direction, engine);
+      }
+      IExpr rewritten = expr.replaceAll(e -> growthRewrite(e, variable));
+      if (rewritten.isPresent()) {
+        return evaluateLimit(engine.evaluate(rewritten), x, x0, direction, engine);
+      }
     }
 
     // Prevent infinite loops where Series expansions call Limit, which calls Gruntz again.

@@ -181,11 +181,9 @@ public class Dt extends AbstractFunctionOptionEvaluator {
     variables.removeIf(v -> dummyToOriginal.containsKey(v) && !variableDummies.contains(v));
     if (x.isPresent()) {
       // the partial derivative D(g, x) already accounts for the symbols in x
-      if (x.isSymbol()) {
-        variables.remove(x);
-      } else {
-        variables.removeIf(v -> !x.isFree(v, true));
-      }
+      // only x itself: a symbol inside a compound x like g(y) still varies with x, which gives
+      // the term D(g, y)*Dt(y, g(y))
+      variables.removeIf(v -> v.equals(x) || x.equals(dummyToOriginal.get(v)));
     }
 
     IASTAppendable plus = F.PlusAlloc(variables.size() + 1);

@@ -874,6 +874,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (sophomore.isPresent()) {
             return sophomore;
           }
+          final IExpr variable = xList.arg1();
+          if (arg1.has(b -> b.isAST(S.Boole, 2) && !b.first().isFree(variable), true)) {
+            // Boole(c) is the piecewise function 1 where c holds and 0 elsewhere
+            IExpr piecewise = arg1.replaceAll(b -> b.isAST(S.Boole, 2)
+                && !b.first().isFree(variable)
+                    ? F.Piecewise(F.list(F.list(F.C1, b.first())), F.C0)
+                    : F.NIL);
+            if (piecewise.isPresent() && piecewise.isFree(S.Boole)) {
+              IExpr value = engine.evaluate(holdallAST.setAtCopy(1, piecewise));
+              if (value.isFree(S.Integrate)) {
+                return value;
+              }
+            }
+          }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
@@ -3351,6 +3365,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
     IExpr upper = xValueList.arg3();
+    // a pole between symbolic limits: the value holds where it is outside of them
+    IASTAppendable poleConditions = F.ListAlloc();
 
 
     // Branch points / poles of the antiderivative (Log arguments, fractional or negative powers,
@@ -3385,8 +3401,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       for (IExpr eq : potentialSingularityEquations) {
         // Solve({eq, x >= lower, x <= upper}, x) - quiet, its messages (InverseFunction::ifun for
         // Sin(x)==0) are about a search the caller never sees
-        IExpr solved = engine
-            .evalQuiet(F.SolveDistinct(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        // the bounds lower <= x <= upper would hide a pole on the other side of a symbolic limit:
+        // Integrate(1/x^3, {x, 2, d}) for d < 0
+        IExpr solved = (!isNumericOrInfinite(lower) || !isNumericOrInfinite(upper))
+            && isPolynomialEquation(eq, x)
+                ? F.NIL
+                : engine.evalQuiet(F.SolveDistinct(
+                    F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
         if (!solved.isList() || (solved.isEmptyList() && !isPolynomialEquation(eq, x))) {
           // E^x == 2 isn't solved together with the bounds; the points inside are picked below.
           // A polynomial equation is, and an empty list says that it has no root between them
@@ -3428,6 +3449,22 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
                   return F.NIL;
                 }
                 return F.Plus(left, right);
+              }
+              if (singularPoint.isRealResult() && singularPoint.isNumericFunction()
+                  && !(isNumericOrInfinite(lower) && isNumericOrInfinite(upper))
+                  // a pole at a limit is decided by the limit of the antiderivative there
+                  && !S.PossibleZeroQ.ofQ(engine, F.Subtract(singularPoint, lower))
+                  && !S.PossibleZeroQ.ofQ(engine, F.Subtract(singularPoint, upper))) {
+                IExpr atPole =
+                    engine.evalQuiet(F.Limit(function, F.Rule(x, singularPoint)));
+                IAST outside = F.Or(
+                    F.And(F.Less(singularPoint, lower), F.Less(singularPoint, upper)),
+                    F.And(F.Greater(singularPoint, lower), F.Greater(singularPoint, upper)));
+                if ((atPole.isIndeterminate() || atPole.isDirectedInfinity())
+                    && !poleConditions.contains(outside)) {
+                  // a pole of the function and of the integrand is found twice
+                  poleConditions.append(outside);
+                }
               }
             }
           }
@@ -3498,9 +3535,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return F.NIL;
         }
         if (upperLimit.isNumericFunction() && lowerLimit.isNumericFunction()) {
-          return realForm(quotient, integrand, engine);
+          return withPoleConditions(realForm(quotient, integrand, engine), poleConditions,
+              engine);
         }
-        return quotient;
+        return withPoleConditions(quotient, poleConditions, engine);
       }
     }
     IExpr difference = engine.evaluate(F.Subtract(upperLimit, lowerLimit));
@@ -3516,7 +3554,60 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (contradictsQuadrature(function, integrand, x, lower, upper, difference, engine)) {
       return F.NIL;
     }
-    return realForm(difference, integrand, engine);
+    return withPoleConditions(realForm(difference, integrand, engine), poleConditions, engine);
+  }
+
+  /** Test if a limit of integration is a number or an infinity, free of parameters. */
+  private static boolean isNumericOrInfinite(IExpr limit) {
+    return limit.isNumericFunction() || limit.isInfinity() || limit.isNegativeInfinity();
+  }
+
+  /** The time in milliseconds after which the simplification of a pole condition is given up. */
+  private static final long REDUCE_CONDITION_MILLIS = 2000L;
+
+  /**
+   * The value of a definite integral, valid where none of the poles lies between the limits.
+   *
+   * @return {@link F#NIL} if a pole lies between the limits for every value of the parameters
+   */
+  private static @AllowNIL IExpr withPoleConditions(IExpr value, IAST poleConditions,
+      EvalEngine engine) {
+    if (poleConditions.isEmpty() || value.isNIL()) {
+      return value;
+    }
+    IExpr condition = engine.evaluate(F.And(poleConditions.toArray(1)));
+    IAST variables = new VariablesSet(condition).getVarList();
+    if (variables.argSize() == 1 && condition.isAnd()) {
+      // one condition per pole: Sin(d)>-2 is True, but not as a part of a conjunction
+      final IExpr variable = variables.arg1();
+      IASTAppendable parts = F.ast(S.And, condition.argSize());
+      for (IExpr part : (IAST) condition) {
+        IExpr reduced = TimeLimits.callOrNil(engine,
+            () -> engine.evalQuiet(F.Reduce(part, variable, S.Reals)), REDUCE_CONDITION_MILLIS);
+        parts.append(reduced.isTrue() || reduced.isFalse() ? reduced : part);
+      }
+      condition = engine.evaluate(parts);
+    }
+    if (variables.argSize() == 1 && !condition.isTrue() && !condition.isFalse()) {
+      // one condition per pole: 1<d && -1<d is d>1. Only a simpler form is taken, so a Reduce
+      // which takes long is given up
+      final IExpr variable = variables.arg1();
+      final IExpr unreduced = condition;
+      IExpr reduced = TimeLimits.callOrNil(engine,
+          () -> engine.evalQuiet(F.Reduce(unreduced, variable, S.Reals)), REDUCE_CONDITION_MILLIS);
+      if (reduced.isTrue() || reduced.isFalse() || (reduced.isPresent()
+          && !reduced.isAST(S.Reduce) && reduced.leafCount() < condition.leafCount())) {
+        condition = reduced;
+      }
+    }
+    if (condition.isTrue()) {
+      return value;
+    }
+    if (condition.isFalse()) {
+      // a pole lies between the limits for every value of the parameters
+      return F.NIL;
+    }
+    return F.ConditionalExpression(value, condition);
   }
 
   /** Whether <code>eq</code> is an equation of two polynomials in <code>x</code>. */

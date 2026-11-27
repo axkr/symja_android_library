@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
@@ -325,23 +326,48 @@ public final class RandomFunctions {
        *         number, non-negative and finite, and at least one of them positive
        */
       static WeightedSampler of(IAST weightList, int length, Random random) {
-        double[] weights = weightList.toDoubleVector();
+        double[] weights = relativeWeights(weightList);
         if (weights == null || weights.length != length) {
           return null;
         }
-        double[] cumulative = new double[length];
-        double sum = 0.0;
+        double max = 0.0;
         for (int i = 0; i < length; i++) {
           if (!(weights[i] >= 0.0) || Double.isInfinite(weights[i])) {
             return null;
           }
-          sum += weights[i];
+          max = Math.max(max, weights[i]);
+        }
+        double[] cumulative = new double[length];
+        double sum = 0.0;
+        for (int i = 0; i < length; i++) {
+          // relative to the largest weight the running sum stays below the number of weights
+          sum += max > 0.0 ? weights[i] / max : 0.0;
           cumulative[i] = sum;
         }
         if (!(sum > 0.0)) {
           return null;
         }
         return new WeightedSampler(cumulative, random);
+      }
+
+      /**
+       * The weights as machine numbers. Exact rational weights are divided by the largest one
+       * first, so weights beyond the machine range keep their ratios.
+       */
+      private static double[] relativeWeights(IAST weightList) {
+        if (weightList.argSize() > 0 && weightList.forAll(IExpr::isRational)) {
+          IRational max = F.C0;
+          for (IExpr w : weightList) {
+            if (((IRational) w).isGT(max)) {
+              max = (IRational) w;
+            }
+          }
+          if (max.isPositive()) {
+            final IRational largest = max;
+            return weightList.map(w -> ((IRational) w).divideBy(largest)).toDoubleVector();
+          }
+        }
+        return weightList.toDoubleVector();
       }
 
       private WeightedSampler(double[] cumulative, Random random) {
@@ -1310,13 +1336,21 @@ public final class RandomFunctions {
      */
     private static @AllowNIL IExpr weightedShuffle(IAST weightList, IAST items, int n, Random random) {
       final int len = items.argSize();
-      double[] weights = weightList.toDoubleVector();
+      double[] weights = RandomChoice.WeightedSampler.relativeWeights(weightList);
       if (weights == null || weights.length != len) {
         return F.NIL;
       }
+      double max = 0.0;
       for (int i = 0; i < len; i++) {
         if (!(weights[i] >= 0.0) || Double.isInfinite(weights[i])) {
           return F.NIL;
+        }
+        max = Math.max(max, weights[i]);
+      }
+      if (max > 0.0) {
+        // relative to the largest weight the totals stay below the number of weights
+        for (int i = 0; i < len; i++) {
+          weights[i] /= max;
         }
       }
       boolean[] taken = new boolean[len];

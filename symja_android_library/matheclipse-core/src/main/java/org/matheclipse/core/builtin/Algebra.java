@@ -1506,9 +1506,18 @@ public class Algebra {
    */
   private static class Denominator extends AbstractFunctionEvaluator {
 
+    /** The least common denominator of the real and the imaginary part. */
+    static IInteger gaussianDenominator(IComplex z) {
+      return z.re().denominator().lcm(z.im().denominator());
+    }
+
     public static IExpr fractionalPartsRational(final IExpr expr, boolean trig) {
       if (expr.isRational()) {
         return ((IRational) expr).denominator();
+      }
+      if (expr instanceof IComplex) {
+        // a Gaussian rational (a + b*I)/d
+        return gaussianDenominator((IComplex) expr);
       }
       Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(expr, trig);
       if (parts.isPresent()) {
@@ -3934,6 +3943,10 @@ public class Algebra {
       if (arg.isRational()) {
         return ((IRational) arg).numerator();
       }
+      if (arg instanceof IComplex) {
+        // a Gaussian rational (a + b*I)/d
+        return arg.times(Denominator.gaussianDenominator((IComplex) arg));
+      }
       Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg, trig);
       if (parts.isPresent()) {
         return parts.get()[0];
@@ -5978,6 +5991,11 @@ public class Algebra {
       IExpr coefficientDomain = options[1];
       // true - do trig transformations
       IExpr trig = options[2];
+
+      if (poly.isList()) {
+        // each polynomial of a list separately
+        return ((IAST) poly).map(p -> originalAST.setAtCopy(1, p));
+      }
 
       // PolynomialMod[poly, {m1, m2, ...}] -> apply sequentially.
       if (m.isList()) {

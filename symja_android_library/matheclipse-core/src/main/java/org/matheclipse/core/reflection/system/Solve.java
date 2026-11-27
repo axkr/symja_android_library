@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2938,6 +2939,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               // Warning: `1` is not a valid domain specification.
               Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
             }
+            if (domain == S.Reals) {
+              IAST squares = sumOfSquaresSystem(ast.arg1(), variables, engine);
+              if (squares.isPresent()) {
+                // over the complexes the solutions form a family with a single real member
+                return engine.evaluate(F.Solve(squares, variables, S.Reals));
+              }
+            }
           }
 
         }
@@ -4035,6 +4043,50 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       result.append(solution);
     }
     return result.argSize() == solutions.argSize() ? solutions : result;
+  }
+
+  /**
+   * A real equation <code>c1*b1^(2*k1) + c2*b2^(2*k2) + ... == 0</code> with positive constants
+   * <code>ci</code> holds exactly where every <code>bi == 0</code>.
+   *
+   * @param equations an equation or a list of one equation
+   * @param variables the variables to solve for, which have to be all the variables of the
+   *        equation
+   * @return the equations <code>{b1 == 0, b2 == 0, ...}</code> or {@link F#NIL}
+   */
+  private static @AllowNIL IAST sumOfSquaresSystem(IExpr equations, IAST variables, EvalEngine engine) {
+    IExpr equation = equations.isList1() ? equations.first() : equations;
+    if (!equation.isEqual()) {
+      return F.NIL;
+    }
+    IExpr sum = equation.second().isZero() ? equation.first()
+        : engine.evaluate(F.Subtract(equation.first(), equation.second()));
+    if (!sum.isPlus()) {
+      return F.NIL;
+    }
+    IExpr symbols = engine.evaluate(F.Variables(sum));
+    if (!symbols.isList() || !((IAST) symbols).forAll(v -> variables.contains(v))) {
+      // a parameter decides whether the squares can vanish together
+      return F.NIL;
+    }
+    IASTAppendable bases = F.ListAlloc(sum.argSize());
+    for (IExpr term : (IAST) sum) {
+      IExpr factor = F.C1;
+      IExpr power = term;
+      if (term.isTimes() && term.argSize() == 2 && term.first().isRational()) {
+        factor = term.first();
+        power = term.second();
+      }
+      if (!factor.isPositive() || !power.isPower() || !power.exponent().isInteger()
+          || !((IInteger) power.exponent()).isEven() || !power.exponent().isPositive()
+          || power.base().isNumber() || !power.base().isPolynomialStruct()
+          // a base with a non-real coefficient like x+I*y has no real square
+          || !power.base().isFree(x -> x.isNumber() && !x.isReal(), true)) {
+        return F.NIL;
+      }
+      bases.append(F.Equal(power.base(), F.C0));
+    }
+    return bases;
   }
 
   /**

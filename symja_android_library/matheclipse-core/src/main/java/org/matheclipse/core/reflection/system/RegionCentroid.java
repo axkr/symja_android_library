@@ -368,6 +368,11 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
   }
 
   private IExpr polygonCentroid(IAST reg, EvalEngine engine) {
+    if (reg.argSize() == 1 && (reg.arg1().isRuleAST()
+        || (reg.arg1().isListOfLists() && reg.arg1().first().isListOfLists()))) {
+      // several components Polygon({poly1, poly2, ...}) or components with holes outer -> holes
+      return planarComponentsCentroid(reg.arg1(), engine);
+    }
     if (reg.argSize() == 1 && reg.arg1().isList()) {
       IAST pts = (IAST) reg.arg1();
       int n = pts.argSize();
@@ -400,6 +405,83 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The centroid of plane polygon components, holes subtracted: the mean of the component
+   * centroids weighted by their areas.
+   */
+  private static IExpr planarComponentsCentroid(IExpr spec, EvalEngine engine) {
+    IExpr[] total = areaMoments(spec.isRuleAST() ? spec.first() : spec, engine);
+    if (total == null) {
+      return F.NIL;
+    }
+    IExpr area = total[0];
+    IExpr moment = total[1];
+    if (spec.isRuleAST()) {
+      IExpr[] holes = areaMoments(spec.second(), engine);
+      if (holes == null) {
+        return F.NIL;
+      }
+      area = engine.evaluate(F.Subtract(area, holes[0]));
+      moment = engine.evaluate(F.Subtract(moment, holes[1]));
+    }
+    if (area.isZero()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Divide(moment, F.Times(F.C3, area)));
+  }
+
+  /**
+   * For a plane boundary <code>{p1, ..., pn}</code> or a list of boundaries: twice the enclosed
+   * area and six times its first moment, <code>{2*A, 6*A*centroid}</code>, summed over the
+   * boundaries and each taken with the orientation that makes its area positive.
+   *
+   * @return <code>null</code> if a boundary is not a plane point list or the sign of its area can't
+   *         be decided
+   */
+  private static IExpr[] areaMoments(IExpr spec, EvalEngine engine) {
+    if (!spec.isListOfLists()) {
+      return null;
+    }
+    IAST list = (IAST) spec;
+    if (list.arg1().isListOfLists()) {
+      IASTAppendable areas = F.PlusAlloc(list.argSize());
+      IASTAppendable moments = F.PlusAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        IExpr[] part = areaMoments(list.get(i), engine);
+        if (part == null) {
+          return null;
+        }
+        areas.append(part[0]);
+        moments.append(part[1]);
+      }
+      return new IExpr[] {engine.evaluate(areas), engine.evaluate(moments)};
+    }
+    int n = list.argSize();
+    if (n < 3 || !list.forAll(x -> x.isList2())) {
+      return null;
+    }
+    IASTAppendable areas = F.PlusAlloc(n);
+    IASTAppendable moments = F.PlusAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      IAST p1 = (IAST) list.get(i);
+      IAST p2 = (IAST) list.get(i % n + 1);
+      IExpr cross = engine.evaluate(
+          F.Subtract(F.Times(p1.arg1(), p2.arg2()), F.Times(p2.arg1(), p1.arg2())));
+      areas.append(cross);
+      moments.append(F.Times(cross, F.Plus(p1, p2)));
+    }
+    IExpr area = engine.evaluate(areas);
+    IExpr moment = engine.evaluate(moments);
+    IExpr sign = engine.evaluate(F.Sign(area));
+    if (sign.isOne()) {
+      return new IExpr[] {area, moment};
+    }
+    if (sign.isMinusOne()) {
+      return new IExpr[] {engine.evaluate(F.Negate(area)), engine.evaluate(F.Negate(moment))};
+    }
+    return null;
   }
 
   /**

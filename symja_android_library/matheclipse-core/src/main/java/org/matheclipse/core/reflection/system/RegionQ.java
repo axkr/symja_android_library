@@ -47,19 +47,22 @@ public class RegionQ extends AbstractFunctionEvaluator {
     IExpr head = expr.head();
     if (head.isBuiltInSymbol()) {
       switch (((IBuiltInSymbol) head).ordinal()) {
-        case ID.Point:
-        case ID.Line:
         case ID.Circle:
         case ID.Disk:
-        case ID.DiskSegment:
         case ID.Annulus:
+        case ID.Ball:
+        case ID.Sphere:
+          // a negative or non-real radius describes no region
+          return expr.argSize() < 2 || org.matheclipse.core.eval.util.RegionPrimitives
+              .validRadii(expr.second(), EvalEngine.get()) != null;
+        case ID.Point:
+        case ID.Line:
+        case ID.DiskSegment:
         case ID.Rectangle:
         case ID.Cuboid:
         case ID.Triangle:
         case ID.Polygon:
         case ID.Polyhedron:
-        case ID.Ball:
-        case ID.Sphere:
         case ID.Ellipsoid:
         case ID.Cylinder:
         case ID.Cone:

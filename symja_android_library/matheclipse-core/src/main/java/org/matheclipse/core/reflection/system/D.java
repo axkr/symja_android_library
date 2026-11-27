@@ -699,6 +699,12 @@ public class D extends AbstractFunctionOptionEvaluator {
     if (dim != null) {
       return dPiecewise(dim, (IAST) functionOfX, x, ast, engine);
     }
+    if (functionOfX.isAST(S.ConditionalExpression, 3)) {
+      // the derivative of the expression, valid under the same condition
+      IASTMutable conditionalD = ast.copy();
+      conditionalD.set(1, functionOfX.first());
+      return F.ConditionalExpression(conditionalD, functionOfX.second());
+    }
     if ((functionOfX.isAST(S.Max) || functionOfX.isAST(S.Min)) && functionOfX.argSize() > 1
         && functionOfX.isFree(IExpr::isInexactNumber, true)
         && ((IAST) functionOfX).forAll(arg -> {

@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 221, 0 };
+  final public static int[] SIZES = { 222, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -578,6 +578,9 @@ public class DerivativeRules {
     // Derivative(0,1)[BernoulliB]=BernoulliB(-1+#1,#2)*#1&
     ISet($(Derivative(C0,C1),BernoulliB),
       Function(Times(BernoulliB(Plus(CN1,Slot1),Slot2),Slot1)), true),
+    // Derivative(0,1)[EulerE]=EulerE(-1+#1,#2)*#1&
+    ISet($(Derivative(C0,C1),EulerE),
+      Function(Times(EulerE(Plus(CN1,Slot1),Slot2),Slot1)), true),
     // Derivative(1,0)[ChebyshevT]=-ArcCos(#2)*ChebyshevU(-1+#1,#2)*Sqrt(1-#2^2)&
     ISet($(Derivative(C1,C0),ChebyshevT),
       Function(Times(CN1,ArcCos(Slot2),ChebyshevU(Plus(CN1,Slot1),Slot2),Sqrt(Subtract(C1,Sqr(Slot2))))), true),

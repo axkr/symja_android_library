@@ -2148,6 +2148,23 @@ public class SpecialFunctions {
           // 4*Catalan
           return F.Times(F.C4, F.Catalan);
         }
+        if (s.isOne() && a.isFraction()) {
+          IExpr alternating = alternatingHarmonic((IFraction) a);
+          if (alternating.isPresent()) {
+            return alternating;
+          }
+        }
+        if (s.isOne() && a.isPositiveResult()) {
+          // the Zeta forms below diverge at s == 1; the alternating series is
+          // (PolyGamma((a+1)/2) - PolyGamma(a/2))/2. For a < 0 the terms are taken with |a+k|,
+          // the PolyGamma form has (a+k) instead
+          return F.Times(F.C1D2, F.Subtract(F.PolyGamma(F.Times(F.C1D2, F.Plus(a, F.C1))),
+              F.PolyGamma(F.Times(F.C1D2, a))));
+        }
+        if (s.isOne() && !a.isInteger()) {
+          // the Zeta forms below are a difference of two poles
+          return F.NIL;
+        }
         if (a.isOne()) {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/05/01/
           // (1-2^(1-s))*Zeta(s)
@@ -2252,6 +2269,84 @@ public class SpecialFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * The largest denominator for which a difference of <code>PolyGamma</code> values is written
+     * by Gauss' digamma theorem: the cosines and sines of multiples of <code>Pi/6</code> are
+     * radicals.
+     */
+    private static final int MAX_GAUSS_DIGAMMA_DENOMINATOR = 6;
+
+    /**
+     * <code>LerchPhi(-1, 1, a)</code> for a rational non-integer <code>a</code>, the sum of
+     * <code>(-1)^k/|a+k|</code>. The terms with <code>a+k &lt; 0</code> are summed up first, the rest
+     * is <code>(PolyGamma((b+1)/2) - PolyGamma(b/2))/2</code> for the first <code>b = a+m &gt; 0</code>.
+     * For a half odd <code>b</code> the fractional parts <code>f</code> and <code>1-f</code> of
+     * the arguments give <code>Pi*Cot(Pi*f)</code> by the reflection formula, for a denominator of
+     * at most 6 the digamma theorem of Gauss gives radicals and logarithms, and
+     * <code>PolyGamma(f+n) = PolyGamma(f) + Sum(1/(f+k), {k, 0, n-1})</code>.
+     *
+     * @return {@link F#NIL} if <code>a</code> is too far from <code>0</code>
+     */
+    private static @AllowNIL IExpr alternatingHarmonic(IFraction a) {
+      IFraction absA = a.abs();
+      if (absA.isGT(F.ZZ(MAX_INTEGER_LERCH_SHIFT))) {
+        return F.NIL;
+      }
+      IRational head = F.C0;
+      IRational b = a;
+      int m = 0;
+      if (a.isNegative()) {
+        m = a.negate().ceilFraction().toIntDefault();
+        for (int k = 0; k < m; k++) {
+          // |a+k| = -(a+k)
+          IRational term = a.add(F.ZZ(k)).negate().inverse();
+          head = (k & 1) == 0 ? head.add(term) : head.subtract(term);
+        }
+        b = a.add(F.ZZ(m));
+      }
+      IRational x1 = b.multiply(F.C1D2);
+      IRational x2 = b.add(F.C1).multiply(F.C1D2);
+      IRational f1 = x1.subtract(x1.floorFraction());
+      IRational f2 = x2.subtract(x2.floorFraction());
+      IRational sign = (m & 1) == 0 ? F.C1D2 : F.CN1D2;
+      IExpr fractionalDifference;
+      if (f1.add(f2).isOne()) {
+        // PolyGamma(1-f) - PolyGamma(f)
+        fractionalDifference = F.Times(S.Pi, F.Cot(F.Times(S.Pi, f1)));
+      } else {
+        IInteger denominator = f1.denominator().lcm(f2.denominator());
+        int d = denominator.toIntDefault();
+        if (d > MAX_GAUSS_DIGAMMA_DENOMINATOR) {
+          return F.Plus(head, F.Times(sign, F.Subtract(F.PolyGamma(x2), F.PolyGamma(x1))));
+        }
+        // Gauss' digamma theorem for PolyGamma(r/d), 0 < r < d: -EulerGamma - Log(2*d) -
+        // Pi/2*Cot(Pi*r/d) + 2*Sum(Cos(2*Pi*n*r/d)*Log(Sin(Pi*n/d)), {n, 1, Floor((d-1)/2)});
+        // the difference of two values has no EulerGamma and no Log(2*d)
+        EvalEngine engine = EvalEngine.get();
+        IASTAppendable gauss = F.PlusAlloc(d);
+        // the cotangents are radicals: Together combines Sqrt(3)+1/Sqrt(3) to one of them
+        gauss.append(F.Times(engine.evaluate(F.Together(F.Times(F.CN1D2,
+            F.Subtract(F.Cot(F.Times(S.Pi, f2)), F.Cot(F.Times(S.Pi, f1)))))), S.Pi));
+        for (int n = 1; n <= (d - 1) / 2; n++) {
+          IInteger twoN = F.ZZ(2 * n);
+          gauss.append(F.Times(F.C2,
+              F.Subtract(F.Cos(F.Times(twoN, S.Pi, f2)), F.Cos(F.Times(twoN, S.Pi, f1))),
+              F.Log(F.Sin(F.Times(S.Pi, F.QQ(n, d))))));
+        }
+        fractionalDifference = engine.evaluate(F.Expand(gauss));
+      }
+      // PolyGamma(f+n) = PolyGamma(f) + Sum(1/(f+k), {k, 0, n-1})
+      IRational shifts = F.C0;
+      for (IRational f = f2; f.isLT(x2); f = f.add(F.C1)) {
+        shifts = shifts.add(f.inverse());
+      }
+      for (IRational f = f1; f.isLT(x1); f = f.add(F.C1)) {
+        shifts = shifts.subtract(f.inverse());
+      }
+      return F.Plus(head.add(sign.multiply(shifts)),
+          F.Expand(F.Times(sign, fractionalDifference)));
     }
 
     @Override
@@ -2960,8 +3055,9 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
-      } else if (z.isMinusOne()) {
-        // (2^(1-arg1)-1)*Zeta(arg1)
+      } else if (z.isMinusOne() && !n.isOne()) {
+        // (2^(1-arg1)-1)*Zeta(arg1); at n == 1 its factors are 0 and ComplexInfinity, the value
+        // is -Log(2) from -Log(1-z) below
         return Times(Plus(CN1, Power(C2, Plus(C1, Negate(n)))), Zeta(n));
       }
 

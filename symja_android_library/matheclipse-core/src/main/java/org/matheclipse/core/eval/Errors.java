@@ -420,6 +420,7 @@ public class Errors {
       "loc2",
       "The location function `1` evaluated to a list for one or more of the columns.", //
       "locked", "Symbol `1` is locked.", //
+      "lss", "Parameter `1` at position `2` in `3` is expected to be less than `4`.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
       "lrank", "Rank `1` is incompatible with group of order `2`.", //
       "lpbb", "The search for an integer solution stopped after `1` subproblems.", //

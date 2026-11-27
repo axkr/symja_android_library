@@ -119,13 +119,52 @@ public class PolynomialFunctions {
    * free of the cancellation of its expanded form.
    */
   /**
+   * The largest degree for which a polynomial function at inexact numbers is evaluated by its
+   * recurrence: the recurrences are linear in the degree, a million steps in machine precision take
+   * about a second.
+   */
+  static final double MAX_RECURRENCE_DEGREE = 1.0e7;
+
+  /**
    * The degree of a polynomial function at inexact arguments: an inexact real with an integer
    * value, as the numeric evaluation makes of an integer degree, or <code>Integer.MIN_VALUE</code>.
    */
+  /**
+   * The work of a recurrence with arbitrary precision arguments, its degree times the digits of
+   * the arguments, which is done without a time limit: about two seconds.
+   */
+  static final double MAX_ARBITRARY_RECURRENCE_WORK = 3.0e7;
+
+  /** The degree which a recurrence with arbitrary precision arguments may always have. */
+  static final double MAX_ARBITRARY_RECURRENCE_DEGREE = 1.0e5;
+
+  /**
+   * The degree <code>ast.arg1()</code> of a polynomial function at inexact arguments as
+   * {@link #inexactIntegerDegree(IExpr)}. If an argument has arbitrary precision, the degree times
+   * its digits is limited to {@link #MAX_ARBITRARY_RECURRENCE_WORK}, each step of the recurrence
+   * costs that much more.
+   */
+  static int inexactIntegerDegree(IAST ast) {
+    final int degree = inexactIntegerDegree(ast.arg1());
+    if (degree == Integer.MIN_VALUE || Math.abs(degree) <= MAX_ARBITRARY_RECURRENCE_DEGREE) {
+      return degree;
+    }
+    long digits = 0;
+    for (IExpr arg : ast) {
+      if (arg.isArbitraryPrecisionNumber()) {
+        digits = Math.max(digits, ((INumber) arg).determinePrecision(true));
+      }
+    }
+    if (digits > 0 && (double) Math.abs(degree) * digits > MAX_ARBITRARY_RECURRENCE_WORK) {
+      return Integer.MIN_VALUE;
+    }
+    return degree;
+  }
+
   static int inexactIntegerDegree(IExpr n) {
     if (n.isReal()) {
       double d = n.evalf();
-      if (d == Math.rint(d) && Math.abs(d) <= 100000.0) {
+      if (d == Math.rint(d) && Math.abs(d) <= MAX_RECURRENCE_DEGREE) {
         return (int) d;
       }
     }
@@ -301,7 +340,7 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        int degree = inexactIntegerDegree(n);
+        int degree = inexactIntegerDegree(ast);
         if (degree != Integer.MIN_VALUE && degree != 0) {
           return inexactRecurrence(Math.abs(degree), z, 1, false);
         }
@@ -459,7 +498,7 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        int degree = inexactIntegerDegree(n);
+        int degree = inexactIntegerDegree(ast);
         if (degree >= 1) {
           return inexactRecurrence(degree, z, 2, false);
         }
@@ -2142,6 +2181,15 @@ public class PolynomialFunctions {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
       if (z.isZero()) {
+        if (n.isInteger() && n.isPositive() && ((IInteger) n).isOdd()) {
+          // an odd polynomial
+          return F.C0;
+        }
+        if (n.isInteger() && ((IInteger) n).isEven() && n.isPositive()
+            && ((IInteger) n).bitLength() > 20) {
+          // (-1)^(n/2)*n!/(n/2)! has millions of digits
+          return F.NIL;
+        }
         return hermiteHZero(n);
       }
       int degree = n.toIntDefault();
@@ -2230,7 +2278,7 @@ public class PolynomialFunctions {
         if (largeArgument.isPresent()) {
           return largeArgument;
         }
-        int degree = inexactIntegerDegree(n);
+        int degree = inexactIntegerDegree(ast);
         if (degree >= 1) {
           return inexactRecurrence(degree, z, 2, true);
         }
@@ -2304,7 +2352,7 @@ public class PolynomialFunctions {
 
     /** The recurrence relation of an integer degree <code>n &gt;= 0</code>, or <code>null</code>. */
     private static ApcomplexFunction recurrence(IAST ast) {
-      final int n = inexactIntegerDegree(ast.arg1());
+      final int n = inexactIntegerDegree(ast);
       if (ast.argSize() != 4 || n < 0) {
         return null;
       }
@@ -2483,7 +2531,7 @@ public class PolynomialFunctions {
   static IExpr numericArguments(IAST ast, EvalEngine engine, ApcomplexFunction recurrence) {
     IExpr value = exactArguments(ast, engine);
     if (value.isPresent() || recurrence == null
-        || Math.abs(inexactIntegerDegree(ast.arg1())) < EXACT_ARGUMENTS_DEGREE) {
+        || Math.abs(inexactIntegerDegree(ast)) < EXACT_ARGUMENTS_DEGREE) {
       // a small degree: the explicit sum in the precision of the arguments
       return value;
     }
@@ -2929,7 +2977,7 @@ public class PolynomialFunctions {
      * <code>null</code>.
      */
     private static ApcomplexFunction recurrence(IAST ast) {
-      final int n = inexactIntegerDegree(ast.arg1());
+      final int n = inexactIntegerDegree(ast);
       if (n == Integer.MIN_VALUE) {
         return null;
       }
@@ -3220,7 +3268,7 @@ public class PolynomialFunctions {
      * <code>null</code>.
      */
     private static ApcomplexFunction recurrence(IAST ast) {
-      final int n = inexactIntegerDegree(ast.arg1());
+      final int n = inexactIntegerDegree(ast);
       if (ast.argSize() != 2 || n < 0 || !ast.arg2().isReal()) {
         return null;
       }
@@ -4120,7 +4168,7 @@ public class PolynomialFunctions {
 
     /** The recurrence relation of an integer degree and order, or <code>null</code>. */
     private static ApcomplexFunction recurrence(IAST ast) {
-      final int l = inexactIntegerDegree(ast.arg1());
+      final int l = inexactIntegerDegree(ast);
       final int m = inexactIntegerDegree(ast.arg2());
       if (ast.argSize() != 4 || l == Integer.MIN_VALUE || m == Integer.MIN_VALUE) {
         return null;
@@ -4316,7 +4364,7 @@ public class PolynomialFunctions {
      * <code>0 &lt;= m &lt;= n</code> and an inexact number <code>r</code>, or {@link F#NIL}.
      */
     private static @AllowNIL IExpr recurrenceValue(IAST ast) {
-      final int n = inexactIntegerDegree(ast.arg1());
+      final int n = inexactIntegerDegree(ast);
       final int m = inexactIntegerDegree(ast.arg2());
       if (m < 0 || m > n) {
         return F.NIL;

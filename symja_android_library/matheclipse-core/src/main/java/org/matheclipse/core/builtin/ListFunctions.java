@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -2604,7 +2605,8 @@ public final class ListFunctions {
               dim[i - 1] = indx1;
             }
             if (dim.length == 0) {
-              return F.CEmptyList;
+              // an array of no dimensions is the element itself
+              return constantExpr;
             }
             return constantExpr.constantArray(S.List, 0, dim);
           } else if (ast.size() >= 4) {
@@ -3910,6 +3912,18 @@ public final class ListFunctions {
       }
 
       final IExpr arg1 = ast.arg1();
+      if (arg1.isSparseArray()) {
+        // a sparse array is an atom for the pattern search: only the whole expression at level 0
+        // can match
+        final LevelSpec level = argSize >= 4
+            ? new LevelSpecification(engine.evaluate(ast.arg4()), includeHeads)
+            : new LevelSpec(0, Integer.MAX_VALUE, includeHeads);
+        if (level.getFromLevel() == 0
+            && engine.evalPatternMatcher(engine.evalPattern(ast.arg2())).test(arg1, engine)) {
+          return F.CEmptyList;
+        }
+        return argSize >= 3 ? ast.arg3() : F.CMissingNotFound;
+      }
       IExpr defaultValue = F.CMissingNotFound;
       try {
         if (arg1.isASTOrAssociation()) {
@@ -4475,8 +4489,11 @@ public final class ListFunctions {
               new TreeMap<IExpr, IExpr>(Comparators.binaryPredicateComparator(arg2)),
               () -> F.ListAlloc());
         } else {
-          defaultdict =
-              new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
+          SameQGroups groups = new SameQGroups(arg1AST.size());
+          for (int i = 1; i < arg1AST.size(); i++) {
+            groups.add(arg1AST.get(i), arg1AST.get(i));
+          }
+          return groups.result;
         }
         IASTAppendable result = F.ListAlloc(arg1AST.size());
         for (int i = 1; i < arg1AST.size(); i++) {
@@ -4578,19 +4595,12 @@ public final class ListFunctions {
         return F.Map(F.Function(F.GatherBy(F.Slot1, f)), F.GatherBy(list1, r),
             F.list(F.ZZ(r.argSize())));
       }
-      DefaultDict<IASTAppendable> defaultdict =
-          new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
-      IASTAppendable result = F.ListAlloc(F.allocMin8(list1.size()));
+      SameQGroups groups = new SameQGroups(F.allocMin8(list1.size()));
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Element = list1.get(i);
-        IExpr temp = engine.evaluate(F.unaryAST1(arg2, list1Element));
-        IASTAppendable subResult = defaultdict.getValue(temp);
-        if (subResult.isEmpty()) {
-          result.append(subResult);
-        }
-        subResult.append(list1Element);
+        groups.add(engine.evaluate(F.unaryAST1(arg2, list1Element)), list1Element);
       }
-      return result;
+      return groups.result;
     }
 
     @Override
@@ -5043,6 +5053,9 @@ public final class ListFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.CEmptyList;
+      }
       IExpr bytes = joinByteArrays(ast);
       if (bytes.isPresent()) {
         return bytes;
@@ -5196,7 +5209,8 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+      // Join() is the empty list
+      return ARGS_0_INFINITY;
     }
 
     @Override
@@ -8262,8 +8276,10 @@ public final class ListFunctions {
 
       int argSize = ast.argSize();
       if (argSize > 1) {
-        if (ast.arg1().isASTOrAssociation()) {
-          IAST list = (IAST) ast.arg1();
+        // a sparse array is searched like the list it represents
+        IExpr arg1 = ast.arg1().isSparseArray() ? ast.arg1().normal(false) : ast.arg1();
+        if (arg1.isASTOrAssociation()) {
+          IAST list = (IAST) arg1;
           IExpr predicateHead = ast.arg2();
           IExpr defaultValue = F.CMissingNotFound;
           if (argSize == 3) {
@@ -8452,7 +8468,7 @@ public final class ListFunctions {
         for (int i = 2; i < list.size(); i++) {
           IExpr listElement = list.get(i);
           current = function.apply(listElement);
-          if (current.equals(last)) {
+          if (current.isSame(last)) {
           } else {
             IExpr subList = splitByFunction(functorList, pos + 1, temp, engine);
             if (subList.isPresent()) {
@@ -10536,22 +10552,212 @@ public final class ListFunctions {
    */
   private static IAST tallySameQ(IAST list) {
     java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-    List<IExpr> inexactReals = new ArrayList<IExpr>();
-    iLoop: for (int i = 1; i < list.size(); i++) {
+    SameQIndex inexactKeys = new SameQIndex();
+    for (int i = 1; i < list.size(); i++) {
       IExpr arg = list.get(i);
-      if (arg instanceof INum) {
-        for (int j = 0; j < inexactReals.size(); j++) {
-          IExpr key = inexactReals.get(j);
-          if (Predicates.isDuplicate(key, arg)) {
-            map.merge(key, 1, Integer::sum);
-            continue iLoop;
-          }
+      if (!map.containsKey(arg) && hasInexactNumber(arg)) {
+        IExpr key = inexactKeys.find(arg);
+        if (key.isPresent()) {
+          map.merge(key, 1, Integer::sum);
+          continue;
         }
-        inexactReals.add(arg);
+        inexactKeys.add(arg);
       }
       map.merge(arg, 1, Integer::sum);
     }
     return createResultList(map);
+  }
+
+  /**
+   * Whether <code>expr</code> is or contains an inexact number: such an expression is the same for
+   * <code>SameQ</code> as others with numbers which differ in their last bits, so it can't be looked
+   * up by its hash value.
+   */
+  private static boolean hasInexactNumber(IExpr expr) {
+    return expr.isInexactNumber() || (expr.isAST() && !expr.isFree(x -> x.isInexactNumber(), false));
+  }
+
+  /**
+   * The keys with inexact numbers found so far, to look up the first of them which is the same for
+   * <code>SameQ</code> as a new key, without comparing the new key with all of them. Two such keys
+   * have the same structure, and their machine numbers differ in at most their last bits. So the
+   * keys are sorted into cells by the bit patterns of their first two machine numbers, and a key is
+   * compared with the keys of its own cell and of the adjacent cells only. A key with an arbitrary
+   * precision number among these first numbers is compared with all keys: its tolerance is wider.
+   */
+  private static final class SameQIndex {
+    /**
+     * The low bits of a machine number which are dropped for its cell: many more than the bits in
+     * which two numbers that are the same may differ.
+     */
+    private static final int CELL_SHIFT = 8;
+
+    /** The number of machine numbers which determine the cell of a key. */
+    private static final int CELL_COORDINATES = 2;
+
+    /** A key and its position in the order in which the keys were added. */
+    private static final class Entry {
+      final IExpr key;
+      final int index;
+
+      Entry(IExpr key, int index) {
+        this.key = key;
+        this.index = index;
+      }
+    }
+
+    private final java.util.Map<List<Long>, List<Entry>> cells =
+        new HashMap<List<Long>, List<Entry>>();
+    /** The keys which have no cell. */
+    private final List<Entry> wide = new ArrayList<Entry>();
+    private final List<Entry> all = new ArrayList<Entry>();
+
+    /**
+     * The cell coordinates of a machine number, monotone in its value: neighbouring numbers are in
+     * the same or in adjacent cells.
+     */
+    private static long cellOf(double value) {
+      long bits = Double.doubleToLongBits(value);
+      long monotone = bits >= 0 ? bits : -(bits & Long.MAX_VALUE);
+      return monotone >> CELL_SHIFT;
+    }
+
+    /**
+     * The cell coordinates of the first machine numbers of <code>key</code>, in the order of
+     * <code>SameQ</code>'s comparison, or <code>null</code> if an arbitrary precision number comes
+     * first or there is no machine number.
+     */
+    private static long[] cellOf(IExpr key) {
+      if (key.isSparseArray() || key instanceof IASTDataset) {
+        return null;
+      }
+      long[] cell = new long[CELL_COORDINATES];
+      int count = 0;
+      java.util.ArrayDeque<IExpr> stack = new java.util.ArrayDeque<IExpr>();
+      stack.push(key);
+      while (!stack.isEmpty() && count < CELL_COORDINATES) {
+        IExpr expr = stack.pop();
+        if (expr instanceof Num) {
+          cell[count++] = cellOf(((Num) expr).doubleValue());
+        } else if (expr instanceof org.matheclipse.core.expression.ComplexNum) {
+          org.matheclipse.core.expression.ComplexNum c =
+              (org.matheclipse.core.expression.ComplexNum) expr;
+          cell[count++] = cellOf(c.reDoubleValue());
+          if (count < CELL_COORDINATES) {
+            cell[count++] = cellOf(c.imDoubleValue());
+          }
+        } else if (expr.isInexactNumber()) {
+          return null;
+        } else if (expr.isAST()) {
+          if (expr.isSparseArray() || expr instanceof IASTDataset) {
+            return null;
+          }
+          IAST ast = (IAST) expr;
+          for (int i = ast.size() - 1; i >= 0; i--) {
+            stack.push(ast.get(i));
+          }
+        }
+      }
+      return count == 0 ? null : Arrays.copyOf(cell, count);
+    }
+
+    /**
+     * The first key added which is the same for <code>SameQ</code> as <code>key</code>.
+     *
+     * @return {@link F#NIL} if there is none
+     */
+    @AllowNIL
+    IExpr find(IExpr key) {
+      long[] cell = cellOf(key);
+      Entry first = null;
+      if (cell == null) {
+        for (Entry entry : all) {
+          if (Predicates.isDuplicate(entry.key, key)) {
+            return entry.key;
+          }
+        }
+        return F.NIL;
+      }
+      int neighbours = 1;
+      for (int i = 0; i < cell.length; i++) {
+        neighbours *= 3;
+      }
+      for (int n = 0; n < neighbours; n++) {
+        List<Long> neighbour = new ArrayList<Long>(cell.length);
+        int offsets = n;
+        for (long coordinate : cell) {
+          neighbour.add(coordinate + (offsets % 3) - 1);
+          offsets /= 3;
+        }
+        first = firstSame(cells.get(neighbour), key, first);
+      }
+      first = firstSame(wide, key, first);
+      return first == null ? F.NIL : first.key;
+    }
+
+    /** The earlier of <code>first</code> and the first entry of <code>entries</code> like key. */
+    private static Entry firstSame(List<Entry> entries, IExpr key, Entry first) {
+      if (entries != null) {
+        for (Entry entry : entries) {
+          if (first != null && entry.index > first.index) {
+            break;
+          }
+          if (Predicates.isDuplicate(entry.key, key)) {
+            return entry;
+          }
+        }
+      }
+      return first;
+    }
+
+    void add(IExpr key) {
+      Entry entry = new Entry(key, all.size());
+      all.add(entry);
+      long[] cell = cellOf(key);
+      if (cell == null) {
+        wide.add(entry);
+        return;
+      }
+      List<Long> coordinates = new ArrayList<Long>(cell.length);
+      for (long coordinate : cell) {
+        coordinates.add(coordinate);
+      }
+      cells.computeIfAbsent(coordinates, c -> new ArrayList<Entry>()).add(entry);
+    }
+  }
+
+  /**
+   * Groups of elements whose keys are the same for <code>SameQ</code>, in the order of their first
+   * elements: a key with inexact numbers is looked up in a {@link SameQIndex}, because two numbers
+   * are the same if they differ in their last bits; every other key is looked up by its hash value.
+   */
+  private static final class SameQGroups {
+    private final java.util.Map<IExpr, IASTAppendable> groups = new HashMap<IExpr, IASTAppendable>();
+    private final SameQIndex inexactNumbers = new SameQIndex();
+    final IASTAppendable result;
+
+    SameQGroups(int capacity) {
+      result = F.ListAlloc(capacity);
+    }
+
+    void add(IExpr key, IExpr element) {
+      IASTAppendable group = groups.get(key);
+      if (group == null && hasInexactNumber(key)) {
+        IExpr known = inexactNumbers.find(key);
+        if (known.isPresent()) {
+          group = groups.get(known);
+        }
+        if (group == null) {
+          inexactNumbers.add(key);
+        }
+      }
+      if (group == null) {
+        group = F.ListAlloc();
+        groups.put(key, group);
+        result.append(group);
+      }
+      group.append(element);
+    }
   }
 
   public static IAST tally(IAST list, BiPredicate<IExpr, IExpr> test) {

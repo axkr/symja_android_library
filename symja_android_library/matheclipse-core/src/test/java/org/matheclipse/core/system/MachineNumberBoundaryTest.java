@@ -49,10 +49,11 @@ public class MachineNumberBoundaryTest extends ExprEvaluatorTestCase {
     // the deviations -3,0,3 and -1,-1,2 times 10^200: (3+0+6)*10^400/(3-1)
     check("Covariance({1.0*10^200,4.0*10^200,7.0*10^200},{2.0*10^200,2.0*10^200,5.0*10^200})", //
         "4.500000000000000*10^400");
+    // the squares are taken of the values divided by a power of two
     check("RootMeanSquare({3.0*10^250,4.0*10^250})", //
-        "3.535533905932737*10^250");
+        "3.53553*10^250");
     check("StandardDeviation({2.0*10^220,6.0*10^220})", //
-        "2.828427124746189*10^220");
+        "2.82843*10^220");
   }
 
   @Test

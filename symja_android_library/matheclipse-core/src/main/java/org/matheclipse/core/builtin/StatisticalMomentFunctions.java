@@ -168,6 +168,10 @@ public class StatisticalMomentFunctions {
     if (dimensions.size() == 0 || dimensions.contains(0) || list.argSize() == 0) {
       return null;
     }
+    if (dimensions.size() == 1 && list.exists(x -> x.isList())) {
+      // a ragged array like {{1,2},{3}} has the dimensions of a vector
+      return null;
+    }
     return dimensions;
   }
 

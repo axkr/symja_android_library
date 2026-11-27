@@ -615,6 +615,13 @@ public final class NumberTheory {
         }
       }
       if (n.equals(k)) {
+        if (n.isIndeterminate()) {
+          return S.Indeterminate;
+        }
+        if (n.isDirectedInfinity()) {
+          // Binomial(n, n) is 1 for every n, but no value at infinity follows from that
+          return F.NIL;
+        }
         return F.C1;
       }
 

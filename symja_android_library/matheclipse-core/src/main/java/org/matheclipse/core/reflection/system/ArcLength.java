@@ -99,7 +99,10 @@ public class ArcLength extends AbstractFunctionEvaluator {
   private IExpr circleArcLength(IAST reg, EvalEngine engine) {
     IExpr r = F.C1;
     if (reg.argSize() >= 2) {
-      r = reg.arg2();
+      r = RegionPrimitives.validRadii(reg.arg2(), engine);
+      if (r == null) {
+        return F.NIL;
+      }
     }
 
     if (reg.argSize() >= 3) {

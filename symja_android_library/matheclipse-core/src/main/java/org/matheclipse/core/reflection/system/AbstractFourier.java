@@ -80,13 +80,13 @@ public abstract class AbstractFourier extends AbstractFunctionOptionEvaluator {
         return computeSparse(listExpr, positions, paramA, paramB, originalAST);
       }
 
+      if (listExpr.isEmptyList() || !S.ArrayQ.ofQ(engine, listExpr, F.$b(), S.NumericQ)) {
+        // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
+        return Errors.printMessage(ast.topHead(), "fftl", F.list(arg1), engine);
+      }
       if (((IAST) listExpr).exists(x -> x.isList())) {
         // a rectangular array of numbers, transformed along every dimension without a factor, and
         // the factor of all the dimensions applied once: rounding then leaves 5. as 5.
-        if (!S.ArrayQ.ofQ(engine, listExpr, F.$b(), S.NumericQ)) {
-          // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
-          return Errors.printMessage(ast.topHead(), "fftl", F.list(arg1), engine);
-        }
         // a = direction() makes the factor of each one-dimensional step 1
         IExpr transformed = computeRecursive(listExpr, direction(), paramB);
         double scale =

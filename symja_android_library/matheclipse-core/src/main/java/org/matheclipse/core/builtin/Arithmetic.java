@@ -5518,9 +5518,10 @@ public final class Arithmetic {
           return outOfRange(true);
         }
       }
-      if (exponent.isLog()) {
+      IExpr logArgument = logArgument(exponent);
+      if (logArgument.isPresent()) {
         // E^Log(x_) := x
-        return exponent.first();
+        return logArgument;
       }
       if (exponent.isDirectedInfinity()) {
         if (exponent.isDirectedInfinity(F.CI)) {
@@ -5541,13 +5542,12 @@ public final class Arithmetic {
         if (expandedFunction.isTimes()) {
           IAST times = (IAST) expandedFunction;
 
-          int index = times.indexOf(x -> x.isLog());
+          int index = times.indexOf(x -> logArgument(x).isPresent());
           if (index > 0) {
             // E^(rest_*Log(x_)):=x^rest /; FreeQ(rest,x)
-            IAST log = (IAST) times.get(index);
-            IExpr logArg1 = log.first();
+            IExpr logArg1 = logArgument(times.get(index));
             IAST rest = times.removeAtCopy(index);
-            if (rest.isFree(logArg1)) {
+            if (logArg1.isNumber() || rest.isFree(logArg1)) {
               return F.Power(logArg1, rest);
             }
           }
@@ -5574,6 +5574,22 @@ public final class Arithmetic {
             }
           }
         }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The argument <code>x</code> of a logarithm <code>Log(x)</code>, where
+     * <code>ArcCsch(2)</code> is the evaluated form of <code>Log(GoldenRatio)</code>.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is no logarithm
+     */
+    private static @AllowNIL IExpr logArgument(IExpr expr) {
+      if (expr.isLog()) {
+        return expr.first();
+      }
+      if (expr.isAST(S.ArcCsch, 2) && expr.first().isInteger() && expr.first().equals(F.C2)) {
+        return S.GoldenRatio;
       }
       return F.NIL;
     }
@@ -5901,7 +5917,7 @@ public final class Arithmetic {
             powExponent = powExponent.negate();
             negativeExponent = true;
           }
-          if (powExponent.isGT(surdExponent)) {
+          if (!powExponent.isLT(surdExponent)) {
             IInteger iquo = powExponent.iquo(surdExponent);
             IInteger irem = powExponent.irem(surdExponent);
             if (negativeExponent) {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.annotation.AllowNIL;
+
 import java.util.Optional;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -2045,6 +2047,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     ISymbol symbol = (ISymbol) rule.arg1();
     IExpr limit = rule.arg2();
     try {
+      // Airy functions and Subfactorial of a growing argument: as factors they may be replaced by
+      // their leading asymptotic forms, which the machinery below can rank - before the features of
+      // the function are collected: Subfactorial becomes a Gamma
+      if (limit.isInfinity()
+          && function.has(e -> LimitGruntz.isUnrewritableGrowth(e, symbol), true)) {
+        IExpr leading = LimitGruntz.leadingGrowthFactors(function, symbol, direction, true, engine);
+        if (leading.isPresent()) {
+          function = engine.evaluate(leading);
+        }
+      }
+
       // one traversal for the four special-function gates below (Ei/Erfc/Gamma-family)
       SpecialFunctionFeatures special = new SpecialFunctionFeatures(function, symbol);
       // ExpIntegralEi(base + shift), shift -> 0 (Ei(x - E^(-E^x))): the difference
@@ -4658,8 +4671,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   /**
    * <code>function</code> with each <code>Gamma(x+c)</code>, <code>c</code> rational, written as
    * <code>Gamma(x+c0)*(x+c0)*(x+c0+1)*...*(x+c-1)</code>, <code>c0</code> the smallest shift which
-   * differs from <code>c</code> by an integer: the Gammas of one class cancel in
-   * <code>Together</code>.
+   * differs from <code>c</code> by an integer: the Gammas of one class cancel in the evaluation of
+   * a product, or in <code>Together</code> of a sum.
    *
    * @return {@link F#NIL} if there are no two such Gammas
    */
@@ -4713,7 +4726,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       return product;
     });
-    return engine.evaluate(F.Together(replaced));
+    IExpr evaluated = engine.evaluate(replaced);
+    if (!evaluated.has(e -> e.isPlus() && e.has(g -> g.isAST(S.Gamma, 2), true), true)) {
+      // a product of Gammas cancels in the evaluation; Together would expand the factors of
+      // Gamma(x)^2*(x+1) into a sum of the Gammas whose Stirling forms don't cancel
+      return evaluated;
+    }
+    return engine.evaluate(F.Together(evaluated));
   }
 
   /**
@@ -5406,6 +5425,53 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /** The largest number of exponential factors whose limits {@link #productOfFactorLimits} takes. */
+  private static final int MAX_FACTOR_LIMITS = 4;
+
+  /**
+   * The product of the limits of the exponential factors and of the product of the other factors,
+   * if each of them is a real number or a signed infinity and no 0 meets an infinity:
+   * <code>x*E^((x+1)^(3/2)-x^(3/2))</code> is <code>Infinity*Infinity</code>, where splitting it into
+   * a quotient of two growing functions would send it through L'Hopital's rule with ever larger
+   * derivatives.
+   *
+   * @return {@link F#NIL} if a factor has no such limit or the product is indeterminate
+   */
+  private static @AllowNIL IExpr productOfFactorLimits(IAST timesAST, LimitData data,
+      EvalEngine engine) {
+    IAST[] exponentials = timesAST.filter(x -> x.isExp() && x.exponent().isPlus()
+        && !x.exponent().isFree(data.variable(), true));
+    if (exponentials[0].argSize() == 0 || exponentials[0].argSize() > MAX_FACTOR_LIMITS) {
+      return F.NIL;
+    }
+    IASTAppendable factors = exponentials[0].copyAppendable();
+    if (exponentials[1].argSize() > 0) {
+      factors.append(exponentials[1].oneIdentity1());
+    }
+    IASTAppendable limits = F.TimesAlloc(factors.argSize());
+    boolean zero = false;
+    boolean infinite = false;
+    for (IExpr factor : factors) {
+      IExpr limit = evalLimitQuiet(factor, data);
+      if (limit.isPresent()) {
+        limit = engine.evaluate(limit);
+      }
+      if (limit.isInfinity() || limit.isNegativeInfinity()) {
+        infinite = true;
+      } else if (limit.isZero()) {
+        zero = true;
+      } else if (!limit.isRealResult() || !limit.isFree(S.Limit)) {
+        return F.NIL;
+      }
+      limits.append(limit);
+    }
+    if (zero && infinite) {
+      return F.NIL;
+    }
+    IExpr product = engine.evalQuiet(limits);
+    return product.isIndeterminate() ? F.NIL : product;
+  }
+
   private static IExpr timesLimit(final IAST timesAST, LimitData data, EvalEngine engine) {
     IAST isFreeResult =
         timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
@@ -5498,6 +5564,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                   data));
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
+        }
+        IExpr product = productOfFactorLimits(timesAST, data, engine);
+        if (product.isPresent()) {
+          return product;
         }
       }
 

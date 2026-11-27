@@ -295,11 +295,31 @@ public class Perimeter extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * The perimeter of a <code>Polygon</code>: of a single boundary, the sum over several disjoint
+   * components <code>Polygon({poly1, poly2, ...})</code>, and for components with holes
+   * <code>Polygon(outer -> holes)</code> the boundaries of the holes count too.
+   */
   private static IExpr polygon(IAST geoForm, EvalEngine engine) {
-    if (geoForm.argSize() == 1 && geoForm.arg1().isList()) {
-      return RegionPrimitives.polygonPerimeter((IAST) geoForm.arg1(), engine);
+    if (geoForm.argSize() != 1) {
+      return F.NIL;
     }
-    return F.NIL;
+    IExpr spec = geoForm.arg1();
+    if (spec.isRuleAST()) {
+      IExpr outer = boundaryPerimeter(spec.first(), engine);
+      IExpr holes = boundaryPerimeter(spec.second(), engine);
+      if (outer.isNIL() || holes.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Plus(outer, holes));
+    }
+    return boundaryPerimeter(spec, engine);
+  }
+
+  /** The length of one boundary, or the summed length of a list of boundaries. */
+  private static IExpr boundaryPerimeter(IExpr spec, EvalEngine engine) {
+    return RegionPrimitives.sumOverBoundaries(spec,
+        list -> RegionPrimitives.polygonPerimeter(list, engine), engine);
   }
 
   private static IExpr ellipsoid(IAST geoForm, EvalEngine engine) {

@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
+import jakarta.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
@@ -3084,8 +3085,13 @@ public class StatisticsFunctions {
             // The argument `1` should have at least `2` elements.
             return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
           }
+          IAST scaledList = squareSafeVector(list);
+          if (scaledList != null) {
+            // the kurtosis doesn't depend on the scale of the data
+            return F.unaryAST1(S.Kurtosis, scaledList);
+          }
           IExpr centralMoment = engine.evaluate(F.CentralMoment(list, 2));
-          if (centralMoment.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+          if (isVanishingVariance(list, centralMoment, engine)) {
             return S.Indeterminate;
           }
           // TODO
@@ -3225,6 +3231,13 @@ public class StatisticsFunctions {
         }
         if (arg1.isListOrAssociation()) {
           final IAST list = (IAST) arg1;
+          if (list.isEmptyList() || (list.isList() && list.exists(x -> x.isList())
+              && LinearAlgebraUtil.dimensions(list, S.List, Integer.MAX_VALUE, false)
+                  .size() < 2)) {
+            // a ragged array like {{1,2},3} has the dimensions of a vector
+            // Rectangular array expected at position `1` in `2`.
+            return Errors.printMessage(S.Mean, "rectn", F.List(F.C1, F.Mean(list)), engine);
+          }
           return F.Times(list.apply(S.Plus), F.Power(F.ZZ(list.argSize()), F.CN1));
         }
 
@@ -5522,6 +5535,13 @@ public class StatisticsFunctions {
     private static IExpr rootMeanSquareVector(IAST list) {
       if (list.isRealVector()) {
         double[] doubleVector = list.toDoubleVector();
+        int exponent = squareSafeExponent(doubleVector);
+        if (exponent != 0) {
+          // the squares would underflow or overflow
+          double quadraticMean =
+              new DescriptiveStatistics(scaled(doubleVector, exponent)).getQuadraticMean();
+          return F.num(Math.scalb(quadraticMean, exponent));
+        }
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(doubleVector);
         double quadraticMean = descriptiveStatistics.getQuadraticMean();
         if (Double.isFinite(quadraticMean)) {
@@ -5576,6 +5596,11 @@ public class StatisticsFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) ast.arg1();
+        IAST scaledList = squareSafeVector(list);
+        if (scaledList != null) {
+          // the skewness doesn't depend on the scale of the data
+          return F.unaryAST1(S.Skewness, scaledList);
+        }
         return F.Divide(F.CentralMoment(list, 3), F.Power(F.CentralMoment(list, 2), F.C3D2));
       }
       if (arg1.isAST()) {
@@ -5683,6 +5708,12 @@ public class StatisticsFunctions {
               }
               org.hipparchus.stat.descriptive.moment.StandardDeviation sd =
                   new org.hipparchus.stat.descriptive.moment.StandardDeviation();
+              int exponent = squareSafeExponent(values);
+              if (exponent != 0) {
+                // squares of the deviations would underflow or overflow
+                double deviation = sd.evaluate(scaled(values, exponent));
+                return F.num(Math.scalb(deviation, exponent));
+              }
               double deviation = sd.evaluate(values);
               if (Double.isFinite(deviation)) {
                 return F.num(deviation);
@@ -6498,6 +6529,85 @@ public class StatisticsFunctions {
       incremental += (values[i] - incremental) / (i + 1);
     }
     return incremental;
+  }
+
+  /**
+   * The exponent <code>k</code> of a power of two which brings the largest magnitude of the values
+   * near <code>1</code>, if it is outside of about <code>[10^-72, 10^72]</code>; inside that range
+   * squares and fourth powers neither underflow nor overflow. <code>0</code> if the values are
+   * already inside that range.
+   */
+  static int squareSafeExponent(double[] values) {
+    double max = 0.0;
+    for (double v : values) {
+      max = Math.max(max, Math.abs(v));
+    }
+    if (max == 0.0 || !Double.isFinite(max)) {
+      return 0;
+    }
+    int exponent = Math.getExponent(max);
+    if (exponent > -240 && exponent < 240) {
+      return 0;
+    }
+    if (exponent < Double.MIN_EXPONENT) {
+      // subnormal: the exponent of the normalized value
+      exponent = Math.getExponent(max * 0x1.0p64) - 64;
+    }
+    return exponent;
+  }
+
+  /** The values divided by <code>2^exponent</code>; the division by a power of two is exact. */
+  static double[] scaled(double[] values, int exponent) {
+    double[] result = new double[values.length];
+    for (int i = 0; i < values.length; i++) {
+      result[i] = Math.scalb(values[i], -exponent);
+    }
+    return result;
+  }
+
+  /**
+   * The real machine values of <code>list</code> divided by a power of two that keeps their
+   * squares in range, or <code>null</code> if <code>list</code> isn't a real machine vector or
+   * needs no scaling. The statistics which don't depend on the scale give the same value for it.
+   */
+  static @Nullable IAST squareSafeVector(IAST list) {
+    if (!list.isRealVector() || !list.forAll(x -> x.isInexactNumber())) {
+      return null;
+    }
+    double[] values = list.toDoubleVector();
+    if (values == null) {
+      return null;
+    }
+    int exponent = squareSafeExponent(values);
+    if (exponent == 0) {
+      return null;
+    }
+    double[] scaledValues = scaled(values, exponent);
+    return F.mapRange(0, scaledValues.length, i -> F.num(scaledValues[i]));
+  }
+
+  /**
+   * Test if the second central moment of the data vanishes: exactly, or for machine data relative
+   * to the square of its largest magnitude (equal machine numbers leave rounding noise in the
+   * mean).
+   */
+  static boolean isVanishingVariance(IAST list, IExpr centralMoment, EvalEngine engine) {
+    if (centralMoment.isZero()) {
+      return true;
+    }
+    if (centralMoment.isReal() && centralMoment.isInexactNumber() && list.isRealVector()) {
+      double[] values = list.toDoubleVector();
+      if (values != null) {
+        double max = 0.0;
+        for (double v : values) {
+          max = Math.max(max, Math.abs(v));
+        }
+        // divided by max twice, so that max^2 can't overflow
+        return max > 0.0 && Math.abs(centralMoment.evalf()) / max / max <= 1.0e-28;
+      }
+    }
+    return !centralMoment.isNumber()
+        && centralMoment.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
   public static void initialize() {

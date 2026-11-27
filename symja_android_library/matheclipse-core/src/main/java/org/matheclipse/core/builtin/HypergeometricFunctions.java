@@ -795,7 +795,7 @@ public class HypergeometricFunctions {
      * <code>null</code>.
      */
     private static PolynomialFunctions.ApcomplexFunction recurrence(IAST ast) {
-      final int n = PolynomialFunctions.inexactIntegerDegree(ast.arg1());
+      final int n = PolynomialFunctions.inexactIntegerDegree(ast);
       if (ast.argSize() == 2 && n >= 1) {
         return precision -> ApcomplexOrthogonalPolynomialMath
             .chebyshevT(n, PolynomialFunctions.apcomplex(ast.arg2()), precision)
@@ -949,6 +949,11 @@ public class HypergeometricFunctions {
           return F.C1;
         }
         int nInt = n.toIntDefault();
+        if (nInt > PolynomialFunctions.MAX_ARBITRARY_RECURRENCE_DEGREE
+            && (l.isInexactNumber() || z.isInexactNumber())) {
+          // beyond the recurrence: a sum of that many terms
+          return F.NIL;
+        }
         if (nInt > 0) {
           // Sum(((-1)^k*Pochhammer(l, n - k)*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
           return F.sum(k -> F.Times(F.Power(-1, k),
@@ -1024,6 +1029,11 @@ public class HypergeometricFunctions {
       IExpr exactArguments = PolynomialFunctions.numericArguments(ast, engine, recurrence(ast));
       if (exactArguments.isPresent()) {
         return exactArguments;
+      }
+      if (ast.arg1().isNumIntValue()
+          && Math.abs(ast.arg1().evalf()) > PolynomialFunctions.MAX_RECURRENCE_DEGREE) {
+        // beyond the recurrence the closed form in machine numbers has no correct digit
+        return F.NIL;
       }
       if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
@@ -1130,6 +1140,35 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber b = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (b instanceof Num && z instanceof Num) {
+          double bDouble = ((Num) b).doubleValue();
+          double zDouble = ((Num) z).doubleValue();
+          if (bDouble >= 1.0 && Math.abs(zDouble) <= bDouble) {
+            // the term k+1 is the term k times z/((b+k)*(k+1)), at most 1/(k+1) of it
+            double term = 1.0;
+            double sum = 1.0;
+            for (int k = 0; k < 100 && Math.abs(term) > 1.0e-17 * Math.abs(sum); k++) {
+              term *= zDouble / ((bDouble + k) * (k + 1.0));
+              sum += term;
+            }
+            return F.num(sum);
+          }
+        }
+        if (b instanceof Num && z instanceof Num && ((Num) z).doubleValue() > 1.0e12) {
+          double bDouble = ((Num) b).doubleValue();
+          double zDouble = ((Num) z).doubleValue();
+          if (bDouble > 0.0 && bDouble <= Math.sqrt(Math.sqrt(zDouble))) {
+            // for z much larger than b^2 the value is
+            // Gamma(b)*z^(1/4-b/2)*E^(2*Sqrt(z))/(2*Sqrt(Pi)): beyond the exponent range of
+            // every number
+            double logValue = 2.0 * Math.sqrt(zDouble) + (0.25 - 0.5 * bDouble) * Math.log(zDouble)
+                + org.hipparchus.special.Gamma.logGamma(bDouble) - Math.log(2.0 * Math.sqrt(Math.PI));
+            IExpr growth = engine.evaluate(F.Exp(F.num(logValue)));
+            if (growth.isAST(S.Overflow)) {
+              return growth;
+            }
+          }
+        }
         if (b instanceof Num && z instanceof Num) {
           // a large negative argument: the closed forms below take the sine of the rounded
           // square root, which has no digit of the phase from -10^30 on
@@ -1901,6 +1940,18 @@ public class HypergeometricFunctions {
         if (excess.isReal() && (!excess.isPositive() || excess.isZero())) {
           // the series at 1 has a sum only for Re(c-a-b) > 0; what machine numbers leave of
           // c-a-b = 0 is zero within the tolerance
+          if (excess.isZero() && a.isReal() && b.isReal() && c.isReal()) {
+            // the terms are Gamma(c)/(Gamma(a)*Gamma(b))/n from some n on: the series diverges
+            // logarithmically in the direction of that factor
+            IExpr direction = engine
+                .evaluate(F.Sign(F.Times(F.Gamma(c), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1))));
+            if (direction.isOne()) {
+              return F.CInfinity;
+            }
+            if (direction.isMinusOne()) {
+              return F.CNInfinity;
+            }
+          }
           return F.CComplexInfinity;
         }
       }

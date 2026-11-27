@@ -292,6 +292,10 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public IExpr e2ObjArg(IExpr s, IExpr a) {
+    if (s.isOne() && a.isRational()) {
+      // the pole of the Hurwitz zeta function at s == 1 is there for every a
+      return CComplexInfinity;
+    }
     // Zeta(s, 0) and Zeta(s, 1) evaluate to Zeta(s)
     if (a.isZero() || a.isOne()) {
       return Zeta(s);

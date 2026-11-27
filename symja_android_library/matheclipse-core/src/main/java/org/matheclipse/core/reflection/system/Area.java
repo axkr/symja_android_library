@@ -709,32 +709,10 @@ public class Area extends AbstractFunctionOptionEvaluator {
     return boundaryArea(spec, engine);
   }
 
-  /**
-   * The area enclosed by one boundary, or the summed area of a list of boundaries.
-   *
-   * <p>
-   * A point list and a list of point lists are told apart by looking one level down rather than by
-   * counting: <code>{{1,1},{3,1},{3,3}}</code> is one triangle, while
-   * <code>{{{1,1},{3,1},{3,3}}}</code> is a list holding one. Both spellings occur in the same
-   * position - a single hole may be given bare or wrapped in a list.
-   */
+  /** The area enclosed by one boundary, or the summed area of a list of boundaries. */
   private static IExpr boundaryArea(IExpr spec, EvalEngine engine) {
-    if (!spec.isListOfLists()) {
-      return F.NIL;
-    }
-    IAST list = (IAST) spec;
-    if (!list.arg1().isListOfLists()) {
-      return RegionPrimitives.polygonArea(list, engine);
-    }
-    IASTAppendable sum = F.PlusAlloc(list.argSize());
-    for (int i = 1; i < list.size(); i++) {
-      IExpr part = boundaryArea(list.get(i), engine);
-      if (part.isNIL()) {
-        return F.NIL;
-      }
-      sum.append(part);
-    }
-    return engine.evaluate(sum);
+    return RegionPrimitives.sumOverBoundaries(spec,
+        list -> RegionPrimitives.polygonArea(list, engine), engine);
   }
 
   private static IExpr ellipsoid(IAST geoForm) {

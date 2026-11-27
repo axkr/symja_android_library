@@ -1,11 +1,13 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.hipparchus.clustering.Cluster;
-import org.hipparchus.clustering.Clusterer;
 import org.hipparchus.clustering.DBSCANClusterer;
 import org.hipparchus.util.DoublePoint;
 import org.hipparchus.clustering.KMeansPlusPlusClusterer;
@@ -13,6 +15,7 @@ import org.hipparchus.clustering.MultiKMeansPlusPlusClusterer;
 import org.hipparchus.distance.DistanceMeasure;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.random.Well19937c;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.Errors;
@@ -20,7 +23,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -530,23 +532,322 @@ public class ClusteringFunctions {
 
   private static class FindClusters extends AbstractEvaluator {
 
+    /** The largest number of clusters which is tried if none is given. */
+    private static final int MAX_AUTOMATIC_CLUSTERS = 10;
+
     /**
-     * Convert the calculated list of clusters to a symja list.
-     * 
-     * @param clusters
-     * @param isListOfLists
-     * @return
+     * The largest number of points for which the number of clusters is chosen by the silhouette
+     * widths and the one dimensional partition is computed exactly: both take quadratic time.
      */
-    private static IAST clustersToList(final List<? extends Cluster<DoublePoint>> clusters,
-        boolean isListOfLists) {
-      return F.mapRange(0, clusters.size(), j -> {
-        final List<DoublePoint> clusterPoints = clusters.get(j).getPoints();
-        if (isListOfLists) {
-          return F.mapRange(0, clusterPoints.size(),
-              i -> new ASTRealVector(clusterPoints.get(i).values().clone(), false));
+    private static final int MAX_QUADRATIC_POINTS = 2000;
+
+    /** The number of clusters of a larger point set, if none is given. */
+    private static final int DEFAULT_CLUSTERS = 3;
+
+    /**
+     * A mean silhouette width below this value shows no substantial cluster structure: the points
+     * are one cluster.
+     */
+    private static final double MIN_SILHOUETTE = 0.25;
+
+    /**
+     * How much the mean silhouette width of the points must exceed the one of as many points spread
+     * evenly over the same range. Evenly spread points have no cluster structure, but their
+     * silhouette width grows from about 0.17 for three points to about 0.62 for many points on a
+     * line.
+     */
+    private static final double MIN_SILHOUETTE_GAIN = 0.15;
+
+    /**
+     * A point which remembers its position in the list. Points are distinct by identity, so that
+     * equal values don't collapse in the hash maps of a clusterer.
+     */
+    private static final class IndexedPoint extends DoublePoint {
+      private static final long serialVersionUID = 4519326270713917566L;
+
+      final int index;
+
+      IndexedPoint(double[] values, int index) {
+        super(values);
+        this.index = index;
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        return this == obj;
+      }
+
+      @Override
+      public int hashCode() {
+        return System.identityHashCode(this);
+      }
+    }
+
+    /**
+     * The clusters as lists of the original elements of <code>list</code>: each cluster in the order
+     * of the list, the clusters in the order of their first elements.
+     */
+    private static IAST clustersToList(List<int[]> clusters, IAST list) {
+      clusters.sort((a, b) -> Integer.compare(a[0], b[0]));
+      IASTAppendable result = F.ListAlloc(clusters.size());
+      for (int[] cluster : clusters) {
+        IASTAppendable elements = F.ListAlloc(cluster.length);
+        for (int index : cluster) {
+          elements.append(list.get(index + 1));
         }
-        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).values()[0]));
-      });
+        result.append(elements);
+      }
+      return result;
+    }
+
+    /** The sorted point indices of each nonempty cluster of a clusterer. */
+    private static List<int[]> indicesOf(List<? extends Cluster<IndexedPoint>> clusters) {
+      List<int[]> result = new ArrayList<int[]>(clusters.size());
+      for (Cluster<IndexedPoint> cluster : clusters) {
+        List<IndexedPoint> points = cluster.getPoints();
+        if (!points.isEmpty()) {
+          int[] indices = new int[points.size()];
+          for (int i = 0; i < indices.length; i++) {
+            indices[i] = points.get(i).index;
+          }
+          Arrays.sort(indices);
+          result.add(indices);
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The partitions of one dimensional points into intervals with the least sum of the squared
+     * distances to their means, by dynamic programming over the sorted values. The table is
+     * computed once for the largest number of intervals; each smaller number is read off it.
+     */
+    private static final class LinePartitions {
+      private final List<IndexedPoint> points;
+      private final Integer[] order;
+      /** <code>start[m][j]</code>: the first value of the last of <code>m</code> intervals. */
+      private final int[][] start;
+
+      LinePartitions(List<IndexedPoint> points, int maxK, EvalEngine engine) {
+        this.points = points;
+        final int n = points.size();
+        order = new Integer[n];
+        for (int i = 0; i < n; i++) {
+          order[i] = i;
+        }
+        Arrays.sort(order, (a, b) -> Double.compare(points.get(a).values()[0],
+            points.get(b).values()[0]));
+        double[] sum = new double[n + 1];
+        double[] sumOfSquares = new double[n + 1];
+        for (int i = 0; i < n; i++) {
+          double v = points.get(order[i]).values()[0];
+          sum[i + 1] = sum[i] + v;
+          sumOfSquares[i + 1] = sumOfSquares[i] + v * v;
+        }
+        // cost[m][j]: the least sum for the first j values in m intervals
+        double[][] cost = new double[maxK + 1][n + 1];
+        start = new int[maxK + 1][n + 1];
+        for (double[] row : cost) {
+          Arrays.fill(row, Double.POSITIVE_INFINITY);
+        }
+        cost[0][0] = 0.0;
+        for (int m = 1; m <= maxK; m++) {
+          engine.checkTimeLimit();
+          for (int j = m; j <= n; j++) {
+            for (int i = m; i <= j; i++) {
+              // the values i-1 .. j-1 form the last interval
+              double s = sum[j] - sum[i - 1];
+              double within = sumOfSquares[j] - sumOfSquares[i - 1] - s * s / (j - i + 1);
+              double total = cost[m - 1][i - 1] + Math.max(within, 0.0);
+              if (total < cost[m][j]) {
+                cost[m][j] = total;
+                start[m][j] = i;
+              }
+            }
+          }
+        }
+      }
+
+      /** The best partition into <code>k</code> intervals, <code>k</code> at most the maximum. */
+      List<int[]> partition(int k) {
+        List<int[]> result = new ArrayList<int[]>(k);
+        int j = points.size();
+        for (int m = k; m >= 1; m--) {
+          int i = start[m][j];
+          int[] indices = new int[j - i + 1];
+          for (int l = i; l <= j; l++) {
+            indices[l - i] = points.get(order[l - 1]).index;
+          }
+          Arrays.sort(indices);
+          result.add(indices);
+          j = i - 1;
+        }
+        return result;
+      }
+    }
+
+    /**
+     * The partition of the points into <code>k</code> clusters: read off <code>line</code> for one
+     * dimensional points and the euclidean distance, else the best of several k-means++ runs from a
+     * fixed seed.
+     *
+     * @param line the exact one dimensional partitions, or <code>null</code>
+     */
+    private static List<int[]> partition(List<IndexedPoint> points, int k, LinePartitions line,
+        DistanceMeasure measure) {
+      if (k <= 1) {
+        int[] all = new int[points.size()];
+        for (int i = 0; i < all.length; i++) {
+          all[i] = points.get(i).index;
+        }
+        List<int[]> result = new ArrayList<int[]>(1);
+        result.add(all);
+        return result;
+      }
+      if (line != null) {
+        return line.partition(k);
+      }
+      KMeansPlusPlusClusterer<IndexedPoint> kMeans =
+          new KMeansPlusPlusClusterer<IndexedPoint>(k, 100, measure, new Well19937c(k));
+      return indicesOf(
+          new MultiKMeansPlusPlusClusterer<IndexedPoint>(kMeans, 10).cluster(points));
+    }
+
+    /**
+     * The mean silhouette width of a partition: for each point <code>1 - a/b</code> if
+     * <code>a &lt; b</code> and <code>b/a - 1</code> else, with <code>a</code> the mean distance
+     * to the other points of its cluster and <code>b</code> the least mean distance to the points
+     * of another cluster; <code>0</code> for a point which is a cluster of its own.
+     */
+    private static double silhouette(List<IndexedPoint> points, List<int[]> clusters,
+        DistanceMeasure measure, EvalEngine engine) {
+      double[][] values = new double[points.size()][];
+      for (IndexedPoint p : points) {
+        values[p.index] = p.values();
+      }
+      double total = 0.0;
+      for (int c = 0; c < clusters.size(); c++) {
+        engine.checkTimeLimit();
+        int[] own = clusters.get(c);
+        if (own.length == 1) {
+          continue;
+        }
+        for (int i : own) {
+          double a = 0.0;
+          for (int j : own) {
+            a += measure.compute(values[i], values[j]);
+          }
+          a /= own.length - 1;
+          double b = Double.POSITIVE_INFINITY;
+          for (int d = 0; d < clusters.size(); d++) {
+            if (d != c) {
+              double mean = 0.0;
+              for (int j : clusters.get(d)) {
+                mean += measure.compute(values[i], values[j]);
+              }
+              b = Math.min(b, mean / clusters.get(d).length);
+            }
+          }
+          double width = Math.max(a, b);
+          if (width > 0.0) {
+            total += (b - a) / width;
+          }
+        }
+      }
+      return total / points.size();
+    }
+
+    /**
+     * The largest mean silhouette width of the partitions into <code>2 .. maxK</code> clusters, and
+     * the partition which has it.
+     *
+     * @param threshold only a partition with a larger width is returned
+     * @return the width and the partition, or <code>null</code> if no partition exceeds the
+     *         threshold
+     */
+    private static Map.Entry<Double, List<int[]>> widestPartition(List<IndexedPoint> points,
+        int maxK, boolean exactLine, DistanceMeasure measure, double threshold,
+        EvalEngine engine) {
+      LinePartitions line = exactLine && maxK > 1 ? new LinePartitions(points, maxK, engine) : null;
+      Map.Entry<Double, List<int[]>> best = null;
+      double bestWidth = threshold;
+      for (int c = 2; c <= maxK; c++) {
+        List<int[]> clusters = partition(points, c, line, measure);
+        double width = silhouette(points, clusters, measure, engine);
+        if (width > bestWidth) {
+          bestWidth = width;
+          best = new AbstractMap.SimpleImmutableEntry<Double, List<int[]>>(width, clusters);
+        }
+      }
+      return best;
+    }
+
+    /**
+     * As many points as <code>points</code>, spread evenly over their bounding box: equally spaced
+     * on a line, a Halton sequence in more dimensions. The digits of each base are permuted by a
+     * fixed permutation: in the plain sequence the coordinates of all bases above the number of
+     * points grow together, and the points would lie on a line.
+     */
+    private static List<IndexedPoint> evenlySpread(List<IndexedPoint> points) {
+      final int n = points.size();
+      final int dimension = points.get(0).values().length;
+      double[] low = points.get(0).values().clone();
+      double[] high = low.clone();
+      for (IndexedPoint p : points) {
+        double[] values = p.values();
+        for (int d = 0; d < dimension; d++) {
+          low[d] = Math.min(low[d], values[d]);
+          high[d] = Math.max(high[d], values[d]);
+        }
+      }
+      int[] bases = new int[dimension];
+      for (int d = 0, candidate = 2; d < dimension; candidate++) {
+        boolean prime = true;
+        for (int i = 0; i < d && bases[i] * bases[i] <= candidate; i++) {
+          if (candidate % bases[i] == 0) {
+            prime = false;
+            break;
+          }
+        }
+        if (prime) {
+          bases[d++] = candidate;
+        }
+      }
+      int[][] digits = new int[dimension][];
+      for (int d = 0; d < dimension; d++) {
+        // 0 stays 0, the other digits are shuffled from a seed of the base
+        digits[d] = new int[bases[d]];
+        for (int j = 0; j < bases[d]; j++) {
+          digits[d][j] = j;
+        }
+        Well19937c random = new Well19937c(bases[d]);
+        for (int j = bases[d] - 1; j > 1; j--) {
+          int swap = 1 + random.nextInt(j);
+          int digit = digits[d][j];
+          digits[d][j] = digits[d][swap];
+          digits[d][swap] = digit;
+        }
+      }
+      List<IndexedPoint> result = new ArrayList<IndexedPoint>(n);
+      for (int i = 0; i < n; i++) {
+        double[] values = new double[dimension];
+        for (int d = 0; d < dimension; d++) {
+          double t;
+          if (dimension == 1) {
+            t = n > 1 ? (double) i / (n - 1) : 0.0;
+          } else {
+            // the radical inverse of i+1 in the base of this dimension
+            t = 0.0;
+            double digit = 1.0 / bases[d];
+            for (int m = i + 1; m > 0; m /= bases[d], digit /= bases[d]) {
+              t += digits[d][m % bases[d]] * digit;
+            }
+          }
+          values[d] = low[d] + t * (high[d] - low[d]);
+        }
+        result.add(new IndexedPoint(values, i));
+      }
+      return result;
     }
 
     @Override
@@ -556,7 +857,7 @@ public class ClusteringFunctions {
       try {
         if (ast.arg1().isList() && ast.arg1().size() > 1) {
           IAST list1 = (IAST) ast.arg1();
-          int k = 3;
+          int k = -1;
           double eps = 3.0;
           int minPts = 1;
           if (ast.size() > 2) {
@@ -579,10 +880,10 @@ public class ClusteringFunctions {
               }
             }
 
-            if ("KMeans".equals(method) || "".equals(method)) {
+            if (!"DBSCAN".equals(method) && !ast.arg2().isRuleAST()) {
               k = ast.arg2().toMachineInt();
-              if (F.isNotPresent(k)) {
-                k = 3;
+              if (k <= 0) {
+                return F.NIL;
               }
             }
           }
@@ -597,42 +898,77 @@ public class ClusteringFunctions {
             }
           }
 
-          if (k > 0) {
-            final List<DoublePoint> points = new ArrayList<DoublePoint>(list1.argSize());
-            if (list1.isListOfLists()) {
-              for (int j = 1; j < list1.size(); j++) {
-                double[] values = list1.get(j).toDoubleVector();
-                if (values == null) {
-                  return F.NIL;
-                }
-                final DoublePoint p = new DoublePoint(values);
-                points.add(p);
-              }
-            } else {
-              double[] values = list1.toDoubleVector();
-              if (values == null) {
+          final boolean listOfLists = list1.isListOfLists();
+          final List<IndexedPoint> points = new ArrayList<IndexedPoint>(list1.argSize());
+          if (listOfLists) {
+            for (int j = 1; j < list1.size(); j++) {
+              double[] values = list1.get(j).toDoubleVector();
+              if (values == null || (j > 1 && values.length != points.get(0).values().length)) {
+                // points of different dimensions have no distance
                 return F.NIL;
               }
-              for (int i = 0; i < values.length; i++) {
-                final DoublePoint p = new DoublePoint(new double[] {values[i]});
-                points.add(p);
-              }
+              points.add(new IndexedPoint(values, j - 1));
             }
-            final Clusterer<DoublePoint> transformer;
-            if ("KMeans".equals(method)) {
-              transformer = new KMeansPlusPlusClusterer<DoublePoint>(k, 100, measure);
-            } else if ("DBSCAN".equals(method)) {
-              transformer = new DBSCANClusterer<DoublePoint>(eps, minPts, measure);
-            } else {
-              KMeansPlusPlusClusterer<DoublePoint> kMeansTransformer =
-                  new KMeansPlusPlusClusterer<DoublePoint>(k, 100, measure);
-              transformer = new MultiKMeansPlusPlusClusterer<DoublePoint>(kMeansTransformer, 10);
+          } else {
+            double[] values = list1.toDoubleVector();
+            if (values == null) {
+              return F.NIL;
             }
-            List<? extends Cluster<DoublePoint>> cluster = transformer.cluster(points);
-            if (cluster != null && cluster.size() > 0) {
-              return clustersToList(cluster, list1.isListOfLists());
+            for (int i = 0; i < values.length; i++) {
+              points.add(new IndexedPoint(new double[] {values[i]}, i));
             }
           }
+          for (IndexedPoint p : points) {
+            for (double v : p.values()) {
+              if (!Double.isFinite(v)) {
+                // an infinite point has no distance to the others
+                return F.NIL;
+              }
+            }
+          }
+          if ("DBSCAN".equals(method)) {
+            List<int[]> clusters =
+                indicesOf(new DBSCANClusterer<IndexedPoint>(eps, minPts, measure).cluster(points));
+            return clusters.isEmpty() ? F.NIL : clustersToList(clusters, list1);
+          }
+          // more clusters than distinct points would leave some of them empty
+          final int distinct = (int) points.stream().map(p -> Arrays.toString(p.values()))
+              .distinct().count();
+          // every other method is k-means
+          final boolean exactLine = !listOfLists && measure instanceof EuclideanDistance
+              && points.size() <= MAX_QUADRATIC_POINTS;
+          if (k > 0 || points.size() > MAX_QUADRATIC_POINTS) {
+            final int clusterCount = Math.min(k > 0 ? k : DEFAULT_CLUSTERS, distinct);
+            LinePartitions line =
+                exactLine && clusterCount > 1 ? new LinePartitions(points, clusterCount, engine)
+                    : null;
+            return clustersToList(partition(points, clusterCount, line, measure), list1);
+          }
+          if (points.size() == 2) {
+            // two points without a scale to compare their distance with: apart if it is positive
+            List<int[]> clusters = new ArrayList<int[]>(2);
+            if (measure.compute(points.get(0).values(), points.get(1).values()) > 0.0) {
+              clusters.add(new int[] {0});
+              clusters.add(new int[] {1});
+            } else {
+              clusters.add(new int[] {0, 1});
+            }
+            return clustersToList(clusters, list1);
+          }
+          // the number of clusters with the largest mean silhouette width, if that is clearly
+          // larger than the width of evenly spread points
+          final int maxK = Math.min(MAX_AUTOMATIC_CLUSTERS, Math.min(distinct, points.size() - 1));
+          Map.Entry<Double, List<int[]>> best =
+              widestPartition(points, maxK, exactLine, measure, MIN_SILHOUETTE, engine);
+          if (best != null) {
+            Map.Entry<Double, List<int[]>> reference =
+                widestPartition(evenlySpread(points), maxK, exactLine, measure, 0.0, engine);
+            if (reference != null && best.getKey() <= reference.getKey() + MIN_SILHOUETTE_GAIN) {
+              best = null;
+            }
+          }
+          return clustersToList(best == null ? partition(points, 1, null, measure) : best.getValue(),
+              list1);
         }
       } catch (MathRuntimeException mrex) {
         return Errors.printMessage(ast.topHead(), mrex, engine);
