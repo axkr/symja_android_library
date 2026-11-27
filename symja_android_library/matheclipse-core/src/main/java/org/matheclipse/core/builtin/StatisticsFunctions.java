@@ -140,6 +140,10 @@ public class StatisticsFunctions {
           new org.matheclipse.core.builtin.StochasticProcesses.WeakStationarity());
       S.CovarianceFunction
           .setEvaluator(new org.matheclipse.core.builtin.StochasticProcesses.CovarianceFunction());
+      S.CorrelationFunction
+          .setEvaluator(new org.matheclipse.core.builtin.StochasticProcesses.CorrelationFunction());
+      S.PartialCorrelationFunction.setEvaluator(
+          new org.matheclipse.core.builtin.StochasticProcesses.PartialCorrelationFunction());
       S.LocationTest.setEvaluator(new org.matheclipse.core.reflection.system.LocationTest());
       S.MannWhitneyTest
           .setEvaluator(new org.matheclipse.core.reflection.system.MannWhitneyTest());

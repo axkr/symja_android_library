@@ -133,4 +133,47 @@ public class PlotStyleAndSizeTest extends ExprEvaluatorTestCase {
     check("Cases(ContourPlot(x + y, {x, 0, 1}, {y, 0, 1}, Contours -> -3), _Line, Infinity)", //
         "{}");
   }
+
+  @Test
+  public void testSaddleCellJoinsItsMainDiagonal() {
+    // a saddle cell joins its lower left and upper right corners, whatever its centre
+    check("g = ListContourPlot({{3, 0}, {0, 3}}, Contours -> {1.5}); "
+        + "Cases(Normal(g), Line(q_) :> Round(Total(Last(q)) - Total(First(q)), 0.001), Infinity)", //
+        "{1.0,-1.0}");
+    check("g = ListContourPlot({{3, 0}, {0, 2}}, Contours -> {1.5}); "
+        + "Cases(Normal(g), Line(q_) :> Round(Total(Last(q)) - Total(First(q)), 0.001), Infinity)", //
+        "{1.25,-1.25}");
+    // the middles of the lines are near the corners they cut off, here the ones above the level
+    check("g = ListContourPlot({{0, 4}, {4, 0}}, Contours -> {2}); "
+        + "Sort(Cases(Normal(g), Line(q_) :> Round(Mean(q), 0.001), Infinity))", //
+        "{{1.25,1.75},{1.75,1.25}}");
+  }
+
+  @Test
+  public void testContourPlotOfFunctionsAndEquations() {
+    // the functions are shaded, but not next to an equation; every function has its own style
+    check("g = ContourPlot({x + 2*y, x - y}, {x, -1, 1}, {y, -1, 1}); "
+        + "Length(Cases(g, _Polygon, Infinity)) > 0", //
+        "True");
+    check("g = ContourPlot({x == y^2, {x*y, x + y}}, {x, -1, 1}, {y, -1, 1}, "
+        + "ContourStyle -> {Orange, Purple, Brown}); "
+        + "{Length(Cases(g, _Polygon, Infinity)), MemberQ(First(g), Purple, Infinity), "
+        + "MemberQ(First(g), Brown, Infinity)}", //
+        "{0,True,True}");
+  }
+
+  @Test
+  public void testContourPlotWithoutContours() {
+    // nothing to draw leaves two empty lists
+    check("g = ContourPlot(x^4 + y^2 == -3, {x, -1, 1}, {y, -1, 1}); {Head(g), First(g)}", //
+        "{Graphics,{{},{}}}");
+  }
+
+  @Test
+  public void testContourPlot3DWithoutSurface() {
+    // a level the function never reaches gives the box without a surface
+    check("g = ContourPlot3D(x^2 + y^4 == -2, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}); "
+        + "{Head(g), First(g)}", //
+        "{Graphics3D,{{},{}}}");
+  }
 }

@@ -2,10 +2,12 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
 import java.util.Random;
+import java.util.function.IntFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.CholeskyDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -144,17 +146,148 @@ public final class StochasticProcesses {
   }
 
   /**
+   * <code>CorrelationFunction(proc, h)</code> - the autocorrelation at the lag <code>h</code>, the
+   * autocovariance divided by the variance; the processes, the data and the lag specifications of
+   * {@link CovarianceFunction}.
+   */
+  public static final class CorrelationFunction extends AbstractFunctionEvaluator {
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return CovarianceFunction.covarianceFunction(ast, true, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+  }
+
+  /**
+   * <code>PartialCorrelationFunction(proc, h)</code> - the partial autocorrelation at the lag
+   * <code>h &gt;= 1</code>, the correlation of the values <code>h</code> apart with the values in
+   * between removed, from the autocorrelations by the Durbin-Levinson recursion; the processes and
+   * the data of {@link CovarianceFunction}. <code>{hmax}</code> gives the lags
+   * <code>1, ..., hmax</code>.
+   */
+  public static final class PartialCorrelationFunction extends AbstractFunctionEvaluator {
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr lag = ast.arg2();
+      IAST lags = F.NIL;
+      if (lag.isList()) {
+        IAST spec = (IAST) lag;
+        // {hmax} starts at the lag 1, the first with a partial autocorrelation
+        lags = CovarianceFunction.lagRange(
+            spec.isList1() && spec.arg1().isInteger() ? F.List(F.C1, spec.arg1()) : spec, engine);
+        if (lags.isNIL()) {
+          return F.NIL;
+        }
+      }
+      // the partial autocorrelations are symmetric in the lag
+      int h = lags.isPresent() ? CovarianceFunction.maxLag(lags) : CovarianceFunction.lagIndex(lag);
+      IExpr[] r = h < 1 ? null
+          : CovarianceFunction.autocorrelations(ast.arg1(),
+              Math.min(h, CovarianceFunction.MAX_LAG), engine);
+      if (r == null) {
+        return lags.isPresent() ? lags.mapThread(ast, 2) : F.NIL;
+      }
+      // all lags from one recursion
+      IExpr[] pacf = partialAutocorrelations(r, engine);
+      if (lags.isNIL()) {
+        return h < pacf.length ? pacf[h] : F.NIL;
+      }
+      return lags.map(x -> {
+        int k = CovarianceFunction.lagIndex(x);
+        return k >= 1 && k < pacf.length ? pacf[k] : ast.setAtCopy(2, x);
+      });
+    }
+
+    /**
+     * The partial autocorrelations <code>phi(k,k)</code> for the lags <code>k = 1, ...</code> of
+     * the autocorrelations <code>r(0), r(1), ...</code> by the Durbin-Levinson recursion
+     * <code>phi(k,k) = (r(k) - Sum(phi(k-1,j)*r(k-j))) / (1 - Sum(phi(k-1,j)*r(j)))</code>; the
+     * entry <code>0</code> is <code>1</code>.
+     */
+    private static IExpr[] partialAutocorrelations(IExpr[] r, EvalEngine engine) {
+      int h = r.length - 1;
+      IExpr[] pacf = new IExpr[h + 1];
+      pacf[0] = F.C1;
+      if (h < 1) {
+        return pacf;
+      }
+      pacf[1] = r[1];
+      IExpr[] phi = new IExpr[] {F.C0, r[1]};
+      for (int k = 2; k <= h; k++) {
+        engine.checkTimeLimit();
+        IASTAppendable numerator = F.PlusAlloc(k);
+        IASTAppendable denominator = F.PlusAlloc(k);
+        numerator.append(r[k]);
+        denominator.append(F.C1);
+        for (int j = 1; j < k; j++) {
+          numerator.append(F.Times(F.CN1, phi[j], r[k - j]));
+          denominator.append(F.Times(F.CN1, phi[j], r[j]));
+        }
+        IExpr kk = engine.evaluate(F.Divide(numerator, denominator));
+        IExpr[] next = new IExpr[k + 1];
+        next[0] = F.C0;
+        for (int j = 1; j < k; j++) {
+          next[j] = engine.evaluate(F.Subtract(phi[j], F.Times(kk, phi[k - j])));
+        }
+        next[k] = kk;
+        phi = next;
+        pacf[k] = kk;
+      }
+      return pacf;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+  }
+
+  /**
    * <code>CovarianceFunction(proc, h)</code> - the autocovariance at the lag <code>h</code> of a
    * weakly stationary <code>ARProcess</code>, <code>MAProcess</code> or <code>ARMAProcess</code>
    * with numeric parameters; <code>CovarianceFunction(proc, s, t)</code> is the covariance of the
    * values at the times <code>s</code> and <code>t</code>. Exact parameters give exact values.
+   *
+   * <p>
+   * <code>CovarianceFunction(data, h)</code> - the sample autocovariance
+   * <code>Sum((x(t)-m)*(x(t+h)-m), t=1..n-h)/n</code> of a list of numbers, of a list of
+   * uniformly spaced <code>{time, value}</code> pairs or of the paths of a
+   * <code>TemporalData</code> object with the mean <code>m</code>. Several paths are taken around
+   * the mean of all their values and their autocovariances are averaged.
+   *
+   * <p>
+   * The lag <code>h</code> may also be <code>{hmax}</code> for the lags <code>0, ..., hmax</code>,
+   * <code>{hmin, hmax}</code> or <code>{hmin, hmax, dh}</code>.
    */
   public static final class CovarianceFunction extends AbstractFunctionEvaluator {
     /** The largest lag whose autocovariance is computed by the recursion. */
-    private static final int MAX_LAG = 100_000;
+    static final int MAX_LAG = 100_000;
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return covarianceFunction(ast, false, engine);
+    }
+
+    /**
+     * The autocovariance or, for <code>correlation</code>, the autocorrelation of a process or of
+     * data.
+     */
+    static @AllowNIL IExpr covarianceFunction(final IAST ast, boolean correlation,
+        EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }
@@ -166,26 +299,294 @@ public final class StochasticProcesses {
       } else {
         return F.NIL;
       }
+      IAST lags = F.NIL;
       if (lag.isList()) {
-        return ast.isAST2() ? ((IAST) lag).mapThread(ast, 2) : F.NIL;
+        if (!ast.isAST2()) {
+          return F.NIL;
+        }
+        lags = lagRange((IAST) lag, engine);
+        if (lags.isNIL()) {
+          return badLag(ast, lag, engine);
+        }
       }
-      IAST process = (IAST) ast.arg1();
+      int h = lags.isPresent() ? maxLag(lags) : lagIndex(lag);
+      IAST paths = dataPaths(ast.arg1(), engine);
+      if (paths.isPresent() && !ast.isAST2()) {
+        return F.NIL;
+      }
+      if (lags.isNIL() && lag.isNumber() && (h < 0
+          || (paths.isPresent() && !paths.forAll(path -> h < path.argSize())))) {
+        // a numeric lag which is no integer, not a machine integer or without pairs in the data
+        return badLag(ast, lag, engine);
+      }
+      IntFunction<IExpr> gamma = h < 0 ? null
+          : paths.isPresent() ? new SampleAutocovariances(paths, engine)
+              : processAutocovariances(ast.arg1(), h, engine);
+      if (gamma == null) {
+        return lags.isPresent() ? lags.mapThread(ast, 2) : F.NIL;
+      }
+      IExpr variance = correlation ? variance(gamma) : null;
+      if (lags.isNIL()) {
+        return lagValue(gamma, h, variance, engine);
+      }
+      // all lags from the same deviations of the data or the same recursion of the process
+      return lags.map(x -> {
+        int k = lagIndex(x);
+        IExpr value = k >= 0 ? lagValue(gamma, k, variance, engine) : F.NIL;
+        return value.isPresent() ? value : ast.setAtCopy(2, x);
+      });
+    }
+
+    /**
+     * The message for a lag specification of data or of a process without a value.
+     *
+     * @return {@link F#NIL}
+     */
+    private static @AllowNIL IExpr badLag(IAST ast, IExpr lag, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (dataPaths(arg1, engine).isPresent()
+          || (arg1.isAST() && armaParameters((IAST) arg1) != null)) {
+        // CovarianceFunction::bdlag: The lag specification `1` should be ...
+        return Errors.printMessage(ast.topHead(), "bdlag", F.List(lag), engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The absolute value of an integer lag.
+     *
+     * @return <code>-1</code> for another lag or one which is not a machine integer
+     */
+    static int lagIndex(IExpr lag) {
+      if (!lag.isInteger()) {
+        return -1;
+      }
+      int h = lag.toIntDefault();
+      return h == Config.INVALID_INT ? -1 : Math.abs(h);
+    }
+
+    /** The greatest {@link #lagIndex(IExpr)} of the lags, <code>-1</code> if there is none. */
+    static int maxLag(IAST lags) {
+      int max = -1;
+      for (IExpr lag : lags) {
+        max = Math.max(max, lagIndex(lag));
+      }
+      return max;
+    }
+
+    /** The scale of the autocorrelations: the real variance of data, the lag 0 of a process. */
+    private static IExpr variance(IntFunction<IExpr> gamma) {
+      return gamma instanceof SampleAutocovariances ? ((SampleAutocovariances) gamma).variance()
+          : gamma.apply(0);
+    }
+
+    /**
+     * The autocovariance at the lag <code>h</code>, divided by the <code>variance</code> unless it
+     * is <code>null</code>.
+     *
+     * @return {@link F#NIL} if the lag has no value
+     */
+    private static @AllowNIL IExpr lagValue(IntFunction<IExpr> gamma, int h, IExpr variance,
+        EvalEngine engine) {
+      IExpr value = gamma.apply(h);
+      if (value.isNIL() || variance == null) {
+        return value;
+      }
+      return engine.evaluate(F.Divide(value, variance));
+    }
+
+    /**
+     * The autocovariances of a weakly stationary process with numeric parameters for the lags up
+     * to <code>hmax</code>, at most {@link #MAX_LAG}; a greater lag has no value.
+     *
+     * @return <code>null</code> for another expression
+     */
+    private static IntFunction<IExpr> processAutocovariances(IExpr arg1, int hmax,
+        EvalEngine engine) {
+      if (!arg1.isAST()) {
+        return null;
+      }
+      IAST process = (IAST) arg1;
       IExpr[] parameters = armaParameters(process);
       if (parameters == null) {
-        return F.NIL;
+        return null;
       }
       Arma arma = Arma.of(process);
       if (arma == null || arma.d > 0 || !arma.isStationary()) {
+        return null;
+      }
+      IExpr[] gamma = autocovariances((IAST) parameters[0], (IAST) parameters[1], parameters[2],
+          Math.min(hmax, MAX_LAG), engine);
+      if (gamma == null) {
+        return null;
+      }
+      return k -> k < gamma.length ? gamma[k] : F.NIL;
+    }
+
+    /**
+     * The lags of <code>{hmax}</code>, <code>{hmin, hmax}</code> or
+     * <code>{hmin, hmax, dh}</code>.
+     *
+     * @return {@link F#NIL} for another list or one of more than {@link #MAX_LAG} lags
+     */
+    static @AllowNIL IAST lagRange(IAST spec, EvalEngine engine) {
+      if (spec.argSize() < 1 || spec.argSize() > 3
+          || !spec.forAll(x -> x.isInteger() && x.toIntDefault() != Config.INVALID_INT)) {
         return F.NIL;
       }
-      int h = lag.isInteger() ? Math.abs(lag.toIntDefault()) : -1;
-      if (h < 0 || h > MAX_LAG) {
+      long first = spec.argSize() == 1 ? 0 : spec.arg1().toIntDefault();
+      long last = spec.argSize() == 1 ? spec.arg1().toIntDefault() : spec.arg2().toIntDefault();
+      long step = spec.argSize() == 3 ? spec.arg3().toIntDefault() : 1;
+      if (step != 0 && (last - first) / step >= MAX_LAG) {
+        // the lags would not have values anyway
         return F.NIL;
       }
-      IAST a = (IAST) parameters[0];
-      IAST b = (IAST) parameters[1];
-      IExpr[] gamma = autocovariances(a, b, parameters[2], h, engine);
-      return gamma == null ? F.NIL : gamma[h];
+      IExpr range = spec.argSize() == 1 ? F.Range(F.C0, spec.arg1())
+          : spec.argSize() == 2 ? F.Range(spec.arg1(), spec.arg2())
+              : F.Range(spec.arg1(), spec.arg2(), spec.arg3());
+      IExpr lags = engine.evaluate(range);
+      return lags.isList() ? (IAST) lags : F.NIL;
+    }
+
+    /**
+     * The paths of data as lists of values: a list of numbers is one path, a
+     * list of uniformly spaced <code>{time, value}</code> pairs is the path of its values and a
+     * <code>TemporalData</code> object gives the values of each of its paths.
+     *
+     * @return {@link F#NIL} for another expression
+     */
+    private static @AllowNIL IAST dataPaths(IExpr arg1, EvalEngine engine) {
+      IASTAppendable paths;
+      if (arg1.isAST(S.TemporalData)) {
+        IExpr all = engine.evaluate(F.unaryAST1(arg1, F.stringx("ValueList")));
+        if (!all.isList() || all.argSize() == 0 || !((IAST) all).forAll(path -> path.isList())) {
+          return F.NIL;
+        }
+        paths = ((IAST) all).copyAppendable();
+      } else if (arg1.isList() && arg1.argSize() > 0) {
+        IAST values = ((IAST) arg1).forAll(IExpr::isNumber) ? (IAST) arg1 : pairValues(arg1);
+        if (values.isNIL()) {
+          return F.NIL;
+        }
+        paths = F.ListAlloc(1);
+        paths.append(values);
+      } else {
+        return F.NIL;
+      }
+      return paths.forAll(path -> path.argSize() > 0 && ((IAST) path).forAll(IExpr::isNumber))
+          ? paths
+          : F.NIL;
+    }
+
+    /**
+     * The values of a list of <code>{time, value}</code> pairs whose times are uniformly spaced.
+     *
+     * @return {@link F#NIL} for another expression
+     */
+    private static @AllowNIL IAST pairValues(IExpr pairs) {
+      if (!pairs.isList() || pairs.argSize() == 0
+          || !((IAST) pairs).forAll(p -> p.isList2() && p.first().isReal())) {
+        return F.NIL;
+      }
+      IAST list = (IAST) pairs;
+      if (list.argSize() > 1) {
+        IExpr step = list.arg2().first().subtract(list.arg1().first());
+        if (!step.isPositive()) {
+          return F.NIL;
+        }
+        for (int i = 2; i < list.argSize(); i++) {
+          IExpr next = list.get(i + 1).first().subtract(list.get(i).first());
+          if (!next.subtract(step).isPossibleZero(true)) {
+            return F.NIL;
+          }
+        }
+      }
+      return list.map(IExpr::second);
+    }
+
+    /**
+     * The sample autocovariances of the paths of data: the mean over the paths of
+     * <code>Sum((x(t)-m)*(x(t+h)-m), t=1..n-h)/n</code> with the length <code>n</code> of the
+     * path and the mean <code>m</code> of all values. A lag of at least the length of a path has
+     * no value. Complex values are not conjugated; their variance
+     * <code>Sum(Abs(x(t)-m)^2)/n</code>, the scale of the autocorrelations, is real.
+     */
+    private static final class SampleAutocovariances implements IntFunction<IExpr> {
+      private final IExpr[][] deviations;
+      private final EvalEngine engine;
+
+      SampleAutocovariances(IAST paths, EvalEngine engine) {
+        this.engine = engine;
+        IExpr mean = engine.evaluate(F.Mean(F.Flatten(paths)));
+        deviations = new IExpr[paths.argSize()][];
+        for (int p = 0; p < deviations.length; p++) {
+          IAST path = (IAST) paths.get(p + 1);
+          int n = path.argSize();
+          deviations[p] = new IExpr[n];
+          for (int t = 0; t < n; t++) {
+            if ((t & 0xFF) == 0) {
+              engine.checkTimeLimit();
+            }
+            deviations[p][t] = engine.evaluate(F.Subtract(path.get(t + 1), mean));
+          }
+        }
+      }
+
+      @Override
+      public @AllowNIL IExpr apply(int h) {
+        return mean(h, false);
+      }
+
+      /** The variance <code>Sum(Abs(x(t)-m)^2)/n</code>, averaged over the paths. */
+      IExpr variance() {
+        return mean(0, true);
+      }
+
+      private @AllowNIL IExpr mean(int h, boolean absolute) {
+        IASTAppendable sum = F.PlusAlloc(deviations.length);
+        for (int p = 0; p < deviations.length; p++) {
+          IExpr[] path = deviations[p];
+          if (h >= path.length) {
+            return F.NIL;
+          }
+          IASTAppendable products = F.PlusAlloc(path.length - h);
+          for (int t = 0; t + h < path.length; t++) {
+            if ((t & 0xFF) == 0) {
+              engine.checkTimeLimit();
+            }
+            IExpr x = path[t + h];
+            products.append(absolute && !x.isReal() ? F.Times(x, F.Conjugate(x))
+                : F.Times(x, path[t]));
+          }
+          sum.append(
+              F.Divide(engine.evaluate(products.oneIdentity0()), F.ZZ(path.length)));
+        }
+        return engine.evaluate(F.Divide(sum.oneIdentity0(), F.ZZ(deviations.length)));
+      }
+    }
+
+    /**
+     * The autocorrelations <code>r(0), r(1), ...</code> of a process or of data up to the lag
+     * <code>h</code>, for data only the lags less than the length of every path.
+     *
+     * @return <code>null</code> if <code>arg1</code> is neither
+     */
+    static IExpr[] autocorrelations(IExpr arg1, int h, EvalEngine engine) {
+      IAST paths = dataPaths(arg1, engine);
+      IntFunction<IExpr> gamma = paths.isPresent() ? new SampleAutocovariances(paths, engine)
+          : processAutocovariances(arg1, h, engine);
+      if (gamma == null) {
+        return null;
+      }
+      IExpr variance = variance(gamma);
+      IExpr[] r = new IExpr[h + 1];
+      for (int k = 0; k <= h; k++) {
+        r[k] = lagValue(gamma, k, variance, engine);
+        if (r[k].isNIL()) {
+          return java.util.Arrays.copyOf(r, k);
+        }
+      }
+      return r;
     }
 
     /**

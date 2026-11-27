@@ -215,6 +215,7 @@ Derivative(0,0,1)[PolyLog] = PolyLog(-1+#,#2,#3) / #3 &,
 Derivative(0,1)[ProductLog] = ProductLog(#, #2)/(#2*(1+ProductLog(#, #2))) &,
 
 Derivative(0,1)[BernoulliB] = BernoulliB(-1+#, #2)*# &,
+Derivative(0,1)[EulerE] = EulerE(-1+#, #2)*# &,
 Derivative(1,0)[ChebyshevT] = (-ArcCos(#2))*ChebyshevU(-1+#, #2)*Sqrt(1 - #2^2) &,
 Derivative(0,1)[ChebyshevT] = ChebyshevU(-1 + #, #2)*# &,
 Derivative(1,0)[ChebyshevU] = (ArcCos(#2)*ChebyshevT(1+#, #2))/Sqrt(1 - #2^2) &,

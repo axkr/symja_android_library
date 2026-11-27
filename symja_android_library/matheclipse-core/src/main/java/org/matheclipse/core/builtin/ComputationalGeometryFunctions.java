@@ -3802,8 +3802,8 @@ public class ComputationalGeometryFunctions {
      */
     private static final String[] PROPERTIES = {"Circumradius", "Dual", "EdgeCount",
         "EdgeIndices", "Edges", "FaceCount", "FaceCountRules", "FaceIndices", "Faces", "Image",
-        "Name", "NetCoordinates", "NetFaces", "NetGraph", "NetImage", "SkeletonImage", "StandardName", "VertexCoordinates",
-        "VertexCount", "Volume"};
+        "Name", "NetCoordinates", "NetFaceIndices", "NetFaces", "NetGraph", "NetImage",
+        "SkeletonImage", "StandardName", "VertexCoordinates", "VertexCount", "Volume"};
 
     /**
      * The dual of each named solid whose dual is known here, both ways round. The tetrahedron is
@@ -3843,7 +3843,9 @@ public class ComputationalGeometryFunctions {
       if (ast.isAST1()) {
         switch (name) {
           case "Properties":
-            return names(PROPERTIES);
+            // the properties of the nets are not listed
+            return names(java.util.Arrays.stream(PROPERTIES)
+                .filter(p -> !p.startsWith("Net")).toArray(String[]::new));
           case "Platonic":
             return names(PLATONIC);
           case "Convex":
@@ -4026,6 +4028,13 @@ public class ComputationalGeometryFunctions {
         case "NetCoordinates": {
           IExpr net = netFaces(vertices, faces);
           return net.isAST(S.GraphicsComplex, 3) ? net.first() : net;
+        }
+        case "NetFaceIndices": {
+          // the faces of the net as lists of indices into "NetCoordinates"
+          IExpr net = netFaces(vertices, faces);
+          return net.isAST(S.GraphicsComplex, 3) && net.second().isAST(S.Polygon, 2)
+              ? net.second().first()
+              : net;
         }
         case "NetGraph":
           return netGraph(vertices, faces);

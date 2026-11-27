@@ -144,12 +144,10 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
         }
       }
     }
-    if (surfaces.argSize() == 0) {
-      return F.NIL;
-    }
-
+    // no level reached in the box leaves the box without a surface
+    IExpr content = surfaces.argSize() > 0 ? surfaces : F.List(F.CEmptyList, F.CEmptyList);
     IExpr[] defaults = Plot3DTools.cubeDefaults(min, max, !ownLights);
-    return Plot3DTools.graphics3D(surfaces, originalAST, argSize, defaults);
+    return Plot3DTools.graphics3D(content, originalAST, argSize, defaults);
   }
 
   /**

@@ -197,12 +197,16 @@ public class ContourPlot extends ListPlot {
     // the least and the greatest value of the shaded functions, for a legend of their colours
     final double[] valueRange = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
     if (functionArg.isList()) {
-      // Multiple functions/equations
+      // Multiple functions/equations; with an equation among them the functions are not shaded
+      // unless a ContourShading other than Automatic is given, the same as for a single equation
       IAST list = (IAST) functionArg;
+      IExpr listShading = contourShading == S.Automatic && list.exists(f -> f.isAST(S.Equal, 3))
+          ? S.None
+          : contourShading;
       int count = 0;
       for (int i = 1; i < list.size(); i++) {
         IExpr func = list.get(i);
-        shaded |= isShaded(func, contourShading);
+        shaded |= isShaded(func, listShading);
 
         // Determine style for this specific curve
         IExpr style = contourStyle;
@@ -215,7 +219,7 @@ public class ContourPlot extends ListPlot {
 
         generateContours(primitives, func, xRange, yRange, xVar, yVar, cells, null,
             numberOfContours, explicitLevels,
-            style, contourShading, colorFunctionScaling, colorFunctionOpt, engine, true,
+            style, listShading, colorFunctionScaling, colorFunctionOpt, engine, true,
             contourLines, contourLabels, func.isAST(S.Equal, 3) ? region : valueRegion,
             boundaryStyle, valueRange);
         count++;
@@ -233,7 +237,9 @@ public class ContourPlot extends ListPlot {
     // drawn next to them
     IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, xRange[0], yRange[0], xRange[1], yRange[1],
         cells[0], cells[1]);
-    IAST content = F.List(graphicsComplex(primitives, xRange, yRange),
+    // a plot without a point to draw has two empty lists
+    IAST complex = graphicsComplex(primitives, xRange, yRange);
+    IAST content = F.List(complex.arg1().argSize() > 0 ? complex : F.CEmptyList,
         meshLines.isPresent() ? meshLines : F.CEmptyList);
 
     IExpr legends = GraphicsOptions.optionValue(originalAST, S.PlotLegends, S.None);
@@ -1237,19 +1243,16 @@ public class ContourPlot extends ListPlot {
       add(polyPts, x + dx, y + dy);
       add(polyPts, x + dx, y);
       add(polyPts, x, y);
-    } else if (index == 5) { // Saddle
-      IASTAppendable t1 = F.ListAlloc();
-      add(t1, pts[3]);
-      add(t1, x, y);
-      add(t1, pts[0]);
-      appendPolygon(out, t1, dx, dy);
-      IASTAppendable t2 = F.ListAlloc();
-      add(t2, pts[1]);
-      add(t2, x + dx, y + dy);
-      add(t2, pts[2]);
-      appendPolygon(out, t2, dx, dy);
-      return;
-    } else if (index == 10) { // Saddle
+    } else if (index == 5) {
+      // a saddle joins its corners 0 and 2, here above the level, and cuts off the corners 1 and 3
+      add(polyPts, x, y);
+      add(polyPts, pts[0]);
+      add(polyPts, pts[1]);
+      add(polyPts, x + dx, y + dy);
+      add(polyPts, pts[2]);
+      add(polyPts, pts[3]);
+    } else if (index == 10) {
+      // the corners 0 and 2 below the level are joined: the corners 1 and 3 above it are cut off
       IASTAppendable t1 = F.ListAlloc();
       add(t1, pts[0]);
       add(t1, x + dx, y);
@@ -1317,6 +1320,11 @@ public class ContourPlot extends ListPlot {
       return;
     }
     int[] edges = ISO_LINES[index];
+    if (index == 5) {
+      // a saddle joins its corners (x, y) and (x + dx, y + dy), whichever side of the level they
+      // are on: the lines cut off the other two corners, the borders of the filled cells
+      edges = ISO_LINES[10];
+    }
     for (int i = 0; i < edges.length; i += 2) {
       int e1 = edges[i];
       int e2 = edges[i + 1];

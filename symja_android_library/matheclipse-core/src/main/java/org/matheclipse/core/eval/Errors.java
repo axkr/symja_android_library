@@ -158,6 +158,8 @@ public class Errors {
       "elmntavs", "\"`1`\" is not an available property. Did you mean \"`2`\" instead?", //
       "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
+      "bdlag",
+      "The lag specification `1` should be a symbol, an integer with magnitude less than the length of the data or a range specification indicating such integers.", //
       "bdrad", "`1` is not a valid neighborhood range specification.", //
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //

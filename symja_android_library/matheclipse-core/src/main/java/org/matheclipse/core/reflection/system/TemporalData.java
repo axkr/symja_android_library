@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.IntFunction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -121,8 +122,9 @@ public class TemporalData extends AbstractEvaluator {
   }
 
   /**
-   * <code>Normal(td)</code>: the path <code>{{t1, x1}, {t2, x2}, ...}</code> of a
-   * <code>TemporalData</code> object of one path, the list of the paths of one with several.
+   * <code>Normal(td)</code>: the path <code>{{t1, x1}, {t2, x2}, ...}</code> of a time series,
+   * the list of the paths of another <code>TemporalData</code> object, also of one with a single
+   * path.
    *
    * @return {@link F#NIL} if <code>temporalData</code> doesn't have the layout of one
    */
@@ -131,8 +133,10 @@ public class TemporalData extends AbstractEvaluator {
     if (pathsAndTimes == null) {
       return F.NIL;
     }
-    return perPath(pathsAndTimes[0].length,
-        i -> path(pathsAndTimes[1][i - 1], pathsAndTimes[0][i - 1]));
+    IntFunction<IExpr> path = i -> path(pathsAndTimes[1][i - 1], pathsAndTimes[0][i - 1]);
+    int pathCount = pathsAndTimes[0].length;
+    return temporalData.first() == S.TimeSeries ? perPath(pathCount, path)
+        : F.mapRange(1, pathCount + 1, path);
   }
 
   /**
@@ -269,7 +273,7 @@ public class TemporalData extends AbstractEvaluator {
   }
 
   /** The property of the one path, or the list of the property of every path. */
-  private static IExpr perPath(int pathCount, java.util.function.IntFunction<IExpr> property) {
+  private static IExpr perPath(int pathCount, IntFunction<IExpr> property) {
     if (pathCount == 1) {
       return property.apply(1);
     }

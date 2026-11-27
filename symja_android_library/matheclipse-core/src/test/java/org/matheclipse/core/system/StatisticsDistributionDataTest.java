@@ -102,6 +102,78 @@ public class StatisticsDistributionDataTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCorrelationFunctions() {
+    // the sample autocovariance divides by the length of the data; {hmax} gives the lags 0..hmax
+    check("x = {4, 1, 3, 6, 2, 5}; {CovarianceFunction(x, 2), CorrelationFunction(x, {2}), "
+        + "PartialCorrelationFunction(x, {3})}", //
+        "{-1/3,{1,-29/70,-4/35},{-29/70,-467/1353,571/11518}}");
+    // a lag of at least the length of the data has no value
+    check("CorrelationFunction({4, 1, 3, 6, 2, 5}, 6)", //
+        "CorrelationFunction({4,1,3,6,2,5},6)");
+    check("CorrelationFunction({2, 2, 2}, 1)", //
+        "Indeterminate");
+    // the theoretical functions of a process; the partial autocorrelations of an AR(p) process
+    // vanish beyond the lag p
+    check("{Table(CorrelationFunction(ARProcess({1/3}, 2), h), {h, 0, 2}), "
+        + "Table(PartialCorrelationFunction(ARProcess({1/3, 1/5}, 2), h), {h, 1, 3}), "
+        + "CorrelationFunction(MAProcess({1/4}, 1), 1)}", //
+        "{{1,1/3,1/9},{5/12,1/5,0},4/17}");
+    // the partial autocorrelations are symmetric in the lag
+    check("PartialCorrelationFunction({3, 7, 2, 5, 1}, -2) == "
+        + "PartialCorrelationFunction({3, 7, 2, 5, 1}, 2)", //
+        "True");
+  }
+
+  @Test
+  public void testCorrelationFunctionsOfPairsAndPaths() {
+    // uniformly spaced {time, value} pairs are the series of their values
+    check("v = {3, 7, 2, 5, 1}; {CorrelationFunction(Transpose({{2, 4, 6, 8, 10}, v}), 1), "
+        + "CorrelationFunction(v, 1)}", //
+        "{-167/290,-167/290}");
+    check("CovarianceFunction({{1, 3}, {2, 7}, {4, 2}}, 1)", //
+        "CovarianceFunction({{1,3},{2,7},{4,2}},1)");
+    // several paths are taken around the mean of all values, their autocovariances averaged
+    check("td = TemporalData({{1, 4, 2}, {5, 3, 6}}, {0}); "
+        + "{CorrelationFunction(td, 1), CovarianceFunction(td, 1)}", //
+        "{-8/35,-2/3}");
+    check("td = TemporalData({{2, 5, 1}, {4, 6, 3, 7}}, {0}); "
+        + "{CovarianceFunction(td, 1), CorrelationFunction(td, 2), Head(CorrelationFunction(td, 3))}", //
+        "{-35/24,3/7,CorrelationFunction}");
+    // the data of a TemporalData object is a list of paths, also of one path
+    check("td = TemporalData({{1, 4, 2}}, {0}); {Normal(td), Normal(TimeSeries({1, 4, 2}, {0}))}", //
+        "{{{{0,1},{1,4},{2,2}}},{{0,1},{1,4},{2,2}}}");
+  }
+
+  @Test
+  public void testCorrelationFunctionLagRanges() {
+    // a lag which is not a machine integer has no value
+    check("Head /@ {CovarianceFunction({2,6,1}, 10^20), CorrelationFunction({2,6,1}, -2^31), "
+        + "PartialCorrelationFunction({2,6,1,4}, {10^30}), CovarianceFunction({2,6,1}, {10^30})}", //
+        "{CovarianceFunction,CorrelationFunction,PartialCorrelationFunction,CovarianceFunction}");
+    // a lag range gives the values of its lags
+    check("w = {4,8,1,6,2,5}; {CovarianceFunction(w, {3}) == Table(CovarianceFunction(w, k), {k, 0, 3}), "
+        + "CorrelationFunction(w, {1, 5, 2}) == Table(CorrelationFunction(w, k), {k, 1, 5, 2}), "
+        + "PartialCorrelationFunction(w, {4}) == Table(PartialCorrelationFunction(w, k), {k, 4})}", //
+        "{True,True,True}");
+    check("p = ARProcess({1/3, 1/6}, 2); "
+        + "{CovarianceFunction(p, {0, 4, 2}) == Table(CovarianceFunction(p, k), {k, 0, 4, 2}), "
+        + "PartialCorrelationFunction(p, {3}) == Table(PartialCorrelationFunction(p, k), {k, 3})}", //
+        "{True,True}");
+    // the lags beyond the shorter path have no value
+    check("td = TemporalData({{2, 5, 1}, {4, 6, 3, 7}}, {0}); Head /@ CorrelationFunction(td, {1, 4})", //
+        "{Rational,Rational,CorrelationFunction,CorrelationFunction}");
+    // complex data: plain products, the autocorrelations scaled by the real variance
+    check("z = {3*I, -I, 1, -3}; {CovarianceFunction(z, {1}), CorrelationFunction(z, 1)}", //
+        "{{I*1/2,-I*3/8},-I*1/12}");
+    // a numeric lag without a value and a lag list which is no range give a message
+    check("w = {4,8,1,6,2,5}; {Check(CovarianceFunction(w, 6), bad, CovarianceFunction::bdlag), "
+        + "Check(CorrelationFunction(w, 2.5), bad, CorrelationFunction::bdlag), "
+        + "Check(CovarianceFunction(ARProcess({1/4}, 1), {1, 2, 3, 4}), bad, CovarianceFunction::bdlag), "
+        + "Check(Head(CovarianceFunction(g(x), {1, 2, 3, 4})), bad, CovarianceFunction::bdlag)}", //
+        "{bad,bad,bad,CovarianceFunction}");
+  }
+
+  @Test
   public void testDiscreteMarkovProcessPath() {
     check("RandomFunction(DiscreteMarkovProcess(1, {{0, 1}, {1, 0}}), {2, 5})[\"Path\"]", //
         "{{2,1},{3,2},{4,1},{5,2}}");
