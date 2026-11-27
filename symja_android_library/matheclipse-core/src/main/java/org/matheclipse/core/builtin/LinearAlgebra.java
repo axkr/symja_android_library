@@ -6032,8 +6032,8 @@ public final class LinearAlgebra {
      * The integer power of a square matrix by repeated squaring, a negative power through the
      * inverse.
      */
-    private static IExpr integerMatrixPower(FieldMatrix<IExpr> matrix, BigInteger exponent,
-        final IAST ast, EvalEngine engine) {
+    private static @AllowNIL IExpr integerMatrixPower(FieldMatrix<IExpr> matrix,
+        BigInteger exponent, final IAST ast, EvalEngine engine) {
       if (matrix.getRowDimension() != matrix.getColumnDimension()) {
         // Argument `1` at position `2` is not a non-empty square matrix.
         return Errors.printMessage(ast.topHead(), "matsq", F.list(ast.arg1(), F.C1), engine);
