@@ -180,6 +180,31 @@ public class RationalIntegration {
   }
 
   /**
+   * Whether the base of the power <code>c*p^n</code> splits into factors of degree 1 and 2 and
+   * binomials over the rationals, or has coefficients which aren't rational.
+   */
+  private static boolean hasLowDegreeFactorsOnly(IExpr integrand, IExpr x, EvalEngine engine) {
+    IExpr power = integrand.isTimes() ? integrand.second() : integrand;
+    try {
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(F.list(x), BigRational.ZERO);
+      GenPolynomial<BigRational> base = jas.expr2JAS(power.base(), false);
+      if (base == null || base.degree() <= 2) {
+        return true;
+      }
+      FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ZERO);
+      for (GenPolynomial<BigRational> factor : factorAbstract.baseFactors(base).keySet()) {
+        if (factor.degree() > 2 && factor.length() > 2) {
+          // a binomial like x^5+2 has roots in radicals, which the rules write out
+          return false;
+        }
+      }
+    } catch (JASConversionException jce) {
+      // coefficients which aren't rational
+    }
+    return true;
+  }
+
+  /**
    * The polynomial as a product of its irreducible factors: the repeated part of a denominator is
    * read more easily as <code>(2-x)^2</code> than as <code>4-4*x+x^2</code>.
    */
@@ -204,9 +229,11 @@ public class RationalIntegration {
     if (!isRationalFunction(integrand, x)) {
       return F.NIL;
     }
-    if (isSinglePolynomialPower(integrand)) {
+    if (isSinglePolynomialPower(integrand) && hasLowDegreeFactorsOnly(integrand, x, engine)) {
       // a single power of a polynomial is left to the rules, which write the antiderivative in
-      // powers of the same polynomial: (1+x)^4/4 for (1+x)^3, 1/(2*(2-x)^2) for (2-x)^(-3)
+      // powers of the same polynomial: (1+x)^4/4 for (1+x)^3, 1/(2*(2-x)^2) for (2-x)^(-3). A
+      // power of an irreducible factor of degree 3 or more like (1+x+x^3)^(-2) has no such form:
+      // the rules search for one until their time is up.
       return F.NIL;
     }
     try {

@@ -5201,6 +5201,54 @@ public final class LinearAlgebra {
       return solution;
     }
 
+    /**
+     * The unique solution of a nonsingular system with exact symbolic entries (algebraic numbers
+     * or parameters) as <code>adjugate . vector / determinant</code>: one division per entry
+     * against the common denominator. An elimination divides at every pivot, and its entries grow
+     * with every step when the field arithmetic isn't reduced.
+     *
+     * @return {@link F#NIL} if the matrix has inexact or no symbolic entries, is singular, or the
+     *         cofactor expansion grows past its budget
+     */
+    private static @AllowNIL IExpr cramerSolve(IExpr matrixList, IExpr vectorList,
+        Predicate<IExpr> zeroChecker, EvalEngine engine) {
+      final FieldMatrix<IExpr> matrix = Convert.list2Matrix(matrixList, false);
+      final FieldVector<IExpr> vector = Convert.list2Vector(vectorList);
+      if (matrix == null || vector == null || !isSymbolicMatrix(matrix)
+          || !matrixList.isFree(IExpr::isInexactNumber, false)
+          || !vectorList.isFree(IExpr::isInexactNumber, false)) {
+        return F.NIL;
+      }
+      final SymbolicDeterminant expansion = SymbolicDeterminant.create(matrix, engine);
+      if (expansion == null) {
+        return F.NIL;
+      }
+      final IExpr det = expansion.determinant();
+      if (det.isNIL()) {
+        return F.NIL;
+      }
+      final IExpr expandedDet = engine.evaluate(F.Expand(det));
+      if (expandedDet.isZero() || zeroChecker.test(expandedDet)) {
+        // singular: the row reduction finds the solutions or reports that there is none
+        return F.NIL;
+      }
+      final IExpr[][] adjugate = expansion.adjugate();
+      if (adjugate == null) {
+        return F.NIL;
+      }
+      final int n = matrix.getRowDimension();
+      final IASTAppendable result = F.ListAlloc(n);
+      for (int i = 0; i < n; i++) {
+        final IASTAppendable sum = F.PlusAlloc(n);
+        for (int j = 0; j < n; j++) {
+          sum.append(F.Times(adjugate[i][j], vector.getEntry(j)));
+        }
+        final IExpr numerator = engine.evaluate(F.Expand(sum));
+        result.append(engine.evaluate(F.Together(F.Divide(numerator, expandedDet))));
+      }
+      return result;
+    }
+
     /** The order of a sparse numerical system above which the dense path isn't taken. */
     private static final int MAX_DENSE_FALLBACK = 2000;
 
@@ -5450,6 +5498,10 @@ public final class LinearAlgebra {
             && zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest
             && ast.arg2().isVector() == matrixDims[0]) {
           IExpr exact = exactRationalSolve(ast.arg1(), ast.arg2());
+          if (exact.isPresent()) {
+            return exact;
+          }
+          exact = cramerSolve(ast.arg1(), ast.arg2(), zeroChecker, engine);
           if (exact.isPresent()) {
             return exact;
           }

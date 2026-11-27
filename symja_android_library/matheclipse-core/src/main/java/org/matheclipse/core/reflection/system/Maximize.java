@@ -132,7 +132,7 @@ public class Maximize extends AbstractFunctionEvaluator {
     if (integerLinear.isPresent()) {
       return integerLinear;
     }
-    IExpr plain = plainForm(ast);
+    IExpr plain = plainForm(ast, true, engine);
     if (plain.isPresent()) {
       return plain;
     }
@@ -767,7 +767,14 @@ public class Maximize extends AbstractFunctionEvaluator {
     return true;
   }
 
-  static IExpr plainForm(IAST ast) {
+  /**
+   * The problem without its <code>Element(x, Reals | Integers)</code> constraints and without the
+   * constraints which evaluated to <code>True</code>. A constraint which evaluated to
+   * <code>False</code> leaves no feasible point.
+   *
+   * @return {@link F#NIL} if there is nothing to rewrite
+   */
+  static IExpr plainForm(IAST ast, boolean isMax, EvalEngine engine) {
     IExpr function = ast.arg1();
     if (!function.isList() || function.argSize() < 2) {
       return F.NIL;
@@ -781,7 +788,16 @@ public class Maximize extends AbstractFunctionEvaluator {
     List<IExpr> integers = new ArrayList<>();
     boolean changed = function.argSize() > 2;
     for (IExpr c : conjuncts) {
-      if (c.isAST(S.Element, 3) && (c.second() == S.Integers || c.second() == S.Reals)) {
+      if (c.isTrue()) {
+        changed = true;
+      } else if (c.isFalse()) {
+        // There are no values of `1` for which the constraints `2` are satisfied and the
+        // objective function `3` is real valued.
+        Errors.printMessage(ast.topHead(), "infeas", F.List(variables, S.False, function.first()),
+            engine);
+        return F.list(isMax ? F.CNInfinity : F.CInfinity,
+            variables.map(v -> F.Rule(v, S.Indeterminate), 1));
+      } else if (c.isAST(S.Element, 3) && (c.second() == S.Integers || c.second() == S.Reals)) {
         IAST named = c.first().isList() || c.first().isAlternatives() ? (IAST) c.first()
             : F.List(c.first());
         for (IExpr v : named) {

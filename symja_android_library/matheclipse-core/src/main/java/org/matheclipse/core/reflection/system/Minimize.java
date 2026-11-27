@@ -67,7 +67,7 @@ public class Minimize extends AbstractFunctionEvaluator {
     if (integerLinear.isPresent()) {
       return integerLinear;
     }
-    IExpr plain = Maximize.plainForm(ast);
+    IExpr plain = Maximize.plainForm(ast, false, engine);
     if (plain.isPresent()) {
       return plain;
     }

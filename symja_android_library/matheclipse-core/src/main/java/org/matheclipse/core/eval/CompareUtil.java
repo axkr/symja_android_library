@@ -1061,6 +1061,93 @@ public class CompareUtil {
     return variable;
   }
 
+  /**
+   * Whether the expression has a value at a generic rational point which is clearly not 0: the
+   * values at machine precision and at 30 digits agree. A rounding residue of an expression which
+   * is 0 changes with the precision. Only for single-valued functions: a value which isn't 0 then
+   * proves that the function isn't 0, while a root of a variable expression or a Log can sit on
+   * another branch at the point. A value of 0, a pole or an expression with other functions
+   * decides nothing.
+   */
+  private static boolean isNonzeroAtGenericPoint(IAST function, IAST variables,
+      EvalEngine engine) {
+    if (variables.argSize() == 0 || function.leafCount() > Config.MAX_POSSIBLE_ZERO_LEAFCOUNT
+        || !isSingleValued(function, variables)) {
+      return false;
+    }
+    try {
+      IASTAppendable rules = F.ListAlloc(variables.argSize());
+      for (int i = 1; i < variables.size(); i++) {
+        // distinct values: x-y is not 0
+        rules.append(F.Rule(variables.get(i), F.QQ(6180 + 1173 * i, 10000)));
+      }
+      IExpr atPoint = function.replaceAll(rules).orElse(function);
+      IExpr machine = engine.evalQuiet(F.N(atPoint));
+      if (!machine.isNumber() || !machine.isInexactNumber()) {
+        return false;
+      }
+      double size = ((INumber) machine).complexNumValue().dabs();
+      if (!Double.isFinite(size) || size == 0.0) {
+        return false;
+      }
+      // N(expr, 30) leaves its significant figures for the output of its own value
+      final int oldSignificantFigures = engine.getSignificantFigures();
+      IExpr precise;
+      try {
+        precise = engine.evalQuiet(F.N(atPoint, F.ZZ(30)));
+      } finally {
+        engine.setSignificantFigures(oldSignificantFigures);
+      }
+      if (!precise.isNumber() || !precise.isInexactNumber()) {
+        return false;
+      }
+      double difference =
+          ((INumber) precise).subtract((INumber) machine).complexNumValue().dabs();
+      return Double.isFinite(difference) && difference < 1.0e-8 * size;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /**
+   * Whether every function in the expression is single-valued: sums, products, integer powers,
+   * powers of constants, exponentials and the trigonometric and hyperbolic functions.
+   */
+  private static boolean isSingleValued(IExpr expr, IAST variables) {
+    return expr.isFree(x -> {
+      if (!x.isAST()) {
+        return false;
+      }
+      if (x.isPower()) {
+        // E^u and u^n are single-valued, a root of a variable expression isn't
+        return !(x.exponent().isInteger() || x.base() == S.E
+            || x.base().isFree(v -> variables.contains(v), true));
+      }
+      switch (x.headID()) {
+        case ID.Plus:
+        case ID.Times:
+        case ID.Sin:
+        case ID.Cos:
+        case ID.Tan:
+        case ID.Cot:
+        case ID.Sec:
+        case ID.Csc:
+        case ID.Sinh:
+        case ID.Cosh:
+        case ID.Tanh:
+        case ID.Coth:
+        case ID.Sech:
+        case ID.Csch:
+        case ID.Exp:
+          return false;
+        default:
+          // a constant like Sqrt(3) or Log(2) is no function of the variables
+          return !x.isFree(v -> variables.contains(v), true);
+      }
+    }, true);
+  }
+
   public static boolean isPossibleZeroQ(IAST function, boolean fastTest, double tolerance,
       EvalEngine engine) {
     if (function.isConditionalExpression()) {
@@ -1109,6 +1196,11 @@ public class CompareUtil {
         // an inexact one has the digits it has, and the tolerance is the test.
         return function.has(x -> x.isInexactNumber(), true)
             || isZeroWithRisingPrecision(function, true, engine);
+      }
+
+      if (isNonzeroAtGenericPoint(function, varSet.getVarList(), engine)) {
+        // the symbolic rewrites below cost far more than one numerical value: 3+Tan((2+k)*Pi/5)
+        return false;
       }
 
       boolean expandedAll = false;

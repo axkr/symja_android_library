@@ -4045,8 +4045,9 @@ public class Algebra {
    * numbers: <code>0.5*x^2+x</code> is divided like <code>1/2*x^2+x</code>.
    */
   private static boolean isPolynomialStructure(IExpr expr) {
-    return expr.replaceAll(x -> x.isInexactNumber() ? F.C1 : F.NIL).orElse(expr)
-        .isPolynomialStruct();
+    // a Root object is a number, the pure function in it is no part of the polynomial
+    return expr.replaceAll(x -> x.isInexactNumber() || x.isAST(S.Root) ? F.C1 : F.NIL)
+        .orElse(expr).isPolynomialStruct();
   }
 
   /**

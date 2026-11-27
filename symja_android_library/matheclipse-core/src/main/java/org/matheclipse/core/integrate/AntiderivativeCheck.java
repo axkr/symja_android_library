@@ -47,25 +47,57 @@ public final class AntiderivativeCheck {
     IExpr derivative = engine.evaluate(F.D(antiderivative, x));
     int checked = 0;
     for (double point : POINTS) {
-      IExpr f = engine.evaluate(F.N(F.subst(integrand, x, F.num(point))));
-      if (!f.isReal()) {
+      double deviation = deviationAt(derivative, integrand, x, point, engine);
+      if (Double.isNaN(deviation)) {
         continue;
       }
-      double scale = Math.abs(f.evalf());
-      if (Double.isNaN(scale) || Double.isInfinite(scale)) {
-        continue;
-      }
-      IExpr d = engine.evaluate(F.N(F.subst(derivative, x, F.num(point))));
-      if (!d.isNumber()) {
-        return Verdict.DISAGREES;
-      }
-      double deviation = engine.evaluate(F.Abs(F.Subtract(d, f))).evalfNaN();
-      if (Double.isNaN(deviation) || deviation > 1e-8 * (1.0 + scale)) {
+      if (deviation < 0.0 || deviation > 1e-8) {
         return Verdict.DISAGREES;
       }
       checked++;
     }
     return checked >= minPoints ? Verdict.AGREES : Verdict.INCONCLUSIVE;
+  }
+
+  /**
+   * Whether <code>D(antiderivative, x)</code> has a numerical value which differs from the
+   * integrand at a real sample point where the integrand is real. A point where the derivative has
+   * no numerical value decides nothing.
+   */
+  public static boolean contradicts(IExpr antiderivative, IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    IExpr derivative = engine.evaluate(F.D(antiderivative, x));
+    for (double point : POINTS) {
+      if (deviationAt(derivative, integrand, x, point, engine) > 1e-6) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The deviation of the derivative from the integrand at the point, relative to
+   * <code>1+|integrand|</code>.
+   *
+   * @return <code>NaN</code> if the integrand isn't a finite real number at the point,
+   *         <code>-1.0</code> if the derivative has no numerical value or the deviation none
+   */
+  private static double deviationAt(IExpr derivative, IExpr integrand, IExpr x, double point,
+      EvalEngine engine) {
+    IExpr f = engine.evaluate(F.N(F.subst(integrand, x, F.num(point))));
+    if (!f.isReal()) {
+      return Double.NaN;
+    }
+    double scale = Math.abs(f.evalf());
+    if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+      return Double.NaN;
+    }
+    IExpr d = engine.evaluate(F.N(F.subst(derivative, x, F.num(point))));
+    if (!d.isNumber()) {
+      return -1.0;
+    }
+    double deviation = engine.evaluate(F.Abs(F.Subtract(d, f))).evalfNaN();
+    return Double.isNaN(deviation) ? -1.0 : deviation / (1.0 + scale);
   }
 
   /** <code>true</code> if at least three real sample points agree and none disagrees. */

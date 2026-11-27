@@ -3870,6 +3870,9 @@ public class AlgebraUtil {
     }
     temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
+      temp = mergeProportionalFactors((IAST) temp, variable, engine);
+    }
+    if (temp.isTimes()) {
       IExpr linear = linearFactorsApart(parts[0], (IAST) temp, variable, engine);
       if (linear.isPresent()) {
         return linear;
@@ -3881,6 +3884,86 @@ public class AlgebraUtil {
     }
     return collectPartialFractions(singleFactorApart(parts[0], temp, variable, engine), variable,
         engine);
+  }
+
+  /**
+   * Factors of the denominator which are constant multiples of each other become one power of a
+   * factor. With radical coefficients <code>Factor</code> may return such factors separately:
+   * <code>x+y-Sqrt(10)</code> and <code>Sqrt(2)*x+Sqrt(2)*y-2*Sqrt(5)</code> differ by the factor
+   * <code>Sqrt(2)</code>. The decompositions take the factors for coprime and divide by zero for
+   * them.
+   *
+   * @param denominator the factored denominator
+   * @return the denominator with merged factors, or <code>denominator</code> if no two factors are
+   *         proportional
+   */
+  private static IExpr mergeProportionalFactors(IAST denominator, IExpr variable,
+      EvalEngine engine) {
+    java.util.List<IExpr> bases = new java.util.ArrayList<IExpr>();
+    java.util.List<IExpr> exponents = new java.util.ArrayList<IExpr>();
+    IASTAppendable constants = F.TimesAlloc(denominator.argSize());
+    for (IExpr factor : denominator) {
+      IExpr base = factor.isPower() ? factor.base() : factor;
+      IExpr exponent = factor.isPower() ? factor.exponent() : F.C1;
+      if (factor.isFree(variable) || !exponent.isInteger() || !base.isPolynomial(variable)) {
+        constants.append(factor);
+        continue;
+      }
+      bases.add(base);
+      exponents.add(exponent);
+    }
+    boolean merged = false;
+    for (int i = 0; i < bases.size(); i++) {
+      for (int j = i + 1; j < bases.size(); j++) {
+        IExpr ratio = proportionalityFactor(bases.get(j), bases.get(i), variable, engine);
+        if (ratio.isPresent()) {
+          // bases[j] == ratio*bases[i]
+          constants.append(F.Power(ratio, exponents.get(j)));
+          exponents.set(i, engine.evaluate(F.Plus(exponents.get(i), exponents.get(j))));
+          bases.remove(j);
+          exponents.remove(j);
+          j--;
+          merged = true;
+        }
+      }
+    }
+    if (!merged) {
+      return denominator;
+    }
+    for (int i = 0; i < bases.size(); i++) {
+      constants.append(F.Power(bases.get(i), exponents.get(i)));
+    }
+    return engine.evaluate(constants);
+  }
+
+  /**
+   * The constant <code>c</code> with <code>p == c*q</code> for two polynomials of the same degree in
+   * the variable.
+   *
+   * @return {@link F#NIL} if the polynomials are not proportional
+   */
+  private static @AllowNIL IExpr proportionalityFactor(IExpr p, IExpr q, IExpr variable,
+      EvalEngine engine) {
+    IExpr pCoefficients = engine.evaluate(F.CoefficientList(p, variable));
+    IExpr qCoefficients = engine.evaluate(F.CoefficientList(q, variable));
+    if (!pCoefficients.isList() || !qCoefficients.isList()
+        || pCoefficients.argSize() != qCoefficients.argSize() || pCoefficients.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr pLeading = pCoefficients.last();
+    IExpr qLeading = qCoefficients.last();
+    if (pLeading.isZero() || qLeading.isZero()) {
+      return F.NIL;
+    }
+    for (int k = 1; k < pCoefficients.size(); k++) {
+      // q_lc*p_k - p_lc*q_k == 0 for every coefficient
+      IExpr difference = engine.evaluate(F.Expand(F.Subtract(
+          F.Times(qLeading, pCoefficients.getAt(k)), F.Times(pLeading, qCoefficients.getAt(k)))));
+      if (!difference.isZero() && !S.PossibleZeroQ.ofQ(engine, difference)) {
+        return F.NIL;
+      }
+    }
+    return engine.evaluate(F.Together(F.Divide(pLeading, qLeading)));
   }
 
   /** The highest multiplicity of a linear factor which {@link #linearFactorsApart} takes. */

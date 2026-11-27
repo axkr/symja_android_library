@@ -1214,6 +1214,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // inside a rule's substitution was dropped to 0
           boolean constantAnswer = rubiResult.isFree(x, true) && !fx.isFree(x, true)
               && !engine.evalTrue(F.PossibleZeroQ(fx));
+          if (!unfinishedSubstitution && !constantAnswer && rubiResult.isFree(S.Integrate, true)
+              && !rubiResult.equals(ast) && hasRadicalOf(fx, x) && isElementary(rubiResult)
+              && AntiderivativeCheck.contradicts(rubiResult, fx, x, engine)) {
+            // the rules' elementary answer for an algebraic integrand doesn't differentiate back:
+            // its partial fractions are integrated one by one, or the stages below are asked
+            IExpr termwise = integratePartialFractions(fx, x, engine);
+            if (termwise.isPresent()) {
+              return termwise;
+            }
+            rubiResult = ast;
+          }
           if (!rubiResult.equals(ast) && !unfinishedSubstitution && !constantAnswer
               && isFiniteAntiderivative(rubiResult)) {
             if (!rubiResult.isFree(S.Integrate, true)) {
@@ -4220,6 +4231,46 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return sum;
     }
     return result;
+  }
+
+  /** The heads of an elementary antiderivative. */
+  private static final java.util.Set<ISymbol> ELEMENTARY_HEADS = java.util.Set.of(S.Plus, S.Times,
+      S.Power, S.Log, S.Sin, S.Cos, S.Tan, S.Cot, S.Sec, S.Csc, S.ArcSin, S.ArcCos, S.ArcTan,
+      S.ArcCot, S.ArcSec, S.ArcCsc, S.Sinh, S.Cosh, S.Tanh, S.Coth, S.Sech, S.Csch, S.ArcSinh,
+      S.ArcCosh, S.ArcTanh, S.ArcCoth, S.ArcSech, S.ArcCsch, S.Abs, S.Sqrt, S.Exp);
+
+  /**
+   * Whether every function in <code>result</code> is elementary. The numerical values of special
+   * functions like <code>AppellF1</code> outside of the region of their series are not reliable
+   * enough to reject an antiderivative.
+   */
+  private static boolean isElementary(IExpr result) {
+    return result.isFree(f -> f.isAST() && !(f.head() instanceof ISymbol
+        && ELEMENTARY_HEADS.contains((ISymbol) f.head())), false);
+  }
+
+  /** Whether a power of a base with <code>x</code> in it has a non-integer exponent. */
+  private static boolean hasRadicalOf(IExpr fx, IExpr x) {
+    return fx.has(p -> p.isPower() && !p.exponent().isInteger() && !p.base().isFree(x, true),
+        true);
+  }
+
+  /**
+   * The integral of the partial fractions of the integrand in <code>x</code>, where the factors
+   * which are no polynomials in <code>x</code> are constants of the decomposition. Every fraction
+   * is integrated on its own; one which has no antiderivative stays unevaluated.
+   *
+   * @return {@link F#NIL} if the integrand has no partial fractions
+   */
+  private static @AllowNIL IExpr integratePartialFractions(IAST fx, IExpr x,
+      EvalEngine engine) {
+    IExpr fractions = engine.evalQuiet(F.Apart(fx, x));
+    if (!fractions.isPlus() || fractions.equals(fx)) {
+      return F.NIL;
+    }
+    IExpr integral = engine.evaluate(F.Integrate(fractions, x));
+    return integral.isAST(S.Integrate, 3) && integral.first().equals(fractions) ? F.NIL
+        : integral;
   }
 
   /**

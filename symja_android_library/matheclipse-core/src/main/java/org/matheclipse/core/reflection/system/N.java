@@ -555,6 +555,137 @@ public final class N extends AbstractCoreFunctionEvaluator {
     return engine.evalWithoutNumericReset(numericArgs(expr, engine));
   }
 
+  /** The side of the complex plane on which the branch cut of a function lies. */
+  private enum CutAxis {
+    /** a cut on the real axis: the imaginary part decides the side */
+    REAL,
+    /** a cut on the imaginary axis: the real part decides the side */
+    IMAGINARY
+  }
+
+  /**
+   * The axis of the branch cut of the call, or <code>null</code> if it has no cut in its first
+   * argument.
+   */
+  private static CutAxis cutAxis(IAST ast) {
+    if (ast.isPower()) {
+      final IExpr exponent = ast.exponent();
+      return exponent.isInteger() || !exponent.isNumericFunction(true) ? null : CutAxis.REAL;
+    }
+    if (!ast.isAST1() || !ast.head().isBuiltInSymbol()) {
+      return null;
+    }
+    switch (((ISymbol) ast.head()).ordinal()) {
+      case org.matheclipse.core.expression.ID.Log:
+      case org.matheclipse.core.expression.ID.ArcSin:
+      case org.matheclipse.core.expression.ID.ArcCos:
+      case org.matheclipse.core.expression.ID.ArcSec:
+      case org.matheclipse.core.expression.ID.ArcCsc:
+      case org.matheclipse.core.expression.ID.ArcCosh:
+      case org.matheclipse.core.expression.ID.ArcTanh:
+      case org.matheclipse.core.expression.ID.ArcCoth:
+      case org.matheclipse.core.expression.ID.ArcSech:
+        return CutAxis.REAL;
+      case org.matheclipse.core.expression.ID.ArcTan:
+      case org.matheclipse.core.expression.ID.ArcCot:
+      case org.matheclipse.core.expression.ID.ArcSinh:
+      case org.matheclipse.core.expression.ID.ArcCsch:
+        return CutAxis.IMAGINARY;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * An exact argument of a function with a branch cut whose value lies on the cut can get a
+   * numerical value with a tiny imaginary (or real) part of either sign from rounding:
+   * <code>(-1)^(1/7)+(-1)^(13/7)-3</code> is a negative real number, and the sign of the rounding
+   * residue in the imaginary part of its numerical value picks the side of the cut of
+   * <code>Sqrt</code> or <code>Log</code>. The function then has the value of the other side, not
+   * the principal value.
+   *
+   * <p>
+   * Such an argument is evaluated again at a higher precision. If the cut component shrinks with
+   * the precision, it is a rounding residue and is dropped: the function is evaluated at the real
+   * (or imaginary) number, as at an exact real argument. A component which stays is the value's
+   * own.
+   *
+   * @param call the call of a function with a branch cut on the <code>axis</code>
+   * @param numeric the numerical value of its first argument
+   * @return the value without the residue, or <code>numeric</code>
+   */
+  private static IExpr withoutCutResidue(IAST call, CutAxis axis, IExpr numeric,
+      EvalEngine engine) {
+    if (!(numeric instanceof org.matheclipse.core.interfaces.IComplexNum)) {
+      return numeric;
+    }
+    final double residue = relativeCutComponent((INumber) numeric, axis);
+    final long precision = Math.max(engine.getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
+    if (!(residue > 0.0) || residue > Math.pow(10.0, -precision / 2.0)
+        || !isResidueCandidate(call.arg1())) {
+      // no residue, or a component of the value
+      return numeric;
+    }
+    final long higher = 2 * precision + 20;
+    final double higherResidue = relativeCutComponent(call.arg1(), axis, higher, engine);
+    if (higherResidue == 0.0
+        || (higherResidue > 0.0 && higherResidue < residue * Math.pow(10.0, -precision / 2.0))) {
+      return engine.evaluate(axis == CutAxis.REAL ? F.Re(numeric) : F.Times(F.CI, F.Im(numeric)));
+    }
+    return numeric;
+  }
+
+  /** Whether an exact argument can have a numerical value with a rounding residue. */
+  private static boolean isResidueCandidate(IExpr arg) {
+    // only complex numbers and fractional powers give a complex value with residues
+    return arg.isAST() && arg.isFree(IExpr::isInexactNumber, true)
+        && !arg.isFree(x -> x.isComplex() || x == S.I || x.isPower() && !x.exponent().isInteger(),
+            true);
+  }
+
+  /** The cut component of a number relative to its absolute value. */
+  private static double relativeCutComponent(INumber number, CutAxis axis) {
+    final Apcomplex z = number.apcomplexValue();
+    final Apfloat absolute = ApcomplexMath.abs(z);
+    if (absolute.signum() == 0) {
+      return -1.0;
+    }
+    final Apfloat component = axis == CutAxis.REAL ? z.imag() : z.real();
+    return ApfloatMath.abs(component).divide(absolute).doubleValue();
+  }
+
+  /**
+   * The cut component of the numerical value of <code>arg</code> relative to its absolute value.
+   *
+   * @return <code>-1.0</code> if the value is no inexact number
+   */
+  private static double relativeCutComponent(IExpr arg, CutAxis axis, long precision,
+      EvalEngine engine) {
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    final boolean oldQuiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      engine.setNumericMode(true, precision, (int) Math.min(precision, Short.MAX_VALUE));
+      final IExpr value = evalNumeric(arg, engine);
+      if (value instanceof org.matheclipse.core.interfaces.IComplexNum) {
+        return relativeCutComponent((INumber) value, axis);
+      }
+      if (value.isReal() && value.isInexactNumber()) {
+        // the imaginary part has cancelled completely
+        return axis == CutAxis.REAL ? 0.0 : (value.isZero() ? -1.0 : 1.0);
+      }
+      return -1.0;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return -1.0;
+    } finally {
+      engine.setQuietMode(oldQuiet);
+      engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+    }
+  }
+
   /** The call <code>expr</code> with numerically evaluated arguments, innermost first. */
   private static IExpr numericArgs(IExpr expr, EvalEngine engine) {
     if (!expr.isAST()) {
@@ -569,7 +700,13 @@ public final class N extends AbstractCoreFunctionEvaluator {
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
       if (arg.isAST() && !isHeld(attributes, i)) {
-        final IExpr numeric = evalNumeric(arg, engine);
+        IExpr numeric = evalNumeric(arg, engine);
+        if (i == 1) {
+          final CutAxis axis = cutAxis(ast);
+          if (axis != null) {
+            numeric = withoutCutResidue(ast, axis, numeric, engine);
+          }
+        }
         if (numeric != arg) {
           if (inner == null) {
             inner = ast.copy();
