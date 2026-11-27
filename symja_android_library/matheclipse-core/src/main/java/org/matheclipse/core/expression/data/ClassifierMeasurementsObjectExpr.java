@@ -4,15 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -40,26 +36,8 @@ public class ClassifierMeasurementsObjectExpr extends DataExpr<ClassifierFunctio
 
   private static final long serialVersionUID = -2715932204551764081L;
 
-  /** The head <code>ClassifierMeasurementsObject</code> of the objects. */
-  public static final IBuiltInSymbol CLASSIFIER_MEASUREMENTS_OBJECT = F.contextFunction(
-      Context.SYSTEM, "ClassifierMeasurementsObject", new AbstractCoreFunctionEvaluator() {
-        @Override
-        public IExpr evaluate(IAST ast, EvalEngine engine) {
-          return F.NIL;
-        }
-      });
-
   private static final String[] PROPERTIES = {"Accuracy", "AccuracyBaseline", "ConfusionMatrix",
       "Error", "ExampleNumber", "Properties", "Recall"};
-
-  /**
-   * Let the parser answer the name <code>ClassifierMeasurementsObject</code> with
-   * {@link #CLASSIFIER_MEASUREMENTS_OBJECT}.
-   */
-  public static void registerHead() {
-    ContextPath.registerSystemAlias(Context.SYSTEM_CONTEXT_NAME + "ClassifierMeasurementsObject",
-        CLASSIFIER_MEASUREMENTS_OBJECT);
-  }
 
   /** The test set <code>{x1 -&gt; c1, ...}</code>. */
   private final IAST testSet;
@@ -231,7 +209,7 @@ public class ClassifierMeasurementsObjectExpr extends DataExpr<ClassifierFunctio
 
   @Override
   public ISymbol head() {
-    return CLASSIFIER_MEASUREMENTS_OBJECT;
+    return S.ClassifierMeasurementsObject;
   }
 
   @Override
@@ -242,7 +220,7 @@ public class ClassifierMeasurementsObjectExpr extends DataExpr<ClassifierFunctio
 
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
-    return F.unaryAST1(CLASSIFIER_MEASUREMENTS_OBJECT, summary());
+    return F.unaryAST1(S.ClassifierMeasurementsObject, summary());
   }
 
   private IExpr summary() {

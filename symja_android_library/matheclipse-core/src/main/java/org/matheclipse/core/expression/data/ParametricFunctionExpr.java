@@ -4,15 +4,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -41,21 +37,6 @@ public class ParametricFunctionExpr extends DataExpr<IAST> {
    * doesn't pile up memory, a value used again shortly after isn't solved again.
    */
   private static final int CACHE_SIZE = 8;
-
-  /** The head <code>ParametricFunction</code> of the objects. */
-  public static final IBuiltInSymbol PARAMETRIC_FUNCTION = F.contextFunction(Context.SYSTEM,
-      "ParametricFunction", new AbstractCoreFunctionEvaluator() {
-        @Override
-        public IExpr evaluate(IAST ast, EvalEngine engine) {
-          return F.NIL;
-        }
-      });
-
-  /** Let the parser answer the name <code>ParametricFunction</code> with {@link #PARAMETRIC_FUNCTION}. */
-  public static void registerHead() {
-    ContextPath.registerSystemAlias(Context.SYSTEM_CONTEXT_NAME + "ParametricFunction",
-        PARAMETRIC_FUNCTION);
-  }
 
   /**
    * Create the parametric function of a <code>ParametricNDSolveValue(...)</code> call.
@@ -177,7 +158,7 @@ public class ParametricFunctionExpr extends DataExpr<IAST> {
 
   @Override
   public ISymbol head() {
-    return PARAMETRIC_FUNCTION;
+    return S.ParametricFunction;
   }
 
   @Override

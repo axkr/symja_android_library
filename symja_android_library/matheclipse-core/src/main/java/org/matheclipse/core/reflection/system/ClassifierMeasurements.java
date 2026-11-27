@@ -10,7 +10,6 @@ import org.matheclipse.core.expression.data.ClassifierFunctionExpr;
 import org.matheclipse.core.expression.data.ClassifierMeasurementsObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  *
@@ -70,10 +69,5 @@ public class ClassifierMeasurements extends AbstractEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return null;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    ClassifierMeasurementsObjectExpr.registerHead();
   }
 }

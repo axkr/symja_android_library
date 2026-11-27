@@ -98,9 +98,4 @@ public class ParametricNDSolveValue extends AbstractFunctionEvaluator {
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
   }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    ParametricFunctionExpr.registerHead();
-  }
 }

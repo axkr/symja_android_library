@@ -30684,15 +30684,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Names(\"System`\" ~~ _ ~~ _) // InputForm", //
         "{\"Do\",\"Dt\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
     check("Names(RegularExpression(\"System`...\")) // InputForm", //
-        "{\"Abs\",\"All\",\"And\",\"Arg\",\"Cap\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Cup\",\"Del\","//
+        "{\"Abs\",\"All\",\"And\",\"Arg\",\"Bra\",\"Cap\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Cup\",\"Del\","//
             + "\"Det\",\"Div\",\"Dot\",\"End\",\"Erf\",\"Exp\",\"Fit\",\"For\",\"GCD\",\"Get\","//
-            + "\"Hue\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\","//
+            + "\"Hue\",\"Ket\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\","//
             + "\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\",\"Red\",\"Row\",\"Run\",\"Sec\",\"Set\","//
             + "\"Sin\","//
             + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"URL\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion,Into}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingFunctionCoordinates,InterpolatingFunctionGrid,InterpolatingFunctionValuesOnGrid,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,Interpreter,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion,Into}");
     check("Names(\"Integer*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString}");
     check("Names(\"IntegerPart\" )", //
