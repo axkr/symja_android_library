@@ -19,6 +19,7 @@ import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.DMath;
@@ -3228,6 +3229,7 @@ public class StatisticsContinousDistribution {
       S.NoncentralChiSquareDistribution.setEvaluator(new NoncentralChiSquareDistribution());
       S.RiceDistribution.setEvaluator(new RiceDistribution());
       S.UniformSumDistribution.setEvaluator(new UniformSumDistribution());
+      S.BatesDistribution.setEvaluator(new BatesDistribution());
       S.HypoexponentialDistribution.setEvaluator(new HypoexponentialDistribution());
       S.GaussianOrthogonalMatrixDistribution.setEvaluator(new GaussianMatrixEnsemble(false));
       S.GaussianUnitaryMatrixDistribution.setEvaluator(new GaussianMatrixEnsemble(true));
@@ -9664,6 +9666,9 @@ public class StatisticsContinousDistribution {
       implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
       // CPD-ON
+    /** The largest number of terms for which the piecewise density is written out. */
+    private static final int MAX_PIECEWISE_TERMS = 32;
+
     /** <code>{n, min, max}</code> */
     private static IExpr[] parameters(IAST dist) {
       if (dist.isAST1()) {
@@ -9709,37 +9714,79 @@ public class StatisticsContinousDistribution {
      * The Irwin-Hall distribution function on <code>[j, j+1)</code>:
      * <code>Sum((-1)^i*Binomial(n,i)*(x - i)^n, {i, 0, j})/n!</code>, mirrored as
      * <code>1 - F(n - x)</code> for the upper half.
+     *
+     * @param expand expand the sum into a polynomial in <code>x</code>
      */
-    private static IExpr distributionBranch(int n, int j, IExpr x) {
-      IExpr value = F.Divide(F.Expand(irwinHallSum(n, j, x, n)), F.Factorial(F.ZZ(n)));
+    private static IExpr distributionBranch(int n, int j, IExpr x, boolean expand) {
+      IExpr sum = irwinHallSum(n, j, x, n);
+      IExpr value = F.Divide(expand ? F.Expand(sum) : sum, F.Factorial(F.ZZ(n)));
       return 2 * j > n - 1 ? F.Subtract(F.C1, value) : value;
     }
 
-    /** The condition of the branch <code>[j, j+1)</code>; the last one includes its right end. */
-    private static IExpr branchCondition(int n, int j) {
+    /**
+     * The condition of the branch <code>[shift + j*scale, shift + (j+1)*scale)</code>; the last one
+     * includes its right end.
+     */
+    private static IExpr branchCondition(int n, int j, IExpr shift, IExpr scale) {
+      IExpr lower = F.Plus(shift, F.Times(F.ZZ(j), scale));
+      IExpr upper = F.Plus(shift, F.Times(F.ZZ(j + 1), scale));
       if (j == n - 1) {
-        return F.LessEqual(F.ZZ(j), F.Slot1, F.ZZ(n));
+        return F.LessEqual(lower, F.Slot1, upper);
       }
-      return F.Inequality(F.ZZ(j), S.LessEqual, F.Slot1, S.Less, F.ZZ(j + 1));
+      return F.Inequality(lower, S.LessEqual, F.Slot1, S.Less, upper);
     }
 
-    @Override
-    // CPD-OFF generated distribution formulas with matching boilerplate
-    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+    /**
+     * The piecewise density or distribution function of <code>shift + scale*y</code>, as a pure
+     * function of <code>#</code>, for the Irwin-Hall distributed <code>y</code> - the sum of
+     * <code>n</code> variables uniformly distributed on <code>[0, 1]</code>.
+     * <code>UniformSumDistribution(n)</code> is <code>shift == 0, scale == 1</code> and
+     * <code>BatesDistribution(n, {min, max})</code> is
+     * <code>shift == min, scale == (max - min)/n</code>.
+     *
+     * @param n the number of terms, a positive integer
+     * @param shift the left end of the support
+     * @param scale the factor of <code>y</code>, positive
+     * @param density <code>true</code> for the density, <code>false</code> for the distribution
+     *        function
+     */
+    private static IExpr irwinHallFunction(int n, IExpr shift, IExpr scale, boolean density) {
+      IExpr y = F.Divide(F.Subtract(F.Slot1, shift), scale);
+      // with symbolic bounds the expanded polynomials would be much longer than the sums
+      boolean expand = shift.isNumber() && scale.isNumber();
+      IASTAppendable branches = F.ListAlloc(n + 1);
+      if (!density || n > 1) {
+        // for n == 1 the density 0 left of the support is the default value of the Piecewise
+        branches.append(F.list(F.C0, F.Less(F.Slot1, shift)));
+      }
+      for (int j = 0; j < n; j++) {
+        IExpr value = density ? F.Divide(densityBranch(n, j, y), scale)
+            : distributionBranch(n, j, y, expand);
+        branches.append(F.list(value, branchCondition(n, j, shift, scale)));
+      }
+      return F.Function(F.Piecewise(branches, density ? F.C0 : F.C1));
+    }
+
+    /**
+     * The piecewise density or distribution function of <code>UniformSumDistribution(n)</code> as a
+     * pure function, or {@link F#NIL} if <code>n</code> is not an integer from <code>1</code> to
+     * {@link #MAX_PIECEWISE_TERMS}.
+     */
+    private static IExpr piecewiseFunction(IAST dist, boolean density) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
-        if (n > 0 && n <= 32) {
-          IASTAppendable branches = F.ListAlloc(n + 1);
-          // CPD-ON
-          branches.append(F.list(F.C0, F.Less(F.Slot1, F.C0)));
-          for (int j = 0; j < n; j++) {
-            branches.append(F.list(distributionBranch(n, j, F.Slot1), branchCondition(n, j)));
-          }
-          return callFunction(F.Function(F.Piecewise(branches, F.C1)), k);
+        if (n > 0 && n <= MAX_PIECEWISE_TERMS) {
+          return irwinHallFunction(n, F.C0, F.C1, density);
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr function = piecewiseFunction(dist, false);
+      return function.isPresent() ? callFunction(function, k) : F.NIL;
     }
 
     @Override
@@ -9787,24 +9834,9 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    // CPD-OFF generated distribution formulas with matching boilerplate
     public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
-      IExpr[] p = parameters(dist);
-      if (p != null && p[1].isZero() && p[2].isOne()) {
-        int n = p[0].toIntDefault();
-        if (n > 0 && n <= 32) {
-          IASTAppendable branches = F.ListAlloc(n + 1);
-          // CPD-ON
-          if (n > 1) {
-            branches.append(F.list(F.C0, F.Less(F.Slot1, F.C0)));
-          }
-          for (int j = 0; j < n; j++) {
-            branches.append(F.list(densityBranch(n, j, F.Slot1), branchCondition(n, j)));
-          }
-          return callFunction(F.Function(F.Piecewise(branches, F.C0)), k);
-        }
-      }
-      return F.NIL;
+      IExpr function = piecewiseFunction(dist, true);
+      return function.isPresent() ? callFunction(function, k) : F.NIL;
     }
 
     @Override
@@ -9825,6 +9857,220 @@ public class StatisticsContinousDistribution {
         }
         // ((b - a)^2*n)/12
         return F.Divide(F.Times(F.Sqr(F.Subtract(p[2], p[1])), p[0]), F.ZZ(12));
+      }
+      return F.NIL;
+    }
+  }
+
+
+  /**
+   * <code>BatesDistribution(n)</code> or <code>BatesDistribution(n, {min, max})</code> - the
+   * distribution of the mean of <code>n</code> variables uniformly distributed on
+   * <code>[min, max]</code>. <code>BatesDistribution(n)</code> is on <code>[0, 1]</code>.
+   *
+   * <p>
+   * The mean of <code>n</code> uniform variables on <code>[min, max]</code> is
+   * <code>min + (max - min)*y/n</code> for the Irwin-Hall distributed sum <code>y</code> of
+   * <code>n</code> variables uniform on <code>[0, 1]</code>, so the density and the distribution
+   * function are the ones of <code>UniformSumDistribution(n)</code>, rescaled.
+   * </p>
+   */
+  private static final class BatesDistribution extends AbstractEvaluator implements ICDF,
+      ICentralMoment, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
+
+    /**
+     * <code>{n, min, max}</code> or <code>null</code> if the arguments don't match. The arguments
+     * have the same form as the ones of <code>UniformSumDistribution</code>.
+     */
+    private static IExpr[] parameters(IAST dist) {
+      return UniformSumDistribution.parameters(dist);
+    }
+
+    /**
+     * The piecewise density or distribution function as a pure function, or {@link F#NIL} if
+     * <code>n</code> is not an integer from <code>1</code> to
+     * {@link UniformSumDistribution#MAX_PIECEWISE_TERMS}.
+     */
+    private static IExpr piecewiseFunction(IAST dist, boolean density) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        int n = p[0].toIntDefault();
+        if (n > 0 && n <= UniformSumDistribution.MAX_PIECEWISE_TERMS) {
+          // the support [min, max] is split into n pieces of length (max - min)/n
+          IExpr scale = EvalEngine.get().evaluate(F.Divide(F.Subtract(p[2], p[1]), F.ZZ(n)));
+          return UniformSumDistribution.irwinHallFunction(n, p[1], scale, density);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr function = piecewiseFunction(dist, false);
+      return function.isPresent() ? callFunction(function, k) : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr centralMoment(IAST dist, IExpr order, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p != null && order.isInteger() && !order.isNegative()) {
+        if (order.isZero()) {
+          return F.C1;
+        }
+        if (((IInteger) order).isOdd()) {
+          // the distribution is symmetric about its mean
+          return F.C0;
+        }
+        IExpr n = p[0];
+        IExpr width = F.Subtract(p[2], p[1]);
+        switch (order.toIntDefault()) {
+          case 2:
+            return variance(dist);
+          case 4:
+            // ((max - min)^4*(5*n - 2))/(240*n^3), from the fourth central moment
+            // n/80 + n*(n - 1)/48 of the Irwin-Hall sum
+            return F.Divide(F.Times(F.Power(width, F.C4), F.Plus(F.Times(F.C5, n), F.CN2)),
+                F.Times(F.ZZ(240), F.Power(n, F.C3)));
+          default:
+            break;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IAST checkParameters(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        IExpr n = p[0];
+        if (n.isNumber() && !(n.isInteger() && n.isPositive())) {
+          // Parameter `1` at position `2` in `3` is expected to be a positive integer.
+          Errors.printMessage(S.BatesDistribution, "pintprm", F.list(n, F.C1, dist),
+              EvalEngine.get());
+          return F.NIL;
+        }
+        return dist;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      // no closed form for n > 1
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr kurtosis(IAST dist, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        // 3 - 6/(5*n)
+        return F.Subtract(F.C3, F.Divide(F.C6, F.Times(F.C5, p[0])));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr mean(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        // (min + max)/2
+        return F.Times(F.C1D2, F.Plus(p[1], p[2]));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr median(IAST dist) {
+      return mean(dist);
+    }
+
+    @Override
+    public @AllowNIL IExpr moment(IAST dist, IExpr order) {
+      int k = order.toIntDefault();
+      if (parameters(dist) != null && k >= 0 && k <= 4) {
+        // Sum(Binomial(k, i)*mean^(k - i)*CentralMoment(i), {i, 0, k})
+        IExpr mean = mean(dist);
+        IASTAppendable sum = F.PlusAlloc(k + 1);
+        for (int i = 0; i <= k; i++) {
+          IExpr centralMoment = centralMoment(dist, F.ZZ(i), EvalEngine.get());
+          if (centralMoment.isNIL()) {
+            return F.NIL;
+          }
+          sum.append(
+              F.Times(F.Binomial(F.ZZ(k), F.ZZ(i)), F.Power(mean, F.ZZ(k - i)), centralMoment));
+        }
+        return sum;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr parameterAssumptions(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        return F.And(F.Element(p[0], S.Integers), F.Greater(p[0], F.C0), F.Less(p[1], p[2]));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr function = piecewiseFunction(dist, true);
+      return function.isPresent() ? callFunction(function, k) : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        // see exception handling in RandomVariate() function
+        int n = p[0].toIntDefault();
+        double min = p[1].evalfNaN();
+        double max = p[2].evalfNaN();
+        if (n > 0 && min < max && Double.isFinite(max - min)) {
+          double[] vector = new double[size];
+          for (int i = 0; i < size; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+              throw TimeoutException.TIMED_OUT;
+            }
+            double sum = 0.0;
+            for (int j = 0; j < n; j++) {
+              sum += random.nextDouble();
+            }
+            vector[i] = min + (max - min) * (sum / n);
+          }
+          return new ASTRealVector(vector, false);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public @AllowNIL IExpr skewness(IAST dist) {
+      // symmetric about the mean
+      return parameters(dist) != null ? F.C0 : F.NIL;
+    }
+
+    @Override
+    public @AllowNIL IExpr variance(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p != null) {
+        // (max - min)^2/(12*n)
+        return F.Divide(F.Sqr(F.Subtract(p[2], p[1])), F.Times(F.ZZ(12), p[0]));
       }
       return F.NIL;
     }
