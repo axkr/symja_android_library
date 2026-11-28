@@ -12623,9 +12623,9 @@ a~b↑c	!syntax@4: Operator ~ requires even number of arguments
 a~b^c	!syntax@4: Operator ~ requires even number of arguments
 a~b<>c	!syntax@5: Operator ~ requires even number of arguments
 a~b//@c	!syntax@6: Operator ~ requires even number of arguments
-a~b@c	!syntax@4: Operator ~ requires even number of arguments
-a~b/*c	!syntax@5: Operator ~ requires even number of arguments
-a~b@*c	!syntax@5: Operator ~ requires even number of arguments
+a~b@c	!syntax@6: Operator ~ requires even number of arguments
+a~b/*c	!syntax@7: Operator ~ requires even number of arguments
+a~b@*c	!syntax@7: Operator ~ requires even number of arguments
 a~b++c	!syntax@7: Operator ~ requires even number of arguments
 a~b?c	!syntax@6: Operator ~ requires even number of arguments
 a~b<<c	!syntax@5: Operator ~ requires even number of arguments

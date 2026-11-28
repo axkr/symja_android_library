@@ -1832,6 +1832,25 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     // the factor 1 - t^(-1)*t^1 vanishes
     check("Series(QPochhammer(1/t,t),{t,0,3})", //
         "O(t)^4");
+    // the first argument vanishes and q is free of the variable: the sum of the powers of a
+    check("Series(QPochhammer(z,s),{z,0,2})", //
+        "1+z/(-1+s)+(s*z^2)/((1-s)^2*(1+s))+O(z)^3");
+    check("Series(1/QPochhammer(z/5,1/5),{z,0,3})", //
+        "1+z/4+5/96*z^2+125/11904*z^3+O(z)^4");
+    check("Series(QPochhammer(z+z^2,1/2),{z,0,2})", //
+        "1-2*z-2/3*z^2+O(z)^3");
+    // the infinite product is a QPochhammer function
+    check("Series(Product(1/(1-u/5^r),{r,1,Infinity}),{u,0,2})", //
+        "1+u/4+5/96*u^2+O(u)^3");
+    // an unevaluated derivative gives no coefficient
+    check("SeriesCoefficient(Product(1/(1-u*2^r),{r,1,Infinity}),{u,0,2})", //
+        "SeriesCoefficient(Product(1/(1-2^r*u),{r,1,Infinity}),{u,0,2})");
+    // the coefficient from the series where the derivatives at the point aren't known
+    check("SeriesCoefficient(1/QPochhammer(z/5,1/5),{z,0,3})", //
+        "125/11904");
+    // the product of the series of the factors isn't the series of the product
+    check("Series(Product(f(r,u),{r,1,n}),{u,0,2})", //
+        "Series(Product(f(r,u),{r,1,n}),{u,0,2})");
   }
 
   @Test

@@ -10588,6 +10588,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FindRoot(x^2.5+Sqrt(x)-100,x)");
     check("FindRoot(x^2.5 + x^0.5-100,{x,1.0})", //
         "{x->6.24602}");
+    // a PrecisionGoal option after WorkingPrecision doesn't hide it
+    check("FindRoot(x^3-5,{x,2},WorkingPrecision->30,PrecisionGoal->20)", //
+        "{x->1.70997594667669698935310887254}");
+    // Newton's first step goes past the branch point x == 1 and is halved
+    check("FindRoot(1/Sqrt(1-x^2)-3,{x,1/2})", //
+        "{x->0.942809}");
 
     // ???
     check("Chop(FindRoot({2400^4 - tw^4 -1.77*^-6*qw == 0,\n" //
@@ -30357,9 +30363,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{9},-99}");
     check("RealDigits(Pi, 10, 1, -500)", //
         "{{2},-499}");
-    // the digits of N(Pi+42, 30) are cut off: the 31st is 7
+    // the last of the digits of N(Pi+42, 30) is rounded, as it is printed: the 31st is 7
     check("RealDigits(N(Pi+42, 30))", //
-        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
+        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,3},2}");
   }
 
   @Test
@@ -37656,10 +37662,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},-41}");
     check("RealDigits(1.012345678*^123)", //
         "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},124}");
+    // the last digit is rounded with the 31st digit 7
     check(" RealDigits(N(Pi+42 ,30))", //
-        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
+        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,3},2}");
     check("N(RealDigits(Pi+42),30)", //
-        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
+        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,3},2}");
     check("RealDigits(-42)", //
         "{{4,2},2}");
     check("RealDigits(123.33333)", //
@@ -38854,6 +38861,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "h(g(f(x)))");
     check("(f /* g /* h)@x", //
         "h(g(f(x)))");
+  }
+
+  @Test
+  public void testPrefixApplyPrecedence() {
+    // the prefix application f@x binds tighter than an infix a~g~b, but looser than @* and /*
+    check("FullForm(Hold(p~q~r@s))", //
+        "Hold(q(p, r(s)))");
+    check("FullForm(Hold(r@s~q~p))", //
+        "Hold(q(r(s), p))");
+    check("{3}~Join~Reverse@{4,5}", //
+        "{3,5,4}");
+    check("FullForm(Hold(p@*q@r))", //
+        "Hold(Composition(p, q)[r])");
+    check("FullForm(Hold(p/*q@r))", //
+        "Hold(RightComposition(p, q)[r])");
+    check("FullForm(Hold(p~q~r@*s))", //
+        "Hold(q(p, Composition(r, s)))");
+    check("FullForm(Hold(p~q~r/@s))", //
+        "Hold(Map(q(p, r), s))");
   }
 
   @Test

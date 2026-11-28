@@ -3461,6 +3461,15 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
       IExpr root = engine.evaluate(F.Negate(F.Divide(linear[0], linear[1])));
       if (root.isInteger() && !((IInteger) root).isLT(from)) {
+        IExpr exponent = pair.second();
+        if (!exponent.isFree(var, true)) {
+          // a power like k^(k-2) vanishes at its root k == 0 only if the exponent is positive
+          // there: 0^(-2) is no zero of a denominator
+          exponent = engine.evalQuiet(F.subst(exponent, var, root));
+          if (!exponent.isPositiveResult()) {
+            continue;
+          }
+        }
         roots.add((IInteger) root);
       }
     }

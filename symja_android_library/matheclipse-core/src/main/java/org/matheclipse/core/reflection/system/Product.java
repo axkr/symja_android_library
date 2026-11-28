@@ -223,6 +223,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
             final IExpr to = iterator.getUpperLimit();
 
             if (to.isInfinity() && preevaledProduct.isAST2()) {
+              IExpr qForm = qPochhammerProduct(arg1, var, from, engine);
+              if (qForm.isPresent()) {
+                return qForm;
+              }
               IExpr gammaForm = infiniteRationalProduct(arg1, var, from, engine);
               if (gammaForm.isPresent()) {
                 return gammaForm;
@@ -645,6 +649,46 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   /** Polynomials of higher degree have roots which aren't given by radicals. */
   private static final int MAX_ROOT_PRODUCT_DEGREE = 4;
+
+  /**
+   * <code>Product((1 + m(k))^s, {k, from, Infinity})</code> for a geometric term <code>m</code>
+   * with the ratio <code>r = m(k+1)/m(k)</code> free of <code>k</code> and an integer
+   * <code>s</code> free of <code>k</code>: <code>QPochhammer(-m(from), r)^s</code>. A number
+   * <code>r</code> has to be inside the unit circle, where the product converges.
+   *
+   * @return {@link F#NIL} if the term isn't of this form
+   */
+  private static IExpr qPochhammerProduct(IExpr term, ISymbol k, IExpr from, EvalEngine engine) {
+    if (!from.isInteger()) {
+      return F.NIL;
+    }
+    IExpr base = term;
+    IExpr exponent = F.C1;
+    if (term.isPower() && term.exponent().isInteger()) {
+      base = term.base();
+      exponent = term.exponent();
+    }
+    if (!base.isPlus()) {
+      return F.NIL;
+    }
+    IExpr m = engine.evaluate(F.Subtract(base, F.C1));
+    if (m.isFree(k) || m.isPlus()) {
+      return F.NIL;
+    }
+    // m(k+1)/m(k) with expanded exponents, so that t^(2*(k+1))/t^(2*k) becomes t^2; powers of the
+    // same base are merged without assumptions, z^(a+b) == z^a*z^b for every z
+    IExpr ratio =
+        engine.evaluate(F.ExpandAll(F.Divide(F.subst(m, k, F.Plus(k, F.C1)), m)));
+    if (!ratio.isFree(k) || ratio.isZero() || ratio.isOne()) {
+      return F.NIL;
+    }
+    if (ratio.isNumericFunction(true)
+        && !engine.evalQuiet(F.Less(F.Abs(ratio), F.C1)).isTrue()) {
+      return F.NIL;
+    }
+    IExpr a = engine.evaluate(F.Negate(F.subst(m, k, from)));
+    return engine.evaluate(F.Power(F.binaryAST2(S.QPochhammer, a, ratio), exponent));
+  }
 
   /**
    * <code>Product(R(k), {k, from, Infinity})</code> for a rational function

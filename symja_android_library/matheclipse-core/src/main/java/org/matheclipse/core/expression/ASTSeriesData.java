@@ -974,12 +974,20 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * poles too and all factors are expanded to the order <code>m = n</code> plus the sum of these
    * pole orders. Symbolic coefficients are factored.
    *
+   * <p>
+   * If <code>q</code> is free of <code>x</code> and <code>a</code> vanishes at the point, the
+   * series is the composition with the power series in <code>a</code>, see
+   * {@link #qPochhammerSumSeries(IExpr, IExpr, IExpr, IExpr, int, int, EvalEngine)}.
+   *
    * @return <code>null</code> if <code>q</code> doesn't vanish at the point
    */
   private static ASTSeriesData qPochhammerSeries(final IAST function, IExpr x, IExpr x0,
       final int n, final int direction, EvalEngine engine) {
     final IExpr a = function.arg1();
     final IExpr q = function.arg2();
+    if (q.isFree(x)) {
+      return qPochhammerSumSeries(a, q, x, x0, n, direction, engine);
+    }
     ASTSeriesData qSeries = seriesDataRecursive(q, x, x0, n, direction, engine);
     if (qSeries == null || qSeries.puiseuxDenominator() != 1) {
       return null;
@@ -1024,13 +1032,59 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       // every factor is 1 up to the order n
       return seriesDataRecursive(F.C1, x, x0, n, direction, engine);
     }
-    for (int i = result.minExponent(); i <= n && i < result.truncateOrder(); i++) {
-      IExpr coefficient = result.coefficient(i);
+    return factorCoefficients(result, n, engine);
+  }
+
+  /**
+   * The series of <code>QPochhammer(a, q)</code> where <code>q</code> is free of <code>x</code>
+   * and <code>a</code> vanishes at the expansion point, by the power series
+   * <code>QPochhammer(a, q) == Sum((-1)^k*q^(k*(k-1)/2)/QPochhammer(q, q, k)*a^k, {k, 0, Infinity})</code>
+   * which holds for <code>|q| &lt; 1</code> and as a formal series in <code>q</code>.
+   *
+   * @return <code>null</code> if <code>a</code> doesn't vanish at the point or a number
+   *         <code>q</code> isn't inside the unit circle
+   */
+  private static ASTSeriesData qPochhammerSumSeries(final IExpr a, final IExpr q, IExpr x,
+      IExpr x0, final int n, final int direction, EvalEngine engine) {
+    if (q.isNumericFunction(true) && !engine.evalQuiet(F.Less(F.Abs(q), F.C1)).isTrue()) {
+      return null;
+    }
+    ASTSeriesData aSeries = seriesDataRecursive(a, x, x0, n, direction, engine);
+    if (aSeries == null || aSeries.puiseuxDenominator() != 1) {
+      return null;
+    }
+    int leadA = actualMinExponent(aSeries);
+    if (!F.isPresent(leadA)) {
+      // a vanishes up to the order n
+      return seriesDataRecursive(F.C1, x, x0, n, direction, engine);
+    }
+    if (leadA < 1) {
+      return null;
+    }
+    ASTSeriesData result = seriesDataRecursive(F.C1, x, x0, n, direction, engine);
+    ASTSeriesData aPower = null;
+    IExpr c = F.C1;
+    for (int k = 1; (long) k * leadA <= n; k++) {
+      engine.checkTimeLimit();
+      // c(k) == -q^(k-1)/(1-q^k)*c(k-1)
+      c = engine.evaluate(F.Times(F.CN1, F.Power(q, F.ZZ(k - 1)),
+          F.Power(F.Subtract(F.C1, F.Power(q, F.ZZ(k))), F.CN1), c));
+      aPower = aPower == null ? aSeries : aPower.timesPS(aSeries);
+      result = result.plusPS(aPower.times(c));
+    }
+    return factorCoefficients(result, n, engine);
+  }
+
+  /** Factors the symbolic coefficients of <code>series</code> up to the order <code>n</code>. */
+  private static ASTSeriesData factorCoefficients(ASTSeriesData series, final int n,
+      EvalEngine engine) {
+    for (int i = series.minExponent(); i <= n && i < series.truncateOrder(); i++) {
+      IExpr coefficient = series.coefficient(i);
       if (!coefficient.isNumber()) {
-        result.setCoeff(i, engine.evaluate(F.Factor(coefficient)));
+        series.setCoeff(i, engine.evaluate(F.Factor(coefficient)));
       }
     }
-    return result;
+    return series;
   }
 
   /**
@@ -1691,6 +1745,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
 
       derivedFunction = engine.evalQuiet(F.D(derivedFunction, x));
+      if (!derivedFunction.isFree(S.D, true) && function.isFree(S.D, true)) {
+        // an unevaluated derivative, for example of an unevaluated Product, isn't a function
+        // of x any more: substituting the point into D(f(x), x) gives no coefficient
+        return null;
+      }
     }
 
     if (!foundNonZero) {

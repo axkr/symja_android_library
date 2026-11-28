@@ -20,12 +20,17 @@ public class Precedence {
    */
   public static final int AND = 225;
   public static final int APPLY = 620;
-  public static final int APPLY_HEAD = 621;
+  /**
+   * The prefix application <code>f @ x</code>: tighter than the infix <code>a ~ g ~ b</code> (630),
+   * so <code>a ~ g ~ h @ b</code> is <code>g(a, h(b))</code>, and looser than <code>@*</code> and
+   * <code>/*</code>, so <code>a @* b @ c</code> is <code>Composition(a, b)[c]</code>.
+   */
+  public static final int APPLY_HEAD = 640;
   public static final int CENTERDOT = 410;
   public static final int CIRCLEDOT = 520;
   public static final int CIRCLETIMES = 420;
   public static final int COLON = 80;
-  public static final int COMPOSITION = 625;
+  public static final int COMPOSITION = 650;
   public static final int DISTRIBUTED = 250;
   /**
    * Must stay below {@link #COMPOSITION}. Wolfram groups <code>@*</code> first in both
@@ -35,14 +40,10 @@ public class Precedence {
    * either associativity.
    *
    * <p>
-   * Symja had 648 and Mathics3 records 650; both put RightComposition above Composition and so
-   * parse both of those expressions wrongly. The value here is the largest one below
-   * {@link #COMPOSITION}, chosen so that the only relative order this correction changes is the one
-   * against Composition. Its position relative to <code>@</code> (621) and the 620 band
-   * (<code>@@</code>, <code>/@</code>, <code>@@@</code>) is not established by the evidence above -
-   * <code>f /* g @@ h</code> and <code>f /* g /@ h</code> would pin it.
+   * Both bind tighter than the prefix application <code>@</code> (640):
+   * <code>f /* g /* h @ x</code> is <code>RightComposition(f, g, h)[x]</code>.
    */
-  public static final int RIGHTCOMPOSITION = 624;
+  public static final int RIGHTCOMPOSITION = 648;
   public static final int COMPOUNDEXPRESSION = 10;
   /**
    * See <a href=

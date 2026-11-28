@@ -33,6 +33,25 @@ public class ProductTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testProductQPochhammer() {
+    // a factor 1 + m(k) with a geometric m: QPochhammer(-m(from), m(k+1)/m(k))
+    check("Product(1-u/5^r,{r,1,Infinity})", //
+        "QPochhammer(u/5,1/5)");
+    check("Product(1/(1-z*s^k),{k,0,Infinity})", //
+        "1/QPochhammer(z,s)");
+    check("Product((1+u*t^(3*r))^2,{r,1,Infinity})", //
+        "QPochhammer(-t^3*u,t^3)^2");
+    check("Product(1+(-1)^k*u/2^k,{k,2,Infinity})", //
+        "QPochhammer(-u/4,-1/2)");
+    // the ratio of (t^2)^(k/2) is Sqrt(t^2), not t
+    check("Product(1-u*(t^2)^(k/2),{k,0,Infinity})", //
+        "QPochhammer(u,Sqrt(t^2))");
+    // the ratio 3 is outside the unit circle
+    check("Product(1-u*3^k,{k,0,Infinity})", //
+        "Product(1-3^k*u,{k,0,Infinity})");
+  }
+
+  @Test
   public void testProduct002() {
     check("Product(k^p, {k,1,k-1})", //
         "((-1+k)!)^p");

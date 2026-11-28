@@ -3425,7 +3425,7 @@ public class IntegerFunctions {
       number = arg1.evalNumber();
     }
     if (number != null && number.isReal()) {
-      return digitsOfReal((IReal) number, radix, length, startDigit);
+      return digitsOfReal((IReal) number, radix, length, startDigit, true);
     }
     return F.NIL;
   }
@@ -3464,15 +3464,18 @@ public class IntegerFunctions {
     }
     final Apfloat center = ((IReal) value).apfloatValue().precision(digits + 5);
     final Apfloat high = center.add(ApfloatMath.scale(center, 2 - digits));
-    return digitsOfReal(F.num(high), radix, length, startDigit);
+    return digitsOfReal(F.num(high), radix, length, startDigit, false);
   }
 
   /**
    * The digits of the real number <code>number</code>.
    *
+   * @param roundLast round the last digit of an arbitrary precision number with the digits stored
+   *        beyond its precision, as it is printed; else they are cut off
    * @return {@link F#NIL} if the digits cannot be determined
    */
-  private static @AllowNIL IExpr digitsOfReal(IReal number, int radix, long length, long startDigit) {
+  private static @AllowNIL IExpr digitsOfReal(IReal number, int radix, long length, long startDigit,
+      boolean roundLast) {
     IReal realNumber = number;
     if (realNumber.isNegative()) {
       realNumber = realNumber.abs();
@@ -3521,6 +3524,10 @@ public class IntegerFunctions {
       }
     } else {
       apfloat = realNumber.apfloatValue();
+      if (roundLast && radix == 10) {
+        // the last digit is rounded with the digits stored beyond the precision, as it is printed
+        apfloat = org.matheclipse.external.apfloat.ApfloatRounding.roundToPrecision(apfloat);
+      }
     }
 
     RealDigitsResult rd = RealDigitsResult.create(apfloat, radix, length, startDigit);

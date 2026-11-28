@@ -663,8 +663,16 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       double fPrevious = Double.NaN;
       double dPrevious = Double.NaN;
       while (true) {
-        final org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
+        org.hipparchus.analysis.differentiation.UnivariateDerivative1 y0 =
             computeObjectiveValueAndDerivative1(x0);
+        // a step out of the real domain of the function, past the branch point of
+        // 1/Sqrt(1-x^2) at x == 1, is halved back towards the last point until the function has
+        // a real value; the value at the new point is needed anyway
+        for (int i = 0; i < MAX_BACKTRACK_STEPS && !Double.isFinite(y0.getValue())
+            && Double.isFinite(fPrevious); i++) {
+          x0 = xPrevious + 0.5 * (x0 - xPrevious);
+          y0 = computeObjectiveValueAndDerivative1(x0);
+        }
         final double f0 = y0.getValue();
         final double d0 = y0.getPartialDerivative(1);
         double x1 = x0 - (f0 / d0);
@@ -2471,8 +2479,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
             S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision, S.StepMonitor,
-            S.EvaluationMonitor}, //
+            S.EvaluationMonitor, S.PrecisionGoal}, //
         new IExpr[] {//
-            F.C100, S.Automatic, S.Automatic, S.MachinePrecision, S.None, S.None});
+            F.C100, S.Automatic, S.Automatic, S.MachinePrecision, S.None, S.None,
+            S.Automatic});
   }
 }

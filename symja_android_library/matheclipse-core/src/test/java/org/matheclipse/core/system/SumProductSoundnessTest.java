@@ -44,6 +44,14 @@ public class SumProductSoundnessTest extends ExprEvaluatorTestCase {
         "49/120");
     check("Sum(1/(k^2 - 9), {k, 4, n}) /. n -> 6", //
         "733/3024");
+    // k^(5-k) is 0^5 at k == 0, no pole of 1/k^(k-5)
+    check("Sum(k^(5 - k), {k, 0, 5})", //
+        "23");
+    check("Sum((3*k)^(4 - k), {k, 0, 4})", //
+        "73");
+    // 1/k^(k+1) has a pole at k == 0
+    check("Sum(1/k^(k + 1), {k, 0, 3})", //
+        "ComplexInfinity");
   }
 
   @Test

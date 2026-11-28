@@ -1190,7 +1190,8 @@ public class SeriesFunctions {
      */
     private static @AllowNIL IExpr mapSeriesOverArguments(IExpr currentExpr, IExpr x, IAST iterator,
         EvalEngine engine) {
-      if (!currentExpr.isAST() || !x.isPresent()) {
+      if (!currentExpr.isAST() || !x.isPresent() || currentExpr.isAST(S.Product)) {
+        // the product of the series of the factors over a range isn't the series of the product
         return F.NIL;
       }
       IAST astFunc = (IAST) currentExpr;
@@ -3381,12 +3382,38 @@ public class SeriesFunctions {
       }
 
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
+      if (!derivedFunction.isFree(S.D, true) && function.isFree(S.D, true)) {
+        // an unevaluated derivative gives no coefficient when x0 is substituted into it
+        return F.NIL;
+      }
       // Same reason as the nInt == 0 branch above, and the same shape every other
       // substitution in this file uses.
       IExpr substituted = engine.evaluate(F.subst(derivedFunction, x, x0));
+      if (nInt < 5 && function.isFree(S.Derivative, true)
+          && substituted.has(y -> isBuiltinDerivativeCall(y), true)) {
+        // derivatives of a built-in function like QPochhammer(z/7,1/7) at the point aren't known,
+        // its series may know the coefficient; an undefined f(x) keeps its derivatives
+        IExpr seriesExp = engine.evaluate(F.Series(function, F.List(x, x0, n)));
+        if (seriesExp instanceof ASTSeriesData) {
+          IExpr coefficient = ((ASTSeriesData) seriesExp)
+              .coefficient(nInt * ((ASTSeriesData) seriesExp).puiseuxDenominator());
+          if (coefficient.isFree(S.Derivative, true)) {
+            return engine.evaluate(F.Together(coefficient));
+          }
+        }
+      }
 
       IExpr rawCoefficient = engine.evaluate(F.Times(F.Power(F.Factorial(n), F.CN1), substituted));
       return engine.evaluate(F.Together(F.ExpandAll(rawCoefficient)));
+    }
+
+    /** <code>true</code> for <code>Derivative(n1, ...)[h][args]</code> of a built-in function h. */
+    private static boolean isBuiltinDerivativeCall(IExpr expr) {
+      if (!expr.isAST() || !expr.head().isAST1()) {
+        return false;
+      }
+      IAST derivative = (IAST) expr.head();
+      return derivative.head().isAST(S.Derivative) && derivative.arg1().isBuiltInSymbol();
     }
 
     private static @AllowNIL IExpr specialFunctionCoefficient(IAST function, IExpr x, IExpr x0, IExpr n) {

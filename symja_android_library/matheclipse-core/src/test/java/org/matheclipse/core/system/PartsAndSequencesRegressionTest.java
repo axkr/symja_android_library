@@ -172,6 +172,18 @@ public class PartsAndSequencesRegressionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRealDigitsRoundsLastDigit() {
+    // the last digit of an arbitrary precision number is rounded, as the number is printed
+    check("RealDigits(N(2/3,20))", //
+        "{{6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,7},0}");
+    check("Last(First(RealDigits(N(5/7,24))))", //
+        "6");
+    // the digits of an exact number are cut off
+    check("RealDigits(2/3,10,20)", //
+        "{{6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6},0}");
+  }
+
+  @Test
   public void testRealDigitsMessages() {
     check("RealDigits((Sqrt(3)+Sqrt(5))^2-2*Sqrt(15)-8,10,3)", //
         "RealDigits(-8-2*Sqrt(15)+(Sqrt(3)+Sqrt(5))^2,10,3)");

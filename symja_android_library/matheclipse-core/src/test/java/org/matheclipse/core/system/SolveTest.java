@@ -1502,8 +1502,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     check("NSolve(2*Log(2)* x^2 - Log(4)*x^2 + x - 1 == 0, x)", //
         "{{x->1.0}}");
+    // x == 0.0117155 is a root too: both sides are 0.1189
     check("NSolve(x^(1/7)-x^(1/5)==x^(1/3)-x^(1/2),x)", //
-        "{{x->1.0}}");
+        "{{x->0.0117155},{x->1.0}}");
     check("NSolve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2.0},{x->16.0}}");
 
@@ -2101,8 +2102,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({8.0*E - 9 == x0/x1, x0==x1^4.0},{x0, x1}) ", //
         "{{x0->-14.88721+I*(-25.78541),x1->-1.16797+I*(-2.02298)},{x0->29.77443,x1->2.33594},{x0->-14.88721+I*25.78541,x1->-1.16797+I*2.02298}}");
     // eval quiet without message
+    // the numerical search finds one of the solutions
     check("Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1}) ", //
-        "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");
+        "{{x0->76.80692,x1->3.14075}}");
 
     // // ifun message will be printed:
     check("Solve({Sin(x0)==5.0},{x0}, GenerateConditions->False)", //
