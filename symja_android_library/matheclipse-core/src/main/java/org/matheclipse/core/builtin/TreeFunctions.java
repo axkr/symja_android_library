@@ -112,6 +112,21 @@ public final class TreeFunctions {
     return Errors.printMessage(ast.topHead(), "tree", F.list(F.ZZ(position), ast), engine);
   }
 
+  /**
+   * The level specification of <code>head(f, tree)</code> or <code>head(f, tree, levelspec)</code>:
+   * {@link LevelSpec#ALL} without a third argument.
+   *
+   * @return <code>null</code> if the second argument isn't a tree (after a message) or the third
+   *         isn't a level specification
+   */
+  private static LevelSpec functionTreeLevelSpec(IAST ast, EvalEngine engine) {
+    if (!isTree(ast.arg2())) {
+      treeExpected(ast, 2, engine);
+      return null;
+    }
+    return ast.isAST3() ? LevelSpec.of(ast.arg3()) : LevelSpec.ALL;
+  }
+
   /** The height of a tree: <code>0</code> for a leaf or a node without children. */
   static int height(IExpr tree) {
     int height = 0;
@@ -556,15 +571,9 @@ public final class TreeFunctions {
       if (ast.isAST1()) {
         return F.NIL;
       }
-      if (!isTree(ast.arg2())) {
-        return treeExpected(ast, 2, engine);
-      }
-      LevelSpec spec = LevelSpec.ALL;
-      if (ast.isAST3()) {
-        spec = LevelSpec.of(ast.arg3());
-        if (spec == null) {
-          return F.NIL;
-        }
+      LevelSpec spec = functionTreeLevelSpec(ast, engine);
+      if (spec == null) {
+        return F.NIL;
       }
       int[] height = new int[1];
       return map(ast.arg1(), ast.arg2(), 0, spec, height, engine);
@@ -606,15 +615,9 @@ public final class TreeFunctions {
       if (ast.isAST1()) {
         return F.NIL;
       }
-      if (!isTree(ast.arg2())) {
-        return treeExpected(ast, 2, engine);
-      }
-      LevelSpec spec = LevelSpec.ALL;
-      if (ast.isAST3()) {
-        spec = LevelSpec.of(ast.arg3());
-        if (spec == null) {
-          return F.NIL;
-        }
+      LevelSpec spec = functionTreeLevelSpec(ast, engine);
+      if (spec == null) {
+        return F.NIL;
       }
       final IExpr function = ast.arg1();
       postOrder(ast.arg2(), 0, spec, null,

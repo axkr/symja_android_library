@@ -112,6 +112,23 @@ public final class ListOperatorFunctions {
    * tests the parts at <code>levelspec</code>, the operator form <code>AllMatch(form)(expr)</code>
    * takes <code>expr</code> later. The values of an association are its elements.
    */
+  /**
+   * The operator form <code>head(arg)(list)</code> of <code>head(list, arg)</code>; NIL for any
+   * other call.
+   */
+  @AllowNIL
+  private static IExpr operatorFormWithList(IAST ast, IBuiltInSymbol head) {
+    if (ast.head().isAST(head, 2) && ast.isAST1()) {
+      return F.binaryAST2(head, ast.arg1(), ast.head().first());
+    }
+    return F.NIL;
+  }
+
+  /** <code>true</code> if the first of at least two arguments is a non-association AST. */
+  private static boolean hasListArgument(IAST ast) {
+    return !ast.isAST1() && ast.arg1().isAST() && !ast.arg1().isAssociation();
+  }
+
   private static final class MatchElements extends AbstractFunctionEvaluator {
     private final IBuiltInSymbol head;
     private final boolean all;
@@ -124,10 +141,7 @@ public final class ListOperatorFunctions {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != head) {
-        if (ast.head().isAST(head, 2) && ast.isAST1()) {
-          return F.binaryAST2(head, ast.arg1(), ast.head().first());
-        }
-        return F.NIL;
+        return operatorFormWithList(ast, head);
       }
       if (ast.isAST1()) {
         return F.NIL;
@@ -175,12 +189,9 @@ public final class ListOperatorFunctions {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.DeleteElements) {
-        if (ast.head().isAST(S.DeleteElements, 2) && ast.isAST1()) {
-          return F.binaryAST2(S.DeleteElements, ast.arg1(), ast.head().first());
-        }
-        return F.NIL;
+        return operatorFormWithList(ast, S.DeleteElements);
       }
-      if (ast.isAST1() || !ast.arg1().isAST() || ast.arg1().isAssociation()) {
+      if (!hasListArgument(ast)) {
         return F.NIL;
       }
       IAST list = (IAST) ast.arg1();
@@ -333,12 +344,9 @@ public final class ListOperatorFunctions {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.OrderingBy) {
-        if (ast.head().isAST(S.OrderingBy, 2) && ast.isAST1()) {
-          return F.binaryAST2(S.OrderingBy, ast.arg1(), ast.head().first());
-        }
-        return F.NIL;
+        return operatorFormWithList(ast, S.OrderingBy);
       }
-      if (ast.isAST1() || !ast.arg1().isAST() || ast.arg1().isAssociation()) {
+      if (!hasListArgument(ast)) {
         return F.NIL;
       }
       IAST list = (IAST) ast.arg1();

@@ -129,6 +129,27 @@ public final class AlgebraLogicFunctions {
     return engine.evaluate(F.Expand(sum.oneIdentity0()));
   }
 
+  /**
+   * The ascending coefficients of the polynomials <code>arg1</code> and <code>arg2</code> in the
+   * variable <code>arg3</code>.
+   *
+   * @return <code>{a, b}</code>, or <code>null</code> after a message if <code>arg3</code> isn't a
+   *         variable or an argument isn't a polynomial with exact coefficients
+   */
+  private static IExpr[][] coefficientPair(IAST ast, IBuiltInSymbol head, EvalEngine engine) {
+    IExpr x = Validate.checkIsVariable(ast, 3, engine);
+    if (x.isNIL()) {
+      return null;
+    }
+    IExpr[] a = coefficients(ast.arg1(), x, engine);
+    IExpr[] b = coefficients(ast.arg2(), x, engine);
+    if (a == null || b == null) {
+      npolys(head, ast.arg1(), ast.arg2(), x, engine);
+      return null;
+    }
+    return new IExpr[][] {a, b};
+  }
+
   /** <code>Errors.printMessage(head, "npolys", ...)</code> */
   private static IExpr npolys(IBuiltInSymbol head, IExpr p, IExpr q, IExpr x, EvalEngine engine) {
     // `1` and `2` should be polynomials with exact coefficients and the degree of `1` in `3`
@@ -147,18 +168,15 @@ public final class AlgebraLogicFunctions {
     @Override
     public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
-      IExpr x = Validate.checkIsVariable(ast, 3, engine);
-      if (x.isNIL()) {
+      IExpr[][] ab = coefficientPair(ast, S.SubresultantPolynomials, engine);
+      if (ab == null) {
         return F.NIL;
       }
       IExpr p = ast.arg1();
       IExpr q = ast.arg2();
-      IExpr[] a = coefficients(p, x, engine);
-      IExpr[] b = coefficients(q, x, engine);
-      if (a == null || b == null) {
-        npolys(S.SubresultantPolynomials, p, q, x, engine);
-        return F.NIL;
-      }
+      IExpr x = ast.arg3();
+      IExpr[] a = ab[0];
+      IExpr[] b = ab[1];
       if (b.length == 0) {
         // the zero polynomial has no subresultants
         return F.CEmptyList;
@@ -255,18 +273,15 @@ public final class AlgebraLogicFunctions {
     @Override
     public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
-      IExpr x = Validate.checkIsVariable(ast, 3, engine);
-      if (x.isNIL()) {
+      IExpr[][] ab = coefficientPair(ast, S.SubresultantPolynomialRemainders, engine);
+      if (ab == null) {
         return F.NIL;
       }
       IExpr p = ast.arg1();
       IExpr q = ast.arg2();
-      IExpr[] a = coefficients(p, x, engine);
-      IExpr[] b = coefficients(q, x, engine);
-      if (a == null || b == null) {
-        npolys(S.SubresultantPolynomialRemainders, p, q, x, engine);
-        return F.NIL;
-      }
+      IExpr x = ast.arg3();
+      IExpr[] a = ab[0];
+      IExpr[] b = ab[1];
       CoefficientRing ring = new CoefficientRing(options[0], engine);
       a = reduce(a, ring);
       b = reduce(b, ring);

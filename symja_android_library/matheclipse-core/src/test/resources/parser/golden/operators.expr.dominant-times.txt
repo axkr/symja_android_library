@@ -1494,27 +1494,27 @@ a←b^2	LeftArrow(a, Power(b, 2))
 a←	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
 a←+b	LeftArrow(a, Plus(b))
 (a+b)←	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
-a↑b	ShortUpArrow(a, b)
-a ↑ b	ShortUpArrow(a, b)
-2↑3	ShortUpArrow(2, 3)
-a↑b↑c	ShortUpArrow(a, b, c)
-a+b↑c	Plus(a, ShortUpArrow(b, c))
-a↑b+c	Plus(ShortUpArrow(a, b), c)
-a*b↑c	Times(a, ShortUpArrow(b, c))
-a↑b*c	Times(ShortUpArrow(a, b), c)
-a.b↑c	Dot(a, ShortUpArrow(b, c))
-a↑b.c	Dot(ShortUpArrow(a, b), c)
-a==b↑c	Equal(a, ShortUpArrow(b, c))
-a↑b==c	Equal(ShortUpArrow(a, b), c)
-(a↑b)↑c	ShortUpArrow(ShortUpArrow(a, b), c)
-a↑(b↑c)	ShortUpArrow(a, ShortUpArrow(b, c))
-a↑-b	ShortUpArrow(a, Times(-1, b))
-a↑b^2	ShortUpArrow(a, Power(b, 2))
+a↑b	UpArrow(a, b)
+a ↑ b	UpArrow(a, b)
+2↑3	UpArrow(2, 3)
+a↑b↑c	UpArrow(a, b, c)
+a+b↑c	Plus(a, UpArrow(b, c))
+a↑b+c	Plus(UpArrow(a, b), c)
+a*b↑c	Times(a, UpArrow(b, c))
+a↑b*c	Times(UpArrow(a, b), c)
+a.b↑c	Dot(a, UpArrow(b, c))
+a↑b.c	Dot(UpArrow(a, b), c)
+a==b↑c	Equal(a, UpArrow(b, c))
+a↑b==c	Equal(UpArrow(a, b), c)
+(a↑b)↑c	UpArrow(UpArrow(a, b), c)
+a↑(b↑c)	UpArrow(a, UpArrow(b, c))
+a↑-b	UpArrow(a, Times(-1, b))
+a↑b^2	UpArrow(a, Power(b, 2))
 ↑a	!syntax@1: Operator: ↑ is no prefix operator.
 ↑a+b	!syntax@1: Operator: ↑ is no prefix operator.
 ↑(a+b)	!syntax@1: Operator: ↑ is no prefix operator.
 a↑	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↑+b	ShortUpArrow(a, Plus(b))
+a↑+b	UpArrow(a, Plus(b))
 (a+b)↑	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a→b	RightArrow(a, b)
 a → b	RightArrow(a, b)
@@ -7146,7 +7146,7 @@ a;bc	!syntax@4: End-of-file not reached.
 a;b▫c	!syntax@4: End-of-file not reached.
 a;b∂c	!syntax@4: End-of-file not reached.
 a;b√c	!syntax@4: End-of-file not reached.
-a;b↑c	CompoundExpression(a, ShortUpArrow(b, c))
+a;b↑c	CompoundExpression(a, UpArrow(b, c))
 a;b^c	CompoundExpression(a, Power(b, c))
 a;b<>c	CompoundExpression(a, StringJoin(b, c))
 a;b//@c	CompoundExpression(a, MapAll(b, c))
@@ -7222,7 +7222,7 @@ a>>bc	!syntax@5: End-of-file not reached.
 a>>b▫c	!syntax@5: End-of-file not reached.
 a>>b∂c	!syntax@5: End-of-file not reached.
 a>>b√c	!syntax@5: End-of-file not reached.
-a>>b↑c	Put(a, ShortUpArrow(b, c))
+a>>b↑c	Put(a, UpArrow(b, c))
 a>>b^c	Put(a, Power(b, c))
 a>>b<>c	Put(a, StringJoin(b, c))
 a>>b//@c	Put(a, MapAll(b, c))
@@ -7298,7 +7298,7 @@ a/:bc	!syntax@5: End-of-file not reached.
 a/:b▫c	!syntax@5: End-of-file not reached.
 a/:b∂c	!syntax@5: End-of-file not reached.
 a/:b√c	!syntax@5: End-of-file not reached.
-a/:b↑c	TagSet(a, ShortUpArrow(b, c))
+a/:b↑c	TagSet(a, UpArrow(b, c))
 a/:b^c	TagSet(a, Power(b, c))
 a/:b<>c	TagSet(a, StringJoin(b, c))
 a/:b//@c	TagSet(a, MapAll(b, c))
@@ -7374,7 +7374,7 @@ a∴bc	!syntax@4: End-of-file not reached.
 a∴b▫c	!syntax@4: End-of-file not reached.
 a∴b∂c	!syntax@4: End-of-file not reached.
 a∴b√c	!syntax@4: End-of-file not reached.
-a∴b↑c	Therefore(a, ShortUpArrow(b, c))
+a∴b↑c	Therefore(a, UpArrow(b, c))
 a∴b^c	Therefore(a, Power(b, c))
 a∴b<>c	Therefore(a, StringJoin(b, c))
 a∴b//@c	Therefore(a, MapAll(b, c))
@@ -7450,7 +7450,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	VerticalSeparator(a, ShortUpArrow(b, c))
+ab↑c	VerticalSeparator(a, UpArrow(b, c))
 ab^c	VerticalSeparator(a, Power(b, c))
 ab<>c	VerticalSeparator(a, StringJoin(b, c))
 ab//@c	VerticalSeparator(a, MapAll(b, c))
@@ -7526,7 +7526,7 @@ a//bc	!syntax@5: End-of-file not reached.
 a//b▫c	!syntax@5: End-of-file not reached.
 a//b∂c	!syntax@5: End-of-file not reached.
 a//b√c	!syntax@5: End-of-file not reached.
-a//b↑c	ShortUpArrow(b, c)[a]
+a//b↑c	UpArrow(b, c)[a]
 a//b^c	Power(b, c)[a]
 a//b<>c	StringJoin(b, c)[a]
 a//b//@c	MapAll(b, c)[a]
@@ -7602,7 +7602,7 @@ a∶bc	!syntax@4: End-of-file not reached.
 a∶b▫c	!syntax@4: End-of-file not reached.
 a∶b∂c	!syntax@4: End-of-file not reached.
 a∶b√c	!syntax@4: End-of-file not reached.
-a∶b↑c	Colon(a, ShortUpArrow(b, c))
+a∶b↑c	Colon(a, UpArrow(b, c))
 a∶b^c	Colon(a, Power(b, c))
 a∶b<>c	Colon(a, StringJoin(b, c))
 a∶b//@c	Colon(a, MapAll(b, c))
@@ -7678,7 +7678,7 @@ a&bc	!syntax@4: End-of-file not reached.
 a&b▫c	!syntax@4: End-of-file not reached.
 a&b∂c	!syntax@4: End-of-file not reached.
 a&b√c	!syntax@4: End-of-file not reached.
-a&b↑c	Times(Function(a), ShortUpArrow(b, c))
+a&b↑c	Times(Function(a), UpArrow(b, c))
 a&b^c	Times(Function(a), Power(b, c))
 a&b<>c	Times(Function(a), StringJoin(b, c))
 a&b//@c	Times(Function(a), MapAll(b, c))
@@ -7754,7 +7754,7 @@ a*=bc	!syntax@5: End-of-file not reached.
 a*=b▫c	!syntax@5: End-of-file not reached.
 a*=b∂c	!syntax@5: End-of-file not reached.
 a*=b√c	!syntax@5: End-of-file not reached.
-a*=b↑c	TimesBy(a, ShortUpArrow(b, c))
+a*=b↑c	TimesBy(a, UpArrow(b, c))
 a*=b^c	TimesBy(a, Power(b, c))
 a*=b<>c	TimesBy(a, StringJoin(b, c))
 a*=b//@c	TimesBy(a, MapAll(b, c))
@@ -7830,7 +7830,7 @@ a/.bc	!syntax@5: End-of-file not reached.
 a/.b▫c	!syntax@5: End-of-file not reached.
 a/.b∂c	!syntax@5: End-of-file not reached.
 a/.b√c	!syntax@5: End-of-file not reached.
-a/.b↑c	ReplaceAll(a, ShortUpArrow(b, c))
+a/.b↑c	ReplaceAll(a, UpArrow(b, c))
 a/.b^c	ReplaceAll(a, Power(b, c))
 a/.b<>c	ReplaceAll(a, StringJoin(b, c))
 a/.b//@c	ReplaceAll(a, MapAll(b, c))
@@ -7906,7 +7906,7 @@ a->bc	!syntax@5: End-of-file not reached.
 a->b▫c	!syntax@5: End-of-file not reached.
 a->b∂c	!syntax@5: End-of-file not reached.
 a->b√c	!syntax@5: End-of-file not reached.
-a->b↑c	Rule(a, ShortUpArrow(b, c))
+a->b↑c	Rule(a, UpArrow(b, c))
 a->b^c	Rule(a, Power(b, c))
 a->b<>c	Rule(a, StringJoin(b, c))
 a->b//@c	Rule(a, MapAll(b, c))
@@ -7982,7 +7982,7 @@ a<->bc	!syntax@6: End-of-file not reached.
 a<->b▫c	!syntax@6: End-of-file not reached.
 a<->b∂c	!syntax@6: End-of-file not reached.
 a<->b√c	!syntax@6: End-of-file not reached.
-a<->b↑c	TwoWayRule(a, ShortUpArrow(b, c))
+a<->b↑c	TwoWayRule(a, UpArrow(b, c))
 a<->b^c	TwoWayRule(a, Power(b, c))
 a<->b<>c	TwoWayRule(a, StringJoin(b, c))
 a<->b//@c	TwoWayRule(a, MapAll(b, c))
@@ -8058,7 +8058,7 @@ a/;bc	!syntax@5: End-of-file not reached.
 a/;b▫c	!syntax@5: End-of-file not reached.
 a/;b∂c	!syntax@5: End-of-file not reached.
 a/;b√c	!syntax@5: End-of-file not reached.
-a/;b↑c	Condition(a, ShortUpArrow(b, c))
+a/;b↑c	Condition(a, UpArrow(b, c))
 a/;b^c	Condition(a, Power(b, c))
 a/;b<>c	Condition(a, StringJoin(b, c))
 a/;b//@c	Condition(a, MapAll(b, c))
@@ -8134,7 +8134,7 @@ a~~bc	!syntax@5: End-of-file not reached.
 a~~b▫c	!syntax@5: End-of-file not reached.
 a~~b∂c	!syntax@5: End-of-file not reached.
 a~~b√c	!syntax@5: End-of-file not reached.
-a~~b↑c	StringExpression(a, ShortUpArrow(b, c))
+a~~b↑c	StringExpression(a, UpArrow(b, c))
 a~~b^c	StringExpression(a, Power(b, c))
 a~~b<>c	StringExpression(a, StringJoin(b, c))
 a~~b//@c	StringExpression(a, MapAll(b, c))
@@ -8210,7 +8210,7 @@ a:bc	!syntax@4: End-of-file not reached.
 a:b▫c	!syntax@4: End-of-file not reached.
 a:b∂c	!syntax@4: End-of-file not reached.
 a:b√c	!syntax@4: End-of-file not reached.
-a:b↑c	Pattern(a, ShortUpArrow(b, c))
+a:b↑c	Pattern(a, UpArrow(b, c))
 a:b^c	Pattern(a, Power(b, c))
 a:b<>c	Pattern(a, StringJoin(b, c))
 a:b//@c	Pattern(a, MapAll(b, c))
@@ -8286,7 +8286,7 @@ a|bc	!syntax@4: End-of-file not reached.
 a|b▫c	!syntax@4: End-of-file not reached.
 a|b∂c	!syntax@4: End-of-file not reached.
 a|b√c	!syntax@4: End-of-file not reached.
-a|b↑c	Alternatives(a, ShortUpArrow(b, c))
+a|b↑c	Alternatives(a, UpArrow(b, c))
 a|b^c	Alternatives(a, Power(b, c))
 a|b<>c	Alternatives(a, StringJoin(b, c))
 a|b//@c	Alternatives(a, MapAll(b, c))
@@ -8362,7 +8362,7 @@ a..bc	!syntax@5: End-of-file not reached.
 a..b▫c	!syntax@5: End-of-file not reached.
 a..b∂c	!syntax@5: End-of-file not reached.
 a..b√c	!syntax@5: End-of-file not reached.
-a..b↑c	Times(Repeated(a), ShortUpArrow(b, c))
+a..b↑c	Times(Repeated(a), UpArrow(b, c))
 a..b^c	Times(Repeated(a), Power(b, c))
 a..b<>c	Times(Repeated(a), StringJoin(b, c))
 a..b//@c	Times(Repeated(a), MapAll(b, c))
@@ -8438,7 +8438,7 @@ a∍bc	!syntax@4: End-of-file not reached.
 a∍b▫c	!syntax@4: End-of-file not reached.
 a∍b∂c	!syntax@4: End-of-file not reached.
 a∍b√c	!syntax@4: End-of-file not reached.
-a∍b↑c	SuchThat(a, ShortUpArrow(b, c))
+a∍b↑c	SuchThat(a, UpArrow(b, c))
 a∍b^c	SuchThat(a, Power(b, c))
 a∍b<>c	SuchThat(a, StringJoin(b, c))
 a∍b//@c	SuchThat(a, MapAll(b, c))
@@ -8514,7 +8514,7 @@ a⊢bc	!syntax@4: End-of-file not reached.
 a⊢b▫c	!syntax@4: End-of-file not reached.
 a⊢b∂c	!syntax@4: End-of-file not reached.
 a⊢b√c	!syntax@4: End-of-file not reached.
-a⊢b↑c	RightTee(a, ShortUpArrow(b, c))
+a⊢b↑c	RightTee(a, UpArrow(b, c))
 a⊢b^c	RightTee(a, Power(b, c))
 a⊢b<>c	RightTee(a, StringJoin(b, c))
 a⊢b//@c	RightTee(a, MapAll(b, c))
@@ -8590,7 +8590,7 @@ a⥰bc	!syntax@4: End-of-file not reached.
 a⥰b▫c	!syntax@4: End-of-file not reached.
 a⥰b∂c	!syntax@4: End-of-file not reached.
 a⥰b√c	!syntax@4: End-of-file not reached.
-a⥰b↑c	RoundImplies(a, ShortUpArrow(b, c))
+a⥰b↑c	RoundImplies(a, UpArrow(b, c))
 a⥰b^c	RoundImplies(a, Power(b, c))
 a⥰b<>c	RoundImplies(a, StringJoin(b, c))
 a⥰b//@c	RoundImplies(a, MapAll(b, c))
@@ -8666,7 +8666,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	Conditioned(a, ShortUpArrow(b, c))
+ab↑c	Conditioned(a, UpArrow(b, c))
 ab^c	Conditioned(a, Power(b, c))
 ab<>c	Conditioned(a, StringJoin(b, c))
 ab//@c	Conditioned(a, MapAll(b, c))
@@ -8742,7 +8742,7 @@ a⊥bc	!syntax@4: End-of-file not reached.
 a⊥b▫c	!syntax@4: End-of-file not reached.
 a⊥b∂c	!syntax@4: End-of-file not reached.
 a⊥b√c	!syntax@4: End-of-file not reached.
-a⊥b↑c	UpTee(a, ShortUpArrow(b, c))
+a⊥b↑c	UpTee(a, UpArrow(b, c))
 a⊥b^c	UpTee(a, Power(b, c))
 a⊥b<>c	UpTee(a, StringJoin(b, c))
 a⊥b//@c	UpTee(a, MapAll(b, c))
@@ -8818,7 +8818,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	Implies(a, ShortUpArrow(b, c))
+ab↑c	Implies(a, UpArrow(b, c))
 ab^c	Implies(a, Power(b, c))
 ab<>c	Implies(a, StringJoin(b, c))
 ab//@c	Implies(a, MapAll(b, c))
@@ -8894,7 +8894,7 @@ a⧦bc	!syntax@4: End-of-file not reached.
 a⧦b▫c	!syntax@4: End-of-file not reached.
 a⧦b∂c	!syntax@4: End-of-file not reached.
 a⧦b√c	!syntax@4: End-of-file not reached.
-a⧦b↑c	Equivalent(a, ShortUpArrow(b, c))
+a⧦b↑c	Equivalent(a, UpArrow(b, c))
 a⧦b^c	Equivalent(a, Power(b, c))
 a⧦b<>c	Equivalent(a, StringJoin(b, c))
 a⧦b//@c	Equivalent(a, MapAll(b, c))
@@ -8970,7 +8970,7 @@ a||bc	!syntax@5: End-of-file not reached.
 a||b▫c	!syntax@5: End-of-file not reached.
 a||b∂c	!syntax@5: End-of-file not reached.
 a||b√c	!syntax@5: End-of-file not reached.
-a||b↑c	Or(a, ShortUpArrow(b, c))
+a||b↑c	Or(a, UpArrow(b, c))
 a||b^c	Or(a, Power(b, c))
 a||b<>c	Or(a, StringJoin(b, c))
 a||b//@c	Or(a, MapAll(b, c))
@@ -9046,7 +9046,7 @@ a⊻bc	!syntax@4: End-of-file not reached.
 a⊻b▫c	!syntax@4: End-of-file not reached.
 a⊻b∂c	!syntax@4: End-of-file not reached.
 a⊻b√c	!syntax@4: End-of-file not reached.
-a⊻b↑c	Xor(a, ShortUpArrow(b, c))
+a⊻b↑c	Xor(a, UpArrow(b, c))
 a⊻b^c	Xor(a, Power(b, c))
 a⊻b<>c	Xor(a, StringJoin(b, c))
 a⊻b//@c	Xor(a, MapAll(b, c))
@@ -9122,7 +9122,7 @@ a&&bc	!syntax@5: End-of-file not reached.
 a&&b▫c	!syntax@5: End-of-file not reached.
 a&&b∂c	!syntax@5: End-of-file not reached.
 a&&b√c	!syntax@5: End-of-file not reached.
-a&&b↑c	And(a, ShortUpArrow(b, c))
+a&&b↑c	And(a, UpArrow(b, c))
 a&&b^c	And(a, Power(b, c))
 a&&b<>c	And(a, StringJoin(b, c))
 a&&b//@c	And(a, MapAll(b, c))
@@ -9198,7 +9198,7 @@ a!bc	!syntax@4: End-of-file not reached.
 a!b▫c	!syntax@4: End-of-file not reached.
 a!b∂c	!syntax@4: End-of-file not reached.
 a!b√c	!syntax@4: End-of-file not reached.
-a!b↑c	Times(Factorial(a), ShortUpArrow(b, c))
+a!b↑c	Times(Factorial(a), UpArrow(b, c))
 a!b^c	Times(Factorial(a), Power(b, c))
 a!b<>c	Times(Factorial(a), StringJoin(b, c))
 a!b//@c	Times(Factorial(a), MapAll(b, c))
@@ -9350,7 +9350,7 @@ a∈bc	!syntax@4: End-of-file not reached.
 a∈b▫c	!syntax@4: End-of-file not reached.
 a∈b∂c	!syntax@4: End-of-file not reached.
 a∈b√c	!syntax@4: End-of-file not reached.
-a∈b↑c	Element(a, ShortUpArrow(b, c))
+a∈b↑c	Element(a, UpArrow(b, c))
 a∈b^c	Element(a, Power(b, c))
 a∈b<>c	Element(a, StringJoin(b, c))
 a∈b//@c	Element(a, MapAll(b, c))
@@ -9426,7 +9426,7 @@ a←bc	!syntax@4: End-of-file not reached.
 a←b▫c	!syntax@4: End-of-file not reached.
 a←b∂c	!syntax@4: End-of-file not reached.
 a←b√c	!syntax@4: End-of-file not reached.
-a←b↑c	LeftArrow(a, ShortUpArrow(b, c))
+a←b↑c	LeftArrow(a, UpArrow(b, c))
 a←b^c	LeftArrow(a, Power(b, c))
 a←b<>c	LeftArrow(a, StringJoin(b, c))
 a←b//@c	LeftArrow(a, MapAll(b, c))
@@ -9502,7 +9502,7 @@ a∥bc	!syntax@4: End-of-file not reached.
 a∥b▫c	!syntax@4: End-of-file not reached.
 a∥b∂c	!syntax@4: End-of-file not reached.
 a∥b√c	!syntax@4: End-of-file not reached.
-a∥b↑c	DoubleVerticalBar(a, ShortUpArrow(b, c))
+a∥b↑c	DoubleVerticalBar(a, UpArrow(b, c))
 a∥b^c	DoubleVerticalBar(a, Power(b, c))
 a∥b<>c	DoubleVerticalBar(a, StringJoin(b, c))
 a∥b//@c	DoubleVerticalBar(a, MapAll(b, c))
@@ -9578,7 +9578,7 @@ a!=bc	!syntax@5: End-of-file not reached.
 a!=b▫c	!syntax@5: End-of-file not reached.
 a!=b∂c	!syntax@5: End-of-file not reached.
 a!=b√c	!syntax@5: End-of-file not reached.
-a!=b↑c	Unequal(a, ShortUpArrow(b, c))
+a!=b↑c	Unequal(a, UpArrow(b, c))
 a!=b^c	Unequal(a, Power(b, c))
 a!=b<>c	Unequal(a, StringJoin(b, c))
 a!=b//@c	Unequal(a, MapAll(b, c))
@@ -9654,7 +9654,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	UndirectedEdge(a, ShortUpArrow(b, c))
+ab↑c	UndirectedEdge(a, UpArrow(b, c))
 ab^c	UndirectedEdge(a, Power(b, c))
 ab<>c	UndirectedEdge(a, StringJoin(b, c))
 ab//@c	UndirectedEdge(a, MapAll(b, c))
@@ -9730,7 +9730,7 @@ a⊎bc	!syntax@4: End-of-file not reached.
 a⊎b▫c	!syntax@4: End-of-file not reached.
 a⊎b∂c	!syntax@4: End-of-file not reached.
 a⊎b√c	!syntax@4: End-of-file not reached.
-a⊎b↑c	UnionPlus(a, ShortUpArrow(b, c))
+a⊎b↑c	UnionPlus(a, UpArrow(b, c))
 a⊎b^c	UnionPlus(a, Power(b, c))
 a⊎b<>c	UnionPlus(a, StringJoin(b, c))
 a⊎b//@c	UnionPlus(a, MapAll(b, c))
@@ -9806,7 +9806,7 @@ a;;bc	!syntax@5: End-of-file not reached.
 a;;b▫c	!syntax@5: End-of-file not reached.
 a;;b∂c	!syntax@5: End-of-file not reached.
 a;;b√c	!syntax@5: End-of-file not reached.
-a;;b↑c	Span(a, ShortUpArrow(b, c))
+a;;b↑c	Span(a, UpArrow(b, c))
 a;;b^c	Span(a, Power(b, c))
 a;;b<>c	Span(a, StringJoin(b, c))
 a;;b//@c	Span(a, MapAll(b, c))
@@ -10034,7 +10034,7 @@ a⊕bc	!syntax@4: End-of-file not reached.
 a⊕b▫c	!syntax@4: End-of-file not reached.
 a⊕b∂c	!syntax@4: End-of-file not reached.
 a⊕b√c	!syntax@4: End-of-file not reached.
-a⊕b↑c	CirclePlus(a, ShortUpArrow(b, c))
+a⊕b↑c	CirclePlus(a, UpArrow(b, c))
 a⊕b^c	CirclePlus(a, Power(b, c))
 a⊕b<>c	CirclePlus(a, StringJoin(b, c))
 a⊕b//@c	CirclePlus(a, MapAll(b, c))
@@ -10110,7 +10110,7 @@ a⌣bc	!syntax@4: End-of-file not reached.
 a⌣b▫c	!syntax@4: End-of-file not reached.
 a⌣b∂c	!syntax@4: End-of-file not reached.
 a⌣b√c	!syntax@4: End-of-file not reached.
-a⌣b↑c	Cup(a, ShortUpArrow(b, c))
+a⌣b↑c	Cup(a, UpArrow(b, c))
 a⌣b^c	Cup(a, Power(b, c))
 a⌣b<>c	Cup(a, StringJoin(b, c))
 a⌣b//@c	Cup(a, MapAll(b, c))
@@ -10186,7 +10186,7 @@ a⌢bc	!syntax@4: End-of-file not reached.
 a⌢b▫c	!syntax@4: End-of-file not reached.
 a⌢b∂c	!syntax@4: End-of-file not reached.
 a⌢b√c	!syntax@4: End-of-file not reached.
-a⌢b↑c	Cap(a, ShortUpArrow(b, c))
+a⌢b↑c	Cap(a, UpArrow(b, c))
 a⌢b^c	Cap(a, Power(b, c))
 a⌢b<>c	Cap(a, StringJoin(b, c))
 a⌢b//@c	Cap(a, MapAll(b, c))
@@ -10262,7 +10262,7 @@ a∐bc	!syntax@4: End-of-file not reached.
 a∐b▫c	!syntax@4: End-of-file not reached.
 a∐b∂c	!syntax@4: End-of-file not reached.
 a∐b√c	!syntax@4: End-of-file not reached.
-a∐b↑c	Coproduct(a, ShortUpArrow(b, c))
+a∐b↑c	Coproduct(a, UpArrow(b, c))
 a∐b^c	Coproduct(a, Power(b, c))
 a∐b<>c	Coproduct(a, StringJoin(b, c))
 a∐b//@c	Coproduct(a, MapAll(b, c))
@@ -10338,7 +10338,7 @@ a≀bc	!syntax@4: End-of-file not reached.
 a≀b▫c	!syntax@4: End-of-file not reached.
 a≀b∂c	!syntax@4: End-of-file not reached.
 a≀b√c	!syntax@4: End-of-file not reached.
-a≀b↑c	VerticalTilde(a, ShortUpArrow(b, c))
+a≀b↑c	VerticalTilde(a, UpArrow(b, c))
 a≀b^c	VerticalTilde(a, Power(b, c))
 a≀b<>c	VerticalTilde(a, StringJoin(b, c))
 a≀b//@c	VerticalTilde(a, MapAll(b, c))
@@ -10490,7 +10490,7 @@ a⋆bc	!syntax@4: End-of-file not reached.
 a⋆b▫c	!syntax@4: End-of-file not reached.
 a⋆b∂c	!syntax@4: End-of-file not reached.
 a⋆b√c	!syntax@4: End-of-file not reached.
-a⋆b↑c	Star(a, ShortUpArrow(b, c))
+a⋆b↑c	Star(a, UpArrow(b, c))
 a⋆b^c	Star(a, Power(b, c))
 a⋆b<>c	Star(a, StringJoin(b, c))
 a⋆b//@c	Star(a, MapAll(b, c))
@@ -10566,7 +10566,7 @@ a·bc	!syntax@4: End-of-file not reached.
 a·b▫c	!syntax@4: End-of-file not reached.
 a·b∂c	!syntax@4: End-of-file not reached.
 a·b√c	!syntax@4: End-of-file not reached.
-a·b↑c	CenterDot(a, ShortUpArrow(b, c))
+a·b↑c	CenterDot(a, UpArrow(b, c))
 a·b^c	CenterDot(a, Power(b, c))
 a·b<>c	CenterDot(a, StringJoin(b, c))
 a·b//@c	CenterDot(a, MapAll(b, c))
@@ -10642,7 +10642,7 @@ a⊗bc	!syntax@4: End-of-file not reached.
 a⊗b▫c	!syntax@4: End-of-file not reached.
 a⊗b∂c	!syntax@4: End-of-file not reached.
 a⊗b√c	!syntax@4: End-of-file not reached.
-a⊗b↑c	CircleTimes(a, ShortUpArrow(b, c))
+a⊗b↑c	CircleTimes(a, UpArrow(b, c))
 a⊗b^c	CircleTimes(a, Power(b, c))
 a⊗b<>c	CircleTimes(a, StringJoin(b, c))
 a⊗b//@c	CircleTimes(a, MapAll(b, c))
@@ -10718,7 +10718,7 @@ a⋁bc	!syntax@4: End-of-file not reached.
 a⋁b▫c	!syntax@4: End-of-file not reached.
 a⋁b∂c	!syntax@4: End-of-file not reached.
 a⋁b√c	!syntax@4: End-of-file not reached.
-a⋁b↑c	Vee(a, ShortUpArrow(b, c))
+a⋁b↑c	Vee(a, UpArrow(b, c))
 a⋁b^c	Vee(a, Power(b, c))
 a⋁b<>c	Vee(a, StringJoin(b, c))
 a⋁b//@c	Vee(a, MapAll(b, c))
@@ -10794,7 +10794,7 @@ a⋀bc	!syntax@4: End-of-file not reached.
 a⋀b▫c	!syntax@4: End-of-file not reached.
 a⋀b∂c	!syntax@4: End-of-file not reached.
 a⋀b√c	!syntax@4: End-of-file not reached.
-a⋀b↑c	Wedge(a, ShortUpArrow(b, c))
+a⋀b↑c	Wedge(a, UpArrow(b, c))
 a⋀b^c	Wedge(a, Power(b, c))
 a⋀b<>c	Wedge(a, StringJoin(b, c))
 a⋀b//@c	Wedge(a, MapAll(b, c))
@@ -10870,7 +10870,7 @@ a⋄bc	!syntax@4: End-of-file not reached.
 a⋄b▫c	!syntax@4: End-of-file not reached.
 a⋄b∂c	!syntax@4: End-of-file not reached.
 a⋄b√c	!syntax@4: End-of-file not reached.
-a⋄b↑c	Diamond(a, ShortUpArrow(b, c))
+a⋄b↑c	Diamond(a, UpArrow(b, c))
 a⋄b^c	Diamond(a, Power(b, c))
 a⋄b<>c	Diamond(a, StringJoin(b, c))
 a⋄b//@c	Diamond(a, MapAll(b, c))
@@ -10946,7 +10946,7 @@ a∖bc	!syntax@4: End-of-file not reached.
 a∖b▫c	!syntax@4: End-of-file not reached.
 a∖b∂c	!syntax@4: End-of-file not reached.
 a∖b√c	!syntax@4: End-of-file not reached.
-a∖b↑c	Backslash(a, ShortUpArrow(b, c))
+a∖b↑c	Backslash(a, UpArrow(b, c))
 a∖b^c	Backslash(a, Power(b, c))
 a∖b<>c	Backslash(a, StringJoin(b, c))
 a∖b//@c	Backslash(a, MapAll(b, c))
@@ -11022,7 +11022,7 @@ a/bc	!syntax@4: End-of-file not reached.
 a/b▫c	!syntax@4: End-of-file not reached.
 a/b∂c	!syntax@4: End-of-file not reached.
 a/b√c	!syntax@4: End-of-file not reached.
-a/b↑c	Times(a, Power(ShortUpArrow(b, c), -1))
+a/b↑c	Times(a, Power(UpArrow(b, c), -1))
 a/b^c	Times(a, Power(Power(b, c), -1))
 a/b<>c	Times(a, Power(StringJoin(b, c), -1))
 a/b//@c	Times(a, Power(MapAll(b, c), -1))
@@ -11174,7 +11174,7 @@ a-bc	!syntax@4: End-of-file not reached.
 a-b▫c	!syntax@4: End-of-file not reached.
 a-b∂c	!syntax@4: End-of-file not reached.
 a-b√c	!syntax@4: End-of-file not reached.
-a-b↑c	Plus(a, Times(-1, ShortUpArrow(b, c)))
+a-b↑c	Plus(a, Times(-1, UpArrow(b, c)))
 a-b^c	Plus(a, Times(-1, Power(b, c)))
 a-b<>c	Plus(a, Times(-1, StringJoin(b, c)))
 a-b//@c	Plus(a, Times(-1, MapAll(b, c)))
@@ -11250,7 +11250,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	PermutationProduct(a, ShortUpArrow(b, c))
+ab↑c	PermutationProduct(a, UpArrow(b, c))
 ab^c	PermutationProduct(a, Power(b, c))
 ab<>c	PermutationProduct(a, StringJoin(b, c))
 ab//@c	PermutationProduct(a, MapAll(b, c))
@@ -11326,7 +11326,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	TensorProduct(a, ShortUpArrow(b, c))
+ab↑c	TensorProduct(a, UpArrow(b, c))
 ab^c	TensorProduct(a, Power(b, c))
 ab<>c	TensorProduct(a, StringJoin(b, c))
 ab//@c	TensorProduct(a, MapAll(b, c))
@@ -11402,7 +11402,7 @@ abc	!syntax@4: End-of-file not reached.
 ab▫c	!syntax@4: End-of-file not reached.
 ab∂c	!syntax@4: End-of-file not reached.
 ab√c	!syntax@4: End-of-file not reached.
-ab↑c	TensorWedge(a, ShortUpArrow(b, c))
+ab↑c	TensorWedge(a, UpArrow(b, c))
 ab^c	TensorWedge(a, Power(b, c))
 ab<>c	TensorWedge(a, StringJoin(b, c))
 ab//@c	TensorWedge(a, MapAll(b, c))
@@ -11478,7 +11478,7 @@ a⨯bc	!syntax@4: End-of-file not reached.
 a⨯b▫c	!syntax@4: End-of-file not reached.
 a⨯b∂c	!syntax@4: End-of-file not reached.
 a⨯b√c	!syntax@4: End-of-file not reached.
-a⨯b↑c	Cross(a, ShortUpArrow(b, c))
+a⨯b↑c	Cross(a, UpArrow(b, c))
 a⨯b^c	Cross(a, Power(b, c))
 a⨯b<>c	Cross(a, StringJoin(b, c))
 a⨯b//@c	Cross(a, MapAll(b, c))
@@ -11554,7 +11554,7 @@ a**bc	!syntax@5: End-of-file not reached.
 a**b▫c	!syntax@5: End-of-file not reached.
 a**b∂c	!syntax@5: End-of-file not reached.
 a**b√c	!syntax@5: End-of-file not reached.
-a**b↑c	NonCommutativeMultiply(a, ShortUpArrow(b, c))
+a**b↑c	NonCommutativeMultiply(a, UpArrow(b, c))
 a**b^c	NonCommutativeMultiply(a, Power(b, c))
 a**b<>c	NonCommutativeMultiply(a, StringJoin(b, c))
 a**b//@c	NonCommutativeMultiply(a, MapAll(b, c))
@@ -11630,7 +11630,7 @@ a⊙bc	!syntax@4: End-of-file not reached.
 a⊙b▫c	!syntax@4: End-of-file not reached.
 a⊙b∂c	!syntax@4: End-of-file not reached.
 a⊙b√c	!syntax@4: End-of-file not reached.
-a⊙b↑c	CircleDot(a, ShortUpArrow(b, c))
+a⊙b↑c	CircleDot(a, UpArrow(b, c))
 a⊙b^c	CircleDot(a, Power(b, c))
 a⊙b<>c	CircleDot(a, StringJoin(b, c))
 a⊙b//@c	CircleDot(a, MapAll(b, c))
@@ -11706,7 +11706,7 @@ a∘bc	!syntax@4: End-of-file not reached.
 a∘b▫c	!syntax@4: End-of-file not reached.
 a∘b∂c	!syntax@4: End-of-file not reached.
 a∘b√c	!syntax@4: End-of-file not reached.
-a∘b↑c	SmallCircle(a, ShortUpArrow(b, c))
+a∘b↑c	SmallCircle(a, UpArrow(b, c))
 a∘b^c	SmallCircle(a, Power(b, c))
 a∘b<>c	SmallCircle(a, StringJoin(b, c))
 a∘b//@c	SmallCircle(a, MapAll(b, c))
@@ -12022,82 +12022,82 @@ a√b++c	!syntax@2: End-of-file not reached.
 a√b?c	!syntax@2: End-of-file not reached.
 a√b<<c	!syntax@2: End-of-file not reached.
 a√b::c	!syntax@2: End-of-file not reached.
-a↑b;c	CompoundExpression(ShortUpArrow(a, b), c)
-a↑b>>c	Put(ShortUpArrow(a, b), "c")
-a↑b/:c	TagSet(ShortUpArrow(a, b), c)
-a↑b∴c	Therefore(ShortUpArrow(a, b), c)
-a↑bc	VerticalSeparator(ShortUpArrow(a, b), c)
-a↑b//c	c(ShortUpArrow(a, b))
-a↑b∶c	Colon(ShortUpArrow(a, b), c)
-a↑b&c	Times(Function(ShortUpArrow(a, b)), c)
-a↑b*=c	TimesBy(ShortUpArrow(a, b), c)
-a↑b/.c	ReplaceAll(ShortUpArrow(a, b), c)
-a↑b->c	Rule(ShortUpArrow(a, b), c)
-a↑b<->c	TwoWayRule(ShortUpArrow(a, b), c)
-a↑b/;c	Condition(ShortUpArrow(a, b), c)
-a↑b~~c	StringExpression(ShortUpArrow(a, b), c)
-a↑b:c	ShortUpArrow(a, Pattern(b, c))
-a↑b|c	Alternatives(ShortUpArrow(a, b), c)
-a↑b..c	Times(Repeated(ShortUpArrow(a, b)), c)
-a↑b∍c	SuchThat(ShortUpArrow(a, b), c)
-a↑b⊢c	RightTee(ShortUpArrow(a, b), c)
-a↑b⥰c	RoundImplies(ShortUpArrow(a, b), c)
-a↑bc	Conditioned(ShortUpArrow(a, b), c)
-a↑b⊥c	UpTee(ShortUpArrow(a, b), c)
-a↑bc	Implies(ShortUpArrow(a, b), c)
-a↑b⧦c	Equivalent(ShortUpArrow(a, b), c)
-a↑b||c	Or(ShortUpArrow(a, b), c)
-a↑b⊻c	Xor(ShortUpArrow(a, b), c)
-a↑b&&c	And(ShortUpArrow(a, b), c)
-a↑b!c	ShortUpArrow(a, Times(Factorial(b), c))
+a↑b;c	CompoundExpression(UpArrow(a, b), c)
+a↑b>>c	Put(UpArrow(a, b), "c")
+a↑b/:c	TagSet(UpArrow(a, b), c)
+a↑b∴c	Therefore(UpArrow(a, b), c)
+a↑bc	VerticalSeparator(UpArrow(a, b), c)
+a↑b//c	c(UpArrow(a, b))
+a↑b∶c	Colon(UpArrow(a, b), c)
+a↑b&c	Times(Function(UpArrow(a, b)), c)
+a↑b*=c	TimesBy(UpArrow(a, b), c)
+a↑b/.c	ReplaceAll(UpArrow(a, b), c)
+a↑b->c	Rule(UpArrow(a, b), c)
+a↑b<->c	TwoWayRule(UpArrow(a, b), c)
+a↑b/;c	Condition(UpArrow(a, b), c)
+a↑b~~c	StringExpression(UpArrow(a, b), c)
+a↑b:c	UpArrow(a, Pattern(b, c))
+a↑b|c	Alternatives(UpArrow(a, b), c)
+a↑b..c	Times(Repeated(UpArrow(a, b)), c)
+a↑b∍c	SuchThat(UpArrow(a, b), c)
+a↑b⊢c	RightTee(UpArrow(a, b), c)
+a↑b⥰c	RoundImplies(UpArrow(a, b), c)
+a↑bc	Conditioned(UpArrow(a, b), c)
+a↑b⊥c	UpTee(UpArrow(a, b), c)
+a↑bc	Implies(UpArrow(a, b), c)
+a↑b⧦c	Equivalent(UpArrow(a, b), c)
+a↑b||c	Or(UpArrow(a, b), c)
+a↑b⊻c	Xor(UpArrow(a, b), c)
+a↑b&&c	And(UpArrow(a, b), c)
+a↑b!c	UpArrow(a, Times(Factorial(b), c))
 a↑b∀c	!syntax@4: End-of-file not reached.
-a↑b∈c	Element(ShortUpArrow(a, b), c)
-a↑b←c	LeftArrow(ShortUpArrow(a, b), c)
-a↑b∥c	DoubleVerticalBar(ShortUpArrow(a, b), c)
-a↑b!=c	Unequal(ShortUpArrow(a, b), c)
-a↑bc	UndirectedEdge(ShortUpArrow(a, b), c)
-a↑b⊎c	UnionPlus(ShortUpArrow(a, b), c)
-a↑b;;c	Span(ShortUpArrow(a, b), c)
+a↑b∈c	Element(UpArrow(a, b), c)
+a↑b←c	LeftArrow(UpArrow(a, b), c)
+a↑b∥c	DoubleVerticalBar(UpArrow(a, b), c)
+a↑b!=c	Unequal(UpArrow(a, b), c)
+a↑bc	UndirectedEdge(UpArrow(a, b), c)
+a↑b⊎c	UnionPlus(UpArrow(a, b), c)
+a↑b;;c	Span(UpArrow(a, b), c)
 a↑bc	!syntax@4: End-of-file not reached.
 a↑b∑c	!syntax@4: End-of-file not reached.
-a↑b⊕c	CirclePlus(ShortUpArrow(a, b), c)
-a↑b⌣c	Cup(ShortUpArrow(a, b), c)
-a↑b⌢c	Cap(ShortUpArrow(a, b), c)
-a↑b∐c	Coproduct(ShortUpArrow(a, b), c)
-a↑b≀c	VerticalTilde(ShortUpArrow(a, b), c)
+a↑b⊕c	CirclePlus(UpArrow(a, b), c)
+a↑b⌣c	Cup(UpArrow(a, b), c)
+a↑b⌢c	Cap(UpArrow(a, b), c)
+a↑b∐c	Coproduct(UpArrow(a, b), c)
+a↑b≀c	VerticalTilde(UpArrow(a, b), c)
 a↑b∏c	!syntax@4: End-of-file not reached.
-a↑b⋆c	Star(ShortUpArrow(a, b), c)
-a↑b·c	CenterDot(ShortUpArrow(a, b), c)
-a↑b⊗c	CircleTimes(ShortUpArrow(a, b), c)
-a↑b⋁c	Vee(ShortUpArrow(a, b), c)
-a↑b⋀c	Wedge(ShortUpArrow(a, b), c)
-a↑b⋄c	Diamond(ShortUpArrow(a, b), c)
-a↑b∖c	Backslash(ShortUpArrow(a, b), c)
-a↑b/c	Times(Power(c, -1), ShortUpArrow(a, b))
+a↑b⋆c	Star(UpArrow(a, b), c)
+a↑b·c	CenterDot(UpArrow(a, b), c)
+a↑b⊗c	CircleTimes(UpArrow(a, b), c)
+a↑b⋁c	Vee(UpArrow(a, b), c)
+a↑b⋀c	Wedge(UpArrow(a, b), c)
+a↑b⋄c	Diamond(UpArrow(a, b), c)
+a↑b∖c	Backslash(UpArrow(a, b), c)
+a↑b/c	Times(Power(c, -1), UpArrow(a, b))
 a↑b−c	!syntax@4: End-of-file not reached.
-a↑b-c	Plus(ShortUpArrow(a, b), Times(-1, c))
-a↑bc	PermutationProduct(ShortUpArrow(a, b), c)
-a↑bc	TensorProduct(ShortUpArrow(a, b), c)
-a↑bc	TensorWedge(ShortUpArrow(a, b), c)
-a↑b⨯c	Cross(ShortUpArrow(a, b), c)
-a↑b**c	NonCommutativeMultiply(ShortUpArrow(a, b), c)
-a↑b⊙c	CircleDot(ShortUpArrow(a, b), c)
-a↑b∘c	SmallCircle(ShortUpArrow(a, b), c)
+a↑b-c	Plus(UpArrow(a, b), Times(-1, c))
+a↑bc	PermutationProduct(UpArrow(a, b), c)
+a↑bc	TensorProduct(UpArrow(a, b), c)
+a↑bc	TensorWedge(UpArrow(a, b), c)
+a↑b⨯c	Cross(UpArrow(a, b), c)
+a↑b**c	NonCommutativeMultiply(UpArrow(a, b), c)
+a↑b⊙c	CircleDot(UpArrow(a, b), c)
+a↑b∘c	SmallCircle(UpArrow(a, b), c)
 a↑bc	!syntax@4: End-of-file not reached.
 a↑b▫c	!syntax@4: End-of-file not reached.
 a↑b∂c	!syntax@4: End-of-file not reached.
 a↑b√c	!syntax@4: End-of-file not reached.
-a↑b^c	ShortUpArrow(a, Power(b, c))
-a↑b<>c	ShortUpArrow(a, StringJoin(b, c))
-a↑b//@c	ShortUpArrow(a, MapAll(b, c))
-a↑b@c	ShortUpArrow(a, b(c))
-a↑b/*c	ShortUpArrow(a, RightComposition(b, c))
-a↑b@*c	ShortUpArrow(a, Composition(b, c))
+a↑b^c	UpArrow(a, Power(b, c))
+a↑b<>c	UpArrow(a, StringJoin(b, c))
+a↑b//@c	UpArrow(a, MapAll(b, c))
+a↑b@c	UpArrow(a, b(c))
+a↑b/*c	UpArrow(a, RightComposition(b, c))
+a↑b@*c	UpArrow(a, Composition(b, c))
 a↑b~c	!syntax@6: Operator ~ requires even number of arguments
-a↑b++c	ShortUpArrow(a, Times(Increment(b), c))
-a↑b?c	ShortUpArrow(a, PatternTest(b, c))
+a↑b++c	UpArrow(a, Times(Increment(b), c))
+a↑b?c	UpArrow(a, PatternTest(b, c))
 a↑b<<c	!syntax@5: End-of-file not reached.
-a↑b::c	ShortUpArrow(a, MessageName(b, c))
+a↑b::c	UpArrow(a, MessageName(b, c))
 a^b;c	CompoundExpression(Power(a, b), c)
 a^b>>c	Put(Power(a, b), "c")
 a^b/:c	TagSet(Power(a, b), c)
@@ -12163,7 +12163,7 @@ a^bc	!syntax@4: End-of-file not reached.
 a^b▫c	!syntax@4: End-of-file not reached.
 a^b∂c	!syntax@4: End-of-file not reached.
 a^b√c	!syntax@4: End-of-file not reached.
-a^b↑c	ShortUpArrow(Power(a, b), c)
+a^b↑c	UpArrow(Power(a, b), c)
 a^b<>c	Power(a, StringJoin(b, c))
 a^b//@c	Power(a, MapAll(b, c))
 a^b@c	Power(a, b(c))
@@ -12239,7 +12239,7 @@ a<>bc	!syntax@5: End-of-file not reached.
 a<>b▫c	!syntax@5: End-of-file not reached.
 a<>b∂c	!syntax@5: End-of-file not reached.
 a<>b√c	!syntax@5: End-of-file not reached.
-a<>b↑c	ShortUpArrow(StringJoin(a, b), c)
+a<>b↑c	UpArrow(StringJoin(a, b), c)
 a<>b^c	Power(StringJoin(a, b), c)
 a<>b//@c	StringJoin(a, MapAll(b, c))
 a<>b@c	StringJoin(a, b(c))
@@ -12315,7 +12315,7 @@ a//@bc	!syntax@6: End-of-file not reached.
 a//@b▫c	!syntax@6: End-of-file not reached.
 a//@b∂c	!syntax@6: End-of-file not reached.
 a//@b√c	!syntax@6: End-of-file not reached.
-a//@b↑c	ShortUpArrow(MapAll(a, b), c)
+a//@b↑c	UpArrow(MapAll(a, b), c)
 a//@b^c	Power(MapAll(a, b), c)
 a//@b<>c	StringJoin(MapAll(a, b), c)
 a//@b@c	MapAll(a, b(c))
@@ -12391,7 +12391,7 @@ a@bc	!syntax@4: End-of-file not reached.
 a@b▫c	!syntax@4: End-of-file not reached.
 a@b∂c	!syntax@4: End-of-file not reached.
 a@b√c	!syntax@4: End-of-file not reached.
-a@b↑c	ShortUpArrow(a(b), c)
+a@b↑c	UpArrow(a(b), c)
 a@b^c	Power(a(b), c)
 a@b<>c	StringJoin(a(b), c)
 a@b//@c	MapAll(a(b), c)
@@ -12467,7 +12467,7 @@ a/*bc	!syntax@5: End-of-file not reached.
 a/*b▫c	!syntax@5: End-of-file not reached.
 a/*b∂c	!syntax@5: End-of-file not reached.
 a/*b√c	!syntax@5: End-of-file not reached.
-a/*b↑c	ShortUpArrow(RightComposition(a, b), c)
+a/*b↑c	UpArrow(RightComposition(a, b), c)
 a/*b^c	Power(RightComposition(a, b), c)
 a/*b<>c	StringJoin(RightComposition(a, b), c)
 a/*b//@c	MapAll(RightComposition(a, b), c)
@@ -12543,7 +12543,7 @@ a@*bc	!syntax@5: End-of-file not reached.
 a@*b▫c	!syntax@5: End-of-file not reached.
 a@*b∂c	!syntax@5: End-of-file not reached.
 a@*b√c	!syntax@5: End-of-file not reached.
-a@*b↑c	ShortUpArrow(Composition(a, b), c)
+a@*b↑c	UpArrow(Composition(a, b), c)
 a@*b^c	Power(Composition(a, b), c)
 a@*b<>c	StringJoin(Composition(a, b), c)
 a@*b//@c	MapAll(Composition(a, b), c)
@@ -12695,7 +12695,7 @@ a++bc	!syntax@5: End-of-file not reached.
 a++b▫c	!syntax@5: End-of-file not reached.
 a++b∂c	!syntax@5: End-of-file not reached.
 a++b√c	!syntax@5: End-of-file not reached.
-a++b↑c	Times(Increment(a), ShortUpArrow(b, c))
+a++b↑c	Times(Increment(a), UpArrow(b, c))
 a++b^c	Times(Increment(a), Power(b, c))
 a++b<>c	Times(Increment(a), StringJoin(b, c))
 a++b//@c	Times(Increment(a), MapAll(b, c))
@@ -12771,7 +12771,7 @@ a?bc	!syntax@4: End-of-file not reached.
 a?b▫c	!syntax@4: End-of-file not reached.
 a?b∂c	!syntax@4: End-of-file not reached.
 a?b√c	!syntax@4: End-of-file not reached.
-a?b↑c	ShortUpArrow(PatternTest(a, b), c)
+a?b↑c	UpArrow(PatternTest(a, b), c)
 a?b^c	Power(PatternTest(a, b), c)
 a?b<>c	StringJoin(PatternTest(a, b), c)
 a?b//@c	MapAll(PatternTest(a, b), c)
@@ -12923,7 +12923,7 @@ a::bc	!syntax@5: End-of-file not reached.
 a::b▫c	!syntax@5: End-of-file not reached.
 a::b∂c	!syntax@5: End-of-file not reached.
 a::b√c	!syntax@5: End-of-file not reached.
-a::b↑c	ShortUpArrow(MessageName(a, b), c)
+a::b↑c	UpArrow(MessageName(a, b), c)
 a::b^c	Power(MessageName(a, b), c)
 a::b<>c	StringJoin(MessageName(a, b), c)
 a::b//@c	MapAll(MessageName(a, b), c)

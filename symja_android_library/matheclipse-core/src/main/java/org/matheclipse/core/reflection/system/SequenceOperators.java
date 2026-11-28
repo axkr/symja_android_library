@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -70,6 +71,44 @@ public class SequenceOperators {
   }
 
   /**
+   * The operator forms <code>head(f, test)(list)</code> and <code>head(f, test)(x, list)</code> of
+   * <code>FoldWhile</code> and <code>FoldWhileList</code>: <code>head(f, list, test)</code> and
+   * <code>head(f, x, list, test)</code>.
+   */
+  @AllowNIL
+  private static IExpr foldWhileOperatorForm(IAST ast, IBuiltInSymbol symbol) {
+    IExpr head = ast.head();
+    if (head.isAST(symbol, 3)) {
+      if (ast.isAST1()) {
+        return F.ternaryAST3(symbol, head.first(), ast.arg1(), head.second());
+      }
+      if (ast.isAST2()) {
+        return F.quaternary(symbol, head.first(), ast.arg1(), ast.arg2(), head.second());
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The start value, the list and the test of <code>head(f, {x, a1, ...}, test)</code> or
+   * <code>head(f, x, {a1, ...}, test, ...)</code>.
+   *
+   * @return <code>{value, list, test}</code>, or <code>null</code> if there is no list to fold over
+   */
+  private static IExpr[] foldWhileArguments(IAST ast) {
+    if (ast.isAST3()) {
+      if (!ast.arg2().isAST() || ast.arg2().argSize() < 1) {
+        return null;
+      }
+      return new IExpr[] {ast.arg2().first(), ((IAST) ast.arg2()).rest(), ast.arg3()};
+    }
+    if (!ast.arg3().isAST()) {
+      return null;
+    }
+    return new IExpr[] {ast.arg2(), ast.arg3(), ast.arg4()};
+  }
+
+  /**
    * <code>FoldWhile(f, x, {a1, a2, ...}, test)</code> - fold <code>f</code> while
    * <code>test</code> gives <code>True</code> on the latest result; the result is the first value
    * on which the test fails or the last value. <code>FoldWhile(f, {x, a1, ...}, test)</code> starts
@@ -81,40 +120,19 @@ public class SequenceOperators {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.FoldWhile) {
-        // the operator form FoldWhile(f, test)(x, list)
-        IExpr head = ast.head();
-        if (head.isAST(S.FoldWhile, 3)) {
-          if (ast.isAST1()) {
-            return F.ternaryAST3(S.FoldWhile, head.first(), ast.arg1(), head.second());
-          }
-          if (ast.isAST2()) {
-            return F.quaternary(S.FoldWhile, head.first(), ast.arg1(), ast.arg2(), head.second());
-          }
-        }
-        return F.NIL;
+        return foldWhileOperatorForm(ast, S.FoldWhile);
       }
       if (ast.isAST2()) {
         return F.NIL;
       }
       IExpr f = ast.arg1();
-      IExpr value;
-      IAST list;
-      IExpr test;
-      if (ast.isAST3()) {
-        if (!ast.arg2().isAST() || ast.arg2().argSize() < 1) {
-          return F.NIL;
-        }
-        value = ast.arg2().first();
-        list = ((IAST) ast.arg2()).rest();
-        test = ast.arg3();
-      } else {
-        if (!ast.arg3().isAST()) {
-          return F.NIL;
-        }
-        value = ast.arg2();
-        list = (IAST) ast.arg3();
-        test = ast.arg4();
+      IExpr[] arguments = foldWhileArguments(ast);
+      if (arguments == null) {
+        return F.NIL;
       }
+      IExpr value = arguments[0];
+      IAST list = (IAST) arguments[1];
+      IExpr test = arguments[2];
       if (!engine.evalTrue(F.unaryAST1(test, value))) {
         return value;
       }
@@ -149,50 +167,29 @@ public class SequenceOperators {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() != S.FoldWhileList) {
-        IExpr head = ast.head();
-        if (head.isAST(S.FoldWhileList, 3)) {
-          if (ast.isAST1()) {
-            return F.ternaryAST3(S.FoldWhileList, head.first(), ast.arg1(), head.second());
-          }
-          if (ast.isAST2()) {
-            return F.quaternary(S.FoldWhileList, head.first(), ast.arg1(), ast.arg2(),
-                head.second());
-          }
-        }
-        return F.NIL;
+        return foldWhileOperatorForm(ast, S.FoldWhileList);
       }
       final int argSize = ast.argSize();
       if (argSize == 2 || argSize == 5) {
         return F.NIL;
       }
       IExpr f = ast.arg1();
-      IExpr value;
-      IAST list;
-      IExpr test;
+      IExpr[] arguments = foldWhileArguments(ast);
+      if (arguments == null) {
+        return F.NIL;
+      }
+      IExpr value = arguments[0];
+      IAST list = (IAST) arguments[1];
+      IExpr test = arguments[2];
       int extra = 0;
-      if (argSize == 3) {
-        if (!ast.arg2().isAST() || ast.arg2().argSize() < 1) {
+      if (argSize == 6) {
+        if (!ast.arg5().isOne()) {
+          // only the latest value is given to the test
           return F.NIL;
         }
-        value = ast.arg2().first();
-        list = ((IAST) ast.arg2()).rest();
-        test = ast.arg3();
-      } else {
-        if (!ast.arg3().isAST()) {
+        extra = ast.get(6).toIntDefault();
+        if (F.isNotPresent(extra)) {
           return F.NIL;
-        }
-        value = ast.arg2();
-        list = (IAST) ast.arg3();
-        test = ast.arg4();
-        if (argSize == 6) {
-          if (!ast.arg5().isOne()) {
-            // only the latest value is given to the test
-            return F.NIL;
-          }
-          extra = ast.get(6).toIntDefault();
-          if (F.isNotPresent(extra)) {
-            return F.NIL;
-          }
         }
       }
       IASTAppendable result = F.ListAlloc(list.size() + 1);
