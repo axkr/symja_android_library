@@ -637,6 +637,103 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "Log(3)/2");
   }
 
+  /** <code>QuartileDeviation</code> is half the <code>InterquartileRange</code>. */
+  @Test
+  public void testQuartileDeviation() {
+    check("QuartileDeviation({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
+        "44");
+    check("QuartileDeviation({1,2,3,4,5,6,7,8,9,10})", //
+        "5/2");
+    check("QuartileDeviation({1.0,2.5,3,7,11.5})", //
+        "3.0");
+    // the parameterization of the quartiles
+    check("QuartileDeviation({1,2,3,4,5,6,7,8}, {{0,0},{1,0}})", //
+        "2");
+    // columnwise
+    check("QuartileDeviation({{1,2},{3,4},{5,10},{7,100}})", //
+        "{2,26}");
+    check("QuartileDeviation(WeightedData({1,2,3,10}, {1,1,1,1}))", //
+        "1");
+    check("QuartileDeviation({Quantity(1,\"m\"),Quantity(2,\"m\"),Quantity(3,\"m\"),"
+        + "Quantity(10,\"m\")})", //
+        "Quantity(5/2,\"Meters\")");
+    check("QuartileDeviation(ExponentialDistribution(l))", //
+        "Log(3)/(2*l)");
+    check("QuartileDeviation(NormalDistribution(m,s))", //
+        "Sqrt(2)*s*InverseErfc(1/2)");
+    // a distribution without quantiles stays unevaluated
+    check("QuartileDeviation(KDistribution(2,3))", //
+        "QuartileDeviation(KDistribution(2,3))");
+    check("QuartileDeviation(x)", //
+        "QuartileDeviation(x)");
+  }
+
+  /**
+   * <code>QuartileSkewness</code> is the Bowley coefficient
+   * <code>(q1 - 2*q2 + q3)/(q3 - q1)</code> of the <code>Quartiles</code>.
+   */
+  @Test
+  public void testQuartileSkewness() {
+    // quartiles {7/4,3,65/2}
+    check("QuartileSkewness({1,2,3,10,100})", //
+        "113/123");
+    // quartiles {31,87,119}
+    check("QuartileSkewness({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
+        "-3/11");
+    check("QuartileSkewness({1,2,3,4,5,6,7,8,9,10})", //
+        "0");
+    check("QuartileSkewness({1.0,2.5,3,7,11.5})", //
+        "0.708333");
+    // the parameterization of the quartiles: {2,7,16} instead of the default {3,9,19}
+    check("QuartileSkewness({1,2,4,7,11,16,22,29})", //
+        "1/4");
+    check("QuartileSkewness({1,2,4,7,11,16,22,29}, {{0,0},{1,0}})", //
+        "2/7");
+    // columnwise. The quartiles of a 3-column matrix are a 3-list themselves, which must not be
+    // read as one vector's quartiles
+    check("QuartileSkewness({{1,2},{3,4},{5,10},{7,100}})", //
+        "{0,11/13}");
+    check("QuartileSkewness({{1,2,3},{4,5,6},{7,8,90},{10,11,12}})", //
+        "{0,0,25/31}");
+    check("QuartileSkewness({{{1,100},{3,4}},{{5,6},{7,800}},{{9,10},{11,12}}})", //
+        "{{0,43/47},{0,195/199}}");
+    // the data containers of Quartiles
+    check("QuartileSkewness(WeightedData({1,2,3,10}, {1,1,1,1}))", //
+        "0");
+    check("QuartileSkewness(<|a->1,b->2,c->3,d->10|>)", //
+        "3/5");
+    check("QuartileSkewness(SparseArray({1,2,3,10}))", //
+        "3/5");
+    // the units cancel
+    check("QuartileSkewness({Quantity(1,\"m\"),Quantity(200,\"cm\"),Quantity(3,\"m\"),"
+        + "Quantity(10,\"m\")})", //
+        "3/5");
+    check("QuartileSkewness({Quantity(1,\"m\"),Quantity(1,\"m\"),Quantity(100,\"cm\")})", //
+        "Indeterminate");
+    // distributions
+    check("QuartileSkewness(NormalDistribution(m,s))", //
+        "0");
+    check("QuartileSkewness(ExponentialDistribution(l))", //
+        "(Log(4/3)/l+(-2*Log(2))/l+Log(4)/l)/(-Log(4/3)/l+Log(4)/l)");
+    check("Simplify(QuartileSkewness(ExponentialDistribution(l)))", //
+        "Log(4/3)/Log(3)");
+    // a distribution without quantiles and a distribution with a parameterization stay
+    // unevaluated
+    check("QuartileSkewness(KDistribution(2,3))", //
+        "QuartileSkewness(KDistribution(2,3))");
+    check("QuartileSkewness(NormalDistribution(0,1), {{0,0},{1,0}})", //
+        "QuartileSkewness(NormalDistribution(0,1),{{0,0},{1,0}})");
+    // q1 == q2 == q3
+    check("QuartileSkewness({1,1,1,1})", //
+        "Indeterminate");
+    check("QuartileSkewness({5})", //
+        "Indeterminate");
+    check("QuartileSkewness({})", //
+        "QuartileSkewness({})");
+    check("QuartileSkewness(x)", //
+        "QuartileSkewness(x)");
+  }
+
   /**
    * <code>Association</code>, <code>SparseArray</code> and <code>WeightedData</code> across the
    * quantile family. Every value here was run in Mathematica.

@@ -30,7 +30,7 @@ See
 ```
 
 ### Related terms 
-[FiveNum](FiveNum.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)
+[FiveNum](FiveNum.md), [Quantile](Quantile.md), [QuartileDeviation](QuartileDeviation.md), [Quartiles](Quartiles.md)
 
 
 

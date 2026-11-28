@@ -165,7 +165,9 @@ public class StatisticsFunctions {
       S.PrincipalComponents.setEvaluator(new PrincipalComponents());
       S.Probability.setEvaluator(new Probability());
       S.Quantile.setEvaluator(new Quantile());
+      S.QuartileDeviation.setEvaluator(new QuartileDeviation());
       S.Quartiles.setEvaluator(new Quartiles());
+      S.QuartileSkewness.setEvaluator(new QuartileSkewness());
       S.RandomVariate.setEvaluator(new RandomVariate());
       S.Rescale.setEvaluator(new Rescale());
       S.RootMeanSquare.setEvaluator(new RootMeanSquare());
@@ -2755,14 +2757,7 @@ public class StatisticsFunctions {
         // columnwise, like every other head in this family. This has to come before the vector
         // branch below: the quartiles of a 3-column matrix are themselves a 3-list, which that
         // branch would otherwise read as one vector's {q1,q2,q3}.
-        if (dimensions.size() == 2) {
-          final IExpr param = parameter;
-          return arg1.mapMatrixColumns(dimensions.toIntArray(),
-              x -> param.isNIL() ? F.InterquartileRange(x)
-                  : F.binaryAST2(S.InterquartileRange, x, param))
-              .normal(false);
-        }
-        return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
+        return columnwise(ast, arg1, dimensions);
       }
       if (dimensions.size() == 1) {
         IExpr resultQuartiles = parameter.isNIL() //
@@ -4871,6 +4866,124 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
+    }
+  }
+
+
+  /**
+   * Apply the statistic <code>ast</code> to each column of the matrix <code>data</code>, or
+   * reduce an array of higher rank across its first index. The other arguments of
+   * <code>ast</code>, like a quantile parameterization, reach each column unchanged.
+   *
+   * @param ast the statistic, for example <code>InterquartileRange(data, {{a,b},{c,d}})</code>
+   * @param data the array, which replaces the first argument of <code>ast</code>
+   * @param dimensions the dimensions of <code>data</code>, at least two of them
+   */
+  private static IExpr columnwise(IAST ast, IExpr data, IntList dimensions) {
+    if (dimensions.size() == 2) {
+      return data.mapMatrixColumns(dimensions.toIntArray(), x -> ast.setAtCopy(1, x))
+          .normal(false);
+    }
+    return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), data, F.C1);
+  }
+
+  /**
+   * Test if <code>expr</code> contains a <code>Quantile</code> or <code>InverseCDF</code> which
+   * could not be computed, for example of a distribution without a closed-form quantile.
+   */
+  private static boolean hasUnevaluatedQuantile(IExpr expr) {
+    return expr.has(x -> x.isAST(S.Quantile) || x.isAST(S.InverseCDF), true);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>QuartileDeviation(data)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns half the interquartile range <code>(q3 - q1)/2</code> of the <code>data</code> or of a
+   * distribution.
+   * </p>
+   */
+  private static final class QuartileDeviation extends AbstractFunctionEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // InterquartileRange takes the same arguments: a data list, an array (columnwise),
+      // WeightedData, quantities, a distribution, and an optional quantile parameterization
+      IExpr range = engine.evaluate(ast.apply(S.InterquartileRange, 1));
+      if (range.isAST(S.InterquartileRange) || hasUnevaluatedQuantile(range)) {
+        return F.NIL;
+      }
+      return F.Times(F.C1D2, range);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>QuartileSkewness(data)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the quartile skewness coefficient (Bowley skewness)
+   * <code>(q1 - 2*q2 + q3)/(q3 - q1)</code> of the <code>data</code> or of a distribution, with
+   * the quartiles <code>{q1, q2, q3}</code> from <code>Quartiles</code>.
+   * </p>
+   */
+  private static final class QuartileSkewness extends AbstractFunctionEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = normalizeData(ast.arg1());
+      // QuartileSkewness(data, {{a,b},{c,d}}) uses that parameterization for the quartiles
+      IExpr parameter = ast.isAST2() ? ast.arg2() : F.NIL;
+
+      final IntList dimensions =
+          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() >= 2) {
+        // columnwise, like InterquartileRange. The quartiles of a 3-column matrix are a 3-list
+        // themselves, which must not be read as one vector's {q1,q2,q3}.
+        return columnwise(ast, arg1, dimensions);
+      }
+      if (arg1.isDistribution() && parameter.isPresent()) {
+        // distributions take no parameterization
+        return F.NIL;
+      }
+      IExpr quartiles = engine.evaluate(ast.setAtCopy(1, arg1).apply(S.Quartiles, 1));
+      if (!quartiles.isList3() || hasUnevaluatedQuantile(quartiles)) {
+        return F.NIL;
+      }
+      if (isQuantityVector(arg1)) {
+        // the coefficient is dimensionless; Quartiles gives all three in the unit of the first
+        // element
+        quartiles = engine.evaluate(F.QuantityMagnitude(quartiles));
+      }
+      IExpr q1 = quartiles.first();
+      IExpr q2 = quartiles.second();
+      IExpr q3 = quartiles.getAt(3);
+      IExpr range = engine.evaluate(F.Subtract(q3, q1));
+      if (range.isZero()) {
+        // q1 == q2 == q3: the coefficient is 0/0
+        return S.Indeterminate;
+      }
+      return F.Divide(F.Plus(q1, F.Times(F.CN2, q2), q3), range);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 
