@@ -65,7 +65,7 @@ mvn -pl matheclipse-io -am test -Dtest='*ArchTest'   # ArchUnit rules (slow-tagg
   - Expected strings are Symja's `OutputForm`.
   - The test engine limits recursion and iteration, and caps expression size at 20000 and integer
     bit length at 200000. Keep test inputs below these limits.
-  - Write your own test inputs, not examples copied from external documentation.
+  - Write your own test inputs, not examples copied from external documentation, excluding open sources like Wikipedia, OEIS, ...
 
 ## Code conventions
 
