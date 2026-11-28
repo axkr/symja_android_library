@@ -438,6 +438,21 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   public Context getContext(String contextName) {
+    Context context = findContext(contextName);
+    if (context != null) {
+      return context;
+    }
+    context = new Context(contextName);
+    fContextMap.put(contextName, context);
+    return context;
+  }
+
+  /**
+   * The context with the complete name <code>contextName</code>, without creating it.
+   *
+   * @return <code>null</code> if there is no such context
+   */
+  public Context findContext(String contextName) {
     Context context = fContextMap.get(contextName);
     if (context != null) {
       return context;
@@ -447,9 +462,7 @@ public final class ContextPath implements Iterable<Context> {
         return ctxt;
       }
     }
-    context = new Context(contextName);
-    fContextMap.put(contextName, context);
-    return context;
+    return null;
   }
 
   public Map<String, Context> getContextMap() {
@@ -649,6 +662,20 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   public ISymbol symbol(String symbolName, Context newContext, boolean relaxedSyntax) {
+    ISymbol symbol = findSymbol(symbolName, relaxedSyntax);
+    if (symbol != null) {
+      return symbol;
+    }
+    return getSymbolFromContext(newContext, getName(symbolName, relaxedSyntax));
+  }
+
+  /**
+   * The symbol <code>symbolName</code> resolves to, as {@link #symbol(String, Context, boolean)}
+   * finds it, without creating it.
+   *
+   * @return <code>null</code> if no context on the path holds the name
+   */
+  public ISymbol findSymbol(String symbolName, boolean relaxedSyntax) {
     String name = getName(symbolName, relaxedSyntax);
     // a $Context which isn't on $ContextPath is searched first: inside Begin["Pkg`Private`"] a
     // private symbol hides a public one of the same name. One which is on it counts at its place
@@ -672,7 +699,17 @@ public final class ContextPath implements Iterable<Context> {
         return alias;
       }
     }
-    return getSymbolFromContext(newContext, name);
+    return null;
+  }
+
+  /**
+   * The symbol <code>symbolName</code> in <code>context</code>, without creating it.
+   *
+   * @return <code>null</code> if the context doesn't hold the name
+   */
+  public static ISymbol findSymbol(String symbolName, final Context context,
+      boolean relaxedSyntax) {
+    return context.get(getName(symbolName, relaxedSyntax));
   }
 
   private static String getName(String name, boolean relaxedSyntax) {

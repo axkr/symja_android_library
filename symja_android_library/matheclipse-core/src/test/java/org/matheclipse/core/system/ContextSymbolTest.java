@@ -138,6 +138,39 @@ public class ContextSymbolTest extends ExprEvaluatorTestCase {
             + "   ^");
   }
 
+  /**
+   * A symbol name given as a string, as <code>Attributes</code>, <code>Clear</code> and
+   * <code>Context</code> take it, means the symbol the same name means in an input.
+   */
+  @Test
+  public void testSymbolNamesAsStrings() {
+    // Ctx`x is x in that context, also where another context on $ContextPath has an x
+    check("strx = 1; Begin(\"StrCtx`\"); End(); Context(\"StrCtx`strx\")", //
+        "StrCtx`");
+    check("Context(\"strx\")", //
+        "Global`");
+    check("Context(\"`strx\")", //
+        "Global`");
+    check("SetAttributes(StrCtx`strx, Listable); Attributes(\"StrCtx`strx\")", //
+        "{Listable}");
+    check("Attributes(strx)", //
+        "{}");
+    // a System` name is a built-in or nothing: the shared context gets no new symbol
+    check("Attributes(\"System`Plus\")", //
+        "{Flat,Listable,NumericFunction,OneIdentity,Orderless,Protected}");
+    check("Attributes(\"System`strnosuchname\")", //
+        "Attributes(System`strnosuchname)");
+    check("Names(\"System`strnosuchname\")", //
+        "{}");
+    // neither a number nor a context name nor a doubled ` is a symbol name
+    check("Attributes(\"2x\")", //
+        "Attributes(2x)");
+    check("Attributes(\"StrCtx`\")", //
+        "Attributes(StrCtx`)");
+    check("Attributes(\"a``b\")", //
+        "Attributes(a``b)");
+  }
+
   @Test
   public void testPrecisionMarksAreNotContexts() {
     // the backtick of a precision mark must not start a context

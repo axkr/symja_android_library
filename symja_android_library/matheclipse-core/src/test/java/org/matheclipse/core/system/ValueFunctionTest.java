@@ -125,6 +125,46 @@ public class ValueFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testStringNames() {
+    // the symbol may be given by its name, with or without its context
+    check("ClearAll(sv); got = {}; "
+        + "Experimental`ValueFunction(\"sv\") = Function({y, x}, AppendTo(got, x)); "
+        + "sv = 7; sv = {a, b}; got", //
+        "{7,{a,b}}");
+    check("Experimental`ValueFunction(\"Global`sv\") === Experimental`ValueFunction(Unevaluated(sv))", //
+        "True");
+    check("Experimental`ValueFunction(\"Global`sv\") =.; sv = 9; got", //
+        "{7,{a,b}}");
+    check("Experimental`ValueFunction(\"sv\") =.", //
+        "$Failed");
+    // a name in a context relative to $Context
+    check("ClearAll(sw); Experimental`ValueFunction(\"`sw\") = h3; "
+        + "Experimental`ValueFunction(Unevaluated(sw))", //
+        "h3");
+    // the string names the symbol, not its value
+    check("ClearAll(sz); sz = 5; Experimental`ValueFunction(\"sz\") = h4; "
+        + "Experimental`ValueFunction(Unevaluated(sz))", //
+        "h4");
+    check("Experimental`ValueFunction(\"2+k\") = h", //
+        "$Failed");
+    check("Experimental`ValueFunction(\"Global`\") = h", //
+        "$Failed");
+    check("Experimental`ValueFunction(\"Cos\") = h", //
+        "$Failed");
+    // the argument stays the string
+    check("StringQ(First(Experimental`ValueFunction(\"2+k\")))", //
+        "True");
+    // reading the function of a name creates no symbol
+    check("Experimental`ValueFunction(\"vfnosuchname\"); Names(\"Global`vfnosuchname\")", //
+        "{}");
+    check("Experimental`ValueFunction(\"VfNoSuchCtx`y\"); Names(\"VfNoSuchCtx`*\")", //
+        "{}");
+    // System` gets no new symbol
+    check("Experimental`ValueFunction(\"System`vfnosuchname\") = h", //
+        "$Failed");
+  }
+
+  @Test
   public void testInvalidSymbols() {
     check("Experimental`ValueFunction(2 + k) = h", //
         "$Failed");

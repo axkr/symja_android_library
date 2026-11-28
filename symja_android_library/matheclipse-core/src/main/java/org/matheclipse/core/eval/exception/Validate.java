@@ -1163,21 +1163,69 @@ public final class Validate {
     return upTo;
   }
 
+  /**
+   * The symbol a name such as <code>"x"</code>, <code>"Global`x"</code> or <code>"`x"</code>
+   * stands for, resolved as the parser resolves the same name in an input. A symbol which doesn't
+   * exist yet is created, except in the <code>System`</code> context.
+   *
+   * @param identifier the symbol name, possibly with its context
+   * @param engine the evaluation engine
+   * @return <code>null</code> if <code>identifier</code> is not a symbol name
+   */
+  public static ISymbol symbolOfIdentifier(String identifier, EvalEngine engine) {
+    return symbolOfIdentifier(identifier, true, engine);
+  }
+
+  /**
+   * The symbol a name such as <code>"x"</code>, <code>"Global`x"</code> or <code>"`x"</code>
+   * stands for, resolved as the parser resolves the same name in an input.
+   *
+   * <p>
+   * The <code>System`</code> context is shared by all engines, so a name in it is only looked up:
+   * <code>"System`foo"</code> is a symbol only if <code>System`foo</code> exists already.
+   *
+   * @param identifier the symbol name, possibly with its context
+   * @param create create a symbol which doesn't exist yet
+   * @param engine the evaluation engine
+   * @return <code>null</code> if <code>identifier</code> is not a symbol name, or names no
+   *         existing symbol and <code>create</code> is <code>false</code>
+   */
+  public static ISymbol symbolOfIdentifier(String identifier, boolean create, EvalEngine engine) {
+    // `x names x in a context relative to $Context
+    boolean relative = identifier.length() > 1 && identifier.charAt(0) == '`';
+    if (!Scanner.isIdentifier(relative ? identifier.substring(1) : identifier)) {
+      return null;
+    }
+    final boolean relaxedSyntax = engine.isRelaxedSyntax();
+    int indx = identifier.lastIndexOf('`');
+    if (indx < 0) {
+      return create ? F.symbol(identifier, engine)
+          : engine.getContextPath().findSymbol(identifier, relaxedSyntax);
+    }
+    String shortName = identifier.substring(indx + 1);
+    String contextStr = identifier.substring(0, indx + 1);
+    String contextName = ContextPath.resolveContextName(contextStr, engine);
+    if (Context.SYSTEM_CONTEXT_NAME.equals(contextName)) {
+      return ContextPath.findSymbol(shortName, Context.SYSTEM, relaxedSyntax);
+    }
+    if (create) {
+      return F.symbol(shortName, contextStr, null, engine);
+    }
+    IBuiltInSymbol alias = ContextPath.systemAlias(contextName, shortName);
+    if (alias != null) {
+      return alias;
+    }
+    Context context = engine.getContextPath().findContext(contextName);
+    return context == null ? null : ContextPath.findSymbol(shortName, context, relaxedSyntax);
+  }
+
   public static IExpr checkIdentifierHoldPattern(final IExpr expr, IAST ast, EvalEngine engine) {
     ISymbol sym = null;
     if (expr.isString()) {
-      String identifier = expr.toString();
-      if (!Scanner.isIdentifier(identifier)) {
+      sym = symbolOfIdentifier(expr.toString(), engine);
+      if (sym == null) {
         // Argument `1` at position `2` is expected to be a symbol.
         return Errors.printMessage(ast.topHead(), "sym", F.list(expr, F.C1), engine);
-      }
-      int indx = identifier.lastIndexOf('`');
-      if (indx > 0) {
-        ContextPath contextPath = engine.getContextPath();
-        Context context = contextPath.getContext(identifier.substring(0, indx + 1));
-        sym = contextPath.symbol(identifier.substring(indx + 1), context, engine.isRelaxedSyntax());
-      } else {
-        sym = F.symbol(identifier, engine);
       }
     } else if (expr.isSymbol()) {
       sym = (ISymbol) expr;

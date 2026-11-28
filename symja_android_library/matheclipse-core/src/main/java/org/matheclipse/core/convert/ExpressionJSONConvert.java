@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -34,6 +35,44 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 
 /** Import and export an expression to and from <code>ExpressionJSON</code> format. */
 public class ExpressionJSONConvert {
+
+  /**
+   * A real number written as text: digits with a decimal point and an optional exponent, or
+   * digits with an exponent.
+   */
+  private static final Pattern DECIMAL_NUMBER =
+      Pattern.compile("-?(?:[0-9]+\\.[0-9]*(?:e-?[0-9]+)?|[0-9]+e-?[0-9]+)");
+
+  /**
+   * The text of an arbitrary precision real which is read back with the same precision: the
+   * significant digits are padded with zeros to the precision, and the text always has a decimal
+   * point, so <code>N(1/4, 30)</code> is written as <code>2.50000000000000000000000000000e-1</code>.
+   */
+  private static String numberText(Apfloat value) {
+    String text = value.toString();
+    long precision = value.precision();
+    if (value.signum() == 0 || precision == Apfloat.INFINITE) {
+      return text;
+    }
+    int exponentStart = text.indexOf('e');
+    String mantissa = exponentStart < 0 ? text : text.substring(0, exponentStart);
+    String exponent = exponentStart < 0 ? "" : text.substring(exponentStart);
+    long significantDigits = 0;
+    for (int i = 0; i < mantissa.length(); i++) {
+      char ch = mantissa.charAt(i);
+      if (ch >= '1' && ch <= '9' || (ch == '0' && significantDigits > 0)) {
+        significantDigits++;
+      }
+    }
+    StringBuilder buf = new StringBuilder(mantissa);
+    if (mantissa.indexOf('.') < 0) {
+      buf.append('.');
+    }
+    for (long i = significantDigits; i < precision; i++) {
+      buf.append('0');
+    }
+    return buf.append(exponent).toString();
+  }
 
   public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -111,7 +150,7 @@ public class ExpressionJSONConvert {
     if (expr instanceof ApfloatNum) {
       Apfloat apfloatValue = ((ApfloatNum) expr).apfloatValue();
       if (apfloatValue.precision() > 20L) {
-        return TextNode.valueOf(apfloatValue.toString());
+        return TextNode.valueOf(numberText(apfloatValue));
       }
       return DoubleNode.valueOf(apfloatValue.doubleValue());
     }
@@ -223,6 +262,10 @@ public class ExpressionJSONConvert {
         if (symbolName.matches("-?[0-9]+")) {
           // an integer written as a string, which is how this converter used to export one
           return F.ZZ(new BigInteger(symbolName));
+        }
+        if (DECIMAL_NUMBER.matcher(symbolName).matches()) {
+          // an arbitrary precision real with all its digits, as numberText() writes it
+          return F.num(new Apfloat(symbolName));
         }
         if (Scanner.isIdentifier(symbolName)) {
           return F.symbol(symbolName);

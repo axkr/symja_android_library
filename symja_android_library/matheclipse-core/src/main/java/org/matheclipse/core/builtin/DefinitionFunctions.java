@@ -549,6 +549,7 @@ public class DefinitionFunctions {
   /**
    * <code>Experimental`ValueFunction[symbol] = f</code>: evaluate <code>f[symbol, value]</code>
    * whenever the symbol gets a new value and <code>f[symbol]</code> whenever its value is cleared.
+   * The symbol may also be given by its name, as in <code>ValueFunction["Global`x"]</code>.
    *
    * <p>
    * The symbol keeps the function and calls it where its value is written, see
@@ -561,8 +562,8 @@ public class DefinitionFunctions {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       // the argument is held, as in an assignment: ValueFunction(x) is the function of x, even
-      // where x has a value
-      ISymbol symbol = trackedSymbol(ast.arg1(), false, engine);
+      // where x has a value. A name which isn't a symbol yet has no function: it isn't created.
+      ISymbol symbol = trackedSymbol(ast.arg1(), false, false, engine);
       if (symbol != null) {
         IExpr function = symbol.getValueFunction();
         if (function != null) {
@@ -616,17 +617,20 @@ public class DefinitionFunctions {
             F.list(S.ValueFunction, F.ZZ(leftHandSide.argSize())), engine);
         return null;
       }
-      return trackedSymbol(leftHandSide.first(), true, engine);
+      return trackedSymbol(leftHandSide.first(), true, true, engine);
     }
 
     /**
      * The symbol in <code>Unevaluated[s]</code> or <code>HoldPattern[s]</code>, a symbol itself
-     * (even one with a value), or what <code>arg</code> evaluates to.
+     * (even one with a value), or what <code>arg</code> evaluates to. A string such as
+     * <code>"x"</code> or <code>"Global`x"</code> names the symbol.
      *
      * @param message print a message if there is no symbol
+     * @param create create the symbol a string names if it doesn't exist yet
      * @return <code>null</code> if there is no symbol
      */
-    private static ISymbol trackedSymbol(IExpr arg, boolean message, EvalEngine engine) {
+    private static ISymbol trackedSymbol(IExpr arg, boolean message, boolean create,
+        EvalEngine engine) {
       if (arg.isAST(S.Unevaluated, 2) || arg.isAST(S.HoldPattern, 2)) {
         arg = arg.first();
       } else if (!arg.isSymbol()) {
@@ -634,6 +638,12 @@ public class DefinitionFunctions {
       }
       if (arg.isSymbol()) {
         return (ISymbol) arg;
+      }
+      if (arg.isString()) {
+        ISymbol symbol = Validate.symbolOfIdentifier(arg.toString(), create, engine);
+        if (symbol != null) {
+          return symbol;
+        }
       }
       if (message) {
         // Argument `1` at position `2` is expected to be a symbol.

@@ -1316,6 +1316,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // what an older export wrote still reads back as the numbers it meant
     check("Head /@ ImportString[\"[\\\"List\\\",\\\"1\\\",\\\"-2\\\"]\", \"ExpressionJSON\"]", //
         "{Integer,Integer}");
+    // a real with more than 20 digits is written as text and read back with its precision
+    check("ExportString[N[1/4, 30], \"ExpressionJSON\"]", //
+        "\"2.50000000000000000000000000000e-1\"");
+    check("r = {N[1/4, 30], N[-10^40/7, 25], N[3, 22], N[Pi*10^-50, 40]}; "
+        + "s = ImportString[ExportString[r, \"ExpressionJSON\"], \"ExpressionJSON\"]; "
+        + "{s == r, Precision /@ s}", //
+        "{True,{30,25,22,40}}");
   }
 
   /**

@@ -1877,22 +1877,32 @@ public abstract class Scanner {
 
   protected abstract boolean isOperatorCharacters(char ch);
 
+  /**
+   * Test if <code>ident</code> is a symbol name such as <code>x</code>, <code>$x1</code> or
+   * <code>Global`x</code>: every part, separated by <code>`</code>, starts with a letter or
+   * <code>$</code>, so neither <code>a``b</code> nor a context name such as <code>Global`</code>
+   * is one.
+   */
   public static boolean isIdentifier(String ident) {
-    if (ident.length() == 0) {
-      return false;
-    }
-    char ch = ident.charAt(0);
-    if ((Character.isJavaIdentifierStart(ch) && (ch != '_')) || (ch == '$')) {
-      for (int i = 1; i < ident.length(); i++) {
-        ch = ident.charAt(i);
-        if ((Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '$') || (ch == '`')) {
-          continue;
+    boolean partStart = true;
+    for (int i = 0; i < ident.length(); i++) {
+      final char ch = ident.charAt(i);
+      if (ch == '`') {
+        if (partStart) {
+          return false;
         }
+        partStart = true;
+      } else if (partStart) {
+        if (!(Character.isJavaIdentifierStart(ch) && (ch != '_')) && (ch != '$')) {
+          return false;
+        }
+        partStart = false;
+      } else if (!(Character.isJavaIdentifierPart(ch) && (ch != '_')) && (ch != '$')) {
         return false;
       }
     }
-
-    return true;
+    // false for "" and a name which ends with `
+    return !partStart;
   }
 
   /**
