@@ -9,6 +9,87 @@ import org.matheclipse.core.interfaces.IExpr;
 public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testBatesDistribution() {
+    check("PDF(BatesDistribution(1), x)", //
+        "Piecewise({{1,0<=x<=1}},0)");
+    check("PDF(BatesDistribution(2), x)", //
+        "Piecewise({{0,x<0},{4*x,0<=x<1/2},{2*(2-2*x),1/2<=x<=1}},0)");
+    check("CDF(BatesDistribution(2), x)", //
+        "Piecewise({{0,x<0},{2*x^2,0<=x<1/2},{1+1/2*(-4+8*x-4*x^2),1/2<=x<=1}},1)");
+    check("CDF(BatesDistribution(3), x)", //
+        "Piecewise({{0,x<0},{9/2*x^3,0<=x<1/3},{1/6*(3-27*x+81*x^2-54*x^3),1/3<=x<2/3},{1+1/6*(-\n"
+            + "27+81*x-81*x^2+27*x^3),2/3<=x<=1}},1)");
+    check("CDF(BatesDistribution(3, {-1, 1}), x)", //
+        "Piecewise({{0,x<-1},{1/6*(27/8+81/8*x+81/8*x^2+27/8*x^3),-1<=x<-1/3},{1/6*(3+27/4*x-\n"
+            + "27/4*x^3),-1/3<=x<1/3},{1+1/6*(-27/8+81/8*x-81/8*x^2+27/8*x^3),1/3<=x<=1}},1)");
+    check("CDF(BatesDistribution(2, {a, b}), x)", //
+        "Piecewise({{0,x<a},{(2*(-a+x)^2)/(-a+b)^2,a<=x<a+1/2*(-a+b)},{1-(2+(-2*(-a+x))/(-a+b))^\n"
+            + "2/2,a+1/2*(-a+b)<=x<=b}},1)");
+
+    check("Mean(BatesDistribution(n, {a, b}))", //
+        "1/2*(a+b)");
+    check("Median(BatesDistribution(n, {a, b}))", //
+        "1/2*(a+b)");
+    check("Variance(BatesDistribution(n, {a, b}))", //
+        "(-a+b)^2/(12*n)");
+    check("Variance(BatesDistribution(n))", //
+        "1/(12*n)");
+    check("Skewness(BatesDistribution(n, {a, b}))", //
+        "0");
+    check("Kurtosis(BatesDistribution(n, {a, b}))", //
+        "3-6/(5*n)");
+    check("CentralMoment(BatesDistribution(n, {a, b}), 3)", //
+        "0");
+    check("CentralMoment(BatesDistribution(n, {a, b}), 4)", //
+        "((-a+b)^4*(-2+5*n))/(240*n^3)");
+    check("Moment(BatesDistribution(3), 3)", //
+        "1/6");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(BatesDistribution(5), x), {x, 0, 1})", //
+        "1.0");
+    check("Integrate(x^2*PDF(BatesDistribution(3), x), {x, 0, 1})", //
+        "5/18");
+    check("Moment(BatesDistribution(3), 2)", //
+        "5/18");
+    check("NIntegrate((x-1/2)^4*PDF(BatesDistribution(5), x), {x, 0, 1})", //
+        "0.000766667");
+    check("N(CentralMoment(BatesDistribution(5), 4))", //
+        "0.000766667");
+    check("NIntegrate(x^4*PDF(BatesDistribution(3, {1, 4}), x), {x, 1, 4})", //
+        "48.6");
+    check("Moment(BatesDistribution(3, {1, 4}), 4)", //
+        "243/5");
+
+    check("CDF(BatesDistribution(5), {-0.5, 0.3, 0.5, 0.7, 1.5})", //
+        "{0,0.0619792,0.5,0.938021,1}");
+    // the mean of 4 variables on [2, 6] is 2 plus the sum of 4 variables on [0, 1]
+    check("PDF(BatesDistribution(4, {2, 6}), {3.0, 4.0, 5.5})", //
+        "{0.166667,0.666667,0.0208333}");
+    check("CDF(BatesDistribution(4, {2, 6}), 3.0) == CDF(UniformSumDistribution(4), 1.0)", //
+        "True");
+
+    check("Length(RandomVariate(BatesDistribution(4), 10))", //
+        "10");
+    check("Abs(Mean(RandomVariate(BatesDistribution(4, {2, 6}), 10^4)) - 4) < 0.05", //
+        "True");
+    check("Abs(Variance(RandomVariate(BatesDistribution(4, {2, 6}), 10^4)) - 1/3) < 0.05", //
+        "True");
+    check("MinMax(RandomVariate(BatesDistribution(4, {2, 6}), 10^3)) // "
+        + "(2 <= First(#) && Last(#) <= 6)&", //
+        "True");
+
+    check("DistributionParameterAssumptions(BatesDistribution(n, {a, b}))", //
+        "n∈Integers&&n>0&&a<b");
+    // message: BatesDistribution: Parameter 2.5 at position 1 in BatesDistribution(2.5) is
+    // expected to be a positive integer.
+    check("PDF(BatesDistribution(2.5), x)", //
+        "PDF(BatesDistribution(2.5),x)");
+    check("PDF(BatesDistribution(-2), x)", //
+        "PDF(BatesDistribution(-2),x)");
+  }
+
+  @Test
   public void testBernoulliDistribution() {
     check("Mean(BernoulliDistribution(x))", //
         "x");
@@ -1164,6 +1245,100 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDavisDistribution() {
+    check("PDF(DavisDistribution(b, n, mu), x)", //
+        "Piecewise({{b^n/(E^(b/(-mu+x))*(1-1/E^(b/(-mu+x)))*(-mu+x)^(1+n)*Gamma(n)*Zeta(n)),"
+            + "x>mu}},\n" //
+            + "0)");
+    check("Mean(DavisDistribution(b, n, mu))", //
+        "Piecewise({{mu+(b*Zeta(-1+n))/((-1+n)*Zeta(n)),n>2}},Infinity)");
+    check("Mean(DavisDistribution(2, 4, 1))", //
+        "1+(60*Zeta(3))/Pi^4");
+    check("Variance(DavisDistribution(2, 5, 1))", //
+        "4*(-Pi^8/(129600*Zeta(5)^2)+Zeta(3)/(12*Zeta(5)))");
+    check("Moment(DavisDistribution(b, 5, mu), 2)", //
+        "mu^2+(b*mu*Pi^4)/(180*Zeta(5))+(b^2*Zeta(3))/(12*Zeta(5))");
+    // the moments of the orders k >= n - 1 are infinite
+    check("Mean(DavisDistribution(1, 2, 0))", //
+        "Infinity");
+    check("Variance(DavisDistribution(1, 3, 0))", //
+        "Infinity");
+    check("CentralMoment(DavisDistribution(b, n, mu), 1)", //
+        "Piecewise({{0,n>2}},Indeterminate)");
+
+    // the moments agree with the integrals of the density
+    check("NIntegrate(PDF(DavisDistribution(2, 3.5, 1), x), {x, 1, Infinity})", //
+        "1.0");
+    check("NIntegrate(PDF(DavisDistribution(1, 1.5, 0), x), {x, 0, Infinity})", //
+        "1.0");
+    check("NIntegrate((x-N(Mean(DavisDistribution(2, 6, 1))))^3*"
+        + "PDF(DavisDistribution(2, 6, 1), x), {x, 1, Infinity})", //
+        "0.0328328");
+    check("N(CentralMoment(DavisDistribution(2, 6, 1), 3))", //
+        "0.0328328");
+    check("NIntegrate((x-N(Mean(DavisDistribution(2, 7, 1))))^4*"
+        + "PDF(DavisDistribution(2, 7, 1), x), {x, 1, Infinity})", //
+        "0.0113913");
+    check("N({CentralMoment(DavisDistribution(2, 7, 1), 4), Skewness(DavisDistribution(2, 6, 1)), "
+        + "Kurtosis(DavisDistribution(2, 7, 1))})", //
+        "{0.0113913,3.26859,19.75976}");
+
+    // CDF and SurvivalFunction are evaluated numerically, and agree with NIntegrate of the density
+    check("CDF(DavisDistribution(2, 3.5, 1), {0.5, 1.0, 1.2, 1.5, 2.0, 3.0, 10.0, 100.0})", //
+        "{0.0,0.0,0.00494331,0.297176,0.720262,0.926439,0.997705,0.999994}");
+    check("NIntegrate(PDF(DavisDistribution(2, 3.5, 1), x), {x, 1, 1.5})", //
+        "0.297176");
+    check("NIntegrate(PDF(DavisDistribution(2, 3.5, 1), x), {x, 1, 3.0})", //
+        "0.926439");
+    check("SurvivalFunction(DavisDistribution(2, 3.5, 1), {1.5, 10.0, 100.0, 10.0^6})", //
+        "{0.702824,0.00229507,6.15195*10^-6,6.0428*10^-16}");
+    check("NIntegrate(PDF(DavisDistribution(2, 3.5, 1), x), {x, 100, Infinity})", //
+        "6.15195*10^-6");
+    check("CDF(DavisDistribution(1, 1.5, 0), {0.01, 0.5, 5.0})", //
+        "{1.61483*10^-43,0.106919,0.626285}");
+    check("NIntegrate(PDF(DavisDistribution(1, 1.5, 0), x), {x, 0, 0.5})", //
+        "0.106919");
+    check("CDF(DavisDistribution(1, 1.001, 0), 0.5)", //
+        "0.000145565");
+    check("SurvivalFunction(DavisDistribution(1, 5, 0), {0.1, 0.3})", //
+        "{0.971789,0.264131}");
+    check("NIntegrate(PDF(DavisDistribution(1, 5, 0), x), {x, 0.3, Infinity})", //
+        "0.264131");
+    // a small survival probability for a large shape n isn't lost in 1 - CDF
+    check("SurvivalFunction(DavisDistribution(1, 50, 0), {0.02, 0.05, 0.1})", //
+        "{0.518808,1.24589*10^-8,1.85484*10^-19}");
+    check("CDF(DavisDistribution(2, 3, 1/2), 3.0)", //
+        "0.898865");
+    check("N(CDF(DavisDistribution(2, 3, 1), 3))", //
+        "0.852778");
+    check("CDF(DavisDistribution(2, 3, 1), x)", //
+        "CDF(DavisDistribution(2,3,1),x)");
+
+    check("Length(RandomVariate(DavisDistribution(2, 3.5, 1), 10))", //
+        "10");
+    // the mean is 1.4077
+    check("Abs(Mean(RandomVariate(DavisDistribution(2, 6, 1), 10^4)) - 1.4077) < 0.02", //
+        "True");
+    // the median is between 1.6 and 1.75
+    check("{CDF(DavisDistribution(2, 3.5, 1), 1.6), CDF(DavisDistribution(2, 3.5, 1), 1.75)}", //
+        "{0.417317,0.56226}");
+    check("1.6 < Median(RandomVariate(DavisDistribution(2, 3.5, 1), 10^4)) < 1.75", //
+        "True");
+
+    check("DistributionParameterAssumptions(DavisDistribution(b, n, mu))", //
+        "b>0&&n>1&&mu∈Reals");
+    check("DistributionParameterQ(DavisDistribution(1, 1, 0))", //
+        "False");
+    // message: DavisDistribution: Parameter -1 at position 1 in DavisDistribution(-1,3,0) is
+    // expected to be positive.
+    check("PDF(DavisDistribution(-1, 3, 0), x)", //
+        "PDF(DavisDistribution(-1,3,0),x)");
+    // the density is not normalizable for n <= 1
+    check("PDF(DavisDistribution(1, 1/2, 0), x)", //
+        "PDF(DavisDistribution(1,1/2,0),x)");
+  }
+
+  @Test
   public void testKDistribution() {
     check("PDF(KDistribution(nu, w), x)", //
         "Piecewise({{(4*(nu/w)^(1/2*(1+nu))*x^nu*BesselK(-1+nu,2*Sqrt(nu/w)*x))/Gamma(nu),x>\n"
@@ -2227,5 +2402,21 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{0,0,{0,Infinity}}");
     checkNumeric("CDF(HalfNormalDistribution(2), Quantile(HalfNormalDistribution(2), 0.3))", //
         "0.3");
+  }
+
+  /** The piecewise density and distribution function, which BatesDistribution shares. */
+  @Test
+  public void testUniformSumDistribution() {
+    check("PDF(UniformSumDistribution(1), x)", //
+        "Piecewise({{1,0<=x<=1}},0)");
+    check("PDF(UniformSumDistribution(3), x)", //
+        "Piecewise({{0,x<0},{x^2/2,0<=x<1},{1/2*(-3*(1-x)^2+x^2),1<=x<2},{(3-x)^2/2,2<=x<=3}},0)");
+    check("CDF(UniformSumDistribution(3), x)", //
+        "Piecewise({{0,x<0},{x^3/6,0<=x<1},{1/6*(3-9*x+9*x^2-2*x^3),1<=x<2},{1+1/6*(-27+27*x-9*x^\n"
+            + "2+x^3),2<=x<=3}},1)");
+    check("PDF(UniformSumDistribution(4), {0.5,1.5,2.5,3.5,4.5})", //
+        "{0.0208333,0.479167,0.479167,0.0208333,0}");
+    check("CDF(UniformSumDistribution(5), 2.2)", //
+        "0.325816");
   }
 }
