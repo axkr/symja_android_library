@@ -611,6 +611,7 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
+      "perfgoal", "Value of option PerformanceGoal -> `1` is not Automatic, \"Speed\" or \"Size\".", //
       "parinv", "Invalid image effect parameters given in `1`.", //
       "parmthd",
       "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //

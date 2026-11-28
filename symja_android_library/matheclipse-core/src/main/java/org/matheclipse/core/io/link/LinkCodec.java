@@ -64,7 +64,8 @@ public final class LinkCodec {
     public IExpr expression(EvalEngine engine) {
       try {
         if (type == FRAME_EXPRESSION) {
-          IExpr result = WL.deserialize(payload);
+          // the other end writes plain WXF; compressed WXF is refused rather than inflated
+          IExpr result = WL.deserialize(payload, false);
           return result == null ? F.NIL : result;
         }
         if (type == FRAME_TEXT) {

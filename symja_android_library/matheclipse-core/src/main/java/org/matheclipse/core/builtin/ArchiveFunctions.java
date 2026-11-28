@@ -189,11 +189,22 @@ public class ArchiveFunctions {
    * <p>
    * This is how a notebook front end sends an expression down a socket -
    * <code>ExportByteArray[#, "ExpressionJSON"]&amp;</code> is the WLJS default serializer.
+   *
+   * <p>
+   * <code>"WXF"</code> is a binary format: its bytes are those of <code>BinarySerialize</code>,
+   * and <code>PerformanceGoal -&gt; "Size"</code> writes compressed WXF.
    */
   private static class ExportByteArray extends AbstractEvaluator {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr format = ast.size() > 2 ? ast.arg2() : F.stringx("ExpressionJSON");
+      if (isWXF(format)) {
+        Boolean compressed = WXFFunctions.sizeGoal(ast, 3, engine);
+        if (compressed == null) {
+          return F.NIL;
+        }
+        return WXFFunctions.serialize(ast.arg1(), compressed);
+      }
       IExpr text = org.matheclipse.core.reflection.system.ExportString
           .exportText(F.binaryAST2(S.ExportString, ast.arg1(), format), engine);
       if (!text.isString()) {
@@ -209,7 +220,32 @@ public class ArchiveFunctions {
     }
   }
 
-  /** <code>ImportByteArray[bytes, format]</code>: the other direction. */
+  /** <code>true</code> if <code>format</code> names the binary <code>"WXF"</code> format. */
+  private static boolean isWXF(IExpr format) {
+    return format.isString() && format.toString().equalsIgnoreCase("WXF");
+  }
+
+  /**
+   * The expression the WXF <code>bytes</code> encode, or <code>$Failed</code> with a message if
+   * they don't start with the <code>8:</code> or <code>8C:</code> (compressed) header or can't be
+   * decoded.
+   */
+  private static IExpr importWXF(byte[] bytes, EvalEngine engine) {
+    IExpr result = org.matheclipse.core.expression.WL.deserialize(bytes);
+    if (result.isPresent()) {
+      return result;
+    }
+    // Cannot import data as `1` format.
+    Errors.printMessage(S.ImportByteArray, "fmterr", F.list(F.stringx("WXF")), engine);
+    return S.$Failed;
+  }
+
+  /**
+   * <code>ImportByteArray[bytes, format]</code>: the other direction.
+   *
+   * <p>
+   * <code>"WXF"</code> bytes are decoded as <code>BinaryDeserialize</code> does.
+   */
   private static class ImportByteArray extends AbstractEvaluator {
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -223,6 +259,12 @@ public class ArchiveFunctions {
         return F.NIL;
       }
       IExpr format = ast.size() > 2 ? ast.arg2() : F.stringx("Text");
+      if (isWXF(format)) {
+        if (!(arg1 instanceof org.matheclipse.core.expression.data.ByteArrayExpr)) {
+          return F.NIL;
+        }
+        return importWXF(bytes, engine);
+      }
       return engine.evaluate(F.binaryAST2(S.ImportString,
           org.matheclipse.core.reflection.system.ImportString.argument(new String(bytes, StandardCharsets.UTF_8), format), format));
     }

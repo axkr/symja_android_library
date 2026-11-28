@@ -1235,6 +1235,61 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * <code>"WXF"</code> in <code>ImportByteArray</code> and <code>ExportByteArray</code> - the
+   * binary format WLJS sends events in over its WebSocket. The bytes are those of
+   * <code>BinarySerialize</code>, not the bytes of a text rendering.
+   */
+  @Test
+  public void testImportExportByteArrayWXF() {
+    check("wxfExpr = {7, \"text\", \"2 - y\", x^3, 1/5}; "
+        + "Normal[ExportByteArray[wxfExpr, \"WXF\"]] === Normal[BinarySerialize[wxfExpr]]", //
+        "True");
+    check("ImportByteArray[ExportByteArray[wxfExpr, \"WXF\"], \"WXF\"] === wxfExpr", //
+        "True");
+    check("ImportByteArray[BinarySerialize[wxfExpr], \"WXF\"] === wxfExpr", //
+        "True");
+    check("BinaryDeserialize[ExportByteArray[wxfExpr, \"WXF\"]] === wxfExpr", //
+        "True");
+    check("Head[ExportByteArray[g[a, 2.5], \"WXF\"]]", //
+        "ByteArray");
+    // 8: then List[1, "a"] written by hand: f 2, s 4 "List", C 1, S 1 "a"
+    check("ImportByteArray[ByteArray[{56, 58, 102, 2, 115, 4, 76, 105, 115, 116, "
+        + "67, 1, 83, 1, 97}], \"WXF\"]", //
+        "{1,a}");
+    // bytes without the WXF header are not WXF
+    check("ed = EvaluationData[ImportByteArray[ByteArray[{1, 2, 3, 4}], \"WXF\"]]; "
+        + "{ed[\"Result\"], ed[\"MessagesText\"]}", //
+        "{$Failed,{ImportByteArray::fmterr: Cannot import data as WXF format.}}");
+    // a header with a truncated payload
+    check("ImportByteArray[ByteArray[{56, 58, 102, 2, 115, 4, 76}], \"WXF\"]", //
+        "$Failed");
+
+    // compressed WXF: header 8C: and a zlib stream
+    check("Normal[ExportByteArray[wxfExpr, \"WXF\", PerformanceGoal -> \"Size\"]] === "
+        + "Normal[BinarySerialize[wxfExpr, PerformanceGoal -> \"Size\"]]", //
+        "True");
+    check("Take[Normal[ExportByteArray[wxfExpr, \"WXF\", PerformanceGoal -> \"Size\"]], 3]", //
+        "{56,67,58}");
+    check("ImportByteArray[ExportByteArray[wxfExpr, \"WXF\", PerformanceGoal -> \"Size\"], "
+        + "\"WXF\"] === wxfExpr", //
+        "True");
+    // List[1, "a"] compressed with Python's zlib.compress
+    check("ImportByteArray[ByteArray[{56, 67, 58, 120, 156, 75, 99, 42, 102, 241, 201, 44, 46, "
+        + "113, 102, 12, 102, 76, 4, 0, 24, 236, 3, 117}], \"WXF\"]", //
+        "{1,a}");
+    // the compressed header with a payload that is not a zlib stream
+    check("ImportByteArray[ByteArray[{56, 67, 58, 1, 2, 3, 4}], \"WXF\"]", //
+        "$Failed");
+    // options as a list, the option name as a string
+    check("Take[Normal[ExportByteArray[wxfExpr, \"WXF\", {\"PerformanceGoal\" -> \"Size\"}]], 3]", //
+        "{56,67,58}");
+    check("ed = EvaluationData[ExportByteArray[wxfExpr, \"WXF\", PerformanceGoal -> \"Small\"]]; "
+        + "{Head[ed[\"Result\"]], ed[\"MessagesText\"]}", //
+        "{ExportByteArray,{ExportByteArray::perfgoal: Value of option PerformanceGoal -> Small "
+            + "is not Automatic, \"Speed\" or \"Size\".}}");
+  }
+
+  /**
    * <code>ExpressionJSON</code> writes exact numbers as numbers: an integer as a JSON number, a
    * rational and a complex number as a structure of numbers.
    *

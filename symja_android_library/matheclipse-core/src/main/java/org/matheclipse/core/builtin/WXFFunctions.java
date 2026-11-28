@@ -16,6 +16,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IASTMutable;
 
 public class WXFFunctions {
 
@@ -34,19 +35,81 @@ public class WXFFunctions {
     }
   }
 
+  /**
+   * <code>BinarySerialize[expr]</code> and
+   * <code>BinarySerialize[expr, PerformanceGoal -&gt; "Size"]</code>, which writes compressed WXF.
+   */
   private static class BinarySerialize extends AbstractCoreFunctionEvaluator {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        byte[] bArray = WL.serialize(arg1);
-        if (bArray != null) {
-          return ByteArrayExpr.newInstance(bArray);
+      if (ast.argSize() >= 1) {
+        IASTMutable evaled = ast.copy();
+        for (int i = 1; i < evaled.size(); i++) {
+          evaled.set(i, engine.evaluate(ast.get(i)));
         }
+        Boolean compressed = sizeGoal(evaled, 2, engine);
+        if (compressed == null) {
+          return F.NIL;
+        }
+        return serialize(evaled.arg1(), compressed);
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The WXF bytes of <code>expr</code> as a <code>ByteArray</code>, compressed (header
+   * <code>8C:</code>) if <code>compressed</code> is <code>true</code>.
+   *
+   * @return {@link F#NIL} if <code>expr</code> can't be serialized
+   */
+  public static @AllowNIL IExpr serialize(IExpr expr, boolean compressed) {
+    byte[] bArray = compressed ? WL.serializeCompressed(expr) : WL.serialize(expr);
+    return bArray == null ? F.NIL : ByteArrayExpr.newInstance(bArray);
+  }
+
+  /**
+   * Whether the options of <code>ast</code> from position <code>from</code> on ask for compressed
+   * WXF with <code>PerformanceGoal -&gt; "Size"</code>. An option is a rule or a list of rules, its
+   * name the symbol or the string <code>PerformanceGoal</code>; the last one given wins.
+   *
+   * @return <code>true</code> for <code>"Size"</code>, <code>false</code> for <code>"Speed"</code>,
+   *         <code>Automatic</code> or no option, <code>null</code> after a message if an argument
+   *         is not an option, names another option or has another value
+   */
+  public static Boolean sizeGoal(IAST ast, int from, EvalEngine engine) {
+    boolean compressed = false;
+    for (int i = from; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      IAST rules = option.isList() ? (IAST) option : F.list(option);
+      for (IExpr rule : rules) {
+        if (!rule.isRuleAST()) {
+          // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule
+          // or a list of rules.
+          Errors.printMessage(ast.topHead(), "nonopt", F.list(option, F.ZZ(from - 1), ast),
+              engine);
+          return null;
+        }
+        IExpr name = rule.first();
+        if (name != S.PerformanceGoal && !name.isString("PerformanceGoal")) {
+          // Unknown option `1` in `2`.
+          Errors.printMessage(ast.topHead(), "optx", F.list(rule, ast), engine);
+          return null;
+        }
+        IExpr value = rule.second();
+        if (value.isString("Size")) {
+          compressed = true;
+        } else if (value.isString("Speed") || value == S.Automatic) {
+          compressed = false;
+        } else {
+          // Value of option PerformanceGoal -> `1` is not Automatic, "Speed" or "Size".
+          Errors.printMessage(ast.topHead(), "perfgoal", F.list(value), engine);
+          return null;
+        }
+      }
+    }
+    return compressed;
   }
 
   private static class ByteArray extends AbstractFunctionEvaluator {

@@ -14,6 +14,7 @@ import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -106,15 +107,22 @@ public class WL {
     @Override
     protected IExpr internalRead(byte exprType) {
       if (exprType == WXF_CONSTANTS.InternalExprID) {
-        return S.exprID((short) parseLength());
+        return S.exprID((short) parseVarintValue());
       }
       return super.internalRead(exprType);
     }
   }
 
   private static class ReadObject {
+    /**
+     * The deepest nesting read. Each level costs stack frames; a deeper input is refused instead of
+     * overflowing the stack.
+     */
+    private static final int MAX_DEPTH = 2048;
+
     byte[] array;
     int position;
+    int depth;
 
     public ReadObject(byte[] array) {
       this(array, 2);
@@ -195,9 +203,9 @@ public class WL {
         case WXF_CONSTANTS.Function:
           length = parseLength(); // (int) array[position++];
           IASTAppendable ast = F.ast(F.NIL, length);
-          ast.set(0, read());
+          ast.set(0, readExpr());
           for (int i = 0; i < length; i++) {
-            ast.append(read());
+            ast.append(readExpr());
           }
           IExpr head = ast.head();
           if (head == S.Complex || head == S.Rational || head == S.Pattern || head == S.Optional) {
@@ -220,8 +228,8 @@ public class WL {
             if (value == WXF_CONSTANTS.RuleDelayed) {
               ruleHead = S.RuleDelayed;
             }
-            IExpr arg1 = read();
-            IExpr arg2 = read();
+            IExpr arg1 = readExpr();
+            IExpr arg2 = readExpr();
             assoc.appendRule(F.binaryAST2(ruleHead, arg1, arg2));
           }
           return assoc;
@@ -292,10 +300,67 @@ public class WL {
       return b;
     }
 
+    /**
+     * A length or a count: of bytes, of arguments or of a dimension. Every counted item takes at
+     * least one byte of the input, so a value larger than the bytes left is corrupt - refusing it
+     * keeps a few bytes from allocating gigabytes.
+     */
     protected int parseLength() {
+      int length = parseVarintValue();
+      if (length < 0 || length > array.length - position) {
+        throw AbortException.ABORTED;
+      }
+      return length;
+    }
+
+    /** A varint that is not a length, such as a symbol id. */
+    protected int parseVarintValue() {
       int[] result = WXFVarint.parseVarint(array, position);
       position = result[1];
       return result[0];
+    }
+
+    /**
+     * The dimensions of a packed or numeric array whose elements take <code>elementBytes</code> each,
+     * refused if the elements need more bytes than are left.
+     */
+    private int[] parseDimensions(int elementBytes) {
+      int rank = parseLength();
+      int[] dimensions = new int[rank];
+      long size = 1;
+      for (int i = 0; i < rank; i++) {
+        dimensions[i] = parseLength();
+        size *= dimensions[i];
+        if (size * elementBytes > array.length - position) {
+          throw AbortException.ABORTED;
+        }
+      }
+      return dimensions;
+    }
+
+    /** The bytes one element of a numeric array of type <code>arrayType</code> takes. */
+    private static int numericElementBytes(byte arrayType) {
+      switch (arrayType) {
+        case NumericArrayExpr.Integer8:
+        case NumericArrayExpr.UnsignedInteger8:
+          return 1;
+        case NumericArrayExpr.Integer16:
+        case NumericArrayExpr.UnsignedInteger16:
+          return 2;
+        case NumericArrayExpr.Integer32:
+        case NumericArrayExpr.UnsignedInteger32:
+        case NumericArrayExpr.Real32:
+          return 4;
+        case NumericArrayExpr.Integer64:
+        case NumericArrayExpr.UnsignedInteger64:
+        case NumericArrayExpr.Real64:
+        case NumericArrayExpr.ComplexReal32:
+          return 8;
+        case NumericArrayExpr.ComplexReal64:
+          return 16;
+        default:
+          throw AbortException.ABORTED;
+      }
     }
 
     /**
@@ -304,23 +369,33 @@ public class WL {
      * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
      */
     public IExpr read() {
-      byte exprType = array[position++];
       try {
-        return internalRead(exprType);
-      } catch (AbortException ae) {
-        //
+        return readExpr();
+      } catch (RuntimeException rex) {
+        // truncated or corrupt input: an index past the end, a malformed number, an abort
+        Errors.rethrowsInterruptException(rex);
       }
       return F.NIL;
     }
 
+    /** Read one nested expression; a corrupt input throws. */
+    protected IExpr readExpr() {
+      if (++depth > MAX_DEPTH) {
+        throw AbortException.ABORTED;
+      }
+      try {
+        return internalRead(array[position++]);
+      } finally {
+        depth--;
+      }
+    }
+
     private IExpr readNumericArray() throws AbortException {
       byte arrayType = array[position++];
-      int rank = parseLength();
-      int[] dimensions = new int[rank];
+      int[] dimensions = parseDimensions(numericElementBytes(arrayType));
       int size = 1;
-      for (int i = 0; i < rank; i++) {
-        dimensions[i] = parseLength();
-        size *= dimensions[i];
+      for (int dimension : dimensions) {
+        size *= dimension;
       }
 
       switch (arrayType) {
@@ -397,11 +472,8 @@ public class WL {
       byte arrayType = array[position++];
       switch (arrayType) {
         case NumericArrayExpr.Integer8: {
-          int rank = parseLength();
-          int[] dimensions = new int[rank];
-          for (int i = 0; i < rank; i++) {
-            dimensions[i] = parseLength();
-          }
+          int[] dimensions = parseDimensions(1);
+          int rank = dimensions.length;
           if (rank == 1) {
             IASTAppendable list = F.ListAlloc(dimensions[0]);
             for (int i = 0; i < dimensions[0]; i++) {
@@ -424,11 +496,8 @@ public class WL {
         }
           break;
         case NumericArrayExpr.Real64: {
-          int rank = parseLength();
-          int[] dimensions = new int[rank];
-          for (int i = 0; i < rank; i++) {
-            dimensions[i] = parseLength();
-          }
+          int[] dimensions = parseDimensions(8);
+          int rank = dimensions.length;
           if (rank == 1) {
             double[] vector = new double[dimensions[0]];
             for (int i = 0; i < vector.length; i++) {
@@ -1012,14 +1081,60 @@ public class WL {
   }
 
   /**
+   * <code>true</code> if the bytes start with the header of WXF (<code>8:</code>) or of compressed
+   * WXF (<code>8C:</code>).
+   */
+  public static boolean isWXF(byte[] bArray) {
+    return isCompressedWXF(bArray)
+        || (bArray != null && bArray.length > 2 && bArray[0] == '8' && bArray[1] == ':');
+  }
+
+  /** <code>true</code> if the bytes start with the compressed WXF header <code>8C:</code>. */
+  private static boolean isCompressedWXF(byte[] bArray) {
+    return bArray != null && bArray.length > 3 && bArray[0] == '8' && bArray[1] == 'C'
+        && bArray[2] == ':';
+  }
+
+  /**
+   * Deserialize the byte array to an {@link IExpr} expression.
+   *
+   * <p>
+   * Compressed WXF - the header <code>8C:</code> followed by the zlib-compressed body of the
+   * expression - is inflated first.
+   *
+   * @param bArray
+   * @return {@link F#NIL} if the byte array is <code>null</code>, has no WXF header or is not valid.
+   */
+  public static IExpr deserialize(byte[] bArray) {
+    return deserialize(bArray, true);
+  }
+
+  /**
    * Deserialize the byte array to an {@link IExpr} expression.
    *
    * @param bArray
-   * @return {@link F#NIL} if the byte array is <code>null</code> or not valid.
+   * @param allowCompressed if <code>false</code> compressed WXF is refused, for a reader that must
+   *        not inflate what a peer sends
+   * @return {@link F#NIL} if the byte array is <code>null</code>, has no WXF header or is not valid.
    */
-  public static IExpr deserialize(byte[] bArray) {
-    if (bArray == null || bArray.length < 3) {
+  public static IExpr deserialize(byte[] bArray, boolean allowCompressed) {
+    if (!isWXF(bArray)) {
       return F.NIL;
+    }
+    if (isCompressedWXF(bArray)) {
+      if (!allowCompressed) {
+        return F.NIL;
+      }
+      byte[] body;
+      try {
+        body = WMACompress.inflate(java.util.Arrays.copyOfRange(bArray, 3, bArray.length));
+      } catch (java.util.zip.DataFormatException dfe) {
+        return F.NIL;
+      }
+      if (body == null || body.length == 0) {
+        return F.NIL;
+      }
+      return new ReadObject(body, 0).read();
     }
     ReadObject ro = new ReadObject(bArray);
     return ro.read();
@@ -1091,6 +1206,27 @@ public class WL {
       }
     }
     return null;
+  }
+
+  /**
+   * Serialize the {@link IExpr} into a byte array in compressed WXF format: the header
+   * <code>8C:</code> followed by the zlib-compressed body of {@link #serialize(IExpr)}.
+   *
+   * @param expr
+   * @return <code>null</code> if the expression couldn't be serialized
+   */
+  public static byte[] serializeCompressed(IExpr expr) {
+    byte[] wxf = serialize(expr);
+    if (wxf == null) {
+      return null;
+    }
+    byte[] body = WMACompress.deflate(java.util.Arrays.copyOfRange(wxf, 2, wxf.length));
+    byte[] result = new byte[body.length + 3];
+    result[0] = '8';
+    result[1] = 'C';
+    result[2] = ':';
+    System.arraycopy(body, 0, result, 3, body.length);
+    return result;
   }
 
   /**

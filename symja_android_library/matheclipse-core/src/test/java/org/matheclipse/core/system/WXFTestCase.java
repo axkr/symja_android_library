@@ -65,6 +65,72 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /** Compressed WXF: the header <code>8C:</code> followed by the zlib-compressed body. */
+  @Test
+  public void testBinarySerializeCompressed() {
+    // the compressed bytes depend on the zlib the JVM links, only the header and the zlib
+    // stream header (120 = 0x78) are fixed
+    check("Take(Normal(BinarySerialize(f(g,2), PerformanceGoal -> \"Size\")), 4)", //
+        "{56,67,58,120}");
+    check("BinarySerialize(f(g,2), PerformanceGoal -> \"Speed\") === BinarySerialize(f(g,2))", //
+        "True");
+    check("BinaryDeserialize(BinarySerialize(f(g,2), PerformanceGoal -> \"Size\"))", //
+        "f(g,2)");
+    check("r = Table(k^2 + 1/k, {k, 1, 40}); "
+        + "BinaryDeserialize(BinarySerialize(r, PerformanceGoal -> \"Size\")) === r", //
+        "True");
+    check("Length(BinarySerialize(Table(7, {300}), PerformanceGoal -> \"Size\")) < "
+        + "Length(BinarySerialize(Table(7, {300})))", //
+        "True");
+    // List(1, "a") compressed with Python's zlib.compress
+    check("BinaryDeserialize(ByteArray({56,67,58,120,156,75,99,42,102,241,201,44,46,113,102,"
+        + "12,102,76,4,0,24,236,3,117}))", //
+        "{1,a}");
+    // the option name as a string, options in a list, the last one wins
+    check("Take(Normal(BinarySerialize(f(g,2), \"PerformanceGoal\" -> \"Size\")), 3)", //
+        "{56,67,58}");
+    check("Take(Normal(BinarySerialize(f(g,2), {PerformanceGoal -> \"Size\"})), 3)", //
+        "{56,67,58}");
+    check("BinarySerialize(f(g,2), PerformanceGoal -> \"Size\", PerformanceGoal -> Automatic) "
+        + "=== BinarySerialize(f(g,2))", //
+        "True");
+    // an invalid option value, an unknown option, a non-option
+    check("BinarySerialize(f(g,2), PerformanceGoal -> \"Fast\")", //
+        "BinarySerialize(f(g,2),PerformanceGoal->Fast)");
+    check("BinarySerialize(f(g,2), Method -> \"Size\")", //
+        "BinarySerialize(f(g,2),Method->Size)");
+    check("BinarySerialize(f(g,2), 7)", //
+        "BinarySerialize(f(g,2),7)");
+  }
+
+  /** Corrupt or hostile input leaves BinaryDeserialize unevaluated instead of throwing. */
+  @Test
+  public void testBinaryDeserializeCorrupt() {
+    // truncated: the List has 2 arguments, the bytes end inside the head
+    check("BinaryDeserialize(ByteArray({56,58,102,2,115,4,76}))", //
+        "BinaryDeserialize(ByteArray({56,58,102,2,115,4,76}))");
+    // no WXF header
+    check("BinaryDeserialize(ByteArray({1,2,67,5}))", //
+        "BinaryDeserialize(ByteArray({1,2,67,5}))");
+    // a function claiming 2^28 arguments in 9 bytes
+    check("BinaryDeserialize(ByteArray({56,58,102,128,128,128,128,1,67}))", //
+        "BinaryDeserialize(ByteArray({56,58,102,128,128,128,128,1,67}))");
+    // a Real64 packed array claiming 65535 x 65535 elements
+    check("BinaryDeserialize(ByteArray({56,58,193,35,2,255,255,3,255,255,3}))", //
+        "BinaryDeserialize(ByteArray({56,58,193,35,2,255,255,3,255,255,3}))");
+    // a compressed header with a payload that is not a zlib stream
+    check("BinaryDeserialize(ByteArray({56,67,58,1,2,3,4}))", //
+        "BinaryDeserialize(ByteArray({56,67,58,1,2,3,4}))");
+    // nested 0[0[...0[0]...]]: 60 levels are read, 3000 levels are refused before the stack
+    // overflows
+    check("Depth(BinaryDeserialize(ByteArray(Join({56,58}, Flatten(Table({102,1,67,0}, {60})), "
+        + "{67,0}))))", //
+        "61");
+    check("Head(BinaryDeserialize(ByteArray(Join({56,58}, Flatten(Table({102,1,67,0}, {3000})), "
+        + "{67,0}))))", //
+        "BinaryDeserialize");
+  }
+
   @Test
   public void testBinarySerialize() {
     // decimal 4611686018427387893
