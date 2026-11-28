@@ -101,19 +101,7 @@ public class StreamPlot extends AbstractFunctionEvaluator {
     if (primitives.isNIL()) {
       primitives = F.CEmptyList;
     }
-    IASTAppendable result = F.Graphics(primitives);
-    result.appendArgs(graphicsOptions);
-    if (!VectorPlot.hasOption(graphicsOptions, S.PlotRange)) {
-      result.append(F.Rule(S.PlotRange,
-          F.list(F.list(F.num(x0), F.num(x1)), F.list(F.num(y0), F.num(y1)))));
-    }
-    if (!VectorPlot.hasOption(graphicsOptions, S.Frame)) {
-      result.append(F.Rule(S.Frame, S.True));
-    }
-    if (!VectorPlot.hasOption(graphicsOptions, S.AspectRatio)) {
-      result.append(F.Rule(S.AspectRatio, F.C1));
-    }
-    return result;
+    return VectorPlot.fieldGraphics(primitives, graphicsOptions, x0, x1, y0, y1);
   }
 
   /** The size of the head of an arrow, as a share of the plot's width. */
@@ -210,6 +198,16 @@ public class StreamPlot extends AbstractFunctionEvaluator {
   static IAST streams(IExpr field, ISymbol x, ISymbol y, double x0, double x1, double y0,
       double y1, RegionFunctionFilter region, IExpr spec, IAST options, boolean overVectors,
       EvalEngine engine) {
+    return streams(new StreamLines(field, x, y, x0, x1, y0, y1, region, engine), spec, options,
+        overVectors, engine);
+  }
+
+  /**
+   * The streamlines of a sampled field, styled as {@link #streams(IExpr, ISymbol, ISymbol, double,
+   * double, double, double, RegionFunctionFilter, IExpr, IAST, boolean, EvalEngine)} styles them.
+   */
+  static IAST streams(StreamLines streams, IExpr spec, IAST options, boolean overVectors,
+      EvalEngine engine) {
     double length = DEFAULT_LENGTH;
     boolean whole = false;
     IExpr style = F.NIL;
@@ -230,7 +228,6 @@ public class StreamPlot extends AbstractFunctionEvaluator {
         scaling = value;
       }
     }
-    StreamLines streams = new StreamLines(field, x, y, x0, x1, y0, y1, region, engine);
     List<StreamLines.Line> lines = streams.fromSpec(spec, DEFAULT_SEEDS,
         whole ? Double.MAX_VALUE : length * Math.sqrt(2.0) / 2, engine);
     if (lines == null) {

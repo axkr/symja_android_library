@@ -182,13 +182,27 @@ public final class PrimitiveCollector {
       case ID.LABColor:
       case ID.Blend:
       case ID.Lighter:
-      case ID.Darker: {
+      case ID.Darker:
+      case ID.LightDarkSwitched:
+      case ID.ThemeColor:
+      case ID.SystemColor: {
         Color c = ColorUtil.parse(ast);
         if (c != null) {
           style.setColor(c);
         }
         break;
       }
+      case ID.Haloing:
+        applyHaloing(ast, style);
+        break;
+      case ID.DropShadowing:
+        applyDropShadowing(ast, style);
+        break;
+      case ID.LinearGradientFilling:
+      case ID.HatchFilling:
+        // the faces drawn after it are painted with the gradient or the hatching
+        style.facePaint = ast;
+        break;
       case ID.Opacity:
         if (ast.argSize() >= 2) {
           Color c = ColorUtil.parse(ast);
@@ -231,8 +245,13 @@ public final class PrimitiveCollector {
         break;
       case ID.FaceForm:
         if (ast.argSize() >= 1) {
-          style.faceColor =
-              ast.arg1().isNone() ? ColorUtil.TRANSPARENT : ColorUtil.parse(ast.arg1());
+          IExpr face = ast.arg1();
+          if (face.isAST(S.LinearGradientFilling) || face.isAST(S.HatchFilling)) {
+            style.facePaint = (IAST) face;
+          } else {
+            style.facePaint = null;
+            style.faceColor = face.isNone() ? ColorUtil.TRANSPARENT : ColorUtil.parse(face);
+          }
         }
         break;
       case ID.CapForm:
@@ -394,6 +413,22 @@ public final class PrimitiveCollector {
       case ID.Raster:
         collectRaster(ast, style);
         break;
+      case ID.PolarCurve:
+      case ID.FilledPolarCurve: {
+        IExpr curve = org.matheclipse.core.graphics.CurvePrimitives.polarCurve(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (curve.isPresent()) {
+          collect(curve, style);
+        }
+        break;
+      }
+      case ID.AxisObject: {
+        IExpr axis = org.matheclipse.core.graphics.CurvePrimitives.axisObject(ast);
+        if (axis.isPresent()) {
+          collect(axis, style.clone());
+        }
+        break;
+      }
       default:
         // not a primitive we know; ignore rather than guess
         break;
@@ -504,6 +539,62 @@ public final class PrimitiveCollector {
     }
   }
 
+  /** The halo of <code>Haloing()</code> and <code>Haloing(color)</code>, in printer's points. */
+  static final double DEFAULT_HALO_RADIUS = 2.0;
+
+  /**
+   * <code>Haloing()</code>, <code>Haloing(color)</code> and <code>Haloing(color, r)</code>: an
+   * outline of <code>r</code> printer's points in the colour (white by default) around what is
+   * drawn after it; <code>Haloing(None)</code> turns it off.
+   */
+  private static void applyHaloing(IAST ast, Style2D style) {
+    if (ast.argSize() >= 1 && (ast.arg1().isNone() || ast.arg1().isFalse())) {
+      style.haloColor = null;
+      return;
+    }
+    Color color = ast.argSize() >= 1 ? ColorUtil.parse(ast.arg1()) : null;
+    style.haloColor = color == null ? Color.WHITE : color;
+    double radius = ast.argSize() >= 2 ? ColorUtil.dbl(ast.arg2(), DEFAULT_HALO_RADIUS)
+        : DEFAULT_HALO_RADIUS;
+    style.haloRadius = Math.max(0.0, radius);
+  }
+
+  /**
+   * <code>DropShadowing({dx, dy}, r, color)</code>, which the evaluator has completed with the
+   * defaults: a shadow moved by <code>{dx, dy}</code> printer's points (counted upwards) and blurred
+   * by <code>r</code>; <code>None</code> as the colour turns it off.
+   */
+  private static void applyDropShadowing(IAST ast, Style2D style) {
+    double[] shadow = {-3.0, -3.0, 2.0};
+    Color color = new Color(0x33, 0x33, 0x33, 85);
+    for (int i = 1; i <= ast.argSize(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isNone()) {
+        style.shadow = null;
+        style.shadowColor = null;
+        return;
+      }
+      if (arg.isList2()) {
+        shadow[0] = ColorUtil.dbl(arg.first(), shadow[0]);
+        shadow[1] = ColorUtil.dbl(arg.second(), shadow[1]);
+      } else if (arg.isReal()) {
+        shadow[2] = ColorUtil.dbl(arg, shadow[2]);
+      } else {
+        Color c = ColorUtil.parse(arg);
+        if (c == null && arg.isAST(S.Opacity, 2)) {
+          // Opacity(o): the default colour at that opacity
+          c = ColorUtil.withAlpha(new Color(0x33, 0x33, 0x33),
+              ColorUtil.dbl(arg.first(), 1.0 / 3.0));
+        }
+        if (c != null) {
+          color = c;
+        }
+      }
+    }
+    style.shadow = shadow;
+    style.shadowColor = color;
+  }
+
   /** Rules that appear inside {@code Style} or a directive list. */
   private void applyStyleRule(IAST rule, Style2D style) {
     if (rule.argSize() < 2 || !rule.arg1().isBuiltInSymbol()) {
@@ -550,6 +641,10 @@ public final class PrimitiveCollector {
         // Dashing -> d sets the dashes like the directive Dashing(d); a rule for AbsoluteDashing
         // is not a directive and is ignored
         applyDashing(F.unaryAST1(S.Dashing, value), style, imageWidth);
+        break;
+      case ID.Antialiasing:
+        // Antialiasing -> False draws the edges without smoothing
+        style.crispEdges = value.isFalse();
         break;
       default:
         break;
@@ -1676,6 +1771,12 @@ public final class PrimitiveCollector {
     }
     Style2D textStyle = style.clone();
     IExpr content = ast.arg1();
+    if (content.isAST(S.ImageMarker) && content.argSize() >= 1) {
+      // a plot marker which is a picture: placed centred on the point
+      collectImageMarker((IAST) content, ast.argSize() >= 2 ? ast.arg2() : F.List(F.C0, F.C0),
+          style);
+      return;
+    }
     Color frame = null;
     Color background = null;
     // the angle a Rotate around the label turns it by, NaN if there is none
@@ -1769,6 +1870,50 @@ public final class PrimitiveCollector {
     }
     primitives.add(new Prim2D.TextPrim(textOf(content), pos[0], pos[1], offsetX, offsetY, dirX,
         dirY, frame, background, textStyle, shiftX, shiftY));
+  }
+
+  /** The width of an <code>ImageMarker</code> without a size, in printer's points. */
+  static final double DEFAULT_IMAGE_MARKER_SIZE = 12.0;
+
+  /**
+   * <code>ImageMarker(image)</code> and <code>ImageMarker(image, size)</code> at a point: the image
+   * (or a <code>Graphics</code>) as an inset centred on the point, <code>size</code> printer's
+   * points wide; <code>Scaled(s)</code> is a fraction of the picture's width.
+   */
+  private void collectImageMarker(IAST marker, IExpr position, Style2D style) {
+    double size = DEFAULT_IMAGE_MARKER_SIZE;
+    if (marker.argSize() >= 2) {
+      IExpr spec = marker.arg2();
+      if (spec.isAST(S.Scaled, 2)) {
+        size = ColorUtil.dbl(spec.first(), 0.0) * imageWidth;
+      } else {
+        size = ColorUtil.dbl(spec, DEFAULT_IMAGE_MARKER_SIZE);
+      }
+      if (!(size > 0)) {
+        size = DEFAULT_IMAGE_MARKER_SIZE;
+      }
+    }
+    IExpr picture = marker.arg1();
+    if (picture.head() == S.Image) {
+      collect(F.Inset(picture, position, S.Center, F.List(F.num(size), F.num(size))),
+          style.clone());
+      return;
+    }
+    if (!picture.isAST(S.Graphics) || picture.argSize() < 1) {
+      return;
+    }
+    // a marker is the drawing alone: no margin around it and nothing painted behind it
+    IAST bare = F.ternaryAST3(S.Graphics, picture.first(), F.Rule(S.ImagePadding, F.C0),
+        F.Rule(S.PlotRangePadding, F.C0));
+    SvgGraphics2D sub = new SvgGraphics2D(size, size, true);
+    sub.options().transparentBackground = true;
+    String svg = sub.toSVG(bare, true);
+    if (svg == null) {
+      return;
+    }
+    double[] pos = pointOf(position);
+    primitives.add(
+        new Prim2D.InsetPrim(svg, pos[0], pos[1], size, size, size / 2.0, size / 2.0, style.clone()));
   }
 
   /** The edge and the background of a <code>Panel</code> around a label. */
@@ -2263,6 +2408,21 @@ public final class PrimitiveCollector {
     if (Math.abs(span) < 1e-15) {
       span = 1;
     }
+    // ColorFunction -> f colours a value v by f(v), v scaled into 0..1 by the colour range
+    IExpr colorFunction = F.NIL;
+    for (int i = 2; i <= ast.argSize(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST() && arg.first() == S.ColorFunction && !arg.second().isAutomatic()
+          && !arg.second().isNone()) {
+        colorFunction = arg.second();
+        if (colorFunction.isString()) {
+          colorFunction = org.matheclipse.core.eval.EvalEngine.get()
+              .evaluate(F.unaryAST1(S.ColorData, colorFunction));
+        }
+      }
+    }
+    // the colours of the function, at 512 levels of the value
+    Color[] levels = colorFunction.isPresent() ? new Color[513] : null;
     List<Color[]> grid = new ArrayList<>(rowCount);
     int width = 0;
     for (int r = 1; r <= rowCount; r++) {
@@ -2289,7 +2449,8 @@ public final class PrimitiveCollector {
             }
           } else {
             double g = (ColorUtil.dbl(cell, 0) - vMin) / span;
-            color = new Color(clampF(g), clampF(g), clampF(g), 1.0f);
+            color = levels != null ? rasterLevel(levels, colorFunction, g)
+                : new Color(clampF(g), clampF(g), clampF(g), 1.0f);
           }
         }
         cells[c - 1] = color == null ? Color.BLACK : color;
@@ -2332,6 +2493,26 @@ public final class PrimitiveCollector {
       }
     }
     primitives.add(new Prim2D.RasterPrim(cells, x1, y1, x2, y2, smooth, style.clone()));
+  }
+
+  /**
+   * The colour <code>f(g)</code> of a raster cell's scaled value <code>g</code>, worked out once
+   * for each of the levels the value is rounded to; gray where <code>f</code> gives no colour.
+   */
+  private static Color rasterLevel(Color[] levels, IExpr colorFunction, double g) {
+    double t = Double.isFinite(g) ? Math.max(0.0, Math.min(1.0, g)) : 0.0;
+    int level = (int) Math.round(t * (levels.length - 1));
+    if (levels[level] == null) {
+      Color c = null;
+      try {
+        c = ColorUtil.parse(org.matheclipse.core.eval.EvalEngine.get()
+            .evaluate(F.unaryAST1(colorFunction, F.num((double) level / (levels.length - 1)))));
+      } catch (RuntimeException rex) {
+        org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+      }
+      levels[level] = c != null ? c : new Color(clampF(t), clampF(t), clampF(t), 1.0f);
+    }
+    return levels[level];
   }
 
   private static float clampF(double v) {

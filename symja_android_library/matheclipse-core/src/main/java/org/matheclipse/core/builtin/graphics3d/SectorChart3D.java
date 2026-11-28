@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -31,7 +32,16 @@ public class SectorChart3D extends AbstractEvaluator {
   private static final double STEP = Math.PI / 36.0;
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+    return chart(ast, false);
+  }
+
+  /**
+   * The chart of <code>ast</code>. For a pie (<code>pie</code> true) the rings of several datasets
+   * are 0.5 apart, every ring starts its colours anew, and the box is flat (<code>BoxRatios -&gt;
+   * {1, 1, 0.1}</code>, seen from <code>{0, -2.4, 2}</code>).
+   */
+  public static @AllowNIL IExpr chart(final IAST ast, boolean pie) {
     IAST datasets = datasets(ast.arg1());
     if (datasets == null) {
       return F.NIL;
@@ -48,10 +58,14 @@ public class SectorChart3D extends AbstractEvaluator {
 
     IASTAppendable primitives = F.ListAlloc();
     double ringBase = 0.0;
+    double outerRadius = 0.0;
     double[] stackedBase = new double[maxLength(datasets) + 1];
     int colorIndex = 0;
     for (int d = 1; d < datasets.size(); d++) {
       IAST data = (IAST) datasets.get(d);
+      if (pie) {
+        colorIndex = 0;
+      }
       double total = 0.0;
       for (int i = 1; i < data.size(); i++) {
         total += Math.max(0.0, component(data.get(i), 1));
@@ -105,13 +119,22 @@ public class SectorChart3D extends AbstractEvaluator {
       }
       if (!stacked) {
         // the next dataset is a ring around this one
-        ringBase = ringTop;
+        ringBase = ringTop + (pie ? 0.5 : 0.0);
+        outerRadius = ringTop;
       }
     }
     if (primitives.argSize() == 0) {
       return F.NIL;
     }
     IExpr[] defaults = {F.Rule(S.Boxed, S.False), F.Rule(S.Lighting, F.stringx("Neutral"))};
+    if (pie) {
+      double r = 1.2 * (stacked ? maxOf(stackedBase) : outerRadius);
+      defaults = new IExpr[] {F.Rule(S.Boxed, S.False), F.Rule(S.Lighting, F.stringx("Neutral")),
+          F.Rule(S.BoxRatios, F.List(F.C1, F.C1, F.num(0.1))),
+          F.Rule(S.ViewPoint, F.List(F.C0, F.num(-2.4), F.C2)),
+          F.Rule(S.PlotRange, F.List(F.List(F.num(-r), F.num(r)), F.List(F.num(-r), F.num(r)),
+              F.List(F.C0, F.num(1.02 * maxHeight(datasets)))))};
+    }
     return Plot3DTools.graphics3D(primitives, ast, argSize, defaults, false);
   }
 
@@ -136,6 +159,25 @@ public class SectorChart3D extends AbstractEvaluator {
     IExpr datum = PlotWrapper.strip(item);
     // three numbers, not a dataset of three triples
     return datum.isList() && datum.argSize() == 3 && ((IAST) datum).forAll(x -> !x.isList());
+  }
+
+  private static double maxOf(double[] values) {
+    double max = 0.0;
+    for (double v : values) {
+      max = Math.max(max, v);
+    }
+    return max;
+  }
+
+  /** The largest height of the sectors. */
+  private static double maxHeight(IAST datasets) {
+    double max = 0.0;
+    for (IExpr data : datasets) {
+      for (IExpr item : (IAST) data) {
+        max = Math.max(max, Math.abs(component(item, 3)));
+      }
+    }
+    return max > 0.0 ? max : 1.0;
   }
 
   private static int maxLength(IAST datasets) {

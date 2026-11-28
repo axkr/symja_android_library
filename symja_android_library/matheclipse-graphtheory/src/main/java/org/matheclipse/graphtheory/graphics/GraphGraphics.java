@@ -122,7 +122,7 @@ final public class GraphGraphics {
           S.VertexLabels, S.VertexShapeFunction, S.VertexShape, S.GraphLayout, S.GraphStyle,
           S.DirectedEdges, S.VertexCoordinates, S.EdgeWeight, S.VertexWeight, S.VertexLabelStyle,
           S.EdgeLabels, S.EdgeLabelStyle, S.EdgeShapeFunction, S.GraphHighlight,
-          S.GraphHighlightStyle, S.Arrowheads));
+          S.GraphHighlightStyle, S.Arrowheads, S.SelfLoopStyle));
 
   private Map<IExpr, double[]> vertexCoords = new HashMap<>();
   private IExpr vertexStyle = defaultVertexStyle();
@@ -134,6 +134,13 @@ final public class GraphGraphics {
   /** <code>EdgeStyle -> {edge -> style, ...}</code>, or {@link F#NIL} */
   private IExpr edgeStyles = F.NIL;
   private boolean showVertexLabels = false;
+  /** <code>SelfLoopStyle -&gt; None</code> leaves out the edges from a vertex to itself */
+  private boolean drawSelfLoops = true;
+  /**
+   * <code>SelfLoopStyle -&gt; s</code>: the height of a self-loop as a fraction of the smallest
+   * distance between two vertices; <code>NaN</code> for the default size
+   */
+  private double selfLoopSize = Double.NaN;
   /** a label sits on its vertex instead of below it, as the named graph styles draw it */
   private boolean centeredLabels = false;
   /** the radius of a vertex when no <code>VertexSize</code> is given */
@@ -251,12 +258,6 @@ final public class GraphGraphics {
       }
     }
     return F.NIL;
-  }
-
-  /** Whether <code>name</code> is the symbol of the given name, in any case of its letters. */
-  private static boolean isSymbolName(IExpr name, String symbolName) {
-    // the relaxed syntax lowercases the name of a symbol it does not know
-    return name.isSymbol() && symbolName.equalsIgnoreCase(((ISymbol) name).getSymbolName());
   }
 
   /**
@@ -479,6 +480,9 @@ final public class GraphGraphics {
 
       double[] p1 = vertexCoords.get(source);
       double[] p2 = vertexCoords.get(target);
+      if (!drawSelfLoops && source.equals(target)) {
+        continue;
+      }
 
       if (p1 != null && p2 != null) {
         // an edge with a style of its own is drawn in a list with it, so the style stays there
@@ -491,7 +495,7 @@ final public class GraphGraphics {
         if (edgeRenderingFunction.isPresent()) {
           IAST points;
           if (source.equals(target)) {
-            points = selfLoopPoints(p1);
+            points = selfLoopPoints(p1, distance);
           } else if (directed && g.containsEdge(target, source)) {
             points = curvedEdgePoints(p1, p2);
           } else {
@@ -500,7 +504,7 @@ final public class GraphGraphics {
           sink.append(engine.evaluate(F.binaryAST2(edgeRenderingFunction, points,
               F.binaryAST2(edgeHead, source, target))));
         } else if (source.equals(target)) {
-          IAST points = selfLoopPoints(p1);
+          IAST points = selfLoopPoints(p1, distance);
           sink.append(directed ? F.Arrow(points) : F.Line(points));
         } else if (directed && g.containsEdge(target, source)) {
           sink.append(F.Arrow(curvedEdgePoints(p1, p2)));
@@ -561,11 +565,20 @@ final public class GraphGraphics {
     return labels;
   }
 
-  /** The points of the loop at the vertex at <code>p</code>. */
-  private IAST selfLoopPoints(double[] p) {
+  /**
+   * The points of the loop at the vertex at <code>p</code>.
+   *
+   * @param distance the smallest distance between two vertices, which a
+   *        <code>SelfLoopStyle -&gt; s</code> size is a fraction of
+   */
+  private IAST selfLoopPoints(double[] p, double distance) {
     double x = p[0];
     double y = p[1];
     double r = Math.max(vertexSize * 6.5, 0.4);
+    if (Double.isFinite(selfLoopSize) && distance > 0 && Double.isFinite(distance)) {
+      // the cubic loop rises to three quarters of its control height
+      r = selfLoopSize * distance / 0.75;
+    }
 
     double x1 = x - r * 0.8;
     double y1 = y + r;
@@ -1107,6 +1120,18 @@ final public class GraphGraphics {
       }
     }
 
+    IExpr selfLoop = getOption(S.SelfLoopStyle);
+    if (selfLoop.isPresent()) {
+      if (selfLoop.isNone() || selfLoop.isFalse()) {
+        this.drawSelfLoops = false;
+      } else {
+        double size = selfLoop.evalfNaN();
+        if (Double.isFinite(size) && size > 0) {
+          this.selfLoopSize = size;
+        }
+      }
+    }
+
     IExpr vl = getOption(S.VertexLabels);
     if (vl.isPresent() && (vl.toString().equals("Name") || vl.toString().equals("\"Name\""))) {
       this.showVertexLabels = true;
@@ -1251,7 +1276,7 @@ final public class GraphGraphics {
   }
 
   public static boolean isVertexLabeling(IExpr name) {
-    return isSymbolName(name, "VertexLabeling");
+    return name == S.VertexLabeling;
   }
 
   /**

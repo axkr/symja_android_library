@@ -555,10 +555,54 @@ public final class FunctionDefinitions {
       S.BarChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.BarChart3D());
       S.BubbleChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.BubbleChart3D());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
+      S.AngularGauge.setEvaluator(new org.matheclipse.core.builtin.graphics.Gauges.AngularGauge());
+      S.HorizontalGauge.setEvaluator(new org.matheclipse.core.builtin.graphics.Gauges.HorizontalGauge());
+      S.ThermometerGauge.setEvaluator(new org.matheclipse.core.builtin.graphics.Gauges.ThermometerGauge());
+      S.AnglePath3D.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.AnglePath3D());
+      S.KochCurve.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.KochCurve());
+      S.HilbertCurve.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.HilbertCurve());
+      S.PeanoCurve.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.PeanoCurve());
+      S.SierpinskiCurve.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.SierpinskiCurve());
+      S.RulePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.CurvePlots.RulePlot());
+      S.CandlestickChart.setEvaluator(new org.matheclipse.core.builtin.graphics.ChartExtras.CandlestickChart());
+      S.PieChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics.ChartExtras.PieChart3D());
+      S.BubbleHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.ChartExtras.BubbleHistogram());
+      S.Dendrogram.setEvaluator(new org.matheclipse.core.builtin.graphics.ChartExtras.Dendrogram());
+      S.ChartElementData.setEvaluator(new org.matheclipse.core.builtin.graphics.ChartExtras.ChartElementData());
+      S.StreamDensityPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.StreamDensityPlot());
+      S.ListStreamPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.ListStreamPlot());
+      S.ComplexRegionPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.ComplexRegionPlot());
+      S.DateListLogPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.DateListLogPlot());
+      S.StackedListPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.StackedPlot(S.ListLinePlot));
+      S.StackedDateListPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.StackedPlot(S.DateListPlot));
+      S.ListFitPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.ListFitPlot());
+      S.PlotGrid.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.ComposedPlots.PlotGrid());
+      S.ReliefPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.RasterPlots.ReliefPlot());
+      S.JuliaSetPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.RasterPlots.JuliaSetPlot());
+      S.TernaryListPlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.SpecialAxesPlots.TernaryListPlot());
+      S.TimelinePlot.setEvaluator(
+          new org.matheclipse.core.builtin.graphics.SpecialAxesPlots.TimelinePlot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
 
       // Graphics3D
       S.ContourPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ContourPlot3D());
+      S.DensityPlot3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics3d.VolumePlots.DensityPlot3D());
+      S.SliceDensityPlot3D.setEvaluator(
+          new org.matheclipse.core.builtin.graphics3d.VolumePlots.SliceDensityPlot3D());
+      S.SliceContourPlot3D.setEvaluator(
+          new org.matheclipse.core.builtin.graphics3d.VolumePlots.SliceContourPlot3D());
       S.ListContourPlot3D
           .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListContourPlot3D());
       S.StreamPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.StreamPlot3D());
@@ -567,6 +611,8 @@ public final class FunctionDefinitions {
       S.DiscretePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.DiscretePlot3D());
       S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListLinePlot3D());
       S.ListPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPlot3D());
+      S.ListSurfacePlot3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListSurfacePlot3D());
       S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPointPlot3D());
       S.SectorChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.SectorChart3D());
       S.Plot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.Plot3D());
@@ -604,6 +650,7 @@ public final class FunctionDefinitions {
     TreeFunctions.initialize();
     StringUtilityFunctions.initialize();
     NotationFunctions.initialize();
+    GraphicsDirectiveFunctions.initialize();
     NumberSequenceFunctions.initialize();
     FractalNumberFunctions.initialize();
     LFunctions.initialize();

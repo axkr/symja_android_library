@@ -24,6 +24,11 @@ public class ListLinePlot extends ListPlot {
       // `1` is not a list of numbers or pairs of numbers.
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
     }
+    IExpr panels = plotLayoutPanels(arg1, originalAST, engine);
+    if (panels.isPresent()) {
+      return panels;
+    }
+    ast = withStackedDatasets(ast, originalAST);
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }

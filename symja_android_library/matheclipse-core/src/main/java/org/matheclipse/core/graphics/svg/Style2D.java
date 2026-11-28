@@ -96,6 +96,30 @@ public final class Style2D implements Cloneable {
    */
   public boolean intervalMarker = false;
 
+  /** The colour of the outline a {@code Haloing} directive draws around a primitive, or null. */
+  public Color haloColor = null;
+
+  /** The width of the {@code Haloing} outline in printer's points. */
+  public double haloRadius = 0.0;
+
+  /**
+   * The {@code DropShadowing} directive in force as <code>{dx, dy, blur}</code> in printer's
+   * points, the offset counted upwards, or {@code null} for no shadow.
+   */
+  public double[] shadow = null;
+
+  /** The colour of the {@code DropShadowing} shadow. */
+  public Color shadowColor = null;
+
+  /**
+   * The {@code LinearGradientFilling} or {@code HatchFilling} the faces of filled primitives are
+   * painted with, or {@code null} for a plain colour.
+   */
+  public org.matheclipse.core.interfaces.IAST facePaint = null;
+
+  /** {@code Antialiasing -> False}: the edges are drawn without smoothing. */
+  public boolean crispEdges = false;
+
   public String fontFamily = "sans-serif";
   public double fontSize = 12.0;
   public String fontWeight = "normal";

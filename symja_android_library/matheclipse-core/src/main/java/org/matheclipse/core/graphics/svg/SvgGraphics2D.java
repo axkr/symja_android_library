@@ -210,6 +210,7 @@ public class SvgGraphics2D {
 
     boolean hasLegend = LegendRenderer.isSupported(options.plotLegends);
     SvgRenderer2D renderer = new SvgRenderer2D(viewport, options);
+    renderer.setIdSuffix(idSuffix);
     AxesFrameRenderer axes = new AxesFrameRenderer(viewport, options);
 
     List<DomContent> elements = new ArrayList<>();
@@ -235,6 +236,9 @@ public class SvgGraphics2D {
               .attr("height", SvgRenderer2D.fmt(Math.max(0, viewport.plotY2 - viewport.plotY1)))));
       hasDefs = true;
     }
+    // the filters and paint servers of the primitives are only known once they are drawn; the
+    // definitions element is added now and filled at the end
+    int defsIndex = elements.size();
     if (hasDefs) {
       elements.add(defs);
     }
@@ -289,6 +293,15 @@ public class SvgGraphics2D {
       elements.add(group);
     }
 
+    List<ContainerTag<?>> effectDefs = renderer.effectDefinitions();
+    if (!effectDefs.isEmpty()) {
+      for (ContainerTag<?> definition : effectDefs) {
+        defs.with(definition);
+      }
+      if (!hasDefs) {
+        elements.add(defsIndex, defs);
+      }
+    }
     return elements;
   }
 
@@ -361,6 +374,12 @@ public class SvgGraphics2D {
     fitPaddingToWidth(padding);
     fitHeightToAspectRatio(padding);
     viewport.configure(bounds, padding);
+    if (options.imagePadding == null
+        && growPaddingForTexts(padding, collector.scaledPrimitives())) {
+      fitPaddingToWidth(padding);
+      fitHeightToAspectRatio(padding);
+      viewport.configure(bounds, padding);
+    }
     primitives = PrimitiveCollector.resolveScaled(primitives, collector.scaledPrimitives(),
         viewport.minX, viewport.maxX, viewport.minY, viewport.maxY);
     return collector;
@@ -465,6 +484,51 @@ public class SvgGraphics2D {
    * back 70 by 400 and drew as a sliver. Scaling the margins down instead keeps the picture the
    * shape it asked for; the numbers are cramped, which is what asking for a tiny framed plot means.
    */
+  /**
+   * Widen an automatic padding by what the texts written next to the plot range need: a label
+   * placed with <code>Offset</code> beside an edge of the range, as the tick labels which
+   * <code>FullGraphics</code> or <code>AxisObject</code> write, lies outside the drawing area and
+   * would be cut off at the edge of the picture.
+   *
+   * @param scaled the primitives placed with <code>Scaled</code>, which are left out
+   * @return whether the padding was widened
+   */
+  private boolean growPaddingForTexts(double[] padding, java.util.Set<Prim2D> scaled) {
+    double width = options.imageSize[0];
+    double height = options.imageSize[1];
+    double[] overflow = new double[4];
+    for (Prim2D p : primitives) {
+      // a text placed with Scaled sits inside the picture by construction
+      if (!(p instanceof Prim2D.TextPrim) || scaled.contains(p)) {
+        continue;
+      }
+      Prim2D.TextPrim text = (Prim2D.TextPrim) p;
+      double x = viewport.mapX(text.x) + text.shiftX;
+      double y = viewport.mapY(text.y) - text.shiftY;
+      if (!Double.isFinite(x) || !Double.isFinite(y)) {
+        continue;
+      }
+      double fontSize = text.style.fontSize;
+      double w = SvgRenderer2D.estimateTextWidth(text.text, fontSize);
+      double h = 1.2 * fontSize * SvgRenderer2D.lineCount(text.text);
+      // the point of the box the offset names sits at the position
+      double left = x - (text.offsetX + 1.0) / 2.0 * w;
+      double top = y - (1.0 - text.offsetY) / 2.0 * h;
+      overflow[0] = Math.max(overflow[0], 2.0 - left);
+      overflow[1] = Math.max(overflow[1], left + w + 2.0 - width);
+      overflow[2] = Math.max(overflow[2], top + h + 2.0 - height);
+      overflow[3] = Math.max(overflow[3], 2.0 - top);
+    }
+    boolean grown = false;
+    for (int side = 0; side < 4; side++) {
+      if (overflow[side] > 0.5) {
+        padding[side] += Math.min(overflow[side], width / 4.0);
+        grown = true;
+      }
+    }
+    return grown;
+  }
+
   private void fitPaddingToWidth(double[] padding) {
     double share = MAX_PADDING_SHARE * options.imageSize[0];
     double wanted = padding[0] + padding[1];

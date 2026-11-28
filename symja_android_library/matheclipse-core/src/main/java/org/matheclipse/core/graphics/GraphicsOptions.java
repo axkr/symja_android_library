@@ -250,6 +250,18 @@ public class GraphicsOptions {
     return interpolateColor(t, FIELD_COLORS);
   }
 
+  /**
+   * The colours of the default scalar field gradient, evenly spaced: <code>Blend(colors, t)</code>
+   * is {@link #getFieldColor(double)} as an expression.
+   */
+  public static IAST fieldGradientColors() {
+    IASTAppendable colors = F.ListAlloc(FIELD_COLORS.length);
+    for (double[] c : FIELD_COLORS) {
+      colors.append(F.RGBColor(c[0], c[1], c[2]));
+    }
+    return colors;
+  }
+
   private static IAST interpolateColor(double t, double[][] map) {
     if (t < 0)
       t = 0;
@@ -511,7 +523,8 @@ public class GraphicsOptions {
         .add(S.Automatic, S.PlotPoints, S.MaxRecursion, S.WorkingPrecision, S.PlotTheme,
             S.LabelStyle, S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions,
             S.PerformanceGoal, S.ClippingStyle, S.RegionFunction, S.ExclusionsStyle,
-            S.EvaluationMonitor, S.MeshFunctions, S.MeshShading, S.MeshStyle)
+            S.EvaluationMonitor, S.MeshFunctions, S.MeshShading, S.MeshStyle, S.Evaluated,
+            S.PlotLayout)
         .add(S.None, S.Mesh, S.Exclusions, S.PlotMarkers).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
@@ -521,6 +534,7 @@ public class GraphicsOptions {
         .add(S.Automatic, S.InterpolationOrder, S.PlotTheme, S.LabelStyle, S.ColorFunction,
             S.ColorFunctionScaling, S.ScalingFunctions, S.ClippingStyle, S.LabelingFunction,
             S.LabelingSize, S.MeshStyle, S.PerformanceGoal, S.TargetUnits)
+        .add(F.stringx("Overlaid"), S.PlotLayout)
         // None, not Automatic: Automatic is the standard sequence of markers, a setting of its own
         .add(S.None, S.Mesh, S.PlotMarkers).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
@@ -607,7 +621,8 @@ public class GraphicsOptions {
   public static OptionSet polarExtras(OptionSet set) {
     return set
         .add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints, S.MaxRecursion,
-            S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction, S.ColorFunction)
+            S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction, S.ColorFunction,
+            S.PolarAxesOrigin)
         .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh, S.PlotMarkers);
   }
 

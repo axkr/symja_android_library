@@ -203,6 +203,15 @@ public final class PrimitiveCollector3D {
         }
         return;
       }
+      case ID.Raster3D: {
+        // drawn as the voxels it stands for, each in its own colour
+        IExpr voxels = org.matheclipse.core.graphics.Raster3DPrimitives.voxels(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (voxels.isPresent()) {
+          process(voxels, style.clone(), context, transform);
+        }
+        return;
+      }
       case ID.GraphicsComplex: {
         if (ast.argSize() >= 2) {
           IAST pts = ast.arg1().isList() ? (IAST) ast.arg1() : null;
@@ -299,7 +308,10 @@ public final class PrimitiveCollector3D {
       case ID.LABColor:
       case ID.Lighter:
       case ID.Darker:
-      case ID.Blend: {
+      case ID.Blend:
+      case ID.LightDarkSwitched:
+      case ID.ThemeColor:
+      case ID.SystemColor: {
         Color c = ColorUtil.parse(ast);
         if (c != null) {
           style.color = c;

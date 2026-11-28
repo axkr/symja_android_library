@@ -4127,7 +4127,8 @@ public final class ListFunctions {
    * substitution system which replaces every element of a list (or every substring of a string)
    * by the rules in each step; a list element which is replaced by a list is spliced in.
    * <code>{m, n}</code> and <code>{m, n, s}</code> select the steps from <code>m</code> to
-   * <code>n</code> in steps of <code>s</code>.
+   * <code>n</code> in steps of <code>s</code>. <code>SubstitutionSystem(rules)</code> stays
+   * unevaluated.
    */
   private static final class SubstitutionSystem extends AbstractFunctionEvaluator {
 
@@ -4136,6 +4137,9 @@ public final class ListFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() != 3) {
+        return F.NIL;
+      }
       IExpr rules = ast.arg1();
       IExpr state = ast.arg2();
       if (!(state.isString() || state.isList())
@@ -4202,7 +4206,8 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      // SubstitutionSystem(rules) alone names the system, as RulePlot takes it
+      return ast.argSize() == 1 ? ARGS_1_1 : ARGS_3_3;
     }
   }
 

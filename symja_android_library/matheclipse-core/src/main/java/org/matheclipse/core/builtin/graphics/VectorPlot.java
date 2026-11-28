@@ -391,11 +391,21 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         !style.isPresent() || style.isFree(x -> x.isAST(S.Arrowheads), false);
     planeArrows(field, min, max, lattice, scale, scaledLengths, colored, ownArrowheads, region,
         graphicsOptions, primitives, engine);
+    return fieldGraphics(primitives, graphicsOptions, min[0], max[0], min[1], max[1]);
+  }
+
+  /**
+   * The <code>Graphics</code> of a plot of a plane field over <code>x0 ... x1</code> times
+   * <code>y0 ... y1</code>: the options given, then that rectangle as the plot range, a frame and
+   * a square aspect ratio, where the options don't say otherwise.
+   */
+  static IASTAppendable fieldGraphics(IAST primitives, IAST graphicsOptions, double x0,
+      double x1, double y0, double y1) {
     IASTAppendable result = F.Graphics(primitives);
     result.appendArgs(graphicsOptions);
     if (!hasOption(graphicsOptions, S.PlotRange)) {
       result.append(F.Rule(S.PlotRange,
-          F.list(F.list(F.num(min[0]), F.num(max[0])), F.list(F.num(min[1]), F.num(max[1])))));
+          F.list(F.list(F.num(x0), F.num(x1)), F.list(F.num(y0), F.num(y1)))));
     }
     if (!hasOption(graphicsOptions, S.Frame)) {
       result.append(F.Rule(S.Frame, S.True));

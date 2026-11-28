@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.annotation.AllowNIL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -92,6 +94,12 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (!checkList(engine, arg1)) {
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
     }
+    IExpr panels = plotLayoutPanels(arg1, originalAST, engine);
+    if (panels.isPresent()) {
+      return panels;
+    }
+    ast = withStackedDatasets(ast, originalAST);
+    arg1 = ast.arg1();
     GraphicsOptions graphicsOptions =
         setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
     graphicsOptions.forwardOptions(originalAST);
@@ -556,6 +564,45 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * <code>{{{0, 1}, {1, 2}}, {{0, 3}, {1, 1}}}</code> - pass for a list of two "points" with lists
    * for coordinates, and read that way nothing at all was drawn.
    */
+  /**
+   * <code>PlotLayout -&gt; "Row"</code> or <code>"Column"</code>: one plot per dataset.
+   *
+   * @return the plots laid out, or {@link F#NIL} when the layout overlays the datasets
+   */
+  protected static @AllowNIL IExpr plotLayoutPanels(IExpr data, IAST originalAST,
+      EvalEngine engine) {
+    IExpr layout = PlotLayouts.layout(originalAST);
+    if (PlotLayouts.isPanels(layout) && isListOfDatasets(data)) {
+      return PlotLayouts.panels(layout, originalAST, (IAST) data, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The call with its datasets stacked when <code>PlotLayout -&gt; "Stacked"</code> or
+   * <code>"Percentile"</code> asks for it, otherwise the call itself.
+   */
+  protected static IAST withStackedDatasets(IAST ast, IAST originalAST) {
+    IExpr data = ast.arg1();
+    if (!isListOfDatasets(data)) {
+      return ast;
+    }
+    IAST stacked = PlotLayouts.stacked(PlotLayouts.layout(originalAST), data);
+    return stacked.isPresent() ? ast.setAtCopy(1, stacked) : ast;
+  }
+
+  /**
+   * Several datasets: a list of at least two lists which is no list of plain points, so that
+   * <code>PlotLayout</code> has curves to stack or to lay out.
+   */
+  static boolean isListOfDatasets(IExpr data) {
+    if (!data.isList() || data.argSize() < 2) {
+      return false;
+    }
+    IAST list = (IAST) data;
+    return list.forAll(x -> x.isList()) && !isListOfPlainPoints(list);
+  }
+
   private static boolean isListOfPlainPoints(IAST list) {
     if (!list.isListOfPoints(2)) {
       return false;

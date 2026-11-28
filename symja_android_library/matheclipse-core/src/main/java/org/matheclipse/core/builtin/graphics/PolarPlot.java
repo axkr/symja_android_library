@@ -68,7 +68,8 @@ public class PolarPlot extends Plot {
         // the polar scale is drawn first so that it sits behind the curve
         IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
             GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
-            listPlotOptions.boundingBox());
+            listPlotOptions.boundingBox(),
+            GraphicsOptions.optionValue(originalAST, S.PolarAxesOrigin, S.Automatic));
         if (polar.isPresent()) {
           IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
           withScale.append(polar);
@@ -98,6 +99,36 @@ public class PolarPlot extends Plot {
    * @return the primitives, or {@link F#NIL} when neither option asked for anything
    */
   static IAST polarScale(IExpr polarAxes, IExpr polarGridLines, double[] boundingBox) {
+    return polarScale(polarAxes, polarGridLines, boundingBox, S.Automatic);
+  }
+
+  /**
+   * The polar scale behind the curve, with the radial axis where <code>PolarAxesOrigin -&gt; {theta,
+   * r}</code> puts it: the distances are written along the ray at angle <code>theta</code>
+   * (default <code>0</code>), and a circle at radius <code>r</code> (default none) marks the
+   * angular axis.
+   *
+   * @param polarAxesOrigin the {@code PolarAxesOrigin} value
+   */
+  static IAST polarScale(IExpr polarAxes, IExpr polarGridLines, double[] boundingBox,
+      IExpr polarAxesOrigin) {
+    double originAngle = 0.0;
+    double originRadius = 0.0;
+    if (polarAxesOrigin.isList2()) {
+      double angle = polarAxesOrigin.first().evalfNaN();
+      double r = polarAxesOrigin.second().evalfNaN();
+      if (Double.isFinite(angle)) {
+        originAngle = angle;
+      }
+      if (Double.isFinite(r) && r > 0) {
+        originRadius = r;
+      }
+    } else if (polarAxesOrigin.isReal()) {
+      double angle = polarAxesOrigin.evalfNaN();
+      if (Double.isFinite(angle)) {
+        originAngle = angle;
+      }
+    }
     boolean axes = polarAxes.isTrue() || polarAxes.isAutomatic();
     boolean grid = !polarGridLines.isNone() && !polarGridLines.isFalse();
     if (!axes && !grid) {
@@ -141,12 +172,30 @@ public class PolarPlot extends Plot {
       out.append(F.AbsoluteThickness(F.num(1.0)));
       out.append(F.Line(F.List(F.List(F.num(-radius), F.C0), F.List(F.num(radius), F.C0))));
       out.append(F.Line(F.List(F.List(F.C0, F.num(-radius)), F.List(F.C0, F.num(radius)))));
+      double cos = Math.cos(originAngle);
+      double sin = Math.sin(originAngle);
+      if (originAngle != 0.0) {
+        // the radial axis along the ray PolarAxesOrigin names
+        out.append(F.Line(F.List(F.List(F.C0, F.C0),
+            F.List(F.num(radius * cos), F.num(radius * sin)))));
+      }
+      if (originRadius > 0) {
+        // the angular axis at the radius PolarAxesOrigin names
+        out.append(F.Circle(F.List(F.C0, F.C0), F.num(originRadius)));
+      }
       out.append(S.Black);
       for (org.matheclipse.core.graphics.svg.TickGenerator.Tick tick : ticks) {
         if (tick.major && tick.value > 0) {
-          // the distances go along the positive x axis, which is where a polar plot reads them
-          out.append(
-              F.Text(F.stringx(tick.label), F.List(F.num(tick.value), F.C0), F.List(F.C0, F.C1)));
+          // the distances go along the radial axis, the positive x axis unless PolarAxesOrigin
+          // turns it; the label sits on the clockwise side of the ray
+          if (originAngle == 0.0) {
+            out.append(F.Text(F.stringx(tick.label), F.List(F.num(tick.value), F.C0),
+                F.List(F.C0, F.C1)));
+          } else {
+            out.append(F.Text(F.stringx(tick.label),
+                F.List(F.num(tick.value * cos), F.num(tick.value * sin)),
+                F.List(F.num(-sin), F.num(cos))));
+          }
         }
       }
     }

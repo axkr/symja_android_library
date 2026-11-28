@@ -66,18 +66,28 @@ final class StreamLines {
    */
   StreamLines(IExpr field, ISymbol x, ISymbol y, double x0, double x1, double y0, double y1,
       RegionFunctionFilter region, EvalEngine engine) {
+    this(p -> VectorPlot.fieldAt(field, new ISymbol[] {x, y}, p, engine), x0, x1, y0, y1, region,
+        engine);
+  }
+
+  /**
+   * Samples a field given as a function of the point <code>{x, y}</code>, which answers
+   * <code>{vx, vy}</code> or <code>null</code> where there is no field: the field of data, which
+   * is interpolated between the data points.
+   */
+  StreamLines(java.util.function.Function<double[], double[]> fieldAt, double x0, double x1,
+      double y0, double y1, RegionFunctionFilter region, EvalEngine engine) {
     this.x0 = x0;
     this.x1 = x1;
     this.y0 = y0;
     this.y1 = y1;
     this.region = region;
-    ISymbol[] variables = {x, y};
     for (int i = 0; i < SAMPLES; i++) {
       engine.checkTimeLimit();
       for (int j = 0; j < SAMPLES; j++) {
         double px = x0 + (x1 - x0) * i / (SAMPLES - 1);
         double py = y0 + (y1 - y0) * j / (SAMPLES - 1);
-        double[] vector = VectorPlot.fieldAt(field, variables, new double[] {px, py}, engine);
+        double[] vector = fieldAt.apply(new double[] {px, py});
         if (vector == null || (region != null && !region.accepts(px, py, vector[0], vector[1],
             Math.hypot(vector[0], vector[1])))) {
           // no field here, or outside the region: no line starts at or runs through this sample

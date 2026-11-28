@@ -96,6 +96,22 @@ public class Plot extends ListPlot {
       ast = ast.copyUntil(argSize + 1);
     }
     IExpr function = ast.arg1();
+    if (ast.arg2().isList3() && ast.arg2().first().isSymbol()
+        && GraphicsOptions.optionValue(originalAST, S.Evaluated, S.Automatic).isTrue()) {
+      // Evaluated -> True: the function is evaluated symbolically, with the variable free, before
+      // it is sampled
+      function = engine.evaluate(F.Block(F.List(ast.arg2().first()), function));
+    }
+    IExpr layout = PlotLayouts.layout(originalAST);
+    if (PlotLayouts.isPanels(layout)) {
+      IExpr curves = PlotWrapper.strip(function);
+      if (curves.isList() && curves.argSize() >= 2) {
+        IExpr panels = PlotLayouts.panels(layout, originalAST, (IAST) curves, engine);
+        if (panels.isPresent()) {
+          return panels;
+        }
+      }
+    }
     expressionLegends(graphicsOptions, originalAST.arg1(), function);
     if (ast.arg2().isList3()) {
       final IAST rangeList = (IAST) ast.arg2();

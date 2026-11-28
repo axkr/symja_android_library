@@ -323,11 +323,32 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
   private static IAST interpolatedPlot(List<double[]> points, List<double[]> vectors, IAST ast,
       double scale, boolean scaledLengths, boolean colored, IAST graphicsOptions,
       EvalEngine engine) {
+    double[] min = new double[2];
+    double[] max = new double[2];
+    java.util.function.Function<double[], double[]> field =
+        interpolatedField(points, vectors, min, max);
+    if (field == null) {
+      return F.NIL;
+    }
+    return VectorPlot.planeGraphics(field, min, max, VectorPlot.planeVectorPoints(ast, 2, engine),
+        scale, scaledLengths, true, F.NIL, colored, null, graphicsOptions, engine);
+  }
+
+  /**
+   * The field of vectors given at scattered points: interpolated linearly over the points'
+   * Delaunay triangulation and, outside of them, continued linearly from the nearest triangle.
+   *
+   * @param min set to the lower left corner of the points' bounding box
+   * @param max set to the upper right corner
+   * @return the field, or {@code null} if the points have no triangulation
+   */
+  static java.util.function.Function<double[], double[]> interpolatedField(
+      List<double[]> points, List<double[]> vectors, double[] min, double[] max) {
     int n = points.size();
     double[] x = new double[n];
     double[] y = new double[n];
-    double[] min = {Double.MAX_VALUE, Double.MAX_VALUE};
-    double[] max = {-Double.MAX_VALUE, -Double.MAX_VALUE};
+    min[0] = min[1] = Double.MAX_VALUE;
+    max[0] = max[1] = -Double.MAX_VALUE;
     for (int i = 0; i < n; i++) {
       x[i] = points.get(i)[0];
       y[i] = points.get(i)[1];
@@ -338,10 +359,10 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
     }
     List<int[]> triangles = MeshFunctions.delaunayTriangles(x, y);
     if (triangles == null || triangles.isEmpty() || !(max[0] > min[0]) || !(max[1] > min[1])) {
-      return F.NIL;
+      return null;
     }
     TriangleBuckets buckets = new TriangleBuckets(triangles, x, y, min, max);
-    java.util.function.Function<double[], double[]> field = p -> {
+    return p -> {
       // the triangle containing the point, found among those whose bounding boxes share its
       // bucket; else the one with the largest smallest barycentric coordinate, the nearest one
       for (int[] t : buckets.candidates(p)) {
@@ -366,8 +387,6 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       }
       return corners == null ? null : interpolated(weights, corners, vectors);
     };
-    return VectorPlot.planeGraphics(field, min, max, VectorPlot.planeVectorPoints(ast, 2, engine),
-        scale, scaledLengths, true, F.NIL, colored, null, graphicsOptions, engine);
   }
 
   /** The vector with the barycentric <code>weights</code> of the corners of a triangle. */

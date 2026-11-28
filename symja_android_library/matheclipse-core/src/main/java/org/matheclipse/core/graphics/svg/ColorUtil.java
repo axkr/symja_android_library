@@ -166,6 +166,11 @@ public final class ColorUtil {
           }
         }
         return null;
+      case ID.LightDarkSwitched:
+      case ID.ThemeColor:
+      case ID.SystemColor:
+        // a static picture shows the colour for a light background
+        return ThemeColors.resolve(ast);
       default:
         return null;
     }

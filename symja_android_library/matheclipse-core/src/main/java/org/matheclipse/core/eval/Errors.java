@@ -291,6 +291,7 @@ public class Errors {
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "geoell", "`1` is not a known reference ellipsoid.", //
       "geoprop", "`1` is not a known property of the reference ellipsoid `2`.", //
+      "gpts1", "Data value `1` must be a list of at least 3 points in 3D.", //
       "gmeth2",
       "The value of the option Method -> `1` should be Automatic, \"Buchberger\" or \"GroebnerWalk\".", //
       "juliantype", "`1` is not a known Julian date type.", //
@@ -391,7 +392,7 @@ public class Errors {
       "intnz", "Nonzero integer expected at position `1` in `2`.", //
       "itraw", "Raw object `1` cannot be used as an iterator.", //
       "input",
-      "Argument `1` at position `2` is not a 2x2 or larger numerica matrix of real values.", //
+      "Argument `1` at position `2` is not a 2 x 2 or larger numerical matrix of real values.", //
       "ivar", "`1` is not a valid variable.", //
       "jointype", "`1` is not a known join type. Use \"Inner\", \"Left\", \"Right\" or \"Outer\".", //
       "kval", "The value for the key `1` does not exist.", //
@@ -446,6 +447,7 @@ public class Errors {
       "matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
       "matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
       "maxrts", "The value `1` of the `2` options is not a positive integer, Infinity or Automatic", //
+      "maxorder", "The order `1` is larger than the largest order `2` that is computed.", //
       "memlimit",
       "This computation has exceeded the memeory limit settings of this evaluation engines instance.", //
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
@@ -633,6 +635,8 @@ public class Errors {
       "svars", "Equations may not give solutions for all \"solve\" variables.", //
       "htdrng", "The `1` test is only valid for sample sizes between `2` and `3`.", //
       "plld", "Endpoints for `1` in `2` must have distinct machine-precision numerical values.", //
+      "plldc",
+      "Corners for `1` in `2` must have distinct machine-precision real and imaginary parts.", //
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
@@ -744,6 +748,8 @@ public class Errors {
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shape", "Lists `1` and `2` are not the same shape.", //
       "shapespec", "Shape specification `1` is invalid.", //
+      "slice",
+      "Slice specification `1` should be a named slice, equation, surface or volume region or list of slices.", //
       "slota", "Named slot `1` in `2` cannot be filled from `3`.", //
       "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
       "slots", "SlotSequence[`1`] in `2` cannot be filled from `3`.", //

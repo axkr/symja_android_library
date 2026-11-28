@@ -90,9 +90,21 @@ public final class SvgRenderer2D {
     double fillAlpha = ColorUtil.alphaOf(fill, style.opacity);
     double strokeAlpha =
         ColorUtil.alphaOf(stroke, strokeIsEdge ? style.edgeOpacity : style.opacity);
-    tag.attr("fill", fill == null ? "none" : ColorUtil.css(fill));
-    if (fill != null && fillAlpha < 1.0) {
-      tag.attr("fill-opacity", fmt(fillAlpha));
+    String paintServer = fill == null ? null : paintServer(style);
+    if (paintServer != null) {
+      // a gradient or hatch carries its own colours; only the Opacity directive fades it
+      tag.attr("fill", "url(#" + paintServer + ")");
+      if (style.opacity < 1.0) {
+        tag.attr("fill-opacity", fmt(Math.max(0.0, style.opacity)));
+      }
+    } else {
+      tag.attr("fill", fill == null ? "none" : ColorUtil.css(fill));
+      if (fill != null && fillAlpha < 1.0) {
+        tag.attr("fill-opacity", fmt(fillAlpha));
+      }
+    }
+    if (style.crispEdges) {
+      tag.attr("shape-rendering", "crispEdges");
     }
     if (stroke == null) {
       tag.attr("stroke", "none");
@@ -124,13 +136,51 @@ public final class SvgRenderer2D {
 
   // -------------------------------------------------------------- dispatch
 
+  /** The filters and paint servers the drawn primitives refer to. */
+  private final SvgEffects effects = new SvgEffects();
+
+  /**
+   * Set the suffix which makes the ids of the filters and paint servers unique among the pictures
+   * of one page.
+   */
+  public void setIdSuffix(String idSuffix) {
+    effects.setIdSuffix(idSuffix);
+  }
+
+  /** The definitions the drawn primitives refer to; empty when none was needed. */
+  public List<ContainerTag<?>> effectDefinitions() {
+    return effects.definitions();
+  }
+
+  /** The id of the gradient or hatch the faces of {@code style} are painted with, or null. */
+  private String paintServer(Style2D style) {
+    return style.facePaint == null ? null : effects.paintServer(style);
+  }
+
+  /**
+   * Render one primitive; a {@code Haloing} or {@code DropShadowing} in its style puts it in a
+   * group with the filter which draws the halo or the shadow.
+   */
+  private void renderOne(Prim2D prim, ContainerTag<?> parent) {
+    String filter = effects.filter(prim.style, options.imageSize);
+    if (filter == null) {
+      prim.render(this, parent);
+      return;
+    }
+    ContainerTag<?> group = tag("g").attr("filter", "url(#" + filter + ")");
+    prim.render(this, group);
+    if (group.getNumChildren() > 0) {
+      parent.with(group);
+    }
+  }
+
   public void draw(List<Prim2D> primitives, ContainerTag<?> parent) {
     int i = 0;
     while (i < primitives.size()) {
       String tooltip = primitives.get(i).style.tooltip;
       if (tooltip == null || tooltip.isEmpty()) {
         try {
-          primitives.get(i).render(this, parent);
+          renderOne(primitives.get(i), parent);
         } catch (RuntimeException rex) {
           // one primitive failing must not cost the rest of the picture
         }
@@ -149,7 +199,7 @@ public final class SvgRenderer2D {
       ContainerTag<?> group = tag("g").with(tag("title").withText(tooltip));
       for (int k = i; k < end; k++) {
         try {
-          primitives.get(k).render(this, group);
+          renderOne(primitives.get(k), group);
         } catch (RuntimeException rex) {
           // one primitive failing must not cost the rest of the picture
         }

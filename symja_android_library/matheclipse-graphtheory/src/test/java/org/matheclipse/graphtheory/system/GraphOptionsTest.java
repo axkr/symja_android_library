@@ -75,4 +75,18 @@ public class GraphOptionsTest extends AbstractTestCase {
     check("Normal(WeightedAdjacencyMatrix(SetProperty({Graph({p<->q,q<->r}),r<->q},EdgeWeight->8)))", //
         "{{0,1,0},{1,0,8},{0,8,0}}");
   }
+
+  @Test
+  public void testSelfLoopStyle() {
+    // the loop at a is drawn by default, and left out with SelfLoopStyle -> None
+    check("Length(Cases(GraphPlot({a -> a, a -> b}), _Arrow, Infinity))", //
+        "2");
+    check("Length(Cases(GraphPlot({a -> a, a -> b}, SelfLoopStyle -> None), _Arrow, Infinity))", //
+        "1");
+    // a size makes the loop higher or lower
+    check("loopHeight(s_) := Max(Cases(GraphPlot({a -> a, a -> b}, SelfLoopStyle -> s, "
+        + "GraphLayout -> \"CircularEmbedding\"), Arrow(p_) /; p[[1]] == p[[-1]] :> p[[All, 2]] - p[[1, 2]], "
+        + "Infinity)); loopHeight(0.2) < loopHeight(0.8)", //
+        "True");
+  }
 }

@@ -115,7 +115,55 @@ public final class LegendRenderer {
     }
     // a LineLegend names curves and a PointLegend points; a bare list of labels follows Joined
     boolean line = spec.isAST(S.LineLegend) || (!spec.isAST(S.PointLegend) && options.joined);
-    return offset + drawListLegend(labels, markerSource, swatch, line, parent, offset) + 6.0;
+    IExpr title = legendOption(spec, S.LegendLabel);
+    IExpr function = legendOption(spec, S.LegendFunction);
+    return offset + drawListLegend(labels, markerSource, swatch, line, parent, offset,
+        title.isPresent() && !title.isNone() ? LabelText.of(title) : null, function) + 6.0;
+  }
+
+  /**
+   * The value of an option such as <code>LegendLabel -&gt; title</code> of a
+   * <code>LineLegend</code>, <code>PointLegend</code>, <code>SwatchLegend</code> or
+   * <code>BarLegend</code>, or {@link F#NIL}.
+   */
+  private static @org.matheclipse.core.annotation.AllowNIL IExpr legendOption(IExpr spec,
+      IBuiltInSymbol name) {
+    if (spec.isAST()) {
+      IAST ast = (IAST) spec;
+      for (int i = 2; i <= ast.argSize(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST() && arg.first() == name) {
+          return arg.second();
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The box behind a legend, as <code>LegendFunction</code> asks for it: none for
+   * <code>None</code> and <code>Identity</code>, a black frame for <code>"Frame"</code> or
+   * <code>Framed</code>, a grey panel for <code>"Panel"</code> or <code>Panel</code>, and the light
+   * box Symja draws by default otherwise.
+   */
+  private static ContainerTag<?> legendBox(IExpr function, double x, double y, double width,
+      double height) {
+    String fill = "white";
+    String stroke = "#cccccc";
+    if (function.isPresent()) {
+      if (function.isNone() || function == S.Identity) {
+        return null;
+      }
+      if (function.isString("Frame") || function == S.Framed) {
+        stroke = "black";
+      } else if (function.isString("Panel") || function == S.Panel) {
+        fill = "#f2f2f2";
+        stroke = "#a0a0a0";
+      }
+    }
+    return tag("rect").attr("x", SvgRenderer2D.fmt(x)).attr("y", SvgRenderer2D.fmt(y))
+        .attr("width", SvgRenderer2D.fmt(width)).attr("height", SvgRenderer2D.fmt(height))
+        .attr("fill", fill).attr("stroke", stroke).attr("stroke-width", "1");
   }
 
   private static boolean isListLegend(IExpr spec) {
@@ -156,17 +204,27 @@ public final class LegendRenderer {
 
   /** @return the height of the legend's box */
   private double drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
-      boolean line, ContainerTag<?> parent, double offset) {
+      boolean line, ContainerTag<?> parent, double offset, String title, IExpr function) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
-    double yBase = viewport.plotY1 + 12 + offset;
-    double boxHeight = count * lineHeight + 8;
+    double top = viewport.plotY1 + offset;
+    // a LegendLabel takes a line of its own above the entries
+    double titleHeight = title == null ? 0 : lineHeight;
+    double yBase = top + 12 + titleHeight;
+    double boxHeight = count * lineHeight + 8 + titleHeight;
 
-    parent.with(tag("rect").attr("x", SvgRenderer2D.fmt(xBase - 6))
-        .attr("y", SvgRenderer2D.fmt(yBase - 12)).attr("width", SvgRenderer2D.fmt(LEGEND_WIDTH - 8))
-        .attr("height", SvgRenderer2D.fmt(boxHeight)).attr("fill", "white")
-        .attr("stroke", "#cccccc").attr("stroke-width", "1"));
+    ContainerTag<?> box =
+        legendBox(function, xBase - 6, top, LEGEND_WIDTH - 8, boxHeight);
+    if (box != null) {
+      parent.with(box);
+    }
+    if (title != null) {
+      parent.with(tag("text").attr("x", SvgRenderer2D.fmt(xBase))
+          .attr("y", SvgRenderer2D.fmt(top + 13)).attr("fill", "black")
+          .attr("font-family", "sans-serif").attr("font-size", "11")
+          .attr("font-weight", "bold").withText(title));
+    }
 
     for (int i = 0; i < count; i++) {
       Color color = legendColor(markerSource, i);
