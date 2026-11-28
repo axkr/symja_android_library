@@ -87,6 +87,29 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "PDF(BatesDistribution(2.5),x)");
     check("PDF(BatesDistribution(-2), x)", //
         "PDF(BatesDistribution(-2),x)");
+    // message: BatesDistribution: Parameter 1 at position {2,1} in BatesDistribution(2,{1,0}) is
+    // expected to be less than 0.
+    check("PDF(BatesDistribution(2, {1, 0}), x)", //
+        "PDF(BatesDistribution(2,{1,0}),x)");
+    check("CDF(BatesDistribution(2, {3, 3}), x)", //
+        "CDF(BatesDistribution(2,{3,3}),x)");
+    check("Mean(BatesDistribution(2, {3, 3}))", //
+        "Mean(BatesDistribution(2,{3,3}))");
+    // n == 1 is the uniform distribution; there is no closed-form quantile for n > 1
+    check("Quantile(BatesDistribution(1), 0.3)", //
+        "0.3");
+    check("Quantile(BatesDistribution(1, {2, 6}), 1/4)", //
+        "3");
+    check("Quartiles(BatesDistribution(1, {0, 8}))", //
+        "{2,4,6}");
+    check("InverseCDF(BatesDistribution(2), 0.3)", //
+        "InverseCDF(BatesDistribution(2),0.3)");
+    // one variate of a large n is interruptible
+    check("TimeConstrained(RandomVariate(BatesDistribution(10^9), 2), 1/5)", //
+        "$Aborted");
+    // a mean of 0 doesn't give Power(0, 0)
+    check("Moment(BatesDistribution(3, {-1, 1}), #)& /@ {1, 2, 3, 4}", //
+        "{0,1/9,0,13/405}");
   }
 
   @Test
@@ -1263,6 +1286,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("Variance(DavisDistribution(1, 3, 0))", //
         "Infinity");
+    // a location of 0 doesn't give Power(0, 0)
+    check("Moment(DavisDistribution(1, 5, 0), #)& /@ {1, 2}", //
+        "{Pi^4/(360*Zeta(5)),Zeta(3)/(12*Zeta(5))}");
     check("CentralMoment(DavisDistribution(b, n, mu), 1)", //
         "Piecewise({{0,n>2}},Indeterminate)");
 
@@ -1336,6 +1362,43 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     // the density is not normalizable for n <= 1
     check("PDF(DavisDistribution(1, 1/2, 0), x)", //
         "PDF(DavisDistribution(1,1/2,0),x)");
+    // message: DavisDistribution: Parameter I at position 3 in DavisDistribution(1,3,I) is
+    // expected to be real.
+    check("PDF(DavisDistribution(1, 3, I), x)", //
+        "PDF(DavisDistribution(1,3,I),x)");
+    check("Mean(DavisDistribution(1, 3, I))", //
+        "Mean(DavisDistribution(1,3,I))");
+
+  }
+
+  /**
+   * <code>CDF</code> and <code>SurvivalFunction</code> of the Davis distribution in arbitrary
+   * precision.
+   */
+  @Tag(TestTags.SLOW)
+  @Test
+  public void testDavisDistributionArbitraryPrecision() {
+    // P(X < 3) == Sum(E^-k*(k^2+2*k+2)/k^3, {k, 1, Infinity})/(2*Zeta(3))
+    check("N(CDF(DavisDistribution(2, 3, 1), 3), 30)", //
+        "0.852777669308504043373812870691");
+    check("N(Sum(Exp(-k)*(k^2+2*k+2)/k^3, {k, 1, 200})/(2*Zeta(3)), 30)", //
+        "0.852777669308504043373812870691");
+    check("N(SurvivalFunction(DavisDistribution(2, 3, 1), 3), 30)", //
+        "0.147222330691495956626187129309");
+    // a small tail keeps its precision: the smaller tail is integrated, the other one is its
+    // complement
+    check("N(SurvivalFunction(DavisDistribution(1, 50, 0), 1/10), 25)", //
+        "0.0000000000000000001854837548591046540879714");
+    check("N(CDF(DavisDistribution(1, 50, 0), 1/100), 20)", //
+        "0.000000011784500720979411979");
+    // the machine values are CDF(DavisDistribution(1, 1.5, 0), 0.5) == 0.106919 and
+    // CDF(DavisDistribution(1, 1.001, 0), 0.5) == 0.000145565
+    check("N(CDF(DavisDistribution(1, 3/2, 0), 1/2), 20)", //
+        "0.10691858154160982581");
+    check("N(CDF(DavisDistribution(1, 1001/1000, 0), 1/2), 20)", //
+        "0.00014556515021122734575");
+    check("N(CDF(DavisDistribution(2, 3, 1), {1/2, 2}), 20)", //
+        "{0,0.58980091317268828162}");
   }
 
   @Test

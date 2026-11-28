@@ -652,6 +652,9 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     // columnwise
     check("QuartileDeviation({{1,2},{3,4},{5,10},{7,100}})", //
         "{2,26}");
+    // a column without a result stays unevaluated
+    check("QuartileDeviation({{1,2},{a,b}})", //
+        "{QuartileDeviation({1,a}),QuartileDeviation({2,b})}");
     check("QuartileDeviation(WeightedData({1,2,3,10}, {1,1,1,1}))", //
         "1");
     check("QuartileDeviation({Quantity(1,\"m\"),Quantity(2,\"m\"),Quantity(3,\"m\"),"

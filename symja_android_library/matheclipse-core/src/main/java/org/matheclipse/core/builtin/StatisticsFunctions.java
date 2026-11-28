@@ -4931,9 +4931,16 @@ public class StatisticsFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // InterquartileRange takes the same arguments: a data list, an array (columnwise),
-      // WeightedData, quantities, a distribution, and an optional quantile parameterization
-      IExpr range = engine.evaluate(ast.apply(S.InterquartileRange, 1));
+      IExpr arg1 = normalizeData(ast.arg1());
+      final IntList dimensions =
+          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() >= 2) {
+        // columnwise, so that a column without a result stays QuartileDeviation(column)
+        return columnwise(ast, arg1, dimensions);
+      }
+      // InterquartileRange takes the same arguments: a data list, WeightedData, quantities, a
+      // distribution, and an optional quantile parameterization
+      IExpr range = engine.evaluate(ast.setAtCopy(1, arg1).apply(S.InterquartileRange, 1));
       if (range.isAST(S.InterquartileRange) || hasUnevaluatedQuantile(range)) {
         return F.NIL;
       }

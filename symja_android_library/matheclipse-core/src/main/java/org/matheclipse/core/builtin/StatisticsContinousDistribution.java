@@ -6873,6 +6873,15 @@ public class StatisticsContinousDistribution {
           F.Power(F.Zeta(n), F.CN1));
     }
 
+    /**
+     * Whether the location <code>mu</code> is a number that isn't real. The statistics that depend
+     * on <code>mu</code> test this themselves, because <code>Mean</code> and <code>Moment</code>
+     * don't call {@link #checkParameters(IAST)}.
+     */
+    private static boolean isNonRealLocation(IExpr mu) {
+      return mu.isNumber() && !mu.isReal();
+    }
+
     /** <code>Piecewise({{value, n > order + 1}}, Infinity)</code> */
     private static IExpr ifFinite(IExpr value, IExpr n, int order) {
       return F.Piecewise(F.list(F.list(value, F.Greater(n, F.ZZ(order + 1)))), F.CInfinity);
@@ -6899,7 +6908,7 @@ public class StatisticsContinousDistribution {
           return F.Plus(inverseMoment(n, 4), F.Times(F.CN4, m1, inverseMoment(n, 3)),
               F.Times(F.C6, F.Sqr(m1), m2), F.Times(F.CN3, F.Power(m1, F.C4)));
         default:
-          return F.NIL;
+          throw new IllegalArgumentException("order " + k + " is not 2, 3 or 4");
       }
     }
 
@@ -6992,7 +7001,8 @@ public class StatisticsContinousDistribution {
 
     /**
      * The machine value of {@link #probability(double, double, boolean)} at
-     * <code>t == b/(x - mu)</code>, mapped over a list of variates.
+     * <code>t == b/(x - mu)</code>, mapped over a list of variates. In the arbitrary precision mode
+     * the value of {@link #arbitraryProbability(IExpr, IExpr, IExpr, EvalEngine, boolean)}.
      *
      * @return {@link F#NIL} for non-numeric arguments
      */
@@ -7008,12 +7018,78 @@ public class StatisticsContinousDistribution {
       }
       // machineValue() takes two parameters; mu only shifts the variate
       IExpr shifted = engine.evaluate(F.Subtract(x, mu));
+      if (engine.isArbitraryMode()) {
+        return arbitraryProbability(dist.arg1(), dist.arg2(), shifted, engine, upper);
+      }
       return machineValue(dist.arg1(), dist.arg2(), shifted, engine, (b, n, y) -> {
         if (y <= 0.0) {
           return upper ? 0.0 : 1.0;
         }
         return probability(n, b / y, upper);
       });
+    }
+
+    /**
+     * <code>E^u - 1</code> as <code>2*E^(u/2)*Sinh(u/2)</code>, which keeps its relative precision
+     * for <code>u</code> close to <code>0</code>, where <code>E^u - 1</code> cancels.
+     */
+    private static IExpr expM1(IExpr u) {
+      IExpr half = F.Times(F.C1D2, u);
+      return F.Times(F.C2, F.Exp(half), F.Sinh(half));
+    }
+
+    /**
+     * The distribution function (<code>upper == true</code>) or the survival function of
+     * <code>X</code> at <code>mu + y</code> in the precision of the arbitrary precision mode, by
+     * <code>NIntegrate</code> of the density of <code>T</code> over a finite interval. With
+     * <code>t == b/y</code> and <code>c == Gamma(n)*Zeta(n)</code>:
+     *
+     * <pre>
+     * P(T &lt; t) == Integrate(u^(n-1)/(E^u - 1), {u, 0, t})/c
+     * P(T &gt; t) == Integrate((t - Log(w))^(n-1)/(E^t - w), {w, 0, 1})/c
+     * </pre>
+     *
+     * <p>
+     * the second one by <code>u == t - Log(w)</code>. As in
+     * {@link #probability(double, double, boolean)} the smaller tail, chosen by its machine value,
+     * is integrated, and the other one is its complement.
+     *
+     * @return {@link F#NIL} for non-real arguments or if <code>NIntegrate</code> fails
+     */
+    private static @AllowNIL IExpr arbitraryProbability(IExpr b, IExpr n, IExpr y,
+        EvalEngine engine, boolean upper) {
+      if (!b.isReal() || !n.isReal() || !y.isReal() || !b.isPositive()
+          || !((IReal) n).isGT(F.C1)) {
+        return F.NIL;
+      }
+      if (!y.isPositive()) {
+        return upper ? F.C0 : F.C1;
+      }
+      IExpr t = engine.evaluate(F.Divide(b, y));
+      boolean integrateLower = true;
+      try {
+        integrateLower = probability(n.evalf(), t.evalf(), false) <= 0.5;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+      ISymbol v = F.Dummy("v");
+      IExpr integrand;
+      if (integrateLower) {
+        integrand = F.Times(F.Power(v, F.Subtract(n, F.C1)), F.Power(expM1(v), F.CN1));
+      } else {
+        // E^t - w == (E^t - 1) + (1 - w)
+        integrand = F.Times(F.Power(F.Subtract(t, F.Log(v)), F.Subtract(n, F.C1)),
+            F.Power(F.Plus(expM1(t), F.C1, F.Negate(v)), F.CN1));
+      }
+      IExpr integral = engine.evaluate(F.NIntegrate(integrand,
+          F.list(v, F.C0, integrateLower ? t : F.C1),
+          F.Rule(S.WorkingPrecision, F.ZZ(engine.getNumericPrecision()))));
+      if (!integral.isReal()) {
+        return F.NIL;
+      }
+      IExpr tail = engine.evaluate(F.Divide(integral, F.Times(F.Gamma(n), F.Zeta(n))));
+      // integrateLower gives P(T < t), the survival function of X
+      return upper == integrateLower ? engine.evaluate(F.Subtract(F.C1, tail)) : tail;
     }
 
     @Override
@@ -7069,6 +7145,13 @@ public class StatisticsContinousDistribution {
           // the density is not normalizable for n <= 1
           return F.NIL;
         }
+        IExpr mu = dist.arg3();
+        if (isNonRealLocation(mu)) {
+          // Parameter `1` at position `2` in `3` is expected to be real.
+          Errors.printMessage(S.DavisDistribution, "realprm", F.list(mu, F.C3, dist),
+              EvalEngine.get());
+          return F.NIL;
+        }
         return dist;
       }
       return F.NIL;
@@ -7103,7 +7186,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     public @AllowNIL IExpr mean(IAST dist) {
-      if (dist.isAST3()) {
+      if (dist.isAST3() && !isNonRealLocation(dist.arg3())) {
         IExpr n = dist.arg2();
         // mu + (b*Zeta(n - 1))/((n - 1)*Zeta(n))
         return ifFinite(F.Plus(dist.arg3(), F.Times(dist.arg1(), inverseMoment(n, 1))), n, 1);
@@ -7120,18 +7203,23 @@ public class StatisticsContinousDistribution {
     @Override
     public @AllowNIL IExpr moment(IAST dist, IExpr order) {
       int k = order.toIntDefault();
-      if (dist.isAST3() && k == 0) {
+      if (!dist.isAST3() || isNonRealLocation(dist.arg3())) {
+        return F.NIL;
+      }
+      if (k == 0) {
         return F.C1;
       }
-      if (dist.isAST3() && k > 0) {
+      if (k > 0) {
         IExpr b = dist.arg1();
         IExpr n = dist.arg2();
         IExpr mu = dist.arg3();
         // Sum(Binomial(k, i)*mu^(k - i)*b^i*E[T^-i], {i, 0, k})
         IASTAppendable sum = F.PlusAlloc(k + 1);
         for (int i = 0; i <= k; i++) {
-          sum.append(F.Times(F.Binomial(F.ZZ(k), F.ZZ(i)), F.Power(mu, F.ZZ(k - i)),
-              F.Power(b, F.ZZ(i)), inverseMoment(n, i)));
+          // the zeroth powers are 1 also for mu == 0, where Power(0, 0) is Indeterminate
+          sum.append(F.Times(F.Binomial(F.ZZ(k), F.ZZ(i)),
+              i == k ? F.C1 : F.Power(mu, F.ZZ(k - i)), i == 0 ? F.C1 : F.Power(b, F.ZZ(i)),
+              inverseMoment(n, i)));
         }
         return ifFinite(sum, n, k);
       }
@@ -10327,7 +10415,7 @@ public class StatisticsContinousDistribution {
      * pure function, or {@link F#NIL} if <code>n</code> is not an integer from <code>1</code> to
      * {@link #MAX_PIECEWISE_TERMS}.
      */
-    private static IExpr piecewiseFunction(IAST dist, boolean density) {
+    private static @AllowNIL IExpr piecewiseFunction(IAST dist, boolean density) {
       IExpr[] p = parameters(dist);
       if (p != null && p[1].isZero() && p[2].isOne()) {
         int n = p[0].toIntDefault();
@@ -10434,11 +10522,18 @@ public class StatisticsContinousDistribution {
       ICentralMoment, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
 
     /**
-     * <code>{n, min, max}</code> or <code>null</code> if the arguments don't match. The arguments
-     * have the same form as the ones of <code>UniformSumDistribution</code>.
+     * <code>{n, min, max}</code> or <code>null</code> if the arguments don't match or the numeric
+     * bounds don't satisfy <code>min &lt; max</code>. The arguments have the same form as the ones
+     * of <code>UniformSumDistribution</code>.
      */
     private static IExpr[] parameters(IAST dist) {
-      return UniformSumDistribution.parameters(dist);
+      IExpr[] p = UniformSumDistribution.parameters(dist);
+      return p != null && !isReversed(p[1], p[2]) ? p : null;
+    }
+
+    /** Whether the bounds <code>min, max</code> are numbers and <code>min</code> isn't less. */
+    private static boolean isReversed(IExpr min, IExpr max) {
+      return min.isReal() && max.isReal() && !min.lessThan(max).isTrue();
     }
 
     /**
@@ -10446,7 +10541,7 @@ public class StatisticsContinousDistribution {
      * <code>n</code> is not an integer from <code>1</code> to
      * {@link UniformSumDistribution#MAX_PIECEWISE_TERMS}.
      */
-    private static IExpr piecewiseFunction(IAST dist, boolean density) {
+    private static @AllowNIL IExpr piecewiseFunction(IAST dist, boolean density) {
       IExpr[] p = parameters(dist);
       if (p != null) {
         int n = p[0].toIntDefault();
@@ -10495,13 +10590,22 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IAST checkParameters(IAST dist) {
-      IExpr[] p = parameters(dist);
+      // the unchecked parameters, to report reversed bounds
+      IExpr[] p = UniformSumDistribution.parameters(dist);
       if (p != null) {
         IExpr n = p[0];
         if (n.isNumber() && !(n.isInteger() && n.isPositive())) {
           // Parameter `1` at position `2` in `3` is expected to be a positive integer.
           Errors.printMessage(S.BatesDistribution, "pintprm", F.list(n, F.C1, dist),
               EvalEngine.get());
+          return F.NIL;
+        }
+        IExpr min = p[1];
+        IExpr max = p[2];
+        if (isReversed(min, max)) {
+          // Parameter `1` at position `2` in `3` is expected to be less than `4`.
+          Errors.printMessage(S.BatesDistribution, "lss",
+              F.List(min, F.List(F.C2, F.C1), dist, max), EvalEngine.get());
           return F.NIL;
         }
         return dist;
@@ -10521,7 +10625,14 @@ public class StatisticsContinousDistribution {
 
     @Override
     public @AllowNIL IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      // no closed form for n > 1
+      IExpr[] p = parameters(dist);
+      if (p != null && p[0].isOne()) {
+        // the mean of one variable is UniformDistribution({min, max}); no closed form for n > 1
+        IAST uniform = F.unaryAST1(S.UniformDistribution, F.list(p[1], p[2]));
+        IExpr quantile = engine.evaluate(k.isPresent() ? F.binaryAST2(S.InverseCDF, uniform, k)
+            : F.unaryAST1(S.InverseCDF, uniform));
+        return quantile.isAST(S.InverseCDF) ? F.NIL : quantile;
+      }
       return F.NIL;
     }
 
@@ -10562,8 +10673,9 @@ public class StatisticsContinousDistribution {
           if (centralMoment.isNIL()) {
             return F.NIL;
           }
-          sum.append(
-              F.Times(F.Binomial(F.ZZ(k), F.ZZ(i)), F.Power(mean, F.ZZ(k - i)), centralMoment));
+          // the zeroth power is 1 also for a mean of 0, where Power(0, 0) is Indeterminate
+          sum.append(F.Times(F.Binomial(F.ZZ(k), F.ZZ(i)),
+              i == k ? F.C1 : F.Power(mean, F.ZZ(k - i)), centralMoment));
         }
         return sum;
       }
@@ -10594,13 +10706,16 @@ public class StatisticsContinousDistribution {
         double min = p[1].evalfNaN();
         double max = p[2].evalfNaN();
         if (n > 0 && min < max && Double.isFinite(max - min)) {
+          EvalEngine engine = EvalEngine.get();
           double[] vector = new double[size];
           for (int i = 0; i < size; i++) {
-            if (Thread.currentThread().isInterrupted()) {
-              throw TimeoutException.TIMED_OUT;
-            }
+            engine.checkTimeLimit();
             double sum = 0.0;
             for (int j = 0; j < n; j++) {
+              // one variate of a large n takes long by itself
+              if ((j & 0x3FF) == 0x3FF) {
+                engine.checkTimeLimit();
+              }
               sum += random.nextDouble();
             }
             vector[i] = min + (max - min) * (sum / n);
