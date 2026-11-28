@@ -24,6 +24,31 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSubsetCasesCondition() {
+    // the condition is tested on each combination, not only on the first elements which fit
+    check("SubsetCases({1, 2, 3, 4, 5, 6}, {x_, y_} /; x + y == 7)", //
+        "{{1,6},{2,5},{3,4}}");
+    check("SubsetCases({4, 1, 3}, {x_, y_} /; x > y)", //
+        "{{4,1}}");
+    check("SubsetCases({1, 2, 3, 4, 5, 6}, {x_, y_} /; x + y == 7, 2)", //
+        "{{1,6},{2,5}}");
+    check("SubsetCases({5, 3, 8, 1}, {x_, y_, z_} /; x < y < z)", //
+        "{{3,5,8}}");
+    check("SubsetCases(Range(400), {x_, y_} /; x*y == 391)", //
+        "{{1,391},{17,23}}");
+    // a condition on the left-hand side or on the right-hand side of a rule
+    check("SubsetCases({2, 9, 4, 7}, {x_, y_} /; x + y == 11 :> x*y)", //
+        "{18,28}");
+    check("SubsetCases({2, 9, 4, 7}, {x_, y_} :> x*y /; x + y == 11)", //
+        "{18,28}");
+    // the elements are tried in every order
+    check("SubsetCases({1, 2}, {_Integer, 1})", //
+        "{{2,1}}");
+    check("SubsetPosition({1, 2, 3, 4, 5, 6}, {x_, y_} /; x + y == 7)", //
+        "{{1,6},{2,5},{3,4}}");
+  }
+
+  @Test
   public void testSubsetReplace() {
     // message SubsetReplace: List expected at position 1 in
     // SubsetReplace(1/2^(2-I*2),{}->10,1/Sqrt(-1+I)).

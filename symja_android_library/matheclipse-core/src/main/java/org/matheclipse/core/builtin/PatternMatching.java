@@ -3050,7 +3050,9 @@ public final class PatternMatching {
         S.Underscript, S.Overscript, S.Underoverscript, S.SuperDagger, S.CirclePlus, S.CircleTimes,
         S.CircleDot, S.CenterDot, S.Wedge, S.Vee, S.Star, S.Diamond, S.PlusMinus, S.MinusPlus,
         S.Tilde, S.Del, S.Square, S.SmallCircle, S.Cap, S.Cup, S.Colon, S.Backslash, S.VerticalBar,
-        S.DoubleVerticalBar, S.Therefore, S.Because, S.Congruent);
+        S.DoubleVerticalBar, S.Therefore, S.Because, S.Congruent, S.OverBar, S.OverHat,
+        S.OverTilde, S.OverDot, S.OverVector, S.UnderBar, S.SubPlus, S.SubMinus, S.SubStar,
+        S.SuperPlus, S.SuperMinus, S.AngleBracket, S.Bra, S.Ket);
   }
 
   /**

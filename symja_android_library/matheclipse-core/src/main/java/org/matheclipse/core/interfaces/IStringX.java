@@ -363,6 +363,84 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
     return null;
   }
 
+  /**
+   * The regular expression of <code>DatePattern({element1, element2, ...})</code> or
+   * <code>DatePattern({...}, separator)</code>. The elements <code>"Year"</code>,
+   * <code>"Month"</code>, <code>"Day"</code>, <code>"Hour"</code>, <code>"Hour12"</code>,
+   * <code>"Hour24"</code>, <code>"Minute"</code>, <code>"Second"</code>, <code>"DayName"</code>,
+   * <code>"MonthName"</code> match a date field; two neighboring fields are joined by one
+   * separator, by default one of <code>/ - . :</code>. Other strings match literally.
+   *
+   * @return <code>null</code> if the date pattern isn't valid
+   */
+  static String datePatternRegex(IAST datePattern, boolean abbreviatedPatterns,
+      IAST stringFunction, String[] shortestLongest, Map<ISymbol, String> groups,
+      EvalEngine engine) {
+    String separator = "[/\\-.:]";
+    if (datePattern.isAST2()) {
+      separator = toRegexString(datePattern.arg2(), abbreviatedPatterns, stringFunction,
+          shortestLongest, groups, engine);
+      if (separator == null) {
+        return null;
+      }
+      separator = "(?:" + separator + ")";
+    }
+    IAST elements = (IAST) datePattern.arg1();
+    if (elements.isEmpty()) {
+      return null;
+    }
+    StringBuilder regex = new StringBuilder();
+    boolean previousWasField = false;
+    for (IExpr element : elements) {
+      if (!element.isString()) {
+        return null;
+      }
+      String field = dateFieldRegex(element.toString());
+      if (field != null) {
+        if (previousWasField) {
+          regex.append(separator);
+        }
+        regex.append(field);
+        previousWasField = true;
+      } else {
+        regex.append(Pattern.quote(element.toString()));
+        previousWasField = false;
+      }
+    }
+    return regex.toString();
+  }
+
+  /**
+   * The regular expression of a date field of <code>DatePattern</code>, or <code>null</code>. The
+   * longer alternatives come first, so that a day <code>15</code> isn't matched as <code>1</code>.
+   */
+  private static String dateFieldRegex(String name) {
+    switch (name) {
+      case "Year":
+        return "[0-9]{1,4}";
+      case "Month":
+        return "(?:1[0-2]|0?[1-9])";
+      case "Day":
+        return "(?:3[01]|[12][0-9]|0?[1-9])";
+      case "Hour":
+      case "Hour24":
+        return "(?:2[0-3]|1[0-9]|0?[0-9])";
+      case "Hour12":
+        return "(?:1[0-2]|0?[1-9])";
+      case "Minute":
+      case "Second":
+        return "(?:[0-5]?[0-9])";
+      case "DayName":
+        return "(?i:monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+            + "|mon|tue|wed|thu|fri|sat|sun)";
+      case "MonthName":
+        return "(?i:january|february|march|april|may|june|july|august|september|october"
+            + "|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)";
+      default:
+        return null;
+    }
+  }
+
   static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
       String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
@@ -626,6 +704,10 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         return null;
       }
       return "(?:(?!" + c + ")[\\s\\S])";
+    } else if (partOfRegex.isAST(S.DatePattern) && partOfRegex.argSize() >= 1
+        && partOfRegex.argSize() <= 2 && partOfRegex.first().isList()) {
+      return datePatternRegex((IAST) partOfRegex, abbreviatedPatterns, stringFunction,
+          shortestLongest, groups, engine);
     } else if (partOfRegex.isAST(S.Shortest, 2)) {
       String str = toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction,
           IStringX.REGEX_SHORTEST, groups, engine);
@@ -660,7 +742,11 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         case ID.LetterCharacter:
           return "(?u)[^\\W_0-9]";
         case ID.HexidecimalCharacter:
+        case ID.HexadecimalCharacter:
           return "[0-9a-fA-F]";
+        case ID.PunctuationCharacter:
+          // the Unicode punctuation and the ASCII symbols $ + < = > ^ ` | ~
+          return "(?:\\p{P}|[$+<=>^`|~])";
         default:
           // `1` currently not supported in `2`.
           Errors.printMessage(stringFunction.topHead(), "unsupported",

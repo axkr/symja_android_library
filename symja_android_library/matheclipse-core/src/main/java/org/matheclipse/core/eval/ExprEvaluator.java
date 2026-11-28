@@ -424,6 +424,8 @@ public class ExprEvaluator {
     }
     if (!engine.isOutListDisabled()) {
       engine.addInOut(expr, temp);
+    } else {
+      engine.clearLineMessages();
     }
     return temp;
   }

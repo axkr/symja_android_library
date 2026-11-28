@@ -9,7 +9,7 @@ import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 
 /**
- * Appell's hypergeometric function of two variables for {@link Apcomplex} arguments.<p>
+ * Appell's hypergeometric functions F1, F2, F3 and F4 of two variables for {@link Apcomplex} arguments.<p>
  *
  * The method is written as it would appear in <code>org.apfloat.ApcomplexMath</code>:
  * static, and the precision of the result is the smallest precision of the arguments.
@@ -466,5 +466,283 @@ public class ApcomplexAppellMath
         throws ArithmeticException, ApfloatRuntimeException
     {
         return AppellF1EulerIntegralHelper.appellF1(a, b1, b2, c, x, y, precision, machine);
+    }
+
+    // The kinds of the double series of appellF2, appellF3 and appellF4
+    private static final int F2 = 2,
+                             F3 = 3,
+                             F4 = 4;
+
+    /**
+     * Appell hypergeometric function <i>F<sub>2</sub></i>.<p>
+     *
+     * <i>F<sub>2</sub>(a; b<sub>1</sub>, b<sub>2</sub>; c<sub>1</sub>, c<sub>2</sub>; x, y)</i> = &sum;<sub>m,n</sub>
+     * (<i>a</i>)<sub>m+n</sub> (<i>b<sub>1</sub></i>)<sub>m</sub> (<i>b<sub>2</sub></i>)<sub>n</sub> /
+     * ((<i>c<sub>1</sub></i>)<sub>m</sub> (<i>c<sub>2</sub></i>)<sub>n</sub> <i>m</i>! <i>n</i>!) <i>x<sup>m</sup> y<sup>n</sup></i>.<p>
+     *
+     * The double series is summed for |<i>x</i>| + |<i>y</i>| &lt; 1, and for any arguments in which
+     * it terminates.
+     *
+     * @param a The first parameter.
+     * @param b1 The parameter of the first argument.
+     * @param b2 The parameter of the second argument.
+     * @param c1 The denominator parameter of the first argument.
+     * @param c2 The denominator parameter of the second argument.
+     * @param x The first argument.
+     * @param y The second argument.
+     *
+     * @return <i>F<sub>2</sub>(a; b<sub>1</sub>, b<sub>2</sub>; c<sub>1</sub>, c<sub>2</sub>; x, y)</i>
+     *
+     * @throws InfiniteExpansionException If all arguments have infinite precision.
+     * @throws LossOfPrecisionException If the sums at increasing working precisions don't agree.
+     * @throws ArithmeticException If the arguments are outside of the region in which the series converges, or the function has a pole.
+     */
+
+    public static Apcomplex appellF2(Apcomplex a, Apcomplex b1, Apcomplex b2, Apcomplex c1, Apcomplex c2, Apcomplex x, Apcomplex y)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        boolean terminatesM = isNonPositiveInteger(b1),
+                terminatesN = isNonPositiveInteger(b2);
+        if (!isNonPositiveInteger(a) && !(terminatesM && terminatesN))
+        {
+            double ax = ApcomplexMath.abs(x).doubleValue(),
+                   ay = ApcomplexMath.abs(y).doubleValue();
+            double radius = (terminatesM ? ay : terminatesN ? ax : ax + ay);
+            checkRadius(radius);
+        }
+        return doubleSeries(F2, new Apcomplex[] { a, b1, b2, c1, c2 }, x, y);
+    }
+
+    /**
+     * Appell hypergeometric function <i>F<sub>3</sub></i>.<p>
+     *
+     * <i>F<sub>3</sub>(a<sub>1</sub>, a<sub>2</sub>; b<sub>1</sub>, b<sub>2</sub>; c; x, y)</i> = &sum;<sub>m,n</sub>
+     * (<i>a<sub>1</sub></i>)<sub>m</sub> (<i>a<sub>2</sub></i>)<sub>n</sub> (<i>b<sub>1</sub></i>)<sub>m</sub> (<i>b<sub>2</sub></i>)<sub>n</sub> /
+     * ((<i>c</i>)<sub>m+n</sub> <i>m</i>! <i>n</i>!) <i>x<sup>m</sup> y<sup>n</sup></i>.<p>
+     *
+     * The double series is summed for |<i>x</i>| &lt; 1 and |<i>y</i>| &lt; 1, and for any arguments
+     * in which it terminates.
+     *
+     * @param a1 The first parameter of the first argument.
+     * @param a2 The first parameter of the second argument.
+     * @param b1 The second parameter of the first argument.
+     * @param b2 The second parameter of the second argument.
+     * @param c The denominator parameter.
+     * @param x The first argument.
+     * @param y The second argument.
+     *
+     * @return <i>F<sub>3</sub>(a<sub>1</sub>, a<sub>2</sub>; b<sub>1</sub>, b<sub>2</sub>; c; x, y)</i>
+     *
+     * @throws InfiniteExpansionException If all arguments have infinite precision.
+     * @throws LossOfPrecisionException If the sums at increasing working precisions don't agree.
+     * @throws ArithmeticException If the arguments are outside of the region in which the series converges, or the function has a pole.
+     */
+
+    public static Apcomplex appellF3(Apcomplex a1, Apcomplex a2, Apcomplex b1, Apcomplex b2, Apcomplex c, Apcomplex x, Apcomplex y)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        boolean terminatesM = isNonPositiveInteger(a1) || isNonPositiveInteger(b1),
+                terminatesN = isNonPositiveInteger(a2) || isNonPositiveInteger(b2);
+        double ax = (terminatesM ? 0.0 : ApcomplexMath.abs(x).doubleValue()),
+               ay = (terminatesN ? 0.0 : ApcomplexMath.abs(y).doubleValue());
+        checkRadius(Math.max(ax, ay));
+        return doubleSeries(F3, new Apcomplex[] { a1, a2, b1, b2, c }, x, y);
+    }
+
+    /**
+     * Appell hypergeometric function <i>F<sub>4</sub></i>.<p>
+     *
+     * <i>F<sub>4</sub>(a, b; c<sub>1</sub>, c<sub>2</sub>; x, y)</i> = &sum;<sub>m,n</sub>
+     * (<i>a</i>)<sub>m+n</sub> (<i>b</i>)<sub>m+n</sub> /
+     * ((<i>c<sub>1</sub></i>)<sub>m</sub> (<i>c<sub>2</sub></i>)<sub>n</sub> <i>m</i>! <i>n</i>!) <i>x<sup>m</sup> y<sup>n</sup></i>.<p>
+     *
+     * The double series is summed for &radic;|<i>x</i>| + &radic;|<i>y</i>| &lt; 1, and for any
+     * arguments in which it terminates.
+     *
+     * @param a The first parameter.
+     * @param b The second parameter.
+     * @param c1 The denominator parameter of the first argument.
+     * @param c2 The denominator parameter of the second argument.
+     * @param x The first argument.
+     * @param y The second argument.
+     *
+     * @return <i>F<sub>4</sub>(a, b; c<sub>1</sub>, c<sub>2</sub>; x, y)</i>
+     *
+     * @throws InfiniteExpansionException If all arguments have infinite precision.
+     * @throws LossOfPrecisionException If the sums at increasing working precisions don't agree.
+     * @throws ArithmeticException If the arguments are outside of the region in which the series converges, or the function has a pole.
+     */
+
+    public static Apcomplex appellF4(Apcomplex a, Apcomplex b, Apcomplex c1, Apcomplex c2, Apcomplex x, Apcomplex y)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        if (!isNonPositiveInteger(a) && !isNonPositiveInteger(b))
+        {
+            double root = Math.sqrt(ApcomplexMath.abs(x).doubleValue()) + Math.sqrt(ApcomplexMath.abs(y).doubleValue());
+            checkRadius(root * root);
+        }
+        return doubleSeries(F4, new Apcomplex[] { a, b, c1, c2 }, x, y);
+    }
+
+    // The series of F2, F3 and F4 converges geometrically with this ratio; it is summed only inside of the region
+    private static void checkRadius(double radius)
+        throws ArithmeticException
+    {
+        if (!(radius < DOUBLE_SERIES_RADIUS))
+        {
+            throw new ArithmeticException("The arguments are outside of the region in which the double series is summed");
+        }
+    }
+
+    // The double series of F2, F3 or F4, summed with more digits until two sums agree
+    private static Apcomplex doubleSeries(int kind, Apcomplex[] parameters, Apcomplex x, Apcomplex y)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        long precision = Math.min(x.precision(), y.precision());
+        for (Apcomplex p : parameters)
+        {
+            precision = Math.min(precision, p.precision());
+        }
+        if (precision == Apfloat.INFINITE)
+        {
+            throw new InfiniteExpansionException("Cannot calculate Appell function to infinite precision", "appell.infinitePrecision");
+        }
+        long extraPrecision = ApfloatHelperShim.EXTRA_PRECISION;
+        Apcomplex previous = null;
+        for (int attempt = 0; attempt <= MAX_ATTEMPTS; attempt++)
+        {
+            long workingPrecision = ApfloatHelperShim.extendPrecision(precision, extraPrecision);
+            Apcomplex[] p = new Apcomplex[parameters.length];
+            for (int i = 0; i < p.length; i++)
+            {
+                p[i] = ApfloatHelperShim.ensurePrecision(parameters[i], workingPrecision);
+            }
+            Apcomplex result = doubleSeries(kind, p, ApfloatHelperShim.ensurePrecision(x, workingPrecision),
+                                            ApfloatHelperShim.ensurePrecision(y, workingPrecision), workingPrecision);
+            if (previous != null && GuardDigitsHelper.agree(previous, result, precision))
+            {
+                return ApfloatHelperShim.limitPrecision(result, precision);
+            }
+            previous = result;
+            extraPrecision *= 2;
+        }
+        throw new LossOfPrecisionException("Complete loss of accurate digits");
+    }
+
+    // The sum over the rows m of the sums over n; a term is the previous one in its row times the ratio of n, the first term of a row
+    // the first term of the previous row times the ratio of m
+    private static Apcomplex doubleSeries(int kind, Apcomplex[] p, Apcomplex x, Apcomplex y, long workingPrecision)
+    {
+        int radix = x.radix();
+        double size = 0.0;
+        for (Apcomplex q : p)
+        {
+            size += ApcomplexMath.abs(q).doubleValue();
+        }
+        double ax = ApcomplexMath.abs(x).doubleValue(),
+               ay = ApcomplexMath.abs(y).doubleValue();
+        double radius = (kind == F2 ? ax + ay : kind == F3 ? Math.max(ax, ay) : Math.pow(Math.sqrt(ax) + Math.sqrt(ay), 2.0));
+        long maxTerms = 1000L + (long) Math.min(1.0e6, (2.0 * workingPrecision * Math.log(radix) + 50.0 * size) / -Math.log(Math.min(Math.max(radius, 1.0e-6), DOUBLE_SERIES_RADIUS)));
+        Apcomplex sum = ApfloatHelperShim.ZEROS[radix],
+                  rowStart = ApfloatHelperShim.ONES[radix];
+        long[] maxScale = { Long.MIN_VALUE };
+        int smallRows = 0;
+        for (long m = 0; m < maxTerms; m++)
+        {
+            ApfloatHelperShim.checkInterrupted();
+            Apint mInt = new Apint(m, radix);
+            Apcomplex term = rowStart,
+                      rowSum = ApfloatHelperShim.ZEROS[radix];
+            int smallTerms = 0;
+            for (long n = 0; n < maxTerms; n++)
+            {
+                rowSum = add(rowSum, term, maxScale);
+                if (isZero(term))
+                {
+                    break;
+                }
+                if (isNegligible(term, maxScale, workingPrecision))
+                {
+                    if (++smallTerms >= 3)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    smallTerms = 0;
+                }
+                term = term.multiply(ratioN(kind, p, mInt, new Apint(n, radix), y));
+            }
+            sum = sum.add(rowSum);
+            if (isZero(rowStart))
+            {
+                break;
+            }
+            if (isNegligible(rowSum, maxScale, workingPrecision) && isNegligible(rowStart, maxScale, workingPrecision))
+            {
+                if (++smallRows >= 3)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                smallRows = 0;
+            }
+            rowStart = rowStart.multiply(ratioM(kind, p, mInt, x));
+        }
+        return sum;
+    }
+
+    // The ratio of the first terms of the rows m + 1 and m
+    private static Apcomplex ratioM(int kind, Apcomplex[] p, Apint m, Apcomplex x)
+    {
+        Apcomplex numerator, denominator;
+        switch (kind)
+        {
+            case F2:
+                // (a + m) (b1 + m) / ((c1 + m) (m + 1))
+                numerator = p[0].add(m).multiply(p[1].add(m));
+                denominator = p[3].add(m);
+                break;
+            case F3:
+                // (a1 + m) (b1 + m) / ((c + m) (m + 1))
+                numerator = p[0].add(m).multiply(p[2].add(m));
+                denominator = p[4].add(m);
+                break;
+            default:
+                // (a + m) (b + m) / ((c1 + m) (m + 1))
+                numerator = p[0].add(m).multiply(p[1].add(m));
+                denominator = p[2].add(m);
+                break;
+        }
+        return numerator.multiply(x).divide(denominator.multiply(m.add(ApfloatHelperShim.ONES[m.radix()])));
+    }
+
+    // The ratio of the terms n + 1 and n of the row m
+    private static Apcomplex ratioN(int kind, Apcomplex[] p, Apint m, Apint n, Apcomplex y)
+    {
+        Apint mn = m.add(n);
+        Apcomplex numerator, denominator;
+        switch (kind)
+        {
+            case F2:
+                // (a + m + n) (b2 + n) / ((c2 + n) (n + 1))
+                numerator = p[0].add(mn).multiply(p[2].add(n));
+                denominator = p[4].add(n);
+                break;
+            case F3:
+                // (a2 + n) (b2 + n) / ((c + m + n) (n + 1))
+                numerator = p[1].add(n).multiply(p[3].add(n));
+                denominator = p[4].add(mn);
+                break;
+            default:
+                // (a + m + n) (b + m + n) / ((c2 + n) (n + 1))
+                numerator = p[0].add(mn).multiply(p[1].add(mn));
+                denominator = p[3].add(n);
+                break;
+        }
+        return numerator.multiply(y).divide(denominator.multiply(n.add(ApfloatHelperShim.ONES[n.radix()])));
     }
 }

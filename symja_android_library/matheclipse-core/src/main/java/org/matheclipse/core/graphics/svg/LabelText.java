@@ -2,6 +2,7 @@ package org.matheclipse.core.graphics.svg;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.NumberFormatter;
 import org.matheclipse.core.form.NumberFormatter.FormattedNumber;
@@ -200,6 +201,17 @@ public final class LabelText {
       IExpr over = ((IAST) expr).arg3();
       return scriptBase(expr.first()) + subAndSuperscript(of(expr.second()), of(over),
           scriptText(expr.second()), scriptText(over));
+    }
+    if (expr.isAST1() && expr.head().isBuiltInSymbol()) {
+      // a mark over or under a base is a combining character, one beside it a script character
+      String mark = markText(((IBuiltInSymbol) expr.head()).ordinal());
+      if (mark != null) {
+        return of(expr.first()) + mark;
+      }
+    }
+    if (expr.isAST(S.Bra, 2) || expr.isAST(S.Ket, 2) || expr.isAST(S.AngleBracket)) {
+      return (expr.isAST(S.Ket) ? "|" : "\u27E8") + joined((IAST) expr, ",")
+          + (expr.isAST(S.Bra) ? "|" : "\u27E9");
     }
     if (expr.isAST(S.SuperStar, 2) || expr.isAST(S.SuperDagger, 2)) {
       // x* and x\u2020: the mark follows the base
@@ -807,6 +819,34 @@ public final class LabelText {
       return boxes(box.first());
     }
     return of(box);
+  }
+
+  /** The character a mark head adds after its base, or <code>null</code>. */
+  private static String markText(int headId) {
+    switch (headId) {
+      case ID.OverBar:
+        return "\u0305";
+      case ID.OverHat:
+        return "\u0302";
+      case ID.OverTilde:
+        return "\u0303";
+      case ID.OverDot:
+        return "\u0307";
+      case ID.OverVector:
+        return "\u20D7";
+      case ID.UnderBar:
+        return "\u0332";
+      case ID.SubPlus:
+        return "\u208A";
+      case ID.SubMinus:
+        return "\u208B";
+      case ID.SuperPlus:
+        return "\u207A";
+      case ID.SuperMinus:
+        return "\u207B";
+      default:
+        return null;
+    }
   }
 
   private static String joined(IAST parts, String separator) {

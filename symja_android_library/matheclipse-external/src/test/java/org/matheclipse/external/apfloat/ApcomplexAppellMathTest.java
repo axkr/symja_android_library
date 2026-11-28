@@ -191,4 +191,37 @@ public class ApcomplexAppellMathTest
         // a sum which is zero: 1 - x - y
         assertTrue(f1(q(-1, 1), q(1, 1), q(1, 1), q(1, 1), q(1, 2), q(1, 2)).isZero(), "F1(-1; 1, 1; 1; 1/2, 1/2)");
     }
+
+    @Test
+    public void testF2DoubleSeries()
+    {
+        // F2(a; b1, b2; b1, c2; x, y) = (1 - x)^(-a) 2F1(a, b2; c2; y/(1 - x))
+        Apfloat a = q(1, 3), b1 = q(3, 4), b2 = q(2, 5), c2 = q(7, 4), x = q(1, 5), y = q(1, 3);
+        Apfloat oneMinusX = q(1, 1).subtract(x);
+        Apcomplex expected = ApcomplexMath.pow(oneMinusX, a.negate()).multiply(
+            ApcomplexMath.hypergeometric2F1(a, b2, c2, y.divide(oneMinusX)));
+        assertClose("F2 with c1 = b1", expected, ApcomplexAppellMath.appellF2(a, b1, b2, b1, c2, x, y), 36);
+    }
+
+    @Test
+    public void testF2F3F4InOneVariable()
+    {
+        Apfloat a = q(1, 2), b = q(2, 3), c = q(9, 4), d = q(5, 3), x = q(2, 5), zero = q(0, 1);
+        Apcomplex hypergeometric = ApcomplexMath.hypergeometric2F1(a, b, c, x);
+        assertClose("F2(a; b, d; c, d; x, 0)", hypergeometric, ApcomplexAppellMath.appellF2(a, b, d, c, d, x, zero), 37);
+        assertClose("F2(a; d, b; d, c; 0, x)", hypergeometric, ApcomplexAppellMath.appellF2(a, d, b, d, c, zero, x), 37);
+        assertClose("F3(a, d; b, d; c; x, 0)", hypergeometric, ApcomplexAppellMath.appellF3(a, d, b, d, c, x, zero), 37);
+        assertClose("F3(d, a; d, b; c; 0, x)", hypergeometric, ApcomplexAppellMath.appellF3(d, a, d, b, c, zero, x), 37);
+        assertClose("F4(a, b; c, d; x, 0)", hypergeometric, ApcomplexAppellMath.appellF4(a, b, c, d, x, zero), 37);
+        assertClose("F4(a, b; d, c; 0, x)", hypergeometric, ApcomplexAppellMath.appellF4(a, b, d, c, zero, x), 37);
+    }
+
+    @Test
+    public void testF2F3F4OutsideOfTheRegion()
+    {
+        Apfloat one = q(1, 1), two = q(2, 1);
+        assertThrows(ArithmeticException.class, () -> ApcomplexAppellMath.appellF2(one, one, one, two, two, q(7, 10), q(3, 5)));
+        assertThrows(ArithmeticException.class, () -> ApcomplexAppellMath.appellF3(one, one, one, one, two, q(11, 10), q(1, 5)));
+        assertThrows(ArithmeticException.class, () -> ApcomplexAppellMath.appellF4(one, one, two, two, q(1, 2), q(1, 4)));
+    }
 }

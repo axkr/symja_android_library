@@ -1213,6 +1213,24 @@ public class TeXFormFactory {
     }
   }
 
+  /** <code>AngleBracket(a, b, ...)</code> as <code>&#92;langle a,b&#92;rangle</code>. */
+  private static final class AngleBracket extends AbstractTeXConverter {
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      buffer.append("\\langle ");
+      for (int i = 1; i < f.size(); i++) {
+        if (i > 1) {
+          buffer.append(",");
+        }
+        fFactory.convertInternal(buffer, f.get(i), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      }
+      buffer.append("\\rangle");
+      return true;
+    }
+  }
+
   private static final class Style extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -2832,6 +2850,20 @@ public class TeXFormFactory {
     initTeXConverter(S.Subsuperscript, new Subsuperscript());
     initTeXConverter(S.Underscript, new Underscript());
     initTeXConverter(S.Overscript, new Overscript());
+    initTeXConverter(S.OverBar, new UnaryFunction("\\overline{", "}"));
+    initTeXConverter(S.OverHat, new UnaryFunction("\\hat{", "}"));
+    initTeXConverter(S.OverTilde, new UnaryFunction("\\tilde{", "}"));
+    initTeXConverter(S.OverDot, new UnaryFunction("\\dot{", "}"));
+    initTeXConverter(S.OverVector, new UnaryFunction("\\vec{", "}"));
+    initTeXConverter(S.UnderBar, new UnaryFunction("\\underline{", "}"));
+    initTeXConverter(S.SubPlus, new UnaryFunction("{", "}_+"));
+    initTeXConverter(S.SubMinus, new UnaryFunction("{", "}_-"));
+    initTeXConverter(S.SubStar, new UnaryFunction("{", "}_*"));
+    initTeXConverter(S.SuperPlus, new UnaryFunction("{", "}^+"));
+    initTeXConverter(S.SuperMinus, new UnaryFunction("{", "}^-"));
+    initTeXConverter(S.SuperStar, new UnaryFunction("{", "}^*"));
+    initTeXConverter(S.SuperDagger, new UnaryFunction("{", "}^\\dagger"));
+    initTeXConverter(S.AngleBracket, new AngleBracket());
     initTeXConverter(S.Underoverscript, new Underoverscript());
     initTeXConverter(S.Sum, new Sum());
     initTeXConverter(S.Superscript, new Superscript());

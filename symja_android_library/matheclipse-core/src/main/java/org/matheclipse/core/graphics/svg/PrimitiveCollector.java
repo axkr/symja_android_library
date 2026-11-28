@@ -430,6 +430,11 @@ public final class PrimitiveCollector {
    * graphics content a list would scope them, and they would be lost with it.
    */
   public void applyTextStyle(IExpr directive, Style2D style) {
+    if (directive == S.Larger || directive == S.Smaller) {
+      // a font size relative to the current one
+      style.fontSize = GraphicsOptions.fontSizeOf(directive, style.fontSize);
+      return;
+    }
     if (directive.isNumber()) {
       double size = ColorUtil.dbl(directive, 0);
       if (size > 0) {

@@ -95,6 +95,26 @@ public class SubsetFunctions {
               maxNumberOfResults = ((IReal) arg3).toInt();
             }
           }
+          IExpr pattern = subsetPattern(rules);
+          if (pattern.isPresent()) {
+            // a subset is found by trying the combinations, so a condition which depends on more
+            // than one element of the subset is tested on each of them
+            final int k = pattern.argSize();
+            if (k > arg1.argSize() || maxNumberOfResults <= 0) {
+              return F.CEmptyList;
+            }
+            final java.util.function.Function<IExpr, IExpr> rule =
+                rules.isRuleAST() ? Functors.rules(rules, engine) : null;
+            final IPatternMatcher matcher = rule == null ? engine.evalPatternMatcher(rules) : null;
+            SubsetSearch search = new SubsetSearch(arg1, k, (candidate, order) -> {
+              if (rule != null) {
+                return rule.apply(candidate);
+              }
+              return matcher.test(candidate, engine) ? candidate : F.NIL;
+            }, false, maxNumberOfResults, engine);
+            search.subsets(1, 0);
+            return search.results;
+          }
           IASTAppendable resultList = F.ListAlloc(8);
           SubsetMatchManager subsetCounter = new SubsetMatchManager(maxNumberOfResults, resultList);
           subsetCounter.subsetCases(arg1, rules, engine);
@@ -104,6 +124,30 @@ public class SubsetFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The list pattern of the second argument of <code>SubsetCases</code>: a list pattern, a list
+     * pattern with a condition, or the left-hand side of a single rule. <code>F.NIL</code> for a
+     * list of rules or a pattern with pattern sequences, which the subset matcher handles.
+     */
+    private static @AllowNIL IExpr subsetPattern(IExpr rules) {
+      IExpr pattern = rules.isRuleAST() ? rules.first() : rules;
+      if (pattern.isAST(S.Condition, 3)) {
+        pattern = pattern.first();
+      }
+      if (!pattern.isList() || pattern.argSize() == 0) {
+        return F.NIL;
+      }
+      IAST list = (IAST) pattern;
+      if (!rules.isRuleAST() && list.forAll(x -> x.isRuleAST() || x.isList())) {
+        // a list of rules
+        return F.NIL;
+      }
+      if (list.exists(x -> x.isPatternSequence(false))) {
+        return F.NIL;
+      }
+      return list;
     }
 
     @Override
@@ -132,7 +176,9 @@ public class SubsetFunctions {
     @Override
     public @AllowNIL IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
-      if (!ast.arg1().isList() || !ast.arg2().isList()) {
+      // a list pattern, also with a condition: {x_, y_} /; x + y == 7
+      final IExpr sublist = ast.arg2().isAST(S.Condition, 3) ? ast.arg2().first() : ast.arg2();
+      if (!ast.arg1().isList() || !sublist.isList()) {
         return F.NIL;
       }
       int maxResults = Integer.MAX_VALUE;
@@ -144,7 +190,7 @@ public class SubsetFunctions {
         }
       }
       IAST list = (IAST) ast.arg1();
-      int k = ast.arg2().argSize();
+      int k = sublist.argSize();
       long arrangements = 1L;
       for (int i = 0; i < k; i++) {
         arrangements *= list.argSize() - i;
@@ -155,86 +201,14 @@ public class SubsetFunctions {
       if (k > list.argSize() || maxResults == 0) {
         return F.CEmptyList;
       }
-      Search search = new Search(list, k, engine.evalPatternMatcher(ast.arg2()), !option[0].isFalse(),
-          maxResults, engine);
+      final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+      SubsetSearch search = new SubsetSearch(list, k,
+          (candidate, order) -> matcher.test(candidate, engine)
+              ? F.mapRange(0, order.length, i -> F.ZZ(order[i]))
+              : F.NIL,
+          !option[0].isFalse(), maxResults, engine);
       search.subsets(1, 0);
       return search.results;
-    }
-
-    /** The search for the matching subsets, in the lexicographic order of their positions. */
-    private static final class Search {
-      final IAST list;
-      final int[] subset;
-      final IPatternMatcher matcher;
-      final boolean overlaps;
-      final int maxResults;
-      final EvalEngine engine;
-      final boolean[] used;
-      final IASTAppendable results = F.ListAlloc();
-
-      Search(IAST list, int k, IPatternMatcher matcher, boolean overlaps, int maxResults,
-          EvalEngine engine) {
-        this.list = list;
-        this.subset = new int[k];
-        this.matcher = matcher;
-        this.overlaps = overlaps;
-        this.maxResults = maxResults;
-        this.engine = engine;
-        this.used = new boolean[list.size()];
-      }
-
-      void subsets(int from, int count) {
-        if (count == subset.length) {
-          engine.checkTimeLimit();
-          if (!overlaps && hasUsedPosition()) {
-            return;
-          }
-          int[] order = arrangement(new int[count], new boolean[count], 0);
-          if (order != null) {
-            results.append(F.mapRange(0, count, i -> F.ZZ(order[i])));
-            for (int position : order) {
-              used[position] = true;
-            }
-          }
-          return;
-        }
-        for (int i = from; i < list.size() && results.argSize() < maxResults; i++) {
-          subset[count] = i;
-          subsets(i + 1, count + 1);
-        }
-      }
-
-      private boolean hasUsedPosition() {
-        for (int position : subset) {
-          if (used[position]) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      /** The first order of the subset which matches the pattern, or <code>null</code>. */
-      private int[] arrangement(int[] order, boolean[] taken, int count) {
-        if (count == order.length) {
-          IASTAppendable candidate = F.ListAlloc(count);
-          for (int position : order) {
-            candidate.append(list.get(position));
-          }
-          return matcher.test(candidate, engine) ? order : null;
-        }
-        for (int i = 0; i < order.length; i++) {
-          if (!taken[i]) {
-            taken[i] = true;
-            order[count] = subset[i];
-            int[] found = arrangement(order, taken, count + 1);
-            if (found != null) {
-              return found;
-            }
-            taken[i] = false;
-          }
-        }
-        return null;
-      }
     }
 
     @Override
@@ -245,6 +219,95 @@ public class SubsetFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.Overlaps, S.True);
+    }
+  }
+
+  /**
+   * The search for the subsets of <code>k</code> elements of a list which match, in the
+   * lexicographic order of their positions. For each subset the arrangements of its elements are
+   * tried in turn; the first one for which <code>match</code> gives a result is taken.
+   */
+  private static final class SubsetSearch {
+    final IAST list;
+    final int[] subset;
+    /** The result for a candidate list and the positions of its elements, or <code>F.NIL</code>. */
+    final java.util.function.BiFunction<IAST, int[], IExpr> match;
+    final boolean overlaps;
+    final int maxResults;
+    final EvalEngine engine;
+    final boolean[] used;
+    final IASTAppendable results = F.ListAlloc();
+
+    SubsetSearch(IAST list, int k, java.util.function.BiFunction<IAST, int[], IExpr> match,
+        boolean overlaps, int maxResults, EvalEngine engine) {
+      this.list = list;
+      this.subset = new int[k];
+      this.match = match;
+      this.overlaps = overlaps;
+      this.maxResults = maxResults;
+      this.engine = engine;
+      this.used = new boolean[list.size()];
+    }
+
+    void subsets(int from, int count) {
+      if (count == subset.length) {
+        engine.checkTimeLimit();
+        if (!overlaps && hasUsedPosition()) {
+          return;
+        }
+        int[] order = new int[count];
+        IExpr found = arrangement(order, new boolean[count], 0);
+        if (found.isPresent()) {
+          results.append(found);
+          for (int position : order) {
+            used[position] = true;
+          }
+        }
+        return;
+      }
+      for (int i = from; i < list.size() && results.argSize() < maxResults; i++) {
+        if (!overlaps && used[i]) {
+          // a position of a subset found before; no subset with it can be taken
+          continue;
+        }
+        subset[count] = i;
+        subsets(i + 1, count + 1);
+      }
+    }
+
+    private boolean hasUsedPosition() {
+      for (int position : subset) {
+        if (used[position]) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * The result of the first arrangement of the subset which matches, or <code>F.NIL</code>. The
+     * positions of that arrangement are left in <code>order</code>.
+     */
+    private @AllowNIL IExpr arrangement(int[] order, boolean[] taken, int count) {
+      if (count == order.length) {
+        IASTAppendable candidate = F.ListAlloc(count);
+        for (int position : order) {
+          candidate.append(list.get(position));
+        }
+        return match.apply(candidate, order);
+      }
+      for (int i = 0; i < order.length; i++) {
+        if (!taken[i]) {
+          taken[i] = true;
+          order[count] = subset[i];
+          IExpr found = arrangement(order, taken, count + 1);
+          if (found.isPresent()) {
+            return found;
+          }
+          taken[i] = false;
+        }
+      }
+      return F.NIL;
     }
   }
 

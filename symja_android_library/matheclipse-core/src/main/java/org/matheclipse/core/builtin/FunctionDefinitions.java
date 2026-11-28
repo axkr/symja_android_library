@@ -112,6 +112,14 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.SequenceOperators.FoldWhile());
       S.LexicographicSort.setEvaluator(
           new org.matheclipse.core.reflection.system.SequenceOperators.LexicographicSort());
+      S.FoldWhileList.setEvaluator(
+          new org.matheclipse.core.reflection.system.SequenceOperators.FoldWhileList());
+      S.SequenceFold.setEvaluator(
+          new org.matheclipse.core.reflection.system.SequenceOperators.SequenceFold(false));
+      S.SequenceFoldList.setEvaluator(
+          new org.matheclipse.core.reflection.system.SequenceOperators.SequenceFold(true));
+      S.LexicographicOrder.setEvaluator(
+          new org.matheclipse.core.reflection.system.SequenceOperators.LexicographicOrder());
       S.NumberDecompose.setEvaluator(new org.matheclipse.core.reflection.system.NumberDecompose());
       S.ReverseApplied.setEvaluator(
           new org.matheclipse.core.reflection.system.SequenceOperators.ReverseApplied());
@@ -589,6 +597,23 @@ public final class FunctionDefinitions {
     S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
     IOFunctions.initialize();
     Programming.initialize();
+    ConfirmFunctions.initialize();
+    ListOperatorFunctions.initialize();
+    EvaluationControlFunctions.initialize();
+    ArrayFilterFunctions.initialize();
+    TreeFunctions.initialize();
+    StringUtilityFunctions.initialize();
+    NotationFunctions.initialize();
+    NumberSequenceFunctions.initialize();
+    FractalNumberFunctions.initialize();
+    LFunctions.initialize();
+    ClassicalSpecialFunctions.initialize();
+    IntegralTransformFunctions.initialize();
+    AsymptoticComparisonFunctions.initialize();
+    AlgebraLogicFunctions.initialize();
+    MatrixDecompositionFunctions.initialize();
+    MatrixConstructionFunctions.initialize();
+    GeometricRegionFunctions.initialize();
     PatternMatching.initialize();
     DefinitionFunctions.initialize();
     FileFunctions.initialize();

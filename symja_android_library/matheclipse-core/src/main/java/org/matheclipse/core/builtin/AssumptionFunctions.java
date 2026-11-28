@@ -242,6 +242,12 @@ public class AssumptionFunctions {
               }
               result.append(arg);
             }
+            if (arg1.isList() && result.argSize() > 0
+                && (domain == S.PositiveIntegers || domain == S.NonNegativeIntegers
+                    || domain == S.NegativeIntegers)) {
+              // a list of undecided elements is written as integers with a sign condition
+              return integerSignConditions(result, domain);
+            }
             return evaled ? F.Element(result, domain) : F.NIL;
           }
         }
@@ -329,6 +335,12 @@ public class AssumptionFunctions {
             return signDomain(expr, -1, true, engine);
           case ID.PositiveReals:
             return signDomain(expr, 1, false, engine);
+          case ID.PositiveIntegers:
+            return signedIntegerDomain(expr, 1, false, engine);
+          case ID.NonNegativeIntegers:
+            return signedIntegerDomain(expr, 1, true, engine);
+          case ID.NegativeIntegers:
+            return signedIntegerDomain(expr, -1, false, engine);
           default:
             break;
         }
@@ -498,6 +510,59 @@ public class AssumptionFunctions {
    * @param zero whether <code>0</code> belongs to the domain
    * @return {@link S#True}, {@link S#False}, or {@link F#NIL} if the membership is undecided
    */
+  /**
+   * The membership of <code>expr</code> in the integers of the given sign: <code>Integers</code>
+   * and the sign test of {@link #signDomain(IExpr, int, boolean, EvalEngine)}.
+   *
+   * @return {@link F#NIL} if the membership isn't decided
+   */
+  /**
+   * <code>Element(x1, Integers) &amp;&amp; x1 &gt; 0 &amp;&amp; ...</code> for the elements of
+   * <code>PositiveIntegers</code>, with <code>&gt;= 0</code> for <code>NonNegativeIntegers</code>
+   * and <code>&lt; 0</code> for <code>NegativeIntegers</code>.
+   */
+  private static IExpr integerSignConditions(IAST elements, ISymbol domain) {
+    IASTAppendable and = F.ast(S.And, 2 * elements.argSize());
+    for (IExpr x : elements) {
+      and.append(F.Element(x, S.Integers));
+      if (domain == S.PositiveIntegers) {
+        and.append(F.Greater(x, F.C0));
+      } else if (domain == S.NonNegativeIntegers) {
+        and.append(F.GreaterEqual(x, F.C0));
+      } else {
+        and.append(F.Less(x, F.C0));
+      }
+    }
+    return and;
+  }
+
+  private static @AllowNIL IExpr signedIntegerDomain(IExpr expr, int sign, boolean zero,
+      EvalEngine engine) {
+    IExpr integer = engine.evaluate(F.Element(expr, S.Integers));
+    if (integer.isFalse()) {
+      return S.False;
+    }
+    IExpr signTest = signDomain(expr, sign, zero, engine);
+    if (signTest.isFalse()) {
+      return S.False;
+    }
+    if (signTest.isNIL()) {
+      // the assumptions may know the sign; no Refine here, the assumption itself may be an
+      // Element(x, PositiveIntegers) which would be evaluated again
+      boolean in = sign > 0 ? (zero ? expr.isNonNegativeResult() : expr.isPositiveResult())
+          : (zero ? expr.isNonPositiveResult() : expr.isNegativeResult());
+      boolean out = sign > 0 ? (zero ? expr.isNegativeResult() : expr.isNonPositiveResult())
+          : (zero ? expr.isPositiveResult() : expr.isNonNegativeResult());
+      if (out) {
+        return S.False;
+      }
+      if (in) {
+        signTest = S.True;
+      }
+    }
+    return integer.isTrue() && signTest.isTrue() ? S.True : F.NIL;
+  }
+
   private static @AllowNIL IExpr signDomain(IExpr expr, int sign, boolean zero, EvalEngine engine) {
     if (expr.isZero()) {
       return F.booleSymbol(zero);

@@ -85,6 +85,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
       case ID.InfiniteLine:
       case ID.HalfLine:
         return unboundedLineMember(reg, point, engine);
+      case ID.InfinitePlane:
+        return infinitePlaneMember(reg, point, engine);
       case ID.Disk:
       case ID.Ball:
         return ballMember(reg, point, engine, false);
@@ -409,6 +411,41 @@ public class RegionMember extends AbstractFunctionEvaluator {
    * <code>p1 + t*(p2-p1)</code>. It lies on the line when the vector to it is parallel to the
    * direction, and on the half line when in addition <code>t &gt;= 0</code>.
    */
+  /**
+   * <code>InfinitePlane(p, {u, v})</code> and <code>InfinitePlane({p, q, r})</code> in space: the
+   * offset from <code>p</code> is perpendicular to <code>u x v</code>.
+   */
+  private static IExpr infinitePlaneMember(IAST reg, IExpr point, EvalEngine engine) {
+    IExpr p;
+    IExpr u;
+    IExpr v;
+    int[] directionDims = reg.argSize() == 2 ? reg.arg2().isMatrix(false) : null;
+    int[] pointDims = reg.argSize() == 1 ? reg.arg1().isMatrix(false) : null;
+    if (reg.argSize() == 2 && reg.arg1().isVector() == 3 && directionDims != null
+        && directionDims[0] == 2) {
+      p = reg.arg1().normal(false);
+      IAST directions = (IAST) reg.arg2().normal(false);
+      u = directions.arg1();
+      v = directions.arg2();
+    } else if (pointDims != null && pointDims[0] == 3) {
+      IAST pts = (IAST) reg.arg1().normal(false);
+      p = pts.arg1();
+      u = engine.evaluate(F.Subtract(pts.arg2(), p));
+      v = engine.evaluate(F.Subtract(pts.arg3(), p));
+    } else {
+      return F.NIL;
+    }
+    if (p.argSize() != 3 || u.argSize() != 3 || v.argSize() != 3
+        || coordinates(point, 3).isNIL()) {
+      return F.NIL;
+    }
+    IExpr normal = engine.evaluate(F.Cross(u, v));
+    if (engine.evaluate(F.Dot(normal, normal)).isZero()) {
+      return F.NIL;
+    }
+    return F.Equal(engine.evaluate(F.Expand(F.Dot(normal, F.Subtract(point, p)))), F.C0);
+  }
+
   private static IExpr unboundedLineMember(IAST reg, IExpr point, EvalEngine engine) {
     IExpr p1;
     IExpr direction;

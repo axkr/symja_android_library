@@ -300,6 +300,15 @@ public class GraphicsFunctions {
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST() && arg.first() == S.DisplayFunction) {
+          // DisplayFunction -> f applies f to the combined picture
+          IExpr function = engine.evaluate(arg.second());
+          IExpr shown = engine.evaluate(ast.removeAtCopy(i));
+          return function == S.Identity ? shown : engine.evaluate(F.unaryAST1(function, shown));
+        }
+      }
       IASTAppendable graphics = F.ListAlloc(ast.argSize());
       IASTAppendable options = F.ListAlloc();
       IASTAppendable legends = F.ListAlloc();

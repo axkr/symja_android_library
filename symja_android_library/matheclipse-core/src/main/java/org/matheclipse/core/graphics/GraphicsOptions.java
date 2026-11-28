@@ -298,6 +298,12 @@ public class GraphicsOptions {
           return 12.0;
         case ID.Large:
           return 18.0;
+        case ID.Larger:
+          return current * 1.2;
+        case ID.Smaller:
+          return current / 1.2;
+        case ID.Inherited:
+          return current;
         default:
           return current;
       }
@@ -2572,16 +2578,13 @@ public class GraphicsOptions {
     if (value == null || value == S.Automatic || value.isNone() || !value.isSymbol()) {
       return LABELING_NONE;
     }
-    // Above and Below are not builtin symbols, so the placements are matched by name. The
-    // comparison ignores case because the relaxed parser lower-cases symbols it does not know.
-    String name = value.toString();
-    if ("Above".equalsIgnoreCase(name) || "Top".equalsIgnoreCase(name)) {
+    if (value == S.Above || value == S.Top) {
       return LABELING_ABOVE;
     }
-    if ("Below".equalsIgnoreCase(name) || "Bottom".equalsIgnoreCase(name)) {
+    if (value == S.Below || value == S.Bottom) {
       return LABELING_BELOW;
     }
-    if ("Center".equalsIgnoreCase(name)) {
+    if (value == S.Center) {
       return LABELING_CENTER;
     }
     return LABELING_NONE;

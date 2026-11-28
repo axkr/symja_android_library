@@ -18,6 +18,8 @@ import org.matheclipse.core.form.output.NumberFormPrinter;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -233,6 +235,68 @@ public class BoxesFunctions {
         scripts.append(standardFormRecursive(ast.get(i), 0, form, engine));
       }
       return F.RowBox(scripts);
+    }
+
+    /**
+     * The box of a mark around a base: <code>OverBar</code>, <code>OverHat</code>,
+     * <code>OverTilde</code>, <code>OverDot</code>, <code>OverVector</code>, <code>UnderBar</code>,
+     * <code>SubPlus</code>, <code>SubMinus</code>, <code>SubStar</code>, <code>SuperPlus</code> or
+     * <code>SuperMinus</code>; <code>null</code> for any other head.
+     */
+    private static IAST markBox(IBuiltInSymbol head, IExpr base, IExpr form, EvalEngine engine) {
+      IBuiltInSymbol box;
+      String mark;
+      switch (head.ordinal()) {
+        case ID.OverBar:
+          box = S.OverscriptBox;
+          mark = "_";
+          break;
+        case ID.OverHat:
+          box = S.OverscriptBox;
+          mark = "^";
+          break;
+        case ID.OverTilde:
+          box = S.OverscriptBox;
+          mark = "~";
+          break;
+        case ID.OverDot:
+          box = S.OverscriptBox;
+          mark = ".";
+          break;
+        case ID.OverVector:
+          box = S.OverscriptBox;
+          mark = "\u21C0";
+          break;
+        case ID.UnderBar:
+          box = S.UnderscriptBox;
+          mark = "_";
+          break;
+        case ID.SubPlus:
+          box = S.SubscriptBox;
+          mark = "+";
+          break;
+        case ID.SubMinus:
+          box = S.SubscriptBox;
+          mark = "-";
+          break;
+        case ID.SubStar:
+          box = S.SubscriptBox;
+          mark = "*";
+          break;
+        case ID.SuperPlus:
+          box = S.SuperscriptBox;
+          mark = "+";
+          break;
+        case ID.SuperMinus:
+          box = S.SuperscriptBox;
+          mark = "-";
+          break;
+        default:
+          return null;
+      }
+      // a script beside the base binds like a power; one above or below needs no parentheses
+      int precedence = box == S.SubscriptBox || box == S.SuperscriptBox ? Precedence.POWER : 0;
+      return F.binaryAST2(box, standardFormRecursive(base, precedence, form, engine), F.$str(mark));
     }
 
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence,
@@ -1197,6 +1261,26 @@ public class BoxesFunctions {
         return F.binaryAST2(S.SubscriptBox,
             standardFormRecursive(ast.arg1(), Precedence.POWER, form, engine),
             scriptRow(ast, form, engine));
+      }
+      if (ast.isAST1() && ast.head().isBuiltInSymbol()) {
+        // OverBar(x), SubPlus(x), ...: the mark is set above, below or beside the base
+        IAST markBox = markBox((IBuiltInSymbol) ast.head(), ast.arg1(), form, engine);
+        if (markBox != null) {
+          return markBox;
+        }
+      }
+      if (ast.isAST(S.AngleBracket)) {
+        // the arguments as a comma separated row between angle brackets
+        IASTAppendable arguments = F.ListAlloc(2 * ast.argSize());
+        for (int i = 1; i < ast.size(); i++) {
+          if (i > 1) {
+            arguments.append(F.$str(","));
+          }
+          arguments.append(standardFormRecursive(ast.get(i), 0, form, engine));
+        }
+        IExpr inner =
+            arguments.argSize() == 1 ? arguments.arg1() : F.unaryAST1(S.RowBox, arguments);
+        return F.unaryAST1(S.RowBox, F.list(F.$str("\u2329"), inner, F.$str("\u232A")));
       }
       if (ast.isAST(S.SuperStar, 2) || ast.isAST(S.SuperDagger, 2)) {
         // x^* and x^†: the mark is the superscript

@@ -81,6 +81,7 @@ import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IAtomicEvaluate;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1107,6 +1108,13 @@ public class EvalEngine implements Serializable {
   private transient IExpr fAnswer = null;
 
   /**
+   * The messages generated while the current line is evaluated, as
+   * <code>HoldForm(symbol::tag)</code> entries; <code>null</code> if there are none yet.
+   * {@link #addInOut(IExpr, IExpr)} moves them to the history for <code>MessageList(n)</code>.
+   */
+  private transient IASTAppendable fLineMessages = null;
+
+  /**
    * The last top-level input of the form <code>CompoundExpression(..., expr, Null)</code> (an input
    * ending with <code>;</code>) and the value of <code>expr</code>. The output history stores this
    * value instead of the <code>Null</code> such an input returns.
@@ -1322,10 +1330,61 @@ public class EvalEngine implements Serializable {
     ISymbol ans = F.symbol("$ans", Context.GLOBAL_CONTEXT_NAME, null, this);
     ans.assignValue(fAnswer, false);
     // ans.putDownRule(IPatternMatcher.SET, true, ans, fAnswer, false);
+    final IAST messages = fLineMessages;
+    fLineMessages = null;
     if (fOutListDisabled) {
       return;
     }
-    fEvalHistory.addInOut(inExpr, fAnswer);
+    fEvalHistory.addInOut(inExpr, fAnswer, messages);
+  }
+
+  /**
+   * Remember a message generated while the current line is evaluated, for
+   * <code>MessageList(n)</code>.
+   *
+   * @param message the <code>HoldForm(symbol::tag)</code> entry
+   */
+  public void addLineMessage(IExpr message) {
+    if (fLineMessages == null) {
+      fLineMessages = F.ListAlloc();
+    }
+    fLineMessages.append(message);
+  }
+
+  /**
+   * The messages generated so far while the current line is evaluated.
+   *
+   * @return a list of <code>HoldForm(symbol::tag)</code> entries
+   */
+  public IAST lineMessages() {
+    return fLineMessages == null ? F.CEmptyList : fLineMessages.copy();
+  }
+
+  /**
+   * Forget the messages of the current line; for front ends that end a line without
+   * {@link #addInOut(IExpr, IExpr)}.
+   */
+  public void clearLineMessages() {
+    fLineMessages = null;
+  }
+
+  /**
+   * Empty the caches of results this engine keeps: the remembered expressions, the machine
+   * precision results and the integration results.
+   */
+  public void clearSystemCaches() {
+    if (globalASTCache != null) {
+      globalASTCache.invalidateAll();
+    }
+    if (doublePrecisionCache != null) {
+      doublePrecisionCache.invalidateAll();
+    }
+    if (globalObjectCache != null) {
+      globalObjectCache.invalidateAll();
+    }
+    if (rubiASTCache != null) {
+      rubiASTCache.invalidateAll();
+    }
   }
 
   /**
@@ -5273,11 +5332,29 @@ public class EvalEngine implements Serializable {
    * @return the list of traced expressions
    */
   public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher) {
+    return evalTrace(expr, matcher, null);
+  }
+
+  /**
+   * Evaluate the expression and return the <code>Trace[expr]</code> (i.e. all (sub-)expressions
+   * needed to calculate the result).
+   *
+   * @param expr the expression which should be evaluated.
+   * @param matcher a filter which determines the expressions which should be traced, If the matcher
+   *        is set to <code>null</code>, all expressions are traced.
+   * @param result if not <code>null</code>, <code>result[0]</code> is set to the value of
+   *        <code>expr</code>
+   * @return the list of traced expressions
+   */
+  public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher, IExpr[] result) {
     IAST traceList = F.List();
     try {
       setTraceMode(true);
       fTraceStack = new TraceStack(matcher);
-      evaluate(expr);
+      IExpr value = evaluate(expr);
+      if (result != null) {
+        result[0] = value;
+      }
     } finally {
       traceList = endTrace();
     }
@@ -7059,6 +7136,8 @@ public class EvalEngine implements Serializable {
    */
   private void reset() {
     initInstance();
+    // a new top-level input starts without the messages of earlier inputs
+    fLineMessages = null;
     fAbortProtectDepth = 0;
     fProtectedCheckAborts = 0;
 
@@ -7725,6 +7804,71 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Replace every <code>Threaded(v)</code> argument of a listable function call by <code>v</code>
+   * repeated over the leading axes of the deepest other list argument, so that <code>v</code> is
+   * combined with the last axes of that argument: <code>{{1,2},{3,4}} + Threaded({a,b})</code>
+   * becomes <code>{{1,2},{3,4}} + {{a,b},{a,b}}</code>. Without another list argument the call is
+   * applied inside of the wrapper: <code>Threaded({1,2}) + 5</code> becomes
+   * <code>Threaded({1,2} + 5)</code>.
+   *
+   * @param ast a listable function call with at least one <code>Threaded(v)</code> argument
+   * @return the call with the replaced arguments
+   */
+  private static IAST threadedArguments(final IAST ast) {
+    final int size = ast.size();
+    IntArrayList target = null;
+    for (int i = 1; i < size; i++) {
+      final IExpr argument = ast.get(i);
+      if (argument.isList()) {
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions((IAST) argument);
+        if (target == null || dimensions.size() > target.size()) {
+          target = dimensions;
+        }
+      }
+    }
+    if (target == null) {
+      // no list to combine with: the operation is applied inside of the Threaded wrapper
+      IASTMutable inside = ast.copy();
+      for (int i = 1; i < size; i++) {
+        if (ast.get(i).isAST(S.Threaded, 2)) {
+          inside.set(i, ast.get(i).first());
+        }
+      }
+      return F.unaryAST1(S.Threaded, inside);
+    }
+    IASTMutable result = ast.copy();
+    for (int i = 1; i < size; i++) {
+      final IExpr argument = ast.get(i);
+      if (!argument.isAST(S.Threaded, 2)) {
+        continue;
+      }
+      final IExpr value = argument.first();
+      IExpr expanded = value;
+      if (target != null) {
+        IntArrayList valueDimensions =
+            value.isList() ? LinearAlgebraUtil.dimensions((IAST) value) : new IntArrayList();
+        final int leading = target.size() - valueDimensions.size();
+        boolean aligned = leading >= 0;
+        for (int k = 0; aligned && k < valueDimensions.size(); k++) {
+          aligned = valueDimensions.getInt(k) == target.getInt(leading + k);
+        }
+        if (aligned) {
+          for (int k = leading - 1; k >= 0; k--) {
+            final int length = target.getInt(k);
+            IASTAppendable repeated = F.ListAlloc(length);
+            for (int j = 0; j < length; j++) {
+              repeated.append(expanded);
+            }
+            expanded = repeated;
+          }
+        }
+      }
+      result.set(i, expanded);
+    }
+    return result;
+  }
+
+  /**
    * Thread through all lists in the arguments of the IAST (i.e. the ast's head has the attribute
    * {@link ISymbol#LISTABLE} example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
    *
@@ -7745,6 +7889,11 @@ public class EvalEngine implements Serializable {
       return F.NIL;
     }
     final int size = ast.size();
+    for (int i = 1; i < size; i++) {
+      if (ast.get(i).isAST(S.Threaded, 2)) {
+        return threadedArguments(ast);
+      }
+    }
 
     // first pass: determine the container head over which the arguments are threaded. A S.List
     // argument wins over every other container type, even if it appears in the last position, so

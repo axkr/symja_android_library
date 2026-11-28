@@ -211,6 +211,12 @@ public class Assumptions extends AbstractAssumptions {
    * @param assumptions
    * @return
    */
+  /** Is <code>domain</code> one of <code>PositiveIntegers, NonNegativeIntegers, NegativeIntegers</code>? */
+  private static boolean isSignedIntegerDomain(IExpr domain) {
+    return domain == S.PositiveIntegers || domain == S.NonNegativeIntegers
+        || domain == S.NegativeIntegers;
+  }
+
   private static boolean addElement(IAST element, Assumptions assumptions) {
     if (element.size() >= 3) {
       IExpr arg1 = element.arg1();
@@ -229,6 +235,28 @@ public class Assumptions extends AbstractAssumptions {
           }
         }
         return true;
+      }
+      if (isSignedIntegerDomain(element.arg2())) {
+        // an integer with a sign condition
+        ISymbol domain = (ISymbol) element.arg2();
+        final IExpr zero = F.C0;
+        if (arg1.isList() || arg1.isAST(S.Alternatives)) {
+          for (int i = 1; i < arg1.size(); i++) {
+            if (!addElement(F.Element(((IAST) arg1).get(i), domain), assumptions)) {
+              return false;
+            }
+          }
+          return true;
+        }
+        assumptions.elementsMap.put(arg1, S.Integers);
+        // the integer bound: x >= 1 for a positive integer, x <= -1 for a negative one
+        if (domain == S.PositiveIntegers) {
+          return addGreaterEqual(F.GreaterEqual(arg1, F.C1), true, assumptions);
+        }
+        if (domain == S.NonNegativeIntegers) {
+          return addGreaterEqual(F.GreaterEqual(arg1, zero), true, assumptions);
+        }
+        return addLessEqual(F.LessEqual(arg1, F.CN1), true, assumptions);
       }
       if (element.arg2().isSymbol()) {
         ISymbol domain = (ISymbol) element.arg2();

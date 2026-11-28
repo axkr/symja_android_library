@@ -4018,7 +4018,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
           if (step > 0.0 && Double.isFinite(step)) {
             startingStepSize = step;
           }
-        } else if ("MaxStepSize".equalsIgnoreCase(name)) {
+        } else if (entry.first() == S.MaxStepSize || "MaxStepSize".equalsIgnoreCase(name)) {
           double step = value.evalfNaN();
           if (step > 0.0 && !Double.isNaN(step)) {
             maxStepSize = Double.isInfinite(step) ? Double.MAX_VALUE : step;

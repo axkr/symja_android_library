@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -432,6 +433,19 @@ public final class LayoutSpec {
           case ID.Spacings:
             applySpacings(value);
             break;
+          case ID.RowSpacings:
+            // the older option for the vertical gaps; ColumnSpacings for the horizontal ones
+            spacingsExplicit = true;
+            fillGaps(rowGaps, value);
+            break;
+          case ID.ColumnSpacings:
+            spacingsExplicit = true;
+            fillGaps(colGaps, value);
+            break;
+          case ID.RowLines:
+            // the older option for the lines between the rows
+            rowLines = value;
+            break;
           case ID.Alignment:
             applyAlignment(value);
             break;
@@ -463,8 +477,14 @@ public final class LayoutSpec {
         // a malformed option falls back to its default rather than losing the layout
       }
     }
+    if (dividersValue == null && rowLines != null) {
+      dividersValue = F.list(S.False, rowLines.isTrue() ? S.Center : S.False);
+    }
     applyFrameAndDividers(frameValue, dividersValue);
   }
+
+  /** The value of the older <code>RowLines</code> option, or <code>null</code>. */
+  private IExpr rowLines = null;
 
   /**
    * Resolve {@code Frame} and {@code Dividers} together into the two line arrays.

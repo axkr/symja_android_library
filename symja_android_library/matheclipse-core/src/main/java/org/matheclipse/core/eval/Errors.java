@@ -498,6 +498,12 @@ public class Errors {
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
+      "confirmnotag", "`1` has no tag or surrounding Enclose.", //
+      "asrtf", "Assertion `1` failed.", //
+      "nolabel", "Label `1` not found.", //
+      "tree", "Tree expected at position `1` in `2`.", //
+      "struct",
+      "`1` is not a valid expression structure. Valid structures include \"HeadTrees\", \"Heads\", \"Subexpressions\" and \"Atoms\".", //
       "nupi",
       "`1` is not a univariate polynomial function with integer coefficients of degree greater than 1.", //
       "nodim", "Invalid dimension specification `1`.", //
@@ -533,12 +539,20 @@ public class Errors {
       "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
       "nrom", "String `1` does not represent a valid roman numeral.", //
       "nord", "Invalid comparison with `1` attempted.", //
+      "ltmat",
+      "The matrix m = `1` is not a lower triangular matrix or cannot be converted to one. Use LowerTriangularMatrix(LowerTriangularize(m)) to just use the lower triangular entries.", //
+      "maxiter",
+      "Maximum number of iterations reached. Point may not actually be in the Mandelbrot set, but just extremely close.", //
+      "npolys",
+      "`1` and `2` should be polynomials with exact coefficients and the degree of `1` in `3` should not be less than the degree of `2` in `3`.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "norep", "Assignment on `2` for `1` not found.", //
       "norest", "Cannot take Rest of expression `1` with length zero.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nosol", "Linear equation encountered that has no solution.", //
       "nostr", "`1` is not a string.", //
+      "utmat",
+      "The matrix m = `1` is not an upper triangular matrix or cannot be converted to one. Use UpperTriangularMatrix(UpperTriangularize(m)) to just use the upper triangular entries.", //
       "notinenc",
       "The character '`1`' (code point `2`) cannot be represented in character encoding `3`.", //
       "notstr", "The format type `1` is valid only for string input.", //
@@ -1225,14 +1239,16 @@ public class Errors {
     if (engine.isQuietMode()) {
       return;
     }
+    final IAST messageEntry = F.HoldForm(F.binaryAST2(S.MessageName, symbol, F.stringx(tag)));
+    // MessageList(n) lists the messages of the line n
+    engine.addLineMessage(messageEntry);
     // the value of $MessageList belongs to this engine
     final IExpr messageList = engine.getDollarValue(S.$MessageList);
     if (messageList.isList()) {
       // Block[{$MessageList = {}}, ...] collects the names of the messages generated inside;
       // a changed value invalidates what was cached for the old one
       EvalEngine.incEpoch();
-      engine.setDollarValue(S.$MessageList, ((IAST) messageList)
-          .appendClone(F.HoldForm(F.binaryAST2(S.MessageName, symbol, F.stringx(tag)))));
+      engine.setDollarValue(S.$MessageList, ((IAST) messageList).appendClone(messageEntry));
     }
     ArrayDeque<CheckScope> scopes = CHECK_SCOPES.get();
     if (scopes.isEmpty()) {

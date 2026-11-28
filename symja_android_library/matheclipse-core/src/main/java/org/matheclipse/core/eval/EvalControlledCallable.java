@@ -100,6 +100,8 @@ public class EvalControlledCallable implements Callable<IExpr> {
       // IExpr temp = fEngine.evaluate(fExpr);
       if (!fEngine.isOutListDisabled()) {
         fEngine.addInOut(fExpr, temp);
+      } else {
+        fEngine.clearLineMessages();
       }
       return temp;
     } catch (PreemptingException | ApfloatInterruptedException

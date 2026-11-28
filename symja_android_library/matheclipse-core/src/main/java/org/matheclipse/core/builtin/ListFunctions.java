@@ -317,7 +317,9 @@ public final class ListFunctions {
       S.Commonest.setEvaluator(new Commonest());
       S.Complement.setEvaluator(new Complement());
       S.Composition.setEvaluator(new Composition());
-      S.Curry.setEvaluator(new Curry());
+      S.Curry.setEvaluator(new Curry(S.Curry));
+      S.OperatorApplied.setEvaluator(new Curry(S.OperatorApplied));
+      S.CurryApplied.setEvaluator(new Curry(S.CurryApplied));
       S.ComposeList.setEvaluator(new ComposeList());
       S.ConstantArray.setEvaluator(new ConstantArray());
       S.Count.setEvaluator(new Count());
@@ -2309,19 +2311,34 @@ public final class ListFunctions {
    * <code>f(x1, ..., xn)</code>; <code>Curry(f, {i1, ..., in})(x1)...(xn)</code> -
    * <code>f(x_i1, ..., x_in)</code>. The arguments may also be given several at a time; those
    * left over are applied to the result.
+   *
+   * <p>
+   * <code>OperatorApplied</code> is the same operator. <code>CurryApplied(f, n)</code> and
+   * <code>CurryApplied(f, {i1, ..., in})</code> too, but a bare <code>CurryApplied(f)</code> stays
+   * as it is, and <code>CurryApplied(n)(f)</code> is <code>CurryApplied(f, n)</code>.
    */
   private static final class Curry extends AbstractFunctionEvaluator {
+    private final IBuiltInSymbol operator;
+
+    Curry(IBuiltInSymbol operator) {
+      this.operator = operator;
+    }
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head() == S.Curry) {
+      if (ast.head() == operator) {
         // the operator itself
         return F.NIL;
+      }
+      if (operator == S.CurryApplied && ast.head().isAST(S.CurryApplied, 2)
+          && ast.head().first().isInteger() && ast.isAST1()) {
+        // CurryApplied(n)(f)
+        return F.binaryAST2(S.CurryApplied, ast.arg1(), ast.head().first());
       }
       // the applications from the innermost Curry(...)(x1, ...) outwards
       java.util.ArrayDeque<IAST> applications = new java.util.ArrayDeque<IAST>();
       IExpr expr = ast;
-      while (expr.isAST() && expr.head() != S.Curry) {
+      while (expr.isAST() && expr.head() != operator) {
         applications.push((IAST) expr);
         expr = expr.head();
       }
@@ -2331,6 +2348,9 @@ public final class ListFunctions {
       IAST curry = (IAST) expr;
       int[] order;
       if (curry.isAST1()) {
+        if (operator == S.CurryApplied) {
+          return F.NIL;
+        }
         order = new int[] {2, 1};
       } else if (curry.arg2().isList()) {
         IAST list = (IAST) curry.arg2();
@@ -2384,7 +2404,7 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // the applications of the operator take any number of arguments
-      return ast.head() == S.Curry ? ARGS_1_2 : null;
+      return ast.head() == operator ? ARGS_1_2 : null;
     }
   }
 

@@ -667,6 +667,10 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
+      if (EvaluationControlFunctions.hasLabel(ast)) {
+        // Goto(tag) continues after Label(tag)
+        return EvaluationControlFunctions.evaluateWithLabels(ast, engine);
+      }
       IExpr result = S.Null;
       for (int i = 1; i <= argSize; i++) {
         if (i == argSize && i > 1 && ast.get(i) == S.Null) {
@@ -2603,6 +2607,9 @@ public final class Programming {
         engine.setOnOffMode(false, null, false);
         return S.Null;
       }
+      if (EvaluationControlFunctions.switchAssertions(ast, false, engine)) {
+        return S.Null;
+      }
 
       return switchMessages(ast, engine, true);
     }
@@ -2731,6 +2738,9 @@ public final class Programming {
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
         engine.setOnOffMode(true, null, false);
+        return S.Null;
+      }
+      if (EvaluationControlFunctions.switchAssertions(ast, true, engine)) {
         return S.Null;
       }
 
@@ -3751,17 +3761,22 @@ public final class Programming {
      * wrapped by Hold (i.e. <code>Hold[{...}]</code>.
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final int argSize = ast.argSize();
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // TraceDepth -> n options at the end
+      final int argSize = EvaluationControlFunctions.traceArgSize(ast);
       if (argSize >= 1 && argSize <= 2) {
         try {
+          final int maxDepth = EvaluationControlFunctions.traceDepth(ast, argSize, engine);
+          if (maxDepth < 0) {
+            return F.NIL;
+          }
           final IExpr temp = ast.arg1();
           IPatternMatcher matcher = null;
-          if (ast.isAST2()) {
+          if (argSize == 2) {
             matcher = engine.evalPatternMatcher(ast.arg2());
           }
 
-          return engine.evalTrace(temp, matcher);
+          return EvaluationControlFunctions.pruneTrace(engine.evalTrace(temp, matcher), maxDepth);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.Trace, rex, EvalEngine.get());
@@ -3772,7 +3787,7 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override

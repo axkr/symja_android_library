@@ -1869,6 +1869,11 @@ public final class StringFunctions {
       S.StringTakeDrop.setEvaluator(new StringTakeDrop());
       S.StringReplacePart.setEvaluator(new StringReplacePart());
       S.StringTemplate.setEvaluator(new StringTemplate());
+      S.TemplateObject.setEvaluator(new StringTemplate(S.TemplateObject, Attribute.HOLDALLCOMPLETE));
+      S.FileTemplate.setEvaluator(new StringTemplate(S.FileTemplate, null));
+      S.XMLTemplate.setEvaluator(new StringTemplate(S.XMLTemplate, null));
+      S.TemplateExpression.setEvaluator(new TemplateHold(Attribute.HOLDALL));
+      S.TemplateSequence.setEvaluator(new TemplateHold(Attribute.HOLDFIRST));
       S.NeedlemanWunschSimilarity.setEvaluator(new AlignmentSimilarity(true));
       S.PalindromeQ.setEvaluator(new PalindromeQ());
       S.RemoveDiacritics.setEvaluator(new RemoveDiacritics());
@@ -4554,13 +4559,40 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * A template object: <code>StringTemplate(...)</code>, <code>TemplateObject(...)</code>,
+   * <code>FileTemplate(...)</code> or <code>XMLTemplate(...)</code>. Applied to arguments it
+   * evaluates <code>TemplateApply(template, arguments)</code>.
+   */
   private static class StringTemplate extends AbstractFunctionEvaluator {
+
+    /** The head of the template. */
+    private final IBuiltInSymbol templateHead;
+
+    /** The attribute of the head, or <code>null</code>. */
+    private final Attribute attribute;
+
+    StringTemplate() {
+      this(S.StringTemplate, null);
+    }
+
+    StringTemplate(IBuiltInSymbol templateHead, Attribute attribute) {
+      this.templateHead = templateHead;
+      this.attribute = attribute;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      if (attribute != null) {
+        newSymbol.setAttributes(attribute);
+      }
+    }
 
     @Override
     public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       final IExpr head = ast.head();
-      if (head.isAST(S.StringTemplate) && head.argSize() >= 1) {
+      if (head.isAST(templateHead) && head.argSize() >= 1) {
         if (ast.isAST1()) {
           return S.TemplateApply.of(engine, head, ast.arg1());
         }
@@ -4829,6 +4861,28 @@ public final class StringFunctions {
         IAST templateSlot = (IAST) expr;
         return replaceSingleTemplateSlot(map, templateSlot);
       }
+      if (expr.isAST(S.TemplateExpression, 2)) {
+        // the expression with its slots filled, evaluated
+        IExpr body = F.subst(expr.first(), x -> replaceTemplateSlotFunction(x, map));
+        return EvalEngine.get().evaluate(body);
+      }
+      if (expr.isAST(S.TemplateSequence, 3) || expr.isAST(S.TemplateSequence, 4)) {
+        // the template applied to each element, with the separator between them
+        EvalEngine engine = EvalEngine.get();
+        IExpr elements =
+            engine.evaluate(F.subst(expr.second(), x -> replaceTemplateSlotFunction(x, map)));
+        if (!elements.isList()) {
+          return F.NIL;
+        }
+        IASTAppendable sequence = F.ast(S.Sequence, 2 * elements.argSize());
+        for (int i = 1; i < elements.size(); i++) {
+          if (i > 1 && expr.argSize() == 3) {
+            sequence.append(((IAST) expr).arg3());
+          }
+          sequence.append(templateApplyTemplateSlot(expr.first(), ((IAST) elements).get(i)));
+        }
+        return sequence;
+      }
       return F.NIL;
     }
 
@@ -4892,8 +4946,57 @@ public final class StringFunctions {
         return templateWithDefaults((IAST) arg1, arg2, engine);
       } else if (arg1.isAST(S.StringTemplate) && arg1.argSize() > 1 && arg1.first().isString()) {
         return templateWithOptions((IAST) arg1, arg2, engine);
+      } else if (arg1.isAST(S.TemplateObject) && arg1.argSize() >= 1) {
+        // the held expression with its slots filled, evaluated
+        return engine.evaluate(templateApplyTemplateSlot(arg1.first(), arg2));
+      } else if ((arg1.isAST(S.FileTemplate) || arg1.isAST(S.XMLTemplate)) && arg1.argSize() >= 1) {
+        String text = arg1.isAST(S.XMLTemplate) && arg1.first().isString() ? arg1.first().toString()
+            : templateFileText(arg1.first(), engine);
+        if (text == null) {
+          return F.NIL;
+        }
+        if (arg1.isAST(S.XMLTemplate)) {
+          text = xmlSlots(text);
+        }
+        return Errors.templateApply(text, arg2);
       }
       return templateApplyTemplateSlot(arg1, arg2);
+    }
+
+    /** An XML slot element <code>&lt;wolfram:slot id="name"/&gt;</code> or with a body. */
+    private static final java.util.regex.Pattern XML_SLOT = java.util.regex.Pattern.compile(
+        "<wolfram:slot(?:\\s+id=\"([^\"]*)\")?\\s*(?:/>|>([^<]*)</wolfram:slot>)");
+
+    /** The XML template with its slot elements written as <code>`name`</code> slots. */
+    private static String xmlSlots(String xml) {
+      java.util.regex.Matcher slots = XML_SLOT.matcher(xml);
+      StringBuilder buf = new StringBuilder();
+      while (slots.find()) {
+        String name = slots.group(1) != null ? slots.group(1)
+            : slots.group(2) != null ? slots.group(2).trim() : "";
+        slots.appendReplacement(buf, java.util.regex.Matcher.quoteReplacement("`" + name + "`"));
+      }
+      slots.appendTail(buf);
+      return buf.toString();
+    }
+
+    /**
+     * The text of the template file - a file name or <code>File(name)</code> - or
+     * <code>null</code> if it can't be read.
+     */
+    private static String templateFileText(IExpr name, EvalEngine engine) {
+      if (name.isAST(S.File, 2)) {
+        name = name.first();
+      }
+      if (!name.isString() || !Config.isFileSystemEnabled(engine)) {
+        return null;
+      }
+      try {
+        return java.nio.file.Files.readString(java.nio.file.Path.of(name.toString()),
+            java.nio.charset.StandardCharsets.UTF_8);
+      } catch (java.io.IOException | RuntimeException e) {
+        return null;
+      }
     }
 
     /**
@@ -4979,6 +5082,29 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>TemplateExpression(expr)</code> and <code>TemplateSequence(t, list)</code> - parts of a
+   * template which are evaluated when the template is applied.
+   */
+  private static class TemplateHold extends AbstractCoreFunctionEvaluator {
+
+    private final Attribute attribute;
+
+    TemplateHold(Attribute attribute) {
+      this.attribute = attribute;
+    }
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(attribute);
     }
   }
 

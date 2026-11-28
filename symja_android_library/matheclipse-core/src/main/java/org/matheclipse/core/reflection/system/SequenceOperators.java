@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import org.matheclipse.core.annotation.AllowNIL;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -134,6 +135,177 @@ public class SequenceOperators {
   }
 
   /**
+   * <code>FoldWhileList(f, x, {a1, a2, ...}, test)</code> - the list of the values of
+   * <code>FoldWhile</code>: <code>x</code>, <code>f(x, a1)</code>, ... up to and including the
+   * first value on which <code>test</code> doesn't give <code>True</code>.
+   * <code>FoldWhileList(f, {x, a1, ...}, test)</code> starts with the first element,
+   * <code>FoldWhileList(f, x, list, test, 1, n)</code> makes <code>n</code> more steps after the
+   * test failed, or drops the last <code>-n</code> values for a negative <code>n</code>. The
+   * operator form <code>FoldWhileList(f, test)(x, list)</code> or
+   * <code>FoldWhileList(f, test)(list)</code> takes the arguments later.
+   */
+  public static final class FoldWhileList extends AbstractFunctionEvaluator {
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() != S.FoldWhileList) {
+        IExpr head = ast.head();
+        if (head.isAST(S.FoldWhileList, 3)) {
+          if (ast.isAST1()) {
+            return F.ternaryAST3(S.FoldWhileList, head.first(), ast.arg1(), head.second());
+          }
+          if (ast.isAST2()) {
+            return F.quaternary(S.FoldWhileList, head.first(), ast.arg1(), ast.arg2(),
+                head.second());
+          }
+        }
+        return F.NIL;
+      }
+      final int argSize = ast.argSize();
+      if (argSize == 2 || argSize == 5) {
+        return F.NIL;
+      }
+      IExpr f = ast.arg1();
+      IExpr value;
+      IAST list;
+      IExpr test;
+      int extra = 0;
+      if (argSize == 3) {
+        if (!ast.arg2().isAST() || ast.arg2().argSize() < 1) {
+          return F.NIL;
+        }
+        value = ast.arg2().first();
+        list = ((IAST) ast.arg2()).rest();
+        test = ast.arg3();
+      } else {
+        if (!ast.arg3().isAST()) {
+          return F.NIL;
+        }
+        value = ast.arg2();
+        list = (IAST) ast.arg3();
+        test = ast.arg4();
+        if (argSize == 6) {
+          if (!ast.arg5().isOne()) {
+            // only the latest value is given to the test
+            return F.NIL;
+          }
+          extra = ast.get(6).toIntDefault();
+          if (F.isNotPresent(extra)) {
+            return F.NIL;
+          }
+        }
+      }
+      IASTAppendable result = F.ListAlloc(list.size() + 1);
+      result.append(value);
+      int i = 1;
+      boolean failed = !engine.evalTrue(F.unaryAST1(test, value));
+      while (!failed && i < list.size()) {
+        engine.checkTimeLimit();
+        value = engine.evaluate(F.binaryAST2(f, value, list.get(i++)));
+        result.append(value);
+        failed = !engine.evalTrue(F.unaryAST1(test, value));
+      }
+      if (extra > 0) {
+        for (int k = 0; k < extra && i < list.size(); k++) {
+          value = engine.evaluate(F.binaryAST2(f, value, list.get(i++)));
+          result.append(value);
+        }
+      } else if (extra < 0) {
+        int keep = Math.max(result.argSize() + extra, 0);
+        return result.copyUntil(keep + 1);
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ast.head() == S.FoldWhileList ? new int[] {2, 6} : null;
+    }
+  }
+
+  /**
+   * <code>SequenceFoldList(f, {x1, ..., xn}, {a1, a2, ...})</code> - <code>{x1, ..., xn, y1, y2,
+   * ...}</code> where each new value is <code>f</code> of the <code>n</code> values before it
+   * followed by the next element: <code>y1 = f(x1, ..., xn, a1)</code>. <code>SequenceFold</code>
+   * gives the last value.
+   */
+  public static final class SequenceFold extends AbstractFunctionEvaluator {
+    private final boolean list;
+
+    public SequenceFold(boolean list) {
+      this.list = list;
+    }
+
+    @Override
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg2().isList() || ast.arg2().argSize() < 1 || !ast.arg3().isList()) {
+        return F.NIL;
+      }
+      IAST start = (IAST) ast.arg2();
+      IAST elements = (IAST) ast.arg3();
+      final int n = start.argSize();
+      IASTAppendable values = F.ListAlloc(n + elements.argSize());
+      values.appendArgs(start);
+      for (int i = 1; i < elements.size(); i++) {
+        engine.checkTimeLimit();
+        IASTAppendable call = F.ast(ast.arg1(), n + 1);
+        for (int j = values.argSize() - n + 1; j <= values.argSize(); j++) {
+          call.append(values.get(j));
+        }
+        call.append(elements.get(i));
+        values.append(engine.evaluate(call));
+      }
+      return list ? values : values.last();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+  }
+
+  /**
+   * <code>LexicographicOrder(list1, list2)</code> - <code>1</code> if <code>list1</code> comes
+   * before <code>list2</code> when their elements are compared one after the other,
+   * <code>-1</code> if it comes after, <code>0</code> if they are the same; a prefix comes first.
+   * <code>LexicographicOrder(list1, list2, p)</code> compares the elements with the ordering
+   * function <code>p</code>. Arguments which aren't lists compare as one element.
+   */
+  public static final class LexicographicOrder extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IAST x = elements(ast.arg1());
+      IAST y = elements(ast.arg2());
+      final IExpr order = ast.isAST3() ? ast.arg3() : S.Order;
+      int n = Math.min(x.argSize(), y.argSize());
+      for (int i = 1; i <= n; i++) {
+        int c = LexicographicSort.compare(order, x.get(i), y.get(i), engine);
+        if (c != 0) {
+          return c < 0 ? F.C1 : F.CN1;
+        }
+      }
+      int c = Integer.compare(x.argSize(), y.argSize());
+      return c == 0 ? F.C0 : (c < 0 ? F.C1 : F.CN1);
+    }
+
+    private static IAST elements(IExpr arg) {
+      if (arg.isString()) {
+        String s = arg.toString();
+        IASTAppendable chars = F.ListAlloc(s.length());
+        s.codePoints().forEach(cp -> chars.append(F.stringx(new String(Character.toChars(cp)))));
+        return chars;
+      }
+      return arg.isList() ? (IAST) arg : F.list(arg);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+  }
+
+  /**
    * <code>ReverseApplied(f)(x1, ..., xn)</code> gives <code>f(xn, ..., x1)</code>,
    * <code>ReverseApplied(f, n)</code> reverses only the first <code>n</code> arguments or for a
    * negative <code>n</code> the last <code>-n</code> arguments.
@@ -141,7 +313,7 @@ public class SequenceOperators {
   public static final class ReverseApplied extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr head = ast.head();
       if (head == S.ReverseApplied || !head.isAST(S.ReverseApplied) || head.argSize() > 2) {
         return F.NIL;
@@ -188,7 +360,7 @@ public class SequenceOperators {
   public static final class LexicographicSort extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST()) {
         return F.NIL;
       }
@@ -220,7 +392,7 @@ public class SequenceOperators {
     }
 
     /** The order of <code>a</code> and <code>b</code> as a {@link Comparator} result. */
-    private static int compare(IExpr order, IExpr a, IExpr b, EvalEngine engine) {
+    static int compare(IExpr order, IExpr a, IExpr b, EvalEngine engine) {
       if (order == S.Order) {
         return a.compareTo(b);
       }
@@ -248,7 +420,7 @@ public class SequenceOperators {
   public static final class DeleteAdjacentDuplicates extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!ast.arg1().isAST() || ast.arg1().isAssociation()) {
         return F.NIL;
       }
@@ -286,7 +458,7 @@ public class SequenceOperators {
   public static final class CenterArray extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public @AllowNIL IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr a = ast.isAST1() ? F.C1 : ast.arg1();
       IExpr spec = ast.isAST1() ? ast.arg1() : ast.arg2();
       IExpr pad = ast.argSize() >= 3 ? ast.arg3() : F.C0;

@@ -30,7 +30,7 @@ public final class SolveOptions {
   /** The option keys of {@link S#Solve} and {@link S#SolveValues}. */
   static final IBuiltInSymbol[] SOLVE_KEYS = new IBuiltInSymbol[] {S.Assumptions,
       S.GenerateConditions, S.InverseFunctions, S.MaxExtraConditions, S.MaxRoots, S.Method,
-      S.Modulus};
+      S.Modulus, S.VerifySolutions};
 
   /**
    * The option defaults of {@link S#Solve} and {@link S#SolveValues}. {@link S#Assumptions} default
@@ -40,7 +40,8 @@ public final class SolveOptions {
   static final IExpr DEFAULT_MAX_ROOTS = F.C1000;
 
   static final IExpr[] SOLVE_DEFAULTS =
-      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, DEFAULT_MAX_ROOTS, S.Automatic, F.C0};
+      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, DEFAULT_MAX_ROOTS, S.Automatic, F.C0,
+          S.Automatic};
 
   /** The option keys of {@link S#Eliminate}. */
   public static final IBuiltInSymbol[] ELIMINATE_KEYS =

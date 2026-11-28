@@ -602,6 +602,134 @@ public class OutputFormFactory {
     }
   }
 
+  /** The OutputForm text of an expression. */
+  private String text(IExpr expr) throws IOException {
+    StringBuilder text = new StringBuilder();
+    convert(text, expr, Integer.MIN_VALUE, false);
+    return text.toString();
+  }
+
+  /**
+   * The OutputForm of <code>AngleBracket</code>, <code>ColumnForm</code>, <code>PercentForm</code>
+   * and <code>Shallow</code>.
+   *
+   * @return <code>false</code> if the wrapper isn't in a form which is shown specially
+   */
+  private boolean convertDisplayWrapper(final Appendable buf, final IAST list, final int precedence)
+      throws IOException {
+    switch (((IBuiltInSymbol) list.head()).ordinal()) {
+      case ID.AngleBracket: {
+        // the arguments between angle brackets
+        StringBuilder text = new StringBuilder();
+        text.append("\u2329");
+        for (int i = 1; i < list.size(); i++) {
+          if (i > 1) {
+            text.append(',');
+          }
+          text.append(text(list.get(i)));
+        }
+        text.append("\u232A");
+        append(buf, text.toString());
+        return true;
+      }
+      case ID.ColumnForm:
+        if (list.argSize() >= 1 && list.arg1().isList()) {
+          IAST items = (IAST) list.arg1();
+          String[] lines = new String[items.argSize()];
+          int width = 0;
+          for (int i = 0; i < lines.length; i++) {
+            lines[i] = text(items.get(i + 1));
+            width = Math.max(width, lines[i].length());
+          }
+          IExpr alignment = list.argSize() >= 2 ? list.arg2() : S.Left;
+          for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+              append(buf, "\n");
+            }
+            int gap = width - lines[i].length();
+            int before = alignment == S.Right ? gap : alignment == S.Center ? gap / 2 : 0;
+            append(buf, " ".repeat(before) + lines[i]);
+          }
+          return true;
+        }
+        return false;
+      case ID.PercentForm:
+        if ((list.argSize() == 1 || list.argSize() == 2)
+            && (list.arg1().isInteger() || list.arg1().isReal() && !list.arg1().isRational())) {
+          // integers and real numbers times 100; other expressions are shown as they are
+          EvalEngine engine = EvalEngine.get();
+          IExpr percent = engine.evaluate(F.Times(F.C100, list.arg1()));
+          if (percent.isInteger()) {
+            convert(buf, percent, Integer.MIN_VALUE, false);
+          } else {
+            IExpr digits = list.argSize() == 2 ? list.arg2() : F.C6;
+            StringBuilder number = new StringBuilder();
+            convertNumberForm(number, F.binaryAST2(S.NumberForm, percent, digits),
+                Integer.MIN_VALUE);
+            int last = number.length() - 1;
+            if (last > 0 && number.charAt(last) == '.') {
+              // 12. is shown as 12
+              number.setLength(last);
+            }
+            append(buf, number.toString());
+          }
+          append(buf, "%");
+          return true;
+        }
+        if (list.argSize() == 1 || list.argSize() == 2) {
+          convert(buf, list.arg1(), precedence, false);
+          return true;
+        }
+        return false;
+      case ID.Shallow:
+        if (list.argSize() == 1 || list.argSize() == 2) {
+          int depth = 4;
+          int length = 10;
+          if (list.argSize() == 2) {
+            IExpr spec = list.arg2();
+            IExpr depthSpec = spec.isList2() ? spec.first() : spec;
+            depth = depthSpec.isInfinity() ? Integer.MAX_VALUE : depthSpec.toIntDefault();
+            if (spec.isList2()) {
+              length = spec.second().isInfinity() ? Integer.MAX_VALUE
+                  : spec.second().toIntDefault();
+            }
+            if (depth < 0 || length < 0) {
+              return false;
+            }
+          }
+          convert(buf, shallow(list.arg1(), depth, length), precedence, false);
+          return true;
+        }
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The expression with <code>depth - 1</code> levels of heads, with at most <code>length</code>
+   * arguments in each; a part which is left out is a <code>Skeleton(n)</code>.
+   */
+  private static IExpr shallow(IExpr expr, int depth, int length) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    if (depth <= 1) {
+      return F.unaryAST1(S.Skeleton, F.C1);
+    }
+    IAST ast = (IAST) expr;
+    final int argSize = ast.argSize();
+    final int shown = Math.min(argSize, length);
+    IASTAppendable result = F.ast(ast.head(), shown + 1);
+    for (int i = 1; i <= shown; i++) {
+      result.append(shallow(ast.get(i), depth - 1, length));
+    }
+    if (argSize > shown) {
+      result.append(F.unaryAST1(S.Skeleton, F.ZZ(argSize - shown)));
+    }
+    return result;
+  }
+
   private void convertTableForm(final Appendable buf, final IAST list) throws IOException {
     IExpr arg1 = list.arg1().normal(false);
     final String[][] tableData;
@@ -2270,6 +2398,7 @@ public class OutputFormFactory {
                 return;
               }
               break;
+            case ID.StringSkeleton:
             case ID.Skeleton:
               if (!fInputForm && list.isAST1()) {
                 // a run of elements Short left out
@@ -2321,6 +2450,14 @@ public class OutputFormFactory {
             case ID.TableForm:
               if (list.size() > 1) {
                 convertTableForm(buf, list);
+                return;
+              }
+              break;
+            case ID.AngleBracket:
+            case ID.ColumnForm:
+            case ID.PercentForm:
+            case ID.Shallow:
+              if (!fInputForm && convertDisplayWrapper(buf, list, precedence)) {
                 return;
               }
               break;
@@ -2384,14 +2521,17 @@ public class OutputFormFactory {
               break;
             case ID.Defer:
             case ID.HoldForm:
+            case ID.HoldCompleteForm:
             case ID.Hold:
             case ID.HoldComplete:
               // the arguments of a held expression keep the nesting of their sums and products
               fHeldDepth++;
               try {
                 // InputForm shows HoldForm(...), so it reads back held
-                if (list.isAST1() && (list.isAST(S.Defer) || list.isAST(S.HoldForm))
-                    && !(fInputForm && list.isAST(S.HoldForm))) {
+                if (list.isAST1()
+                    && (list.isAST(S.Defer) || list.isAST(S.HoldForm)
+                        || list.isAST(S.HoldCompleteForm))
+                    && !(fInputForm && (list.isAST(S.HoldForm) || list.isAST(S.HoldCompleteForm)))) {
                   convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 } else {
                   convertAST(buf, list);

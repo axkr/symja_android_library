@@ -21,6 +21,9 @@ public class EvalHistory implements Serializable {
   Int2ObjectAVLTreeMap<IExpr> fInHistory;
   Int2ObjectAVLTreeMap<IExpr> fOutHistory;
 
+  /** The messages generated while a line was evaluated; only lines with messages are stored. */
+  Int2ObjectAVLTreeMap<IAST> fMessageHistory;
+
   private short fHistoryLength;
   private int fIndex;
 
@@ -39,6 +42,7 @@ public class EvalHistory implements Serializable {
     historyIndices = new int[fHistoryLength + 1];
     fInHistory = new Int2ObjectAVLTreeMap<IExpr>();
     fOutHistory = new Int2ObjectAVLTreeMap<IExpr>();
+    fMessageHistory = new Int2ObjectAVLTreeMap<IAST>();
     fIndex = 0;
     fLine = 0;
   }
@@ -48,6 +52,7 @@ public class EvalHistory implements Serializable {
     historyIndices = new int[fHistoryLength + 1];
     fInHistory = new Int2ObjectAVLTreeMap<IExpr>();
     fOutHistory = new Int2ObjectAVLTreeMap<IExpr>();
+    fMessageHistory = new Int2ObjectAVLTreeMap<IAST>();
     fIndex = 0;
     fLine = 0;
   }
@@ -60,6 +65,18 @@ public class EvalHistory implements Serializable {
    * @param outExpr the output expression, which is the result of the <code>inExpr</code>
    */
   public void addInOut(IExpr inExpr, IExpr outExpr) {
+    addInOut(inExpr, outExpr, null);
+  }
+
+  /**
+   * Add a new calculation and the messages generated while it was evaluated to the history.
+   *
+   * @param inExpr the input expression
+   * @param outExpr the output expression, which is the result of the <code>inExpr</code>
+   * @param messages the list of <code>HoldForm(symbol::tag)</code> entries, or <code>null</code> if
+   *        no message was generated
+   */
+  public void addInOut(IExpr inExpr, IExpr outExpr, IAST messages) {
     int deletePosition = fIndex - fHistoryLength + 1;
     if (deletePosition < 0) {
       deletePosition = fHistoryLength + 1 + deletePosition;
@@ -68,12 +85,16 @@ public class EvalHistory implements Serializable {
     if (F.isPresent(deleteLine)) {
       fInHistory.remove(deleteLine);
       fOutHistory.remove(deleteLine);
+      fMessageHistory.remove(deleteLine);
       historyIndices[deletePosition] = Config.INVALID_INT;
     }
 
     fLine++;
     fInHistory.put(fLine, inExpr);
     fOutHistory.put(fLine, outExpr);
+    if (messages != null && messages.argSize() > 0) {
+      fMessageHistory.put(fLine, messages);
+    }
     ++fIndex;
     if (fIndex >= historyIndices.length) {
       fIndex = 1;
@@ -155,6 +176,26 @@ public class EvalHistory implements Serializable {
       value = fOutHistory.get(index);
     }
     return value == null ? F.NIL : value;
+  }
+
+  /**
+   * The messages generated while the line <code>index</code> was evaluated. A negative
+   * <code>index</code> counts back from the last line.
+   *
+   * @param index the line number
+   * @return the list of <code>HoldForm(symbol::tag)</code> entries, <code>{}</code> for a line
+   *         without messages, or <code>F.NIL</code> if the line isn't in the history
+   */
+  public @AllowNIL IExpr getMessages(int index) {
+    if (index > fLine || index == 0) {
+      return F.NIL;
+    }
+    final int line = index < 0 ? fLine + index + 1 : index;
+    if (!fOutHistory.containsKey(line)) {
+      return F.NIL;
+    }
+    IAST value = fMessageHistory.get(line);
+    return value == null ? F.CEmptyList : value;
   }
 
   public void resetLineCounter(int line) {

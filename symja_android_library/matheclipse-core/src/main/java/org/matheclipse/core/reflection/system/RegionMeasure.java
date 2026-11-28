@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.GeometricRegionFunctions;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -32,6 +33,12 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
     }
     if (ast.isAST3()) {
       return F.NIL;
+    }
+    if (ast.isAST1()) {
+      IExpr transformed = GeometricRegionFunctions.transformedMeasure(ast.arg1(), engine);
+      if (transformed.isPresent()) {
+        return transformed;
+      }
     }
     IExpr arg1 = RegionPrimitives.normalizedRegion(ast.arg1());
     if (MeshFunctions.isMeshRegion(arg1)) {

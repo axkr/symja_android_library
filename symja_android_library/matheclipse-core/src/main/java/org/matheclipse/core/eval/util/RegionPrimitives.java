@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.annotation.AllowNIL;
 import java.util.function.Function;
+import org.matheclipse.core.builtin.GeometricRegionFunctions;
 import org.matheclipse.core.builtin.MeshFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -1907,12 +1908,24 @@ public class RegionPrimitives {
   }
 
   /**
-   * Strip a <code>Region(reg)</code> display wrapper.
+   * Strip a <code>Region(reg)</code> display wrapper. <code>Hyperplane</code>,
+   * <code>ConicHullRegion</code> and an unevaluated <code>TransformedRegion</code> are replaced by
+   * an equivalent region the region functions know.
    *
    * @return the wrapped region, or <code>region</code> itself if it is not wrapped
+   * @see GeometricRegionFunctions#primitiveForm(IAST, EvalEngine)
    */
   public static IExpr unwrapRegion(IExpr region) {
-    return region.isAST(S.Region, 2) ? region.first() : region;
+    IExpr unwrapped = region.isAST(S.Region, 2) ? region.first() : region;
+    if (unwrapped.isAST(S.Hyperplane) || unwrapped.isAST(S.ConicHullRegion)
+        || unwrapped.isAST(S.TransformedRegion, 3)) {
+      IExpr primitive =
+          GeometricRegionFunctions.primitiveForm((IAST) unwrapped, EvalEngine.get());
+      if (primitive.isPresent()) {
+        return primitive;
+      }
+    }
+    return unwrapped;
   }
 
   /**

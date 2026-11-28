@@ -1,6 +1,10 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.annotation.AllowNIL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -22,6 +26,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
 public class SimplifyFunctions {
@@ -224,6 +229,53 @@ public class SimplifyFunctions {
       return replaced.isPresent() ? engine.evaluate(replaced) : F.NIL;
     }
 
+    /**
+     * Simplify with every subexpression that matches a pattern of the <code>ExcludedForms</code>
+     * option replaced by a unique symbol, then put the subexpressions back. {@link F#NIL} if the
+     * option isn't given.
+     */
+    private static @AllowNIL IExpr simplifyExcludedForms(IAST ast, EvalEngine engine) {
+      int position = ast.indexOf(
+          x -> (x.isRuleAST()) && x.first() == S.ExcludedForms);
+      if (position <= 1) {
+        return F.NIL;
+      }
+      IExpr forms = ast.get(position).second();
+      IASTAppendable inner = ast.removeAtClone(position);
+      IAST patterns = forms.isList() ? (IAST) forms : F.list(forms);
+      if (patterns.isEmpty()) {
+        return engine.evaluate(inner);
+      }
+      List<IPatternMatcher> matchers = new ArrayList<IPatternMatcher>();
+      for (IExpr pattern : patterns) {
+        matchers.add(engine.evalPatternMatcher(pattern));
+      }
+      Map<IExpr, IExpr> symbolOf = new HashMap<IExpr, IExpr>();
+      Map<IExpr, IExpr> formOf = new HashMap<IExpr, IExpr>();
+      IExpr replaced = ast.arg1().replaceAll(x -> {
+        for (IPatternMatcher matcher : matchers) {
+          if (matcher.test(x, engine)) {
+            return symbolOf.computeIfAbsent(x, k -> {
+              ISymbol dummy = F.Dummy();
+              formOf.put(dummy, k);
+              return dummy;
+            });
+          }
+        }
+        return F.NIL;
+      });
+      if (replaced.isNIL()) {
+        return engine.evaluate(inner);
+      }
+      inner.set(1, replaced);
+      IExpr simplified = engine.evaluate(inner);
+      IExpr restored = simplified.replaceAll(x -> {
+        IExpr form = formOf.get(x);
+        return form == null ? F.NIL : form;
+      });
+      return restored.isPresent() ? engine.evaluate(restored) : simplified;
+    }
+
     /** Append <code>lhs-rhs</code> of every equation of the assumptions to <code>result</code>. */
     private static void collectEquations(IExpr assumptions, IASTAppendable result,
         EvalEngine engine) {
@@ -256,6 +308,11 @@ public class SimplifyFunctions {
             }
             break;
         }
+      }
+
+      IExpr excluded = simplifyExcludedForms(ast, engine);
+      if (excluded.isPresent()) {
+        return excluded;
       }
 
       if (ast.isAST1()) {
@@ -639,7 +696,8 @@ public class SimplifyFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions), //
-              F.Rule(S.ComplexityFunction, S.Automatic)));
+              F.Rule(S.ComplexityFunction, S.Automatic), //
+              F.Rule(S.ExcludedForms, F.CEmptyList)));
     }
 
     public boolean isFullSimplifyMode() {
@@ -743,7 +801,8 @@ public class SimplifyFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions), //
-              F.Rule(S.ComplexityFunction, S.Automatic)));
+              F.Rule(S.ComplexityFunction, S.Automatic), //
+              F.Rule(S.ExcludedForms, F.CEmptyList)));
     }
   }
 
